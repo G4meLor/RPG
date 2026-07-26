@@ -139,6 +139,30 @@ def gen_map(c, r):
             obstacles.append(pygame_rect(tx * TILE, t * TILE, TILE, TILE))
             obstacles.append(pygame_rect(tx * TILE, MAP_H - TILE - t * TILE, TILE, TILE))
 
+    # carve a portal gap in the border wall at each traversable edge's midpoint
+    # so the hero can actually walk through to the neighbor (the 1-tile-thick
+    # wall + the hero's 20px radius would otherwise block the transition trigger
+    # at x<8 / x>MAP_W-8). The gap is a few tiles wide centered on the edge
+    # midpoint; we drop the wall tiles whose tile-row/col overlaps the gap.
+    gap = 2   # half-width of the gap in tiles (so 5 tiles wide total)
+    mid_tx = MAP_TW // 2
+    mid_ty = MAP_TH // 2
+    # left edge (always traversable horizontally): drop tiles at x==0 whose
+    # tile-row is within `gap` of the midpoint row
+    obstacles = [o for o in obstacles
+                 if not (o.x == 0 and abs(o.y // TILE - mid_ty) <= gap)]
+    # right edge
+    obstacles = [o for o in obstacles
+                 if not (o.x == MAP_W - TILE and abs(o.y // TILE - mid_ty) <= gap)]
+    # top edge (only if r > 0)
+    if r > 0:
+        obstacles = [o for o in obstacles
+                     if not (o.y == 0 and abs(o.x // TILE - mid_tx) <= gap)]
+    # bottom edge (only if r < GRID_H - 1)
+    if r < GRID_H - 1:
+        obstacles = [o for o in obstacles
+                     if not (o.y == MAP_H - TILE and abs(o.x // TILE - mid_tx) <= gap)]
+
     # scattered obstacles (skip the boss arena center for a fight space)
     # denser in forest, sparser in plains, more pillars in castle/cave
     base_n = {"plains": (6, 10), "forest": (14, 20), "cave": (10, 16),

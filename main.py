@@ -444,7 +444,9 @@ class RosterScene(Scene):
     def _build_cards(self):
         owned_ids = list(self.game.player.owned.keys())
         card_w, card_h = 180, 240
-        cols = 6
+        # 5 columns so the last column (x=60+4*196=844, right=1024) doesn't
+        # overlap the Battle Team panel (x=920). 6 cols at x=1040 overlapped it.
+        cols = 5
         gap = 16
         start_x = 60
         start_y = 110
@@ -1017,6 +1019,9 @@ class ShopScene(Scene):
         self.consumable_rects = []
         self.equip_rects = []
         self.gem_rects = []
+        # equipment list scroll — there are 17 equipment items in 5 columns, so
+        # rows 2-3 fall off the bottom of the 720px screen without scrolling.
+        self.equip_scroll = 0
         self._build_shop_rects()
 
     def _build_shop_rects(self):
@@ -1027,12 +1032,12 @@ class ShopScene(Scene):
             row = i // 5
             r = pygame.Rect(80 + col * 220, 180 + row * 180, 200, 160)
             self.consumable_rects.append((iid, r))
-        # equipment
+        # equipment — offset by the scroll so all 17 items are reachable
         self.equip_rects = []
         for i, (iid, item) in enumerate(D.EQUIPMENT_DB.items()):
             col = i % 5
             row = i // 5
-            r = pygame.Rect(80 + col * 220, 470 + row * 180, 200, 160)
+            r = pygame.Rect(80 + col * 220, 470 + row * 180 - self.equip_scroll, 200, 160)
             self.equip_rects.append((iid, r))
         # gem packs
         self.gem_rects = []
@@ -1051,6 +1056,13 @@ class ShopScene(Scene):
         for e in events:
             if self.back_btn.clicked(e) or (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
                 self.game.back("title")
+            # equipment list scroll (mouse wheel) so all 17 items are reachable
+            if e.type == pygame.MOUSEWHEEL:
+                # 3 rows fit on screen (470 + 2*180 = 830 > 720, so scroll up to
+                # the last row's top). Clamp so the first row doesn't scroll above
+                # the equipment header and the last row stays reachable.
+                max_scroll = max(0, (len(D.EQUIPMENT_DB) // 5) * 180 - 180)
+                self.equip_scroll = max(0, min(max_scroll, self.equip_scroll - e.y * 40))
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 for iid, r in self.consumable_rects:
                     if r.collidepoint(e.pos):

@@ -403,6 +403,7 @@ SKILLS_DB = {
     "revive":       dict(name="Miracle",       element="light", type="revive", power=0.5, cost=6,
                         desc="Revive a fallen ally with half HP."),
     "light_hymn":   dict(name="Solar Hymn",    element="light", type="ultimate", power=2.4, cost=8,
+                        heal=True,
                         desc="Heal all allies fully and bless them."),
     # Dark
     "dark_bolt":    dict(name="Shadow Bolt",   element="dark", type="magic", power=1.9, cost=3,
@@ -872,15 +873,15 @@ MAX_LEVEL = 60
 #   id -> {name, desc, reward_gems, check(player)}
 # ---------------------------------------------------------------------------
 ACHIEVEMENTS = {
-    "first_blood": dict(name="First Blood", desc="Win your first battle.",
+    "first_blood": dict(name="First Blood", desc="Defeat your first enemy.",
                         reward_gems=50,
-                        check=lambda p: p.stats.get("battles_won", 0) >= 1),
-    "veteran":     dict(name="Veteran", desc="Win 20 battles.",
+                        check=lambda p: p.stats.get("enemies_defeated", 0) >= 1),
+    "veteran":     dict(name="Veteran", desc="Defeat 50 enemies.",
                         reward_gems=150,
-                        check=lambda p: p.stats.get("battles_won", 0) >= 20),
-    "legend":      dict(name="Legend", desc="Win 100 battles.",
+                        check=lambda p: p.stats.get("enemies_defeated", 0) >= 50),
+    "legend":      dict(name="Legend", desc="Defeat 300 enemies.",
                         reward_gems=400,
-                        check=lambda p: p.stats.get("battles_won", 0) >= 100),
+                        check=lambda p: p.stats.get("enemies_defeated", 0) >= 300),
     "slayer":      dict(name="Slayer", desc="Defeat 200 enemies.",
                         reward_gems=120,
                         check=lambda p: p.stats.get("enemies_defeated", 0) >= 200),

@@ -64,6 +64,9 @@ class Player:
         # player leaves and returns (otherwise it's an infinite-loot exploit).
         # Maps "cell_id" -> list of opened chest indices in gen_map order.
         self.ow_chests_opened = {}
+        # boss cells the player has already cleared — bosses in these cells pay
+        # out a reduced "rematch" reward on re-kill (no infinite gem farming).
+        self.ow_bosses_cleared = []     # list of "c,r" cell ids
         # init owned heroes
         for hid in D.STARTING_OWNED:
             self.owned[hid] = dict(level=1, xp=0, dupes=0, ascension=0,
@@ -388,6 +391,7 @@ class Player:
             "ow_party_state": self.ow_party_state,
             "ow_time": self.ow_time,
             "ow_chests_opened": self.ow_chests_opened,
+            "ow_bosses_cleared": self.ow_bosses_cleared,
             "version": 5,
         }
         with open(SAVE_FILE, "w") as f:
@@ -454,6 +458,7 @@ class Player:
             p.ow_party_state = d.get("ow_party_state", {})
             p.ow_time = d.get("ow_time", 0.0)
             p.ow_chests_opened = d.get("ow_chests_opened", {})
+            p.ow_bosses_cleared = d.get("ow_bosses_cleared", [])
             return p
         except Exception:
             return cls()

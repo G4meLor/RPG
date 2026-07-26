@@ -1216,9 +1216,55 @@ class WorldScene:
             # self buff visual — orbiting motes
             self.particles.burst(wc.x, wc.y, col, n=18, speed=180, size=5, life=0.5, grav=-80)
             audio.play("buff", 0.5)
-            # small heal for buff skills that are support-ish
-            if skill.get("buff") in ("shield", "def_up", "atk_up"):
-                wc.heal(20)
+            # actually apply the status effect (the skill dict carries buff/debuff
+            # keys + potency + dur — wire them into the hero's effect list so
+            # shield/atk_up/def_up/poison/etc. do something instead of just VFX)
+            if skill.get("buff"):
+                wc.hero.add_effect(skill["buff"], skill.get("dur", 3),
+                                   skill.get("potency", 0.3))
+                # a small heal for support buffs so they feel helpful immediately
+                if skill["buff"] in ("shield", "def_up", "atk_up"):
+                    wc.heal(20)
+            if skill.get("debuff"):
+                # debuffs are single-target in this real-time model — apply to the
+                # nearest alive enemy in the facing arc so curse/rupture land
+                nearest = None
+                for en in self.enemies:
+                    if not en.alive:
+                        continue
+                    if (en.x - wc.x) * wc.facing > 0 and math.hypot(en.x - wc.x, en.y - wc.y) < 200:
+                        nearest = en
+                        break
+                if nearest:
+                    # apply a short stun as the debuff's tangible effect (the
+                    # real-time combat has no per-enemy effect list, so a brief
+                    # telegraph-stun is the readable outcome)
+                    nearest._react_stun = max(nearest._react_stun, 1.5)
+                    self.particles.burst(nearest.x, nearest.y, col, n=12, speed=160, size=5, life=0.4)
+        elif kind == "revive":
+            # revive a downed party member at half HP; if none downed, big heal
+            # on the active hero so the skill isn't wasted
+            downed = [o for o in self.party if o and not o.alive]
+            if downed:
+                target = downed[0]
+                target.alive = True
+                target.hero.hp = target.hero.max_hp // 2
+                target.hero.energy = D.ENERGY_START
+                target.invuln_t = 0.5
+                self.particles.burst(target.x, target.y, (140, 240, 160),
+                                     n=30, speed=240, size=7, life=0.7, grav=-60)
+                self.particles.ring(target.x, target.y, (180, 255, 200),
+                                    n=24, speed=300, size=6, life=0.6)
+                self.floats.append(FloatText(target.x, target.y - 40,
+                                             f"REVIVED {target.hero.name}!",
+                                             (140, 240, 160), size=20))
+                audio.play("revive", 0.6)
+            else:
+                # nobody to revive — big heal on the active hero instead
+                wc.heal(int(wc.hero.max_hp * 0.5))
+                self.particles.burst(wc.x, wc.y, (140, 240, 160),
+                                     n=24, speed=200, size=6, life=0.6, grav=-60)
+                audio.play("heal", 0.5)
         else:
             # fallback: small burst
             self.particles.burst(wc.x, wc.y, col, n=14, speed=200, size=5, life=0.4)
@@ -1246,7 +1292,18 @@ class WorldScene:
         # ultimates are the heaviest hit — a longer hit-stop so they land with weight
         self.hit_stop = max(self.hit_stop, 0.22)
         combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
-        if kind in ("aoe_attack", "aoe_magic"):
+        # heal ults (e.g. light_hymn) — the skill dict may carry heal=True even
+        # though its type is "ultimate"; route to the heal branch so it actually
+        # heals the party instead of falling through to the forward-beam else.
+        if skill.get("heal") or kind == "heal":
+            amt = a.max_hp
+            for other in self.party:
+                if other and other.alive:
+                    other.heal(amt)
+            self.particles.burst(wc.x, wc.y, (140, 240, 160), n=40, speed=260, size=8, life=0.8, grav=-80)
+            self.particles.ring(wc.x, wc.y, (180, 255, 200), n=36, speed=300, size=6, life=0.7)
+            audio.play("heal", 0.6)
+        elif kind in ("aoe_attack", "aoe_magic"):
             # huge burst + double shockwave ring
             self.particles.burst(wc.x, wc.y, col, n=60, speed=420, size=9, life=0.9, grav=0)
             self.particles.ring(wc.x, wc.y, col, n=40, speed=560, size=7, life=0.6)
@@ -1258,13 +1315,6 @@ class WorldScene:
                     dealt = en.take_damage(dmg, wc.x, wc.y)
                     if dealt:
                         self._on_enemy_hit(en, wc, dealt, True)
-        elif kind == "heal":
-            amt = a.max_hp
-            for other in self.party:
-                if other and other.alive:
-                    other.heal(amt)
-            self.particles.burst(wc.x, wc.y, (140, 240, 160), n=40, speed=260, size=8, life=0.8, grav=-80)
-            self.particles.ring(wc.x, wc.y, (180, 255, 200), n=36, speed=300, size=6, life=0.7)
         else:
             # big forward beam — a streaking column of particles in the facing dir
             arc_x = wc.x + wc.facing * 60
@@ -1273,7 +1323,7 @@ class WorldScene:
                 self.particles.burst(bx, wc.y, col, n=10, speed=120, size=7, life=0.4, grav=0)
             self.particles.ring(arc_x, wc.y, col, n=30, speed=400, size=7, life=0.5)
             for en in self.enemies:
-                if en.alive and abs(en.x - wc.x) * wc.facing > 0 and math.hypot(en.x - wc.x, en.y - wc.y) < 300:
+                if en.alive and (en.x - wc.x) * wc.facing > 0 and math.hypot(en.x - wc.x, en.y - wc.y) < 300:
                     mult = self._element_mult(skill["element"], en.element)
                     dmg = int(atk * skill["power"] * mult * 1.5 * combo_mul)
                     dealt = en.take_damage(dmg, wc.x, wc.y)
@@ -1377,10 +1427,11 @@ class WorldScene:
         p.stats["gold_earned"] = p.stats.get("gold_earned", 0) + gold
         # float
         self.floats.append(FloatText(en.x, en.y - 40, f"+{gold}g", (255, 220, 120), size=18))
-        # shards from bosses / elites (bigger bosses drop more)
+        # shards from bosses / elites — bosses scale by row so deeper bosses
+        # are worth more (row0=3 ... row4=19); elites rarely drop 1.
         shards = 0
         if en.is_boss:
-            shards = 5 + (1 if en.enemy.max_hp > 4000 else 0)
+            shards = 3 + self.r * 4
         elif random.random() < 0.08:
             shards = 1
         if shards:
@@ -1396,11 +1447,18 @@ class WorldScene:
             if pool:
                 p.add_equipment(random.choice(pool))
                 self.floats.append(FloatText(en.x, en.y + 30, "+Equipment!", (255, 200, 120), size=18))
-        # boss cleared -> mark + bonus gems + a defeat cinematic
+        # boss cleared -> mark + row-scaled bonus gems (only the first clear per
+        # cell pays out, so bosses can't be farm-grounded for infinite gems).
         if en.is_boss:
-            p.gems += 100
-            p.stats["gems_earned"] = p.stats.get("gems_earned", 0) + 100
+            cleared = set(p.ow_bosses_cleared)
+            cid = WD.cell_id(self.c, self.r)
+            first_clear = cid not in cleared
+            boss_gem = (20 + self.r * 50) if first_clear else 10
+            p.gems += boss_gem
+            p.stats["gems_earned"] = p.stats.get("gems_earned", 0) + boss_gem
             p.stats["bosses_defeated"] = p.stats.get("bosses_defeated", 0) + 1
+            if first_clear:
+                p.ow_bosses_cleared = sorted(cleared | {cid})
             self.set_message(f"Boss defeated! +100 gems, +{shards} shards")
             # defeat celebration: a long hit-stop, a big flash, a victory burst,
             # and a "BOSS DEFEATED" banner with the boss name for ~2.5s
@@ -1672,6 +1730,23 @@ class WorldScene:
                             dealt = en.take_damage(dmg, p.x, p.y, is_crit)
                             if dealt:
                                 self._on_enemy_hit(en, p.source, dealt, is_crit)
+                                # ranged basic-attack energy: the melee branch grants
+                                # ENERGY_GAIN_BASIC on a hit; do the same for the
+                                # projectile source so ranged heroes charge energy + ult.
+                                a = p.source.hero
+                                a.energy = min(a.max_energy,
+                                               a.energy + D.ENERGY_GAIN_BASIC)
+                                # lifesteal passive for ranged heroes (the melee branch
+                                # has its own lifesteal block; mirror it here so pyra /
+                                # cinder / ranged staffs actually heal on basic hits)
+                                if (a.passive and a.passive.get("kind") == "lifesteal"
+                                        and dealt > 0):
+                                    heal = max(1, int(dealt * a.passive.get("val", 0.12)))
+                                    p.source.heal(heal)
+                                    if self.game.player.settings.get("damage_numbers", True):
+                                        self.floats.append(FloatText(
+                                            p.source.x, p.source.y - 30, f"+{heal}",
+                                            (140, 240, 160), size=16))
                             hit_one = True
                             if not p.pierce:
                                 break
@@ -1978,8 +2053,10 @@ class WorldScene:
         # modulate the sky color by the day/night phase so the world has a
         # time-of-day glow: phase 0 = dawn (cool), 0.25 = noon (warm/bright),
         # 0.5 = dusk (orange), 0.75 = night (dark blue). The biome's base sky is
-        # the anchor; the phase shifts it.
-        sky = self._sky_for_phase(sky)
+        # the anchor; the phase shifts it. Quantize the phase to 1/16 so the
+        # _biome_atmos cache key stays stable (otherwise the continuous phase
+        # would allocate a fresh 3.5MB overlay every frame — a memory leak).
+        sky = self._sky_for_phase(sky, _qphase=round(self._world_time, 4))
         # base atmosphere (vignette + sky gradient) — one cached blit per biome+phase
         base = self._biome_atmos(sky)
         surf.blit(base, (0, 0))
@@ -2068,15 +2145,18 @@ class WorldScene:
             self._light_cache[key] = sp
         return sp
 
-    def _sky_for_phase(self, base_sky):
+    def _sky_for_phase(self, base_sky, _qphase=None):
         """Shift a biome's base sky color by the day/night phase (0..1).
         0   = dawn  — bright (start of day)
         0.25= midday — brightest + warm
         0.5 = dusk  — dimming, warm
         0.75= night — darkest + blue
         Returns a new RGB tuple; the base sky is the anchor (treated as the
-        midday value)."""
-        p = self._world_time
+        midday value). The phase is quantized to 1/16 by the caller (passed as
+        _qphase) so the downstream _biome_atmos cache key stays stable — without
+        quantization, the continuous phase would allocate a fresh 3.5MB overlay
+        every frame (a memory leak)."""
+        p = _qphase if _qphase is not None else self._world_time
         r, g, b = base_sky
         # brightness curve: full (1.0) near p=0.25 (midday), dim (~0.45) at
         # p=0.75 (night). cos(2*pi*(p-0.25)) is +1 at midday, -1 at night.

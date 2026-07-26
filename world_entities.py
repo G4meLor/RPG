@@ -664,6 +664,7 @@ class WorldEnemy:
         from entities import Enemy
         self.enemy = Enemy(enemy_id, level)
         self.id = enemy_id
+        d = D.ENEMIES_DB[enemy_id]
         self.x = float(x)
         self.y = float(y)
         self.vx = 0.0
@@ -681,7 +682,13 @@ class WorldEnemy:
         self.roam_t = 0.0
         self.aggro_range = 320 if not is_boss else 460
         self.atk_range = 50 if not is_boss else 70
-        self.speed = 80 + level * 2 if not is_boss else 70 + level
+        # world speed is derived from the data-sheet spd so stat differences are
+        # felt (a slime spd=6 waddles, a harpy spd=18 darts) — otherwise every
+        # enemy moves at the same pace regardless of its stats.
+        if is_boss:
+            self.speed = 70 + level
+        else:
+            self.speed = 55 + d.get("spd", 10) * 5 + level * 2
         self.telegraph_t = 0.0
         self.hit_flash = 0.0
         self.kb_x = 0.0

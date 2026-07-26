@@ -271,6 +271,12 @@ def init():
     if INIT_OK:
         return
     try:
+        # The mixer may already be running (main.py calls pygame.init() first,
+        # which starts the mixer at the default 44100 Hz). pre_init is a no-op
+        # in that case, so quit + re-init at 22050 to match the synth sample rate
+        # (otherwise every sound plays 2x too fast / pitched up).
+        if pygame.mixer.get_init():
+            pygame.mixer.quit()
         pygame.mixer.pre_init(22050, -16, 2, 512)
         if not pygame.mixer.get_init():
             pygame.mixer.init()
@@ -326,7 +332,13 @@ def play(name, volume=0.6):
 def set_ambience(on, volume=0.25):
     """Start/stop the looping biome ambience on its dedicated channel."""
     global _AMBIENCE_CHANNEL
-    if not ENABLED or not INIT_OK:
+    if not INIT_OK:
+        return
+    # the stop path bypasses the ENABLED gate — stopping is always safe, and
+    # set_enabled(False) sets ENABLED=False BEFORE calling set_ambience(False),
+    # so gating the stop on ENABLED would never stop the loop (the user toggling
+    # sound off would leave the ambience running).
+    if not ENABLED and on:
         return
     s = SOUNDS.get("ambience")
     if not s:

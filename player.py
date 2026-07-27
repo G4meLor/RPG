@@ -236,7 +236,7 @@ class Player:
         if not item:
             return False
         self.use_item(item_id)
-        self.gold += item.get("sell", item.get("price", 0) // 4)
+        self.gold += item.get("sell", item.get("price", 0) // 3)
         return True
 
     # --- shop ---
@@ -305,9 +305,9 @@ class Player:
                 self.login_streak = 1
         except Exception:
             self.login_streak = 1
-        self.login_streak = min(self.login_streak, 7)
-        # escalating bonus: 50, 60, 80, 100, 120, 150, 200
-        schedule = [50, 60, 80, 100, 120, 150, 200]
+        self.login_streak = min(self.login_streak, 12)
+        # escalating bonus: 50, 60, 80, 100, 120, 150, 200, 220, 250, 300, 350, 400 (12 days)
+        schedule = [50, 60, 80, 100, 120, 150, 200, 220, 250, 300, 350, 400]
         bonus = schedule[min(self.login_streak - 1, len(schedule) - 1)] if self.login_streak >= 1 else 50
         self.last_login_day = today
         self.gems += bonus
@@ -366,6 +366,12 @@ class Player:
         q = D.DAILY_QUESTS[qid]
         self.gems += q["reward_gems"]
         self.stats["gems_earned"] = self.stats.get("gems_earned", 0) + q["reward_gems"]
+        # board-clear capstone: when every quest is claimed, grant a daily bonus
+        if all(qst.get("claimed") for qst in self.quests.values()):
+            self.stats["daily_clears"] = self.stats.get("daily_clears", 0) + 1
+            self.gems += 50
+            self.shards += 5
+            self.stats["gems_earned"] = self.stats.get("gems_earned", 0) + 50
         return True
 
     # --- save / load ---

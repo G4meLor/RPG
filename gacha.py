@@ -75,8 +75,11 @@ class GachaSystem:
             # soft pity ramp: after SOFT_PITY pulls, SSR chance climbs — but cap
             # below 100% so the hard pity (60) stays the real, honest guarantee
             if rarity != "SSR" and pity >= self.SOFT_PITY:
-                # smooth ramp capped at 0.9; hard pity is the true floor
-                ramp = min(0.9, (pity - self.SOFT_PITY + 1) * 0.08)
+                # smooth ramp capped well below 100% so the hard pity (60) stays
+                # the real, honest guarantee. With a 0.04 step capped at 0.5:
+                # pity 40 -> 4%, pity 52 -> 50% (capped), pity 59 -> 50%,
+                # pity 60 -> hard pity 100%. The displayed "60" is truthful.
+                ramp = min(0.5, (pity - self.SOFT_PITY + 1) * 0.04)
                 if random.random() < ramp:
                     rarity = "SSR"
             # SR+ guarantee: every Nth pull since the last SR+ is at least SR.
@@ -94,12 +97,24 @@ class GachaSystem:
             self._set_pity(bid, 0)
 
         # pick the hero within the rarity, applying rate-up — exclude the
-        # featured hero from the fallback pool so the split is an honest 50/50
+        # featured hero from the fallback pool so the split is an honest 50/50,
+        # with a 50/50 loss-carry: losing the featured SSR guarantees the next
+        # SSR on this banner is the featured one (genre-standard pity chase).
         feat_ssr = banner.get("featured_ssr")
         feat_sr = banner.get("featured_sr")
         if rarity == "SSR" and feat_ssr and feat_ssr in banner["pool"]["SSR"]:
-            others = [h for h in banner["pool"]["SSR"] if h != feat_ssr]
-            hero_id = feat_ssr if (random.random() < 0.5 or not others) else random.choice(others)
+            guar = self.player.gacha_pity.get(bid + "_feat_guar", False)
+            if guar:
+                hero_id = feat_ssr
+                self.player.gacha_pity[bid + "_feat_guar"] = False
+            else:
+                others = [h for h in banner["pool"]["SSR"] if h != feat_ssr]
+                if random.random() < 0.5 or not others:
+                    hero_id = feat_ssr
+                else:
+                    hero_id = random.choice(others)
+                    # lost the 50/50 -> next SSR on this banner is the featured one
+                    self.player.gacha_pity[bid + "_feat_guar"] = True
         elif rarity == "SR" and feat_sr and feat_sr in banner["pool"]["SR"]:
             others = [h for h in banner["pool"]["SR"] if h != feat_sr]
             hero_id = feat_sr if (random.random() < 0.5 or not others) else random.choice(others)

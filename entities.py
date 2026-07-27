@@ -305,7 +305,7 @@ class Hero(Combatant):
             # evolution-tree stat bonuses
             if key == "hp":   base *= (1 + eb.get("hp_pct", 0))
             if key == "atk":  base *= (1 + eb.get("atk_pct", 0))
-            if key == "defn": base *= (1 + eb.get("def_pct", 0))
+            if key == "defn": base *= (1 + eb.get("defn_pct", 0))
             if key == "mp":   base *= (1 + eb.get("energy_pct", 0))
             # set-bus percentage bonuses (applied after role/evo mults)
             if key == "hp":   base *= (1 + sb.get("hp_pct", 0))
@@ -328,11 +328,11 @@ class Hero(Combatant):
         self.crit_chance += sb.get("crit", 0)
         self.crit_dmg_bonus += sb.get("crit_dmg", 0)
         # HSR-style energy gauge (replaces MP as the action resource)
-        # energy pool can be enlarged by the tree
-        self.max_energy = int(D.ENERGY_MAX * (1 + eb.get("energy_pct", 0)))
+        # energy pool can be enlarged by the tree and by equipment set bonuses
+        self.max_energy = int(D.ENERGY_MAX * (1 + eb.get("energy_pct", 0) + sb.get("energy_pct", 0)))
         self.energy = min(D.ENERGY_START, self.max_energy)
-        # skill cost multiplier from the tree (e.g. Overflow: 0.85)
-        self.skill_cost_mult = eb.get("skill_cost_mult", 1.0)
+        # skill cost multiplier from the tree and set bonus (e.g. Overflow: 0.85)
+        self.skill_cost_mult = eb.get("skill_cost_mult", 1.0) * sb.get("skill_cost_mult", 1.0)
         # LoL-style passive (always-on combat modifier) for this hero. The
         # evolution tree can grant an extra passive; we pick the tree's if any,
         # else the hero's base passive.
@@ -379,7 +379,7 @@ class Hero(Combatant):
             base *= D.role_mult(self.role, key)
             if key == "hp":   base *= (1 + eb.get("hp_pct", 0))
             if key == "atk":  base *= (1 + eb.get("atk_pct", 0))
-            if key == "defn": base *= (1 + eb.get("def_pct", 0))
+            if key == "defn": base *= (1 + eb.get("defn_pct", 0))
             if key == "mp":   base *= (1 + eb.get("energy_pct", 0))
             if key == "hp":   base *= (1 + sb.get("hp_pct", 0))
             if key == "atk":  base *= (1 + sb.get("atk_pct", 0))
@@ -387,19 +387,22 @@ class Hero(Combatant):
             return max(1, int(base * asc_mul * evolve_mul))
         self.max_hp = stat("hp"); self.atk = stat("atk"); self.defn = stat("defn")
         self.spd = stat("spd"); self.max_mp = stat("mp")
-        self.max_energy = int(D.ENERGY_MAX * (1 + eb.get("energy_pct", 0)))
+        self.max_energy = int(D.ENERGY_MAX * (1 + eb.get("energy_pct", 0) + sb.get("energy_pct", 0)))
         self.hp = self.max_hp
         self.mp = self.max_mp
-        # crit bonuses from the tree
+        # crit bonuses from the tree and equipment set bonus
         self.crit_chance = (D.BASE_CRIT_CHANCE + 0.02 * self.ascension
-                            + 0.01 * self.evolve + eb.get("crit", 0))
+                            + 0.01 * self.evolve + eb.get("crit", 0) + sb.get("crit", 0))
         if self.role == "hunt":
             self.crit_chance += 0.04
-        self.crit_dmg_bonus = eb.get("crit_dmg", 0)
-        self.skill_cost_mult = eb.get("skill_cost_mult", 1.0)
+        self.crit_dmg_bonus = eb.get("crit_dmg", 0) + sb.get("crit_dmg", 0)
+        self.skill_cost_mult = eb.get("skill_cost_mult", 1.0) * sb.get("skill_cost_mult", 1.0)
 
     def power(self):
-        return self.max_hp + self.atk * 8 + self.defn * 5 + self.spd * 3 + self.max_mp * 2
+        # Note: max_mp and spd are not currently wired into combat (mp does not
+        # feed energy, spd does not affect move/atk speed), so they are excluded
+        # from Team Power to avoid inflating the displayed value with dead stats.
+        return self.max_hp + self.atk * 8 + self.defn * 5 + self.spd * 3
 
     def skill_energy_cost(self, skill_id):
         cost = D.skill_energy_cost(D.SKILLS_DB[skill_id])
@@ -445,7 +448,10 @@ def _compute_evo_bonus(hero_def, node_ids):
     """Sum the stat bonuses + passive from the unlocked tree nodes."""
     tree = D.hero_evo_tree(hero_def)
     by_id = {n["id"]: n for n in tree}
-    bonus = dict(hp_pct=0, atk_pct=0, def_pct=0, energy_pct=0,
+    # base passive id for this hero — used to detect dead-upgrade nodes whose
+    # passive == the hero's base passive (a pure no-op without a consolation).
+    base_pid = D.HERO_PASSIVES.get(hero_def.get("id"))
+    bonus = dict(hp_pct=0, atk_pct=0, defn_pct=0, energy_pct=0,
                  crit=0, crit_dmg=0, skill_cost_mult=1.0)
     passive = None
     for nid in node_ids:
@@ -454,13 +460,23 @@ def _compute_evo_bonus(hero_def, node_ids):
             continue
         st = n.get("stats", {})
         for k, v in st.items():
-            if k in bonus:
-                if k == "skill_cost_mult":
-                    bonus[k] *= v   # multiplicative
+            # normalize legacy def_pct -> defn_pct to match the stat key, so
+            # the evo tree (def_pct) and the set handler (defn_pct) share one key
+            nk = "defn_pct" if k == "def_pct" else k
+            if nk in bonus:
+                if nk == "skill_cost_mult":
+                    bonus[nk] *= v   # multiplicative
                 else:
-                    bonus[k] += v
-        if n.get("passive"):
-            passive = n["passive"]
+                    bonus[nk] += v
+        # passive: a node whose passive == the hero's base passive is a dead
+        # upgrade (it grants nothing). Fold it into a +5% ATK consolation so the
+        # shard is never wasted; otherwise adopt the tree's passive.
+        npid = n.get("passive")
+        if npid:
+            if npid == base_pid:
+                bonus["atk_pct"] = bonus.get("atk_pct", 0) + 0.05
+            else:
+                passive = npid
     bonus["passive"] = passive
     return bonus
 
@@ -473,7 +489,7 @@ class Enemy(Combatant):
         self.level = level
         # HP scales fully with level; ATK/DEF scale more gently so higher
         # levels are tankier but not instantly lethal.
-        scale = 1 + 0.20 * (level - 1)
+        scale = 1 + 0.12 * (level - 1)
         atk_scale = 1 + 0.10 * (level - 1)
         hp = int(d["hp"] * scale)
         atk = int(d["atk"] * atk_scale)

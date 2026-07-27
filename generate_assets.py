@@ -173,10 +173,12 @@ def add_blit(surf, src, pos):
 # ---------------------------------------------------------------------------
 # Chibi character sprite
 # ---------------------------------------------------------------------------
-HAIR_STYLES = ["spiky", "long", "short", "twin", "hood"]
+HAIR_STYLES = ["spiky", "long", "short", "twin", "hood",
+               "ponytail", "bob", "curly", "mohawk", "braided"]
 
 def draw_chibi(surf, element, body_color, hair_color, accent,
-               weapon="sword", hair_style="spiky", eye_color=(40, 40, 60)):
+               weapon="sword", hair_style="spiky", eye_color=(40, 40, 60),
+               expression="neutral", eye_shape="round", skin=None):
     """Draw a polished chibi hero centered on surf (256x256)."""
     cx, cy = 128, 150
     outline = (30, 26, 40)
@@ -187,9 +189,13 @@ def draw_chibi(surf, element, body_color, hair_color, accent,
     accent_light = shade(accent, 1.25)
     hair_light = shade(hair_color, 1.28)
     hair_dark = shade(hair_color, 0.55)
-    skin = (255, 226, 200)
-    skin_light = (255, 240, 222)
-    skin_dark = (224, 178, 158)
+    if skin is None:
+        skin = (255, 226, 200)
+        skin_light = (255, 240, 222)
+        skin_dark = (224, 178, 158)
+    else:
+        skin_light = shade(skin, 1.08)
+        skin_dark = shade(skin, 0.78)
     main_el, light_el, dark_el = ELEMENT_COLORS[element]
 
     # ground shadow (soft, elongated)
@@ -202,10 +208,12 @@ def draw_chibi(surf, element, body_color, hair_color, accent,
     surf.blit(aura, (cx - 100, 62))
     aura2 = soft_glow(144, 144, light_el, 64, center=(72, 72), radius=72, falloff=1.35)
     surf.blit(aura2, (cx - 72, 94))
-    aura3 = soft_glow(96, 96, (255, 255, 255), 35, center=(48, 48), radius=48, falloff=1.2)
+    aura3 = soft_glow(96, 96, light_el, 45, center=(48, 48), radius=48, falloff=1.2)
     surf.blit(aura3, (cx - 48, 114))
     # element-specific particles in the aura (fire=embers, water=bubbles, wind=leaves, light=sparkles, dark=motes)
-    rng = random.Random(hash((element, "aura_particles")))
+    # NOTE: use a stable, salt-free hash so the particle layout is reproducible
+    # across runs (Python's built-in hash() is salted per process via PYTHONHASHSEED).
+    rng = random.Random(sum(ord(c) for c in element) * 1000003 + 17)
     for _ in range(6 if element in ("fire", "light") else (5 if element == "dark" else 4)):
         px = cx + rng.uniform(-50, 50)
         py = cy + rng.uniform(-30, 60)
@@ -332,8 +340,8 @@ def draw_chibi(surf, element, body_color, hair_color, accent,
 
     # head (skin with soft spherical shading + subsurface-approximation rim)
     head_r = 46
-    # base skin with warm offset lighting from upper-left
-    headg = radial_grad_surf(head_r * 2, head_r * 2, (255, 240, 225), (222, 175, 155),
+    # base skin with warm offset lighting from upper-left (per-hero skin tone)
+    headg = radial_grad_surf(head_r * 2, head_r * 2, skin_light, skin_dark,
                              center=(head_r - 18, head_r - 18), radius=head_r + 3)
     clip_to_circle(headg, (head_r, head_r), head_r)
     surf.blit(headg, (cx - head_r, 110 - head_r))
@@ -364,8 +372,8 @@ def draw_chibi(surf, element, body_color, hair_color, accent,
     # hair
     draw_hair(surf, cx, 110, head_r, hair_color, outline, hair_style, hair_light)
 
-    # eyes
-    draw_eyes(surf, cx, 112, eye_color, outline, element)
+    # eyes (per-hero expression + eye shape for facial variety)
+    draw_eyes(surf, cx, 112, eye_color, outline, element, expression, eye_shape)
 
     # weapon
     draw_weapon(surf, cx, cy, weapon, accent, outline, element)
@@ -506,58 +514,203 @@ def draw_hair(surf, cx, cy, r, color, outline, style, highlight=None):
         hood_shadow = pygame.Surface((2 * r, r), pygame.SRCALPHA)
         pygame.draw.ellipse(hood_shadow, (0, 0, 0, 100), hood_shadow.get_rect())
         surf.blit(hood_shadow, (cx - r, cy - 10))
+    elif style == "ponytail":
+        # base cap + a single tail high on the back of the head
+        pygame.draw.circle(surf, color, (cx, cy - 6), r)
+        cap = radial_grad_surf(2 * r, 2 * r, highlight, dark_col,
+                               center=(r - 14, r - 14), radius=r + 5)
+        clip_to_circle(cap, (r, r), r)
+        surf.blit(cap, (cx - r, cy - 6))
+        pygame.draw.arc(surf, (*spec_col, 150), (cx - r, cy - r - 6, 2 * r, int(r * 0.7)), 0.4, 2.0, 4)
+        # the tail (a rounded strand hanging from the top-back)
+        tx = cx + r - 6
+        ty = cy - r
+        tailg = vgrad_surf(22, 64, highlight, dark_col)
+        m = pygame.Surface((22, 64), pygame.SRCALPHA)
+        pygame.draw.rect(m, (255, 255, 255, 255), m.get_rect(), border_radius=11)
+        tailg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(tailg, (tx - 11, ty))
+        pygame.draw.rect(surf, outline, (tx - 11, ty, 22, 64), 3, border_radius=11)
+        # hair tie band
+        pygame.draw.rect(surf, shadow_col, (tx - 13, ty + 4, 26, 8), border_radius=4)
+        pygame.draw.rect(surf, highlight, (tx - 12, ty + 5, 24, 3), border_radius=2)
+        pygame.draw.circle(surf, outline, (cx, cy - 6), r, 3)
+    elif style == "bob":
+        # rounded cap that frames the face, chin-length blunt cut
+        pygame.draw.circle(surf, color, (cx, cy - 4), r + 2)
+        pygame.draw.rect(surf, color, (cx - r - 2, cy - 6, 2 * r + 4, 40), border_radius=20)
+        bg = diag_grad_surf(2 * r + 4, 40, highlight, dark_col)
+        m = pygame.Surface((2 * r + 4, 40), pygame.SRCALPHA)
+        pygame.draw.rect(m, (255, 255, 255, 255), m.get_rect(), border_radius=20)
+        bg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(bg, (cx - r - 2, cy - 6))
+        spec = pygame.Surface((2 * r, int(r * 0.4)), pygame.SRCALPHA)
+        pygame.draw.arc(spec, (*spec_col, 150), (4, 2, 2 * r - 8, int(r * 0.4) - 4), 0.5, 2.0, 4)
+        surf.blit(spec, (cx - r, cy - r))
+        # blunt-cut bottom edge highlight
+        pygame.draw.line(surf, (*spec_col, 120), (cx - r, cy + 32), (cx + r, cy + 32), 2)
+        for dx in (-r + 2, r - 4):
+            s = pygame.Surface((3, 36), pygame.SRCALPHA)
+            pygame.draw.line(s, (*shade(color, 0.85), 70), (1, 0), (1, 36), 2)
+            surf.blit(s, (cx + dx, cy - 4))
+        pygame.draw.circle(surf, outline, (cx, cy - 4), r + 2, 3)
+        pygame.draw.rect(surf, outline, (cx - r - 2, cy - 6, 2 * r + 4, 40), 3, border_radius=20)
+    elif style == "curly":
+        # cloud-like rounded silhouette with curl bumps
+        pygame.draw.circle(surf, color, (cx, cy - 4), r + 2)
+        for bx, by, br in ((-r + 2, -r + 4, 14), (r - 4, -r + 6, 13),
+                           (-r + 14, -r - 4, 12), (r - 14, -r - 2, 13),
+                           (0, -r - 6, 13)):
+            pygame.draw.circle(surf, color, (cx + bx, cy + by), br)
+        cap = radial_grad_surf(2 * r, 2 * r, highlight, dark_col,
+                               center=(r - 14, r - 14), radius=r + 6)
+        clip_to_circle(cap, (r, r), r)
+        surf.blit(cap, (cx - r, cy - 4))
+        pygame.draw.arc(surf, (*spec_col, 140), (cx - r, cy - r - 4, 2 * r, int(r * 0.6)), 0.4, 2.0, 4)
+        pygame.draw.circle(surf, outline, (cx, cy - 4), r + 2, 3)
+    elif style == "mohawk":
+        # shaved sides + central spiky ridge
+        pygame.draw.circle(surf, shade(color, 0.72), (cx, cy - 2), r - 6)
+        pts = [(cx - 12, cy - 4)]
+        for i in range(7):
+            x = cx - 12 + i * 4
+            pts.append((x, cy - r - 4 if i % 2 == 0 else cy - 8))
+        pts.append((cx + 12, cy - 4))
+        pygame.draw.polygon(surf, color, pts)
+        # lighter band down the center of the ridge
+        pygame.draw.polygon(surf, shade(color, 1.25), [(p[0], p[1] + 1) for p in pts])
+        for i in range(7):
+            x = cx - 12 + i * 4
+            if i % 2 == 0:
+                pygame.draw.line(surf, (*spec_col, 170), (x, cy - r - 4), (x, cy - 6), 1)
+        pygame.draw.polygon(surf, outline, pts, 2)
+        pygame.draw.circle(surf, outline, (cx, cy - 2), r - 6, 2)
+    elif style == "braided":
+        # base cap + two braids hanging on the sides
+        pygame.draw.circle(surf, color, (cx, cy - 6), r)
+        cap = radial_grad_surf(2 * r, 2 * r, highlight, dark_col,
+                               center=(r - 14, r - 14), radius=r + 5)
+        clip_to_circle(cap, (r, r), r)
+        surf.blit(cap, (cx - r, cy - 6))
+        pygame.draw.arc(surf, (*spec_col, 150), (cx - r, cy - r - 4, 2 * r, int(r * 0.6)), 0.4, 2.0, 4)
+        pygame.draw.circle(surf, outline, (cx, cy - 6), r, 3)
+        # two side braids: a stack of rounded segments
+        for sx in (-1, 1):
+            bx = cx + sx * (r - 2)
+            for seg in range(4):
+                by = cy - 2 + seg * 12
+                pygame.draw.circle(surf, color, (bx, by), 8)
+                pygame.draw.line(surf, shade(color, 0.6), (bx - 7, by), (bx + 7, by), 2)
+            # tail tie + tip
+            pygame.draw.circle(surf, shadow_col, (bx, cy - 4), 6)
+            pygame.draw.circle(surf, highlight, (bx - 2, cy - 6), 3)
+            pygame.draw.circle(surf, outline, (bx, cy - 4), 6, 2)
 
-def draw_eyes(surf, cx, cy, color, outline, element):
-    # Premium anime eyes with upper eyelid shadow, bottom lid, catchlights + lashes
+def draw_eyes(surf, cx, cy, color, outline, element, expression="neutral", eye_shape="round"):
+    # Premium anime eyes with upper eyelid shadow, bottom lid, catchlights + lashes.
+    # eye_shape varies the eye geometry (round/sharp/wide/half) so heroes of the
+    # same element no longer share identical eyes; expression drives eyebrows + mouth.
     _, light_el, _ = ELEMENT_COLORS[element]
+    if eye_shape == "sharp":
+        sw, sh, iw, ih, pw, ph, lid_off = 14, 18, 12, 14, 7, 9, -2
+    elif eye_shape == "wide":
+        sw, sh, iw, ih, pw, ph, lid_off = 20, 22, 16, 18, 9, 11, 1
+    elif eye_shape == "half":  # hooded
+        sw, sh, iw, ih, pw, ph, lid_off = 18, 12, 14, 12, 8, 9, 3
+    else:  # round (default)
+        sw, sh, iw, ih, pw, ph, lid_off = 18, 20, 14, 16, 8, 10, 0
     for sx in (-14, 14):
-        # white sclera with soft shading + subtle blue tint at top (sky reflection)
-        scl = radial_grad_surf(18, 20, (252, 252, 255), (218, 222, 235),
-                               center=(7, 5), radius=11)
-        m = pygame.Surface((18, 20), pygame.SRCALPHA)
+        # white sclera with soft shading
+        scl = radial_grad_surf(sw, sh, (252, 252, 255), (218, 222, 235),
+                               center=(sw // 2 - 2, sh // 2 - 3), radius=max(8, sw // 2))
+        m = pygame.Surface((sw, sh), pygame.SRCALPHA)
         pygame.draw.ellipse(m, (255, 255, 255, 255), m.get_rect())
         scl.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-        surf.blit(scl, (cx + sx - 9, cy - 8))
+        surf.blit(scl, (cx + sx - sw // 2, cy - sh // 2))
         # upper eyelid shadow (dark gradient at top of eye)
-        lid_shadow = pygame.Surface((18, 8), pygame.SRCALPHA)
+        lid_shadow = pygame.Surface((sw, 8), pygame.SRCALPHA)
         for yy in range(8):
             a = int(80 * (1 - yy / 8))
-            pygame.draw.line(lid_shadow, (0, 0, 0, a), (0, yy), (18, yy))
-        surf.blit(lid_shadow, (cx + sx - 9, cy - 8))
-        # iris (radial: bright center -> dark edge, element-tinted, with iris texture rings)
-        iris = radial_grad_surf(14, 16, shade(light_el, 1.3), shade(color, 0.4),
-                                center=(6, 4), radius=9)
-        m2 = pygame.Surface((14, 16), pygame.SRCALPHA)
+            pygame.draw.line(lid_shadow, (0, 0, 0, a), (0, yy), (sw, yy))
+        surf.blit(lid_shadow, (cx + sx - sw // 2, cy - sh // 2))
+        # iris: the hero's personal eye color drives the bright center; the
+        # element shows only as a faint outer rim (was: element-tinted center).
+        iris = radial_grad_surf(iw, ih, shade(color, 1.25), shade(color, 0.4),
+                                center=(iw // 2 - 1, ih // 2 - 2), radius=max(6, iw // 2))
+        m2 = pygame.Surface((iw, ih), pygame.SRCALPHA)
         pygame.draw.ellipse(m2, (255, 255, 255, 255), m2.get_rect())
         iris.blit(m2, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-        surf.blit(iris, (cx + sx - 7, cy - 6))
-        # iris texture rings (subtle concentric arcs)
+        surf.blit(iris, (cx + sx - iw // 2, cy - ih // 2 + lid_off))
+        # faint element-tinted outer ring (keeps the elemental theme)
+        pygame.draw.ellipse(surf, shade(light_el, 0.9),
+                            (cx + sx - iw // 2 - 1, cy - ih // 2 + lid_off - 1, iw + 2, ih + 2), 1)
+        # iris texture rings (subtle concentric arcs, kept within the iris)
         for ir in (3, 5):
-            pygame.draw.ellipse(surf, shade(color, 0.35), (cx + sx - ir, cy - 2 - ir // 2, ir * 2, ir * 2 + 2), 1)
-        # pupil (dark, slightly larger)
-        pygame.draw.ellipse(surf, (10, 8, 18), (cx + sx - 4, cy - 3, 8, 10))
+            if ir * 2 + 2 <= iw:
+                pygame.draw.ellipse(surf, shade(color, 0.35),
+                                    (cx + sx - ir, cy - 2 - ir // 2 + lid_off, ir * 2, ir * 2 + 2), 1)
+        # pupil (dark)
+        pygame.draw.ellipse(surf, (10, 8, 18),
+                            (cx + sx - pw // 2, cy - ph // 2 + lid_off, pw, ph))
         # bottom eyelid line
-        pygame.draw.arc(surf, shade(outline, 0.7), (cx + sx - 10, cy - 4, 20, 12), 0.6, 2.5, 1)
+        pygame.draw.arc(surf, shade(outline, 0.7),
+                        (cx + sx - sw // 2 - 1, cy - 4 + lid_off, sw + 2, 12), 0.6, 2.5, 1)
         # upper eyelid thick line + lashes
-        pygame.draw.arc(surf, outline, (cx + sx - 9, cy - 9, 18, 8), 3.1, 5.9, 3)
+        pygame.draw.arc(surf, outline,
+                        (cx + sx - sw // 2, cy - 9 + lid_off, sw, 8), 3.1, 5.9, 3)
         # eyelash strokes on outer corner
         for la in (0.3, 0.5, 0.7):
             lx = cx + sx + 7 + la * 4
-            ly = cy - 7 - la * 6
+            ly = cy - 7 - la * 6 + lid_off
             pygame.draw.line(surf, outline, (int(lx), int(ly)), (int(lx - 4), int(ly + 4)), 1)
-        # big catchlight (upper-left, the "anime shine")
-        pygame.draw.circle(surf, (255, 255, 255), (cx + sx - 4, cy - 5), 4)
-        pygame.draw.circle(surf, (255, 255, 255), (cx + sx + 3, cy + 2), 2)
-        # tiny third catchlight (depth spark)
-        pygame.draw.circle(surf, (255, 255, 255), (cx + sx + 1, cy - 3), 1)
-    # eyebrows (soft start, sharp end)
-    pygame.draw.line(surf, outline, (cx - 20, cy - 13), (cx - 7, cy - 15), 3)
-    pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 13), (cx - 9, cy - 15), 1)
-    pygame.draw.line(surf, outline, (cx + 7, cy - 15), (cx + 20, cy - 13), 3)
-    pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 15), (cx + 18, cy - 13), 1)
-    # mouth (soft, with a tiny highlight)
-    pygame.draw.arc(surf, (175, 65, 75), (cx - 7, cy + 16, 14, 9), 3.4, 6.0, 2)
-    pygame.draw.arc(surf, (255, 180, 180), (cx - 5, cy + 17, 10, 4), 3.5, 5.5, 1)
+        # catchlights vary by eye_shape (breaks the identical-glare look)
+        if eye_shape == "sharp":
+            pygame.draw.circle(surf, (255, 255, 255), (cx + sx - 4, cy - 5 + lid_off), 3)
+        elif eye_shape == "wide":
+            pygame.draw.circle(surf, (255, 255, 255), (cx + sx - 4, cy - 5 + lid_off), 5)
+            pygame.draw.circle(surf, (255, 255, 255), (cx + sx + 3, cy + 2 + lid_off), 3)
+        else:
+            pygame.draw.circle(surf, (255, 255, 255), (cx + sx - 4, cy - 5 + lid_off), 4)
+            pygame.draw.circle(surf, (255, 255, 255), (cx + sx + 3, cy + 2 + lid_off), 2)
+            pygame.draw.circle(surf, (255, 255, 255), (cx + sx + 1, cy - 3 + lid_off), 1)
+    # eyebrows + mouth vary by expression (the most memorable part of a face)
+    if expression == "fierce":
+        # angled up-outward eyebrows + slightly open mouth
+        pygame.draw.line(surf, outline, (cx - 20, cy - 16), (cx - 7, cy - 12), 3)
+        pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 16), (cx - 9, cy - 12), 1)
+        pygame.draw.line(surf, outline, (cx + 7, cy - 12), (cx + 20, cy - 16), 3)
+        pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 12), (cx + 18, cy - 16), 1)
+        pygame.draw.arc(surf, (175, 65, 75), (cx - 8, cy + 15, 16, 10), 3.0, 6.2, 2)
+        pygame.draw.arc(surf, (255, 180, 180), (cx - 6, cy + 16, 12, 4), 3.2, 5.6, 1)
+    elif expression == "gentle":
+        # flat eyebrows + small smile
+        pygame.draw.line(surf, outline, (cx - 20, cy - 14), (cx - 7, cy - 14), 3)
+        pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 14), (cx - 9, cy - 14), 1)
+        pygame.draw.line(surf, outline, (cx + 7, cy - 14), (cx + 20, cy - 14), 3)
+        pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 14), (cx + 18, cy - 14), 1)
+        pygame.draw.arc(surf, (175, 65, 75), (cx - 6, cy + 16, 12, 8), 3.6, 5.9, 2)
+        pygame.draw.arc(surf, (255, 180, 180), (cx - 4, cy + 17, 8, 4), 3.7, 5.5, 1)
+    elif expression == "stoic":
+        # straight horizontal eyebrows + tiny straight mouth line
+        pygame.draw.line(surf, outline, (cx - 20, cy - 14), (cx - 7, cy - 14), 3)
+        pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 14), (cx - 9, cy - 14), 1)
+        pygame.draw.line(surf, outline, (cx + 7, cy - 14), (cx + 20, cy - 14), 3)
+        pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 14), (cx + 18, cy - 14), 1)
+        pygame.draw.line(surf, (175, 65, 75), (cx - 4, cy + 18), (cx + 4, cy + 18), 2)
+    elif expression == "sad":
+        # downward eyebrows + downturned mouth
+        pygame.draw.line(surf, outline, (cx - 20, cy - 12), (cx - 7, cy - 16), 3)
+        pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 12), (cx - 9, cy - 16), 1)
+        pygame.draw.line(surf, outline, (cx + 7, cy - 16), (cx + 20, cy - 12), 3)
+        pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 16), (cx + 18, cy - 12), 1)
+        pygame.draw.arc(surf, (175, 65, 75), (cx - 7, cy + 16, 14, 9), 4.6, 6.0, 2)
+    else:  # neutral (current behavior, backward compatible)
+        pygame.draw.line(surf, outline, (cx - 20, cy - 13), (cx - 7, cy - 15), 3)
+        pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 13), (cx - 9, cy - 15), 1)
+        pygame.draw.line(surf, outline, (cx + 7, cy - 15), (cx + 20, cy - 13), 3)
+        pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 15), (cx + 18, cy - 13), 1)
+        pygame.draw.arc(surf, (175, 65, 75), (cx - 7, cy + 16, 14, 9), 3.4, 6.0, 2)
+        pygame.draw.arc(surf, (255, 180, 180), (cx - 5, cy + 17, 10, 4), 3.5, 5.5, 1)
 
 def draw_weapon(surf, cx, cy, weapon, accent, outline, element):
     _, light_el, _ = ELEMENT_COLORS[element]
@@ -2124,7 +2277,8 @@ def draw_element_glyph(surf, cx, cy, element, color):
 # ---------------------------------------------------------------------------
 # Portraits (larger, framed headshots)
 # ---------------------------------------------------------------------------
-def make_portrait(element, body, hair, accent, hair_style, weapon, path, eye=(40, 40, 60)):
+def make_portrait(element, body, hair, accent, hair_style, weapon, path,
+                  eye=(40, 40, 60), expression="neutral", eye_shape="round", skin=None):
     s = pygame.Surface((512, 512), pygame.SRCALPHA)
     main, light, dark = ELEMENT_COLORS[element]
     # bg: rich diagonal gradient (deep dark top-left -> element-tinted bottom-right)
@@ -2154,7 +2308,8 @@ def make_portrait(element, body, hair, accent, hair_style, weapon, path, eye=(40
         pygame.draw.arc(s, (*light, 60), (wx, wy, 120, 60), 0.3, 2.5, 2)
     # big character (scaled up, soft) — rendered on an opaque-free surface
     big = pygame.Surface((256, 256), pygame.SRCALPHA)
-    draw_chibi(big, element, body, hair, accent, weapon, hair_style, eye)
+    draw_chibi(big, element, body, hair, accent, weapon, hair_style, eye,
+               expression, eye_shape, skin)
     big = pygame.transform.smoothscale(big, (470, 470))
     # subtle ground glow under the character
     gground = soft_glow(360, 60, light, 70, center=(180, 30), radius=180, falloff=1.5)
@@ -2180,7 +2335,10 @@ def make_portrait(element, body, hair, accent, hair_style, weapon, path, eye=(40
 # Master build
 # ---------------------------------------------------------------------------
 HEROES = [
-    # name, element, weapon, hair_style, hair_color, body_color, accent, eye
+    # name, element, weapon, hair_style, hair_color, body_color, accent
+    # (per-hero eye color / expression / eye shape / skin tone live in the
+    #  HERO_EYE_COLORS / HERO_EXPRESSIONS / HERO_EYE_SHAPES / HERO_SKIN_TONES
+    #  dicts below, so this tuple stays 7 fields and existing unpacks work.)
     ("aria",   "light", "sword",  "long",  (250, 230, 180), (240, 230, 250), (220, 180, 60)),
     ("kael",   "fire",  "sword",  "spiky", (200, 60, 40),   (220, 90, 60),    (255, 180, 80)),
     ("mira",   "water", "staff",  "long",  (90, 130, 220),  (120, 180, 230),  (180, 230, 255)),
@@ -2191,24 +2349,64 @@ HEROES = [
     ("thorne", "wind",  "shield", "short", (90, 70, 50),    (120, 100, 80),   (180, 150, 110)),
     ("sera",   "light", "staff",  "long",  (240, 220, 160), (240, 220, 200),  (255, 240, 180)),
     ("rune",   "dark",  "orb",    "spiky", (140, 80, 180),  (90, 60, 130),    (200, 140, 240)),
-    ("blaze",  "fire",  "sword",  "spiky", (220, 100, 40),  (200, 80, 50),    (255, 160, 60)),
+    ("blaze",  "fire",  "sword",  "curly", (220, 100, 40),  (200, 80, 50),    (255, 160, 60)),
     ("nami",   "water", "orb",    "twin",  (120, 180, 220), (140, 200, 230),  (200, 240, 255)),
     ("gale",   "wind",  "bow",    "short", (160, 200, 120), (140, 190, 130),  (200, 240, 160)),
-    ("vex",    "dark",  "dagger", "hood",  (120, 90, 150),  (80, 60, 110),    (180, 140, 220)),
+    ("vex",    "dark",  "dagger", "braided", (120, 90, 150),  (80, 60, 110),    (180, 140, 220)),
     # --- new heroes (Phase B) ---
-    ("ember",  "fire",  "sword",  "spiky", (180, 50, 40),  (200, 80, 60),    (255, 180, 80)),
+    ("ember",  "fire",  "sword",  "mohawk", (180, 50, 40),  (200, 80, 60),    (255, 180, 80)),
     ("tide",   "water", "shield", "short", (90, 150, 220), (120, 180, 220),  (200, 240, 255)),
-    ("zephyra","wind",  "bow",    "twin",  (140, 220, 200), (150, 220, 200),  (220, 250, 230)),
-    ("selene", "light", "sword",  "long",  (250, 240, 200), (240, 230, 200), (255, 220, 120)),
+    ("zephyra","wind",  "bow",    "ponytail", (140, 220, 200), (150, 220, 200),  (220, 250, 230)),
+    ("selene", "light", "sword",  "ponytail", (250, 240, 200), (240, 230, 200), (255, 220, 120)),
     ("nox",    "dark",  "orb",    "hood",  (140, 60, 200),  (90, 50, 130),    (200, 140, 255)),
     ("cinder", "fire",  "sword",  "short", (200, 80, 40),   (190, 90, 60),    (255, 160, 80)),
-    ("mist",   "wind",  "dagger", "twin",  (160, 200, 200), (140, 190, 190),  (220, 250, 240)),
-    ("sol",    "light", "orb",    "long",  (250, 230, 160), (240, 220, 180),  (255, 240, 180)),
+    ("mist",   "wind",  "dagger", "bob",  (160, 200, 200), (140, 190, 190),  (220, 250, 240)),
+    ("sol",    "light", "orb",    "bob",  (250, 230, 160), (240, 220, 180),  (255, 240, 180)),
     # --- new heroes (Phase C) ---
-    ("gaia",  "wind",  "shield", "short", (120, 160, 90),  (110, 150, 90),   (180, 220, 120)),
+    ("gaia",  "wind",  "shield", "bob", (120, 160, 90),  (110, 150, 90),   (180, 220, 120)),
     ("echo",  "water", "orb",    "twin",  (160, 200, 220), (150, 200, 220),  (220, 240, 255)),
     ("raven", "dark",  "dagger", "hood",  (90, 30, 30),    (70, 30, 40),     (200, 60, 80)),
 ]
+
+# Per-hero facial features (keyed by hero name). Together with the new hair
+# styles above, these give each of the 25 heroes a distinct face so heroes of
+# the same element are no longer near-identical clones. (Audit: chibi face
+# variety.) The HEROES tuple stays 7 fields; these are looked up by name in
+# main() so existing 7-field unpacks (e.g. verify_assets.py) keep working.
+HERO_EYE_COLORS = {
+    "aria": (180, 140, 60), "kael": (220, 80, 40), "mira": (120, 200, 230),
+    "zephyr": (120, 200, 120), "luna": (180, 120, 220), "pyra": (240, 120, 50),
+    "lyra": (220, 180, 90), "thorne": (90, 140, 80), "sera": (200, 170, 80),
+    "rune": (160, 90, 210), "blaze": (230, 100, 40), "nami": (100, 180, 240),
+    "gale": (140, 220, 110), "vex": (140, 80, 180), "ember": (210, 60, 50),
+    "tide": (80, 140, 220), "zephyra": (160, 220, 180), "selene": (160, 180, 220),
+    "nox": (120, 70, 200), "cinder": (180, 50, 40), "mist": (180, 220, 200),
+    "sol": (240, 200, 80), "gaia": (100, 170, 90), "echo": (140, 210, 230),
+    "raven": (200, 40, 60),
+}
+HERO_EXPRESSIONS = {
+    "aria": "stoic", "kael": "fierce", "mira": "gentle", "zephyr": "fierce",
+    "luna": "sad", "pyra": "fierce", "lyra": "gentle", "thorne": "stoic",
+    "sera": "gentle", "rune": "stoic", "blaze": "fierce", "nami": "gentle",
+    "gale": "fierce", "vex": "fierce", "ember": "fierce", "tide": "stoic",
+    "zephyra": "gentle", "selene": "stoic", "nox": "stoic", "cinder": "stoic",
+    "mist": "sad", "sol": "gentle", "gaia": "stoic", "echo": "gentle",
+    "raven": "fierce",
+}
+HERO_EYE_SHAPES = {
+    "aria": "half", "kael": "sharp", "mira": "wide", "zephyr": "sharp",
+    "luna": "round", "pyra": "sharp", "lyra": "wide", "thorne": "half",
+    "sera": "wide", "rune": "half", "blaze": "sharp", "nami": "wide",
+    "gale": "sharp", "vex": "sharp", "ember": "sharp", "tide": "half",
+    "zephyra": "wide", "selene": "half", "nox": "half", "cinder": "half",
+    "mist": "round", "sol": "wide", "gaia": "half", "echo": "wide",
+    "raven": "sharp",
+}
+HERO_SKIN_TONES = {
+    "raven": (230, 210, 215), "gaia": (210, 170, 130), "tide": (220, 210, 225),
+    "sol": (255, 215, 170), "luna": (235, 215, 220), "nox": (225, 210, 230),
+    "ember": (235, 200, 170), "cinder": (240, 210, 180),
+}
 
 ENEMIES = [
     ("slime",     "wind",   ((120, 220, 140), (200, 255, 200), (40, 120, 60))),
@@ -2264,11 +2462,18 @@ def main():
     print("Generating Aetheria assets...")
     # characters
     for name, element, weapon, hair_style, hair, body, accent in HEROES:
+        # per-hero facial variety (eye color / expression / eye shape / skin)
+        eye = HERO_EYE_COLORS.get(name, (40, 40, 60))
+        expr = HERO_EXPRESSIONS.get(name, "neutral")
+        eshape = HERO_EYE_SHAPES.get(name, "round")
+        skin = HERO_SKIN_TONES.get(name)
         s = pygame.Surface((256, 256), pygame.SRCALPHA)
-        draw_chibi(s, element, body, hair, accent, weapon, hair_style)
+        draw_chibi(s, element, body, hair, accent, weapon, hair_style,
+                   eye, expr, eshape, skin)
         pygame.image.save(s, os.path.join(ASSET_DIR, "characters", f"{name}.png"))
         make_portrait(element, body, hair, accent, hair_style, weapon,
-                      os.path.join(ASSET_DIR, "portraits", f"{name}.png"))
+                      os.path.join(ASSET_DIR, "portraits", f"{name}.png"),
+                      eye, expr, eshape, skin)
     print(f"  {len(HEROES)} characters + portraits")
 
     # enemies

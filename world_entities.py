@@ -81,15 +81,19 @@ class Camera:
 # Particles
 # ---------------------------------------------------------------------------
 class Particle:
-    __slots__ = ("x", "y", "vx", "vy", "life", "max_life", "color", "size", "grav")
+    __slots__ = ("x", "y", "vx", "vy", "life", "max_life", "color", "size", "grav", "additive")
 
-    def __init__(self, x, y, vx, vy, life, color, size=4, grav=120):
+    def __init__(self, x, y, vx, vy, life, color, size=4, grav=120, additive=False):
         self.x = x; self.y = y
         self.vx = vx; self.vy = vy
         self.life = life; self.max_life = life
         self.color = color
         self.size = size
         self.grav = grav
+        # additive blending makes magical energy (fire/inferno/void) glow and
+        # saturate instead of blending like an opaque physical hit. Set True by
+        # the burst/ring/spark emitters for magic/aoe_magic/ultimate particles.
+        self.additive = additive
 
     def update(self, dt):
         self.life -= dt
@@ -106,7 +110,11 @@ class Particle:
         # alpha by life (reused scratch surface)
         s = scratch(sz * 2, sz * 2)
         pygame.draw.circle(s, (*c, int(220 * a)), (sz, sz), sz)
-        surf.blit(s, (self.x - ox - sz, self.y - oy - sz))
+        if self.additive:
+            surf.blit(s, (self.x - ox - sz, self.y - oy - sz),
+                      special_flags=pygame.BLEND_RGBA_ADD)
+        else:
+            surf.blit(s, (self.x - ox - sz, self.y - oy - sz))
 
 
 class Particles:
@@ -122,42 +130,42 @@ class Particles:
         """Scale a particle count by the quality setting (always >= 1)."""
         return max(1, int(n * self.quality))
 
-    def burst(self, x, y, color, n=10, speed=160, size=4, life=0.4, grav=120):
+    def burst(self, x, y, color, n=10, speed=160, size=4, life=0.4, grav=120, additive=False):
         n = self._qn(n)
         for _ in range(n):
             ang = random.random() * math.tau
             sp = speed * (0.4 + random.random() * 0.8)
             self.list.append(Particle(x, y, math.cos(ang) * sp, math.sin(ang) * sp,
                                       life * (0.7 + random.random() * 0.6),
-                                      color, size, grav))
+                                      color, size, grav, additive))
         self._trim()
 
-    def trail(self, x, y, color, n=4):
+    def trail(self, x, y, color, n=4, additive=False):
         n = self._qn(n)
         for _ in range(n):
             self.list.append(Particle(x + random.uniform(-4, 4), y + random.uniform(-4, 4),
                                       random.uniform(-20, 20), random.uniform(-20, 20),
-                                      0.3, color, 3, 0))
+                                      0.3, color, 3, 0, additive))
         self._trim()
 
-    def ring(self, x, y, color, n=24, speed=300, size=5, life=0.5):
+    def ring(self, x, y, color, n=24, speed=300, size=5, life=0.5, additive=False):
         """An expanding ring of particles — great for shockwaves/impacts."""
         n = self._qn(n)
         for i in range(n):
             ang = i / n * math.tau
             sp = speed * (0.9 + random.random() * 0.2)
             self.list.append(Particle(x, y, math.cos(ang) * sp, math.sin(ang) * sp,
-                                      life, color, size, 0))
+                                      life, color, size, 0, additive))
         self._trim()
 
-    def spark(self, x, y, color, n=8, speed=260, size=4, life=0.3):
+    def spark(self, x, y, color, n=8, speed=260, size=4, life=0.3, additive=False):
         """Streaky sparks for melee hits — biased outward with a little spread."""
         n = self._qn(n)
         for _ in range(n):
             ang = random.random() * math.tau
             sp = speed * (0.6 + random.random() * 0.8)
             self.list.append(Particle(x, y, math.cos(ang) * sp, math.sin(ang) * sp,
-                                      life, color, size, 60))
+                                      life, color, size, 60, additive))
         self._trim()
 
     def _trim(self):
@@ -353,7 +361,11 @@ class WorldCharacter:
 
     def spend_ultimate(self):
         self.hero.energy = 0
-        self.ult_cd = 1.0
+        # ult cooldown scales with the ult's cost tier so heavier ults (e.g.
+        # death_coil cost 9) cool slightly longer than light ones (cost 8) —
+        # this gives the per-ult "cost" field in the data sheet real meaning,
+        # since every ult otherwise costs the full energy bar + a flat cd.
+        self.ult_cd = 1.0 + D.SKILLS_DB[self.hero.ultimate].get("cost", 8) * 0.05
 
     def take_damage(self, amount, src_x=0, src_y=0, is_melee=False):
         """Apply incoming damage to this hero. Always returns a 2-tuple
@@ -680,7 +692,7 @@ class WorldEnemy:
         self.atk_cd = 1.0
         self.roam_target = (x, y)
         self.roam_t = 0.0
-        self.aggro_range = 320 if not is_boss else 460
+        self.aggro_range = (240 + d.get("spd", 10) * 10) if not is_boss else 460
         self.atk_range = 50 if not is_boss else 70
         # world speed is derived from the data-sheet spd so stat differences are
         # felt (a slime spd=6 waddles, a harpy spd=18 darts) — otherwise every
@@ -710,6 +722,10 @@ class WorldEnemy:
         self._boss_pattern = None
         self._boss_pat_t = 0.0
         self._boss_charge_target = (0, 0)
+        # secondary skill cooldown: non-boss enemies with a secondary skill
+        # (fire_bolt/dark_curse/etc.) cast it on this slower timer so the
+        # data sheet's per-enemy skill list is actually used in the open world.
+        self.atk_cd2 = 0.0
         # animation
         self.walk_t = 0.0
         self.idle_t = random.random() * math.tau
@@ -724,8 +740,9 @@ class WorldEnemy:
             self._sprite = None
         self._sprite_face = 1
 
-        # weapon style for ranged
-        self.ranged = self.id in ("bat", "imp", "harpy", "wraith", "hydra", "frosttitan")
+        # weapon style for ranged (goblin is a short-range kiter that throws
+        # fire_bolt — distinct from the plain melee chaser archetype)
+        self.ranged = self.id in ("bat", "imp", "harpy", "wraith", "hydra", "frosttitan", "goblin")
 
     @property
     def element(self):
@@ -740,6 +757,15 @@ class WorldEnemy:
         self.hit_flash = 0.2
         self.state = "hurt"
         self.state_t = 0.2
+        # HSR-style toughness: shave the toughness bar and, if this hit breaks
+        # it, freeze the enemy briefly (reuses the existing _react_stun path the
+        # scene already reads). The break is flagged so the scene can fire a
+        # bonus-damage window + particle burst (see _on_enemy_event).
+        if self.enemy.has_toughness() and not self.enemy.broken:
+            broke = self.enemy.damage_toughness(dmg)
+            if broke:
+                self._react_stun = max(self._react_stun, 1.2)
+                self._broke_flag = True
         dx = self.x - src_x
         dy = self.y - src_y
         d = math.hypot(dx, dy) or 1
@@ -763,6 +789,7 @@ class WorldEnemy:
         self.hit_flash = max(0, self.hit_flash - dt)
         self.invuln_t = max(0, self.invuln_t - dt)
         self.atk_cd = max(0, self.atk_cd - dt)
+        self.atk_cd2 = max(0, self.atk_cd2 - dt)
         self.state_t -= dt
         # reaction timers: the element-hit window counts down; a freeze stun
         # skips the enemy's AI while it lasts
@@ -809,14 +836,41 @@ class WorldEnemy:
                 self.state = "idle"
                 self.moving = False
                 return
+            # slime: a slow waddler that telegraphed hop-lunges instead of a flat
+            # chase+strike. It leaps in a predictable, dodgeable arc — the
+            # textbook "kite the blob" starter enemy (distinct from a flat chaser).
+            if self.id == "slime":
+                self.hop_t = getattr(self, "hop_t", 0) - dt
+                if self.hop_t <= 0 and dist < 240:
+                    self.hop_t = 1.6
+                    dx = target.x - self.x; dy = target.y - self.y
+                    dd = math.hypot(dx, dy) or 1
+                    self.x += dx / dd * 70
+                    self.y += dy / dd * 70
+                    self._collide(obstacles)
+                    on_attack("enemy_strike", self)
+                    if math.hypot(target.x - self.x, target.y - self.y) < self.atk_range + 20:
+                        res = target.take_damage(self.enemy.atk * 1.2, self.x, self.y, is_melee=True)
+                        if isinstance(res, tuple) and res[1] > 0:
+                            self.take_damage(res[1], target.x, target.y)
+                    self.atk_cd = 1.6
+                    self.moving = False
+                    return
             # bosses in phase 2+ weave special telegraphed patterns (charge /
             # slam) between their basic strikes, on their own cooldown. The
             # pattern telegraphs first, then resolves in the "pattern" state.
+            # The trigger chance + pattern selection scale with the phase so the
+            # fight visibly escalates (phase 3 favors the newly-unlocked slam).
             if (self.is_boss and self._boss_phase >= 2 and self._boss_pattern is None
                     and self.atk_cd <= 0 and self._boss_pat_t <= 0):
                 patterns = D.boss_patterns(self.id, self._boss_phase)
-                if patterns and random.random() < 0.6:
-                    pat = random.choice(patterns)
+                trigger_p = {1: 0.0, 2: 0.5, 3: 0.75}.get(self._boss_phase, 0.6)
+                if patterns and random.random() < trigger_p:
+                    if self._boss_phase >= 3 and len(patterns) > 1:
+                        # phase 3: favor the newly-unlocked (last) pattern
+                        pat = random.choice(patterns[-1:] + patterns[:-1])
+                    else:
+                        pat = random.choice(patterns)
                     self._boss_pattern = pat
                     self._boss_pat_t = 0.8 if pat == "charge" else 0.6
                     if pat == "charge" and target:
@@ -826,7 +880,14 @@ class WorldEnemy:
                     on_attack("boss_warn", self)
                     self.moving = False
                     return
-            if dist < self.atk_range and self.atk_cd <= 0 and not self.ranged:
+            # wolf: a fast stalker that pounces — a short windup then a long
+            # lunge at atk*1.4 (a real predator archetype, distinct from the blob
+            # and the skirmisher). Only when the basic attack is off cooldown.
+            if self.id == "wolf" and dist < 200 and self.atk_cd <= 0:
+                self.state = "telegraph"
+                self.telegraph_t = 0.22
+                self._pounce = True
+            elif dist < self.atk_range and self.atk_cd <= 0 and not self.ranged:
                 self.state = "telegraph"
                 self.telegraph_t = 0.4
             elif self.ranged and self.atk_cd <= 0 and dist < 360:
@@ -837,8 +898,15 @@ class WorldEnemy:
                 dx = target.x - self.x
                 dy = target.y - self.y
                 d = math.hypot(dx, dy) or 1
-                self.vx = dx / d * self.speed
-                self.vy = dy / d * self.speed
+                # goblin kiter: back off when the hero closes in so it keeps its
+                # distance and throws fire_bolt from range (a skirmisher that
+                # feels distinct from a plain melee chaser).
+                if self.id == "goblin" and dist < 150:
+                    self.vx = -dx / d * self.speed
+                    self.vy = -dy / d * self.speed
+                else:
+                    self.vx = dx / d * self.speed
+                    self.vy = dy / d * self.speed
                 self.x += self.vx * dt
                 self.y += self.vy * dt
                 self.facing = 1 if dx > 0 else -1
@@ -855,23 +923,31 @@ class WorldEnemy:
                                else (2.2 if self._boss_phase < 3 else 1.5))
                 self.state = "aggro"
 
-        # active boss pattern: telegraph then resolve (charge dash / slam burst)
+        # active boss pattern: telegraph then resolve. The charge is a sustained
+        # multi-frame dash along the telegraphed line (so sidestepping is the real
+        # dodge), not a single-frame hop — the boss travels until it reaches (or
+        # overshoots) the locked target, then resolves the hit on overlap.
         if self._boss_pattern is not None:
             self._boss_pat_t -= dt
             if self._boss_pattern == "charge":
                 if self._boss_pat_t <= 0:
-                    # resolve: dash to the locked target at 2.4x speed, then go
-                    # back to aggro. The damage is applied on overlap by the
-                    # scene's _on_enemy_event("boss_charge", ...) handler.
                     tx, ty = self._boss_charge_target
                     dx, dy = tx - self.x, ty - self.y
-                    d = math.hypot(dx, dy) or 1
-                    self.x += dx / d * self.speed * 2.4 * dt * 6
-                    self.y += dy / d * self.speed * 2.4 * dt * 6
-                    on_attack("boss_charge", self)
-                    self._boss_pattern = None
-                    self.atk_cd = 2.5
-                    self.state = "aggro"
+                    d = math.hypot(dx, dy)
+                    if d is None or d < 12:
+                        # reached the target -> resolve the charge hit
+                        on_attack("boss_charge", self)
+                        self._boss_pattern = None
+                        self.atk_cd = 2.5
+                        self.state = "aggro"
+                    else:
+                        # sustained dash toward the locked target (~300px/s);
+                        # the scene's boss_charge handler damages on overlap.
+                        step = min(d, self.speed * 3.0 * dt)
+                        self.x += dx / d * step
+                        self.y += dy / d * step
+                        self.facing = 1 if dx > 0 else -1
+                        self.moving = True
             elif self._boss_pattern == "slam":
                 if self._boss_pat_t <= 0:
                     # resolve: an expanding burst at the boss's feet; damage in a
@@ -899,13 +975,49 @@ class WorldEnemy:
         if target is None:
             return
         col = D.ELEMENT_COLORS.get(self.element, ((200, 200, 200),))[0]
+        # wolf pounce: a long lunge toward the target then a heavy strike — a
+        # real predator archetype (distinct from the blob and the skirmisher).
+        if getattr(self, "_pounce", False):
+            self._pounce = False
+            dx = target.x - self.x; dy = target.y - self.y
+            d = math.hypot(dx, dy) or 1
+            self.x += dx / d * 90
+            self.y += dy / d * 90
+            on_attack("enemy_strike", self)
+            if math.hypot(target.x - self.x, target.y - self.y) < self.atk_range + 24:
+                res = target.take_damage(self.enemy.atk * 1.4, self.x, self.y, is_melee=True)
+                if isinstance(res, tuple) and res[1] > 0:
+                    self.take_damage(res[1], target.x, target.y)
+            self.atk_cd = 1.8
+            return
+        # secondary skill: non-boss enemies with a skill list cast it on a
+        # slower secondary cooldown so the data sheet's per-enemy skills
+        # (fire_bolt/dark_curse/tidal_wave/frost_nova) are actually used in
+        # the open world, not just by bosses.
+        if (not self.is_boss and self.atk_cd2 <= 0
+                and len(self.enemy.skills) > 1):
+            sid = self.enemy.skills[-1]
+            sk = D.SKILLS_DB.get(sid)
+            if sk and sk.get("type") in ("magic", "aoe_magic", "debuff"):
+                self._cast_skill(sid, sk, target, projectiles, on_attack)
+                self.atk_cd2 = 3.0
+                return
         if self.ranged:
             dx = target.x - self.x
             dy = target.y - self.y
             d = math.hypot(dx, dy) or 1
-            sp = 360
+            # per-enemy ranged params so a harpy shoots fast/short (a quick
+            # skirmisher) and a frosttitan shoots slow/long/heavy (a sniper),
+            # instead of every ranged enemy sharing identical projectile stats.
+            ranged_cfg = {
+                "bat": (420, 1.6, 7, 260), "imp": (340, 1.8, 9, 300),
+                "harpy": (480, 1.4, 6, 320), "wraith": (300, 2.2, 11, 280),
+                "hydra": (260, 2.4, 12, 240), "frosttitan": (220, 2.8, 14, 200),
+                "goblin": (300, 1.4, 8, 320),
+            }
+            sp, life, rad, _reach = ranged_cfg.get(self.id, (360, 2.0, 10, 360))
             p = Projectile(self.x, self.y, dx / d * sp, dy / d * sp,
-                           2.0, 10, col, self.element, self,
+                           life, rad, col, self.element, self,
                            self.enemy.atk, kind="enemy")
             projectiles.append(p)
             on_attack("enemy_shoot", self)
@@ -917,6 +1029,40 @@ class WorldEnemy:
                 # thorns passive reflects a fraction back to this attacker
                 if isinstance(res, tuple) and res[1] > 0:
                     self.take_damage(res[1], target.x, target.y)
+
+    def _cast_skill(self, sid, sk, target, projectiles, on_attack):
+        """Fire a skill-typed projectile from an enemy's data-sheet skill list.
+        magic -> a single fast bolt at sk power; aoe_magic -> a ring of 8
+        projectiles; debuff -> a slow bolt (the scene applies the debuff on
+        hit via the element/skill type)."""
+        col = D.ELEMENT_COLORS.get(sk.get("element", self.element), ((200, 200, 200),))[0]
+        if target is None:
+            return
+        dx = target.x - self.x; dy = target.y - self.y
+        d = math.hypot(dx, dy) or 1
+        power = int(self.enemy.atk * sk.get("power", 1.5))
+        stype = sk.get("type")
+        if stype == "magic":
+            sp = 360
+            projectiles.append(Projectile(self.x, self.y, dx / d * sp, dy / d * sp,
+                                          2.0, 10, col, sk.get("element", self.element),
+                                          self, power, kind="enemy"))
+        elif stype == "aoe_magic":
+            # a ring of 8 projectiles spreading outward (an AoE volley)
+            for i in range(8):
+                ang = i / 8 * math.tau
+                sp = 260
+                projectiles.append(Projectile(self.x, self.y,
+                                              math.cos(ang) * sp, math.sin(ang) * sp,
+                                              1.6, 9, col, sk.get("element", self.element),
+                                              self, power, kind="enemy"))
+        elif stype == "debuff":
+            # a slow bolt that applies a debuff on hit (poison/atk_down/etc.)
+            sp = 220
+            projectiles.append(Projectile(self.x, self.y, dx / d * sp, dy / d * sp,
+                                          2.4, 11, col, sk.get("element", self.element),
+                                          self, power, kind="enemy"))
+        on_attack("enemy_shoot", self)
 
     def _collide(self, obstacles):
         r = pygame.Rect(int(self.x - self.r), int(self.y - self.r), self.r * 2, self.r * 2)
@@ -972,12 +1118,14 @@ class WorldEnemy:
             # fill glow
             pygame.draw.circle(g, (255, 80, 80, a // 3), (gw // 2, gw // 2), self.r)
             surf.blit(g, (x - gw // 2, y - gw // 2))
-        # boss pattern telegraphs: a red line for the charge (toward the locked
-        # target) and an expanding ring for the slam (a shockwave to dodge)
+        # boss pattern telegraphs: a red line for the charge (re-aimed along
+        # the boss's current travel direction so it tracks the sustained dash,
+        # not the stale locked target) and an expanding ring for the slam.
         if self.is_boss and self._boss_pattern is not None:
             if self._boss_pattern == "charge":
-                # a bright red line from the boss to its charge target, pulsing
-                # as the telegraph counts down so it reads as a warning
+                # the line points from the boss to its charge target; while the
+                # dash is in flight the boss moves along this line, so the line
+                # always matches the actual strike path (no stale lie).
                 tx, ty = self._boss_charge_target
                 sx, sy = ox + int(tx), oy + int(ty)
                 prog = 1 - (self._boss_pat_t / 0.8)

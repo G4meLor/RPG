@@ -219,20 +219,59 @@ def synth_boss_intro(sr=22050, dur=1.4):
     return _make_sound(wave * 0.7 * _envelope(n, 0.02, 0.4), sr)
 
 
-def synth_ambience(sr=22050, dur=3.0):
-    """A soft looping ambience bed — filtered noise + a low sine. Pitched by the
-    caller via set_volume; meant to loop on a dedicated channel. The texture is
-    deliberately quiet and low so it sits under the SFX without masking them."""
-    n = int(sr * dur)
-    t = np.linspace(0, dur, n)
-    # a low drone (two close low notes, slightly detuned for a beating shimmer)
-    drone = (np.sin(2 * math.pi * 55 * t) + 0.7 * np.sin(2 * math.pi * 58 * t)) * 0.3
-    # filtered noise: a slow, low-amplitude airy hiss (wind/room tone)
-    noise = (np.random.rand(n) - 0.5)
-    # crude low-pass: cumulative sum + diff smooths the noise into a soft bed
+def _bandpass_noise(n, sr, low, high):
+    """A crude band-passed noise bed: low-pass via cumsum, high-pass via detrend.
+    Returns a normalized float array in roughly -1..1."""
+    noise = np.random.rand(n) - 0.5
+    # low-pass: cumulative sum smooths into a soft bed
     smooth = np.cumsum(noise)
     smooth = smooth - np.linspace(smooth[0], smooth[-1], n)
-    noise = smooth / (np.max(np.abs(smooth)) or 1) * 0.15
+    # high-pass: subtract a slow moving average so only the band between low/high
+    # survives. The amount of smoothing controls the cutoff.
+    if low > 0:
+        win = max(1, int(sr / low))
+        if win < n:
+            # simple moving average via cumulative sum
+            cs = np.cumsum(np.insert(smooth, 0, 0))
+            ma = (cs[win:] - cs[:-win]) / win
+            ma = np.pad(ma, (0, n - len(ma)), mode='edge')
+            smooth = smooth - ma
+    out = smooth / (np.max(np.abs(smooth)) or 1)
+    return out
+
+
+def synth_ambience(sr=22050, dur=3.0, biome="plains"):
+    """A soft looping ambience bed — filtered noise + a low sine, varied per
+    biome so each of the 5 biomes sounds distinct. Meant to loop on a dedicated
+    channel. The texture is deliberately quiet and low so it sits under the SFX
+    without masking them."""
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    # per-biome drone base freq + noise color + amplitude
+    if biome == "cave":
+        base, detune, noise_amp = 45, 47, 0.18
+    elif biome == "castle":
+        base, detune, noise_amp = 60, 62, 0.08
+    elif biome == "void":
+        base, detune, noise_amp = 30, 31, 0.22
+    elif biome == "forest":
+        base, detune, noise_amp = 72, 74, 0.16
+    else:  # plains (default)
+        base, detune, noise_amp = 110, 113, 0.12
+    # a low drone (two close low notes, slightly detuned for a beating shimmer)
+    drone = (np.sin(2 * math.pi * base * t) + 0.7 * np.sin(2 * math.pi * detune * t)) * 0.3
+    # filtered noise: a slow, low-amplitude airy hiss (wind/room tone),
+    # band-shaped per biome so plains is bright wind, cave is resonant room tone.
+    if biome == "cave":
+        noise = _bandpass_noise(n, sr, 200, 800) * noise_amp
+    elif biome == "forest":
+        noise = _bandpass_noise(n, sr, 600, 2000) * noise_amp
+    elif biome == "void":
+        noise = _bandpass_noise(n, sr, 80, 200) * noise_amp
+    elif biome == "castle":
+        noise = _bandpass_noise(n, sr, 300, 900) * noise_amp
+    else:  # plains
+        noise = _bandpass_noise(n, sr, 400, 1500) * noise_amp
     wave = drone + noise
     # a gentle fade in/out at the loop ends so the loop point is seamless
     env = np.ones(n)
@@ -300,7 +339,16 @@ def init():
             "skill": synth_skill(),
             "explosion": synth_explosion(),
             "boss_intro": synth_boss_intro(),
-            "ambience": synth_ambience(),
+            # one cached ambience bed per biome so each of the 5 biomes sounds
+            # distinct (plains/forest/cave/castle/void) and the active bed can be
+            # swapped on map enter without re-synthesizing.
+            "ambience_plains": synth_ambience(biome="plains"),
+            "ambience_forest": synth_ambience(biome="forest"),
+            "ambience_cave": synth_ambience(biome="cave"),
+            "ambience_castle": synth_ambience(biome="castle"),
+            "ambience_void": synth_ambience(biome="void"),
+            # generic alias so older callers (audio.play("ambience")) still work
+            "ambience": synth_ambience(biome="plains"),
             "heartbeat": synth_heartbeat(),
             "perfect": synth_perfect(),
         }
@@ -317,6 +365,14 @@ MASTER_VOLUME = 0.7
 # A dedicated channel for the looping biome ambience so it can be started,
 # swapped, and stopped independently of one-shot SFX. Reserved on init.
 _AMBIENCE_CHANNEL = None
+# The last requested ambience volume (pre-master-scaling), remembered so
+# set_master_volume can re-scale the already-playing loop when the slider moves.
+_AMBIENCE_VOLUME = 0.25
+# The biome currently playing on the ambience channel (set when a bed starts),
+# so re-entry into the same biome updates volume without restarting the loop.
+_AMBIENCE_BIOME = None
+# The biomes we have cached ambience beds for (matches the SOUNDS keys).
+_AMBIENCE_BIOMES = ("plains", "forest", "cave", "castle", "void")
 _HEARTBEAT_T = 0.0   # time until the next heartbeat tick (low-HP warning)
 
 
@@ -329,50 +385,71 @@ def play(name, volume=0.6):
         s.play()
 
 
-def set_ambience(on, volume=0.25):
-    """Start/stop the looping biome ambience on its dedicated channel."""
-    global _AMBIENCE_CHANNEL
+def set_ambience(on, volume=0.25, biome=None):
+    """Start/stop the looping biome ambience on its dedicated channel. When
+    starting, the biome selects which cached bed plays so each of the 5 biomes
+    sounds distinct. Re-entry with the same biome only updates the live volume
+    (it does not restart the loop), so map transitions don't cause a pop/tick."""
+    global _AMBIENCE_CHANNEL, _AMBIENCE_VOLUME, _AMBIENCE_BIOME
     if not INIT_OK:
         return
     # the stop path bypasses the ENABLED gate — stopping is always safe, and
     # set_enabled(False) sets ENABLED=False BEFORE calling set_ambience(False),
     # so gating the stop on ENABLED would never stop the loop (the user toggling
     # sound off would leave the ambience running).
-    if not ENABLED and on:
-        return
-    s = SOUNDS.get("ambience")
-    if not s:
-        return
-    if on:
-        try:
-            if _AMBIENCE_CHANNEL is None:
-                # reserve a channel for the ambience loop
-                _AMBIENCE_CHANNEL = pygame.mixer.Channel(0)
-            s.set_volume(max(0.0, min(1.0, volume * MASTER_VOLUME)))
-            _AMBIENCE_CHANNEL.play(s, loops=-1)
-        except Exception:
-            _AMBIENCE_CHANNEL = None
-    else:
+    if not on:
         try:
             if _AMBIENCE_CHANNEL is not None:
                 _AMBIENCE_CHANNEL.stop()
+                _AMBIENCE_CHANNEL._ambience_key = None
         except Exception:
             pass
+        _AMBIENCE_BIOME = None
+        return
+    if not ENABLED:
+        return
+    # pick the cached bed for this biome (fall back to plains if unknown)
+    key = "ambience_" + (biome if biome in _AMBIENCE_BIOMES else "plains")
+    s = SOUNDS.get(key)
+    if not s:
+        return
+    _AMBIENCE_VOLUME = max(0.0, min(1.0, float(volume)))
+    _AMBIENCE_BIOME = biome if biome in _AMBIENCE_BIOMES else "plains"
+    try:
+        if _AMBIENCE_CHANNEL is None:
+            # reserve a channel for the ambience loop
+            _AMBIENCE_CHANNEL = pygame.mixer.Channel(0)
+        s.set_volume(max(0.0, min(1.0, _AMBIENCE_VOLUME * MASTER_VOLUME)))
+        # only (re)start the loop if the channel is idle OR a different biome bed
+        # is currently playing — re-entry into the same biome just updates volume.
+        current = getattr(_AMBIENCE_CHANNEL, "_ambience_key", None)
+        if not _AMBIENCE_CHANNEL.get_busy() or current != key:
+            _AMBIENCE_CHANNEL.play(s, loops=-1)
+            _AMBIENCE_CHANNEL._ambience_key = key
+    except Exception:
+        _AMBIENCE_CHANNEL = None
 
 
-def heartbeat_tick(dt, low_hp=False, volume=0.4):
-    """Drive the low-HP heartbeat: ticks every 0.8s while the active hero is
-    below 30% HP. Call every frame with dt; pass low_hp=False to silence it."""
+def heartbeat_tick(dt, low_hp=False, volume=0.4, hp_frac=1.0):
+    """Drive the low-HP heartbeat: ticks faster and louder as the active hero
+    gets closer to death. Call every frame with dt; pass low_hp=False to
+    silence it. hp_frac (0..1) scales the interval and volume for tension."""
     global _HEARTBEAT_T
     if not ENABLED or not INIT_OK:
         return
     if not low_hp:
         _HEARTBEAT_T = 0.0
         return
+    # faster (0.5s) and louder as HP drops below 20%; 0.8s/0.4 vol above that.
+    frac = max(0.0, min(1.0, float(hp_frac)))
+    interval = 0.5 if frac <= 0.2 else 0.8
+    # volume grows from the base 0.4 up to ~0.7 as HP approaches 0 within the
+    # low-HP band (0..0.3): at 0.3 it's 0.4, at 0.0 it's ~0.7.
+    vol = volume + max(0.0, (1.0 - frac / 0.3)) * 0.3
     _HEARTBEAT_T -= dt
     if _HEARTBEAT_T <= 0:
-        _HEARTBEAT_T = 0.8
-        play("heartbeat", volume)
+        _HEARTBEAT_T = interval
+        play("heartbeat", vol)
 
 
 def set_enabled(on):
@@ -383,6 +460,12 @@ def set_enabled(on):
 
 
 def set_master_volume(v):
-    """Set the master SFX volume (0..1). Applied to every future play()."""
+    """Set the master SFX volume (0..1). Applied to every future play(), and
+    re-applied to the already-playing ambience loop so the slider affects the
+    live bed instead of only future one-shots."""
     global MASTER_VOLUME
     MASTER_VOLUME = max(0.0, min(1.0, float(v)))
+    if _AMBIENCE_CHANNEL is not None and _AMBIENCE_CHANNEL.get_busy():
+        s = SOUNDS.get("ambience_" + (_AMBIENCE_BIOME or "plains"))
+        if s:
+            s.set_volume(max(0.0, min(1.0, _AMBIENCE_VOLUME * MASTER_VOLUME)))

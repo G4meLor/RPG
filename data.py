@@ -109,7 +109,7 @@ DEFEND_MITIGATION = 0.45     # defending reduces incoming damage by this fractio
 #   - Basic attack is free and *generates* energy.
 #   - Skills cost energy (cost * ENERGY_COST_MULT).
 #   - Ultimates cost the full bar (ENERGY_MAX) and are gamechanging.
-#   - Energy is also gained by dealing/taking damage and breaking toughness.
+#   - Energy is gained by basic attacks and using skills.
 # Tuned so a hero can use a skill most turns and charges its ultimate in
 # roughly 2-3 rounds of active combat.
 # ---------------------------------------------------------------------------
@@ -118,9 +118,6 @@ ENERGY_START = 90
 ENERGY_COST_MULT = 6         # skill["cost"] * this = energy cost (non-ult)
 ENERGY_GAIN_BASIC = 25       # using a basic attack
 ENERGY_GAIN_DEAL = 8         # dealing damage with a skill
-ENERGY_GAIN_TAKE = 10        # taking a hit
-ENERGY_GAIN_BREAK = 30       # breaking an enemy's toughness
-ENERGY_GAIN_ROUND = 15       # passive regen at the end of each round
 
 def skill_energy_cost(skill):
     """Energy cost of a skill: ultimates cost the full bar, else cost*mult."""
@@ -151,6 +148,7 @@ ABILITY_KEYS = ["Q", "W", "E", "R"]
 #     regen       - slow HP regen out of combat
 #     adrenaline  - +ATK when HP is low
 #     shield_when_low - gain a shield when HP drops below 30%
+#     heal_amp   - healing skills heal a fraction more
 PASSIVES_DB = {
     "p_lifesteal": dict(name="Vampiric Touch", desc="Heal for 12% of basic-attack damage.",
                         kind="lifesteal", val=0.12),
@@ -167,7 +165,9 @@ PASSIVES_DB = {
     "p_adrenaline":dict(name="Last Stand", desc="+30% ATK while below 35% HP.",
                         kind="adrenaline", val=0.30),
     "p_shield_low":dict(name="Guardian Spirit", desc="Gain a shield at low HP.",
-                        kind="shield_when_low", val=0.0),
+                        kind="shield_when_low", val=0.25),
+    "p_heal_amp":   dict(name="Mercy", desc="Healing skills heal 25% more.",
+                        kind="heal_amp", val=0.25),
 }
 
 # Per-hero passive assignment (one each, flavored to their role/element).
@@ -175,12 +175,12 @@ PASSIVES_DB = {
 # harmony -> regen, nihility -> thorns, preservation -> shield, abundance -> regen.
 HERO_PASSIVES = {
     "aria": "p_adrenaline", "kael": "p_lifesteal", "mira": "p_energy",
-    "zephyr": "p_crit", "luna": "p_thorns", "pyra": "p_lifesteal",
+    "zephyr": "p_crit", "luna": "p_thorns", "pyra": "p_energy",
     "lyra": "p_regen", "thorne": "p_shield_low", "sera": "p_regen",
     "rune": "p_energy", "blaze": "p_adrenaline", "nami": "p_regen",
-    "gale": "p_swift", "vex": "p_crit", "ember": "p_lifesteal",
+    "gale": "p_energy", "vex": "p_crit", "ember": "p_lifesteal",
     "tide": "p_shield_low", "zephyra": "p_crit", "selene": "p_adrenaline",
-    "nox": "p_thorns", "cinder": "p_lifesteal", "mist": "p_swift",
+    "nox": "p_lifesteal", "cinder": "p_lifesteal", "mist": "p_swift",
     "sol": "p_regen", "gaia": "p_thorns", "echo": "p_energy", "raven": "p_crit",
 }
 
@@ -246,12 +246,12 @@ EVO_TREE = {
     ],
     # --- Erudition: AoE magic / energy ---
     "erudition": [
-        dict(id="root", name="Arcane Flow", desc="+15% energy gain.",
-             cost=10, stats=dict(), passive="p_energy"),
+        dict(id="root", name="Arcane Flow", desc="+10% energy, +5% ATK.",
+             cost=10, stats=dict(energy_pct=0.10, atk_pct=0.05), passive="p_energy"),
         dict(id="A1", name="Detonate", desc="+15% ATK.",
              cost=20, stats=dict(atk_pct=0.15)),
-        dict(id="A2", name="Cataclysm", desc="+25% ATK, +10% max energy.",
-             cost=40, stats=dict(atk_pct=0.25, energy_pct=0.10), req="A1"),
+        dict(id="A2", name="Cataclysm", desc="+25% ATK, +10% energy, +8% crit.",
+             cost=40, stats=dict(atk_pct=0.25, energy_pct=0.10, crit=0.08), req="A1"),
         dict(id="B1", name="Mana Well", desc="+20% max MP/energy.",
              cost=20, stats=dict(energy_pct=0.20)),
         dict(id="B2", name="Overflow", desc="Skills cost 15% less energy.",
@@ -300,14 +300,14 @@ EVO_TREE = {
     "abundance": [
         dict(id="root", name="Vitality", desc="+15% max HP.",
              cost=10, stats=dict(hp_pct=0.15)),
-        dict(id="A1", name="Restoration", desc="Regen 2% HP/sec out of combat.",
-             cost=20, stats=dict(), passive="p_regen"),
+        dict(id="A1", name="Grace", desc="+10% ATK, +25% healing.",
+             cost=20, stats=dict(atk_pct=0.10), passive="p_heal_amp"),
         dict(id="A2", name="Miracle", desc="+30% max HP.",
              cost=40, stats=dict(hp_pct=0.30), req="A1"),
         dict(id="B1", name="Flow", desc="+15% energy gain.",
              cost=20, stats=dict(), passive="p_energy"),
-        dict(id="B2", name="Bounty", desc="+15% HP, +15% energy.",
-             cost=40, stats=dict(hp_pct=0.15, energy_pct=0.15), req="B1"),
+        dict(id="B2", name="Bounty", desc="+15% HP, +15% energy, +10% ATK.",
+             cost=40, stats=dict(hp_pct=0.15, energy_pct=0.15, atk_pct=0.10), req="B1"),
     ],
 }
 
@@ -388,6 +388,7 @@ SKILLS_DB = {
                         desc="Wash over all enemies."),
     # Wind
     "wind_arrow":   dict(name="Gale Arrow",    element="wind", type="attack", power=1.7, cost=2,
+                        crit_bonus=0.15,
                         desc="A swift arrow of wind. High crit."),
     "tempest":      dict(name="Tempest",       element="wind", type="ultimate", power=2.5, cost=8,
                         desc="A cataclysmic cyclone that tears through all enemies."),
@@ -400,14 +401,14 @@ SKILLS_DB = {
                         desc="A holy slash of light."),
     "light_heal":   dict(name="Holy Light",    element="light", type="heal",  power=1.6, cost=3,
                         desc="Restore an ally's HP."),
-    "light_aoe":    dict(name="Judgement",     element="light", type="aoe_magic", power=1.3, cost=5,
-                        desc="Smite all enemies."),
+    "fire_curse":   dict(name="Cinder Curse",  element="fire", type="debuff", power=0, cost=3,
+                        desc="Curse an enemy: burn + ATK down.", debuff=["burn", "atk_down"], dur=3),
     "blessing":     dict(name="Blessing",      element="light", type="buff",  power=0, cost=4,
                         desc="Raise all allies' DEF.", buff="def_up", potency=0.3, dur=3, target_all=True),
     "revive":       dict(name="Miracle",       element="light", type="revive", power=0.5, cost=6,
                         desc="Revive a fallen ally with half HP."),
     "light_hymn":   dict(name="Solar Hymn",    element="light", type="ultimate", power=2.4, cost=8,
-                        heal=True,
+                        heal=True, buff="def_up", potency=0.3, dur=3,
                         desc="Heal all allies fully and bless them."),
     # Dark
     "dark_bolt":    dict(name="Shadow Bolt",   element="dark", type="magic", power=1.9, cost=3,
@@ -424,7 +425,8 @@ SKILLS_DB = {
     # Fire
     "fire_strike":  dict(name="Ember Strike",  element="fire", type="attack", power=2.0, cost=3,
                         desc="A heavy burning blow. May burn."),
-    "phoenix":      dict(name="Phoenix Rise",  element="fire", type="heal",   power=1.0, cost=5,
+    "phoenix":      dict(name="Phoenix Rise",  element="fire", type="heal",   power=1.6, cost=4,
+                        buff="atk_up", potency=0.3, dur=3,
                         desc="Recover HP and gain ATK up."),
     # Water
     "frost_nova":   dict(name="Frost Nova",    element="water", type="aoe_magic", power=1.3, cost=5,
@@ -437,15 +439,15 @@ SKILLS_DB = {
     "evasion":      dict(name="Mirage",        element="wind", type="buff",   power=0, cost=2,
                         desc="Raise an ally's SPD.", buff="spd_up", potency=0.3, dur=3),
     # Light
-    "sanctuary":    dict(name="Sanctuary",      element="light", type="heal",   power=1.8, cost=5,
+    "sanctuary":    dict(name="Sanctuary",      element="light", type="heal",   power=2.4, cost=4,
                         desc="A great heal for an ally."),
     "judgement_aoe":dict(name="Divine Wrath",  element="light", type="ultimate", power=2.5, cost=9,
                         desc="Holy wrath smites all enemies."),
     # Dark
     "soul_drain":   dict(name="Soul Drain",    element="dark", type="magic",  power=1.6, cost=3,
-                        desc="Dark bolt; heals the user a little.", lifesteal=0.5),
+                        desc="Dark bolt; heals the user a little."),
     "death_coil":   dict(name="Death Coil",    element="dark", type="ultimate", power=2.7, cost=9,
-                        desc="Drain the life of all enemies.", lifesteal=0.4),
+                        desc="Drain the life of all enemies."),
     # --- new status skills (Phase C) ---
     "rupture":      dict(name="Rupture",       element="dark", type="debuff", power=0, cost=2,
                         desc="Inflict bleed + DEF down.", debuff=["bleed", "def_down"], dur=3),
@@ -554,8 +556,8 @@ HEROES_DB = [
          skills=["dark_bolt", "dark_curse", "dark_aoe", "basic_attack"],
          ultimate="void_nova"),
     dict(id="pyra",   name="Pyra",   title="Crimson Empress",  element="fire", rarity="SSR", role="nihility",
-         stats={"hp": 126, "atk": 28, "defn": 15, "spd": 15, "mp": 32},
-         skills=["fire_strike", "fire_bolt", "inferno", "basic_attack"],
+         stats={"hp": 122, "atk": 27, "defn": 15, "spd": 16, "mp": 32},
+         skills=["fire_curse", "fire_bolt", "inferno", "basic_attack"],
          ultimate="meteor"),
     dict(id="lyra",   name="Lyra",   title="Moon Oracle",      element="light", rarity="SSR", role="abundance",
          stats={"hp": 108, "atk": 21, "defn": 15, "spd": 16, "mp": 42},
@@ -566,7 +568,7 @@ HEROES_DB = [
          skills=["wind_arrow", "shield_ward", "basic_attack"],
          ultimate="tempest"),
     dict(id="sera",   name="Sera",   title="Cleric of Light",  element="light", rarity="SR", role="abundance",
-         stats={"hp": 100, "atk": 16, "defn": 16, "spd": 13, "mp": 40},
+         stats={"hp": 102, "atk": 18, "defn": 16, "spd": 13, "mp": 40},
          skills=["sanctuary", "blessing", "revive", "basic_attack"],
          ultimate="light_hymn"),
     dict(id="rune",   name="Rune",   title="Void Mage",        element="dark", rarity="SR", role="erudition",
@@ -581,9 +583,9 @@ HEROES_DB = [
          stats={"hp": 105, "atk": 18, "defn": 17, "spd": 14, "mp": 38},
          skills=["water_bolt", "water_heal", "tidal_wave", "basic_attack"],
          ultimate="tsunami"),
-    dict(id="gale",   name="Gale",   title="Wind Dancer",      element="wind", rarity="R", role="hunt",
-         stats={"hp": 100, "atk": 20, "defn": 12, "spd": 16, "mp": 24},
-         skills=["wind_arrow", "wind_aoe", "basic_attack"],
+    dict(id="gale",   name="Gale",   title="Wind Dancer",      element="wind", rarity="R", role="erudition",
+         stats={"hp": 100, "atk": 21, "defn": 12, "spd": 16, "mp": 30},
+         skills=["gust", "wind_aoe", "evasion", "basic_attack"],
          ultimate="tempest"),
     dict(id="vex",    name="Vex",    title="Shade Rogue",      element="dark", rarity="R", role="hunt",
          stats={"hp": 102, "atk": 22, "defn": 11, "spd": 17, "mp": 26},
@@ -606,9 +608,9 @@ HEROES_DB = [
          stats={"hp": 118, "atk": 25, "defn": 17, "spd": 15, "mp": 38},
          skills=["light_slash", "sanctuary", "blessing", "basic_attack"],
          ultimate="judgement_aoe"),
-    dict(id="nox",    name="Nox",    title="Eclipse Lord",     element="dark", rarity="SSR", role="nihility",
-         stats={"hp": 120, "atk": 29, "defn": 15, "spd": 16, "mp": 32},
-         skills=["soul_drain", "dark_curse", "dark_aoe", "basic_attack"],
+    dict(id="nox",    name="Nox",    title="Eclipse Lord",     element="dark", rarity="SSR", role="destruction",
+         stats={"hp": 118, "atk": 29, "defn": 15, "spd": 16, "mp": 30},
+         skills=["soul_drain", "dark_bolt", "dark_aoe", "basic_attack"],
          ultimate="death_coil"),
     dict(id="cinder", name="Cinder", title="Cinder Knight",    element="fire", rarity="SR", role="destruction",
          stats={"hp": 128, "atk": 24, "defn": 16, "spd": 13, "mp": 26},
@@ -624,8 +626,8 @@ HEROES_DB = [
          ultimate="light_hymn"),
     # --- new heroes (Phase C: status-oriented kits) ---
     dict(id="gaia",  name="Gaia",  title="Earthwarden",      element="wind", rarity="SR", role="preservation",
-         stats={"hp": 160, "atk": 20, "defn": 26, "spd": 8,  "mp": 26},
-         skills=["taunt_skill", "shield_ward", "wind_arrow", "basic_attack"],
+         stats={"hp": 160, "atk": 19, "defn": 26, "spd": 8,  "mp": 26},
+         skills=["taunt_skill", "shield_ward", "gust", "basic_attack"],
          ultimate="tempest"),
     dict(id="echo",  name="Echo",  title="Mirror Sage",      element="water", rarity="SR", role="harmony",
          stats={"hp": 110, "atk": 22, "defn": 16, "spd": 14, "mp": 36},
@@ -692,7 +694,7 @@ STAGES_DB = []
 # ---------------------------------------------------------------------------
 # Gacha pool
 # ---------------------------------------------------------------------------
-GACHA_RATES = {"SSR": 0.06, "SR": 0.30, "R": 0.64}
+GACHA_RATES = {"SSR": 0.06, "SR": 0.34, "R": 0.60}
 GACHA_POOL = {"SSR": ["aria", "kael", "mira", "zephyr", "luna", "pyra", "lyra",
                       "ember", "tide", "zephyra", "selene", "nox", "raven"],
               "SR":  ["thorne", "sera", "rune", "blaze", "nami", "cinder", "mist", "gaia", "echo"],
@@ -732,14 +734,14 @@ GACHA_BANNERS = [
     dict(id="abyss", name="Abyssal Veil",
          desc="Rate-up: Luna & Nox (Dark).",
          pool={"SSR": ["luna", "nox", "raven", "kael", "zephyr"],
-               "SR":  ["rune", "vex", "cinder", "mist", "gaia"],
+               "SR":  ["rune", "nami", "cinder", "mist", "gaia"],
                "R":   ["gale", "sol", "vex"]},
          featured_ssr="luna", featured_sr="rune",
          color=(190, 120, 240)),
     dict(id="gale", name="Tempest Call",
          desc="Rate-up: Zephyr & Zephyra (Wind).",
          pool={"SSR": ["zephyr", "zephyra", "tide", "aria", "luna"],
-               "SR":  ["thorne", "gale", "gaia", "echo", "mist"],
+               "SR":  ["thorne", "sera", "gaia", "echo", "mist"],
                "R":   ["vex", "sol", "gale"]},
          featured_ssr="zephyr", featured_sr="gaia",
          color=(140, 230, 170)),
@@ -751,7 +753,7 @@ GACHA_PITY_HARD = 60      # guaranteed SSR after this many pulls without one
 GACHA_PITY_SOFT = 40      # SSR chance starts ramping up here
 GACHA_SR_GUARANTEE_EVERY = 10   # every Nth pull is at least SR
 # Coin-back: dupes of a maxed hero refund a few gems (softens the sting).
-GACHA_DUPE_GEM_REFUND = 5
+GACHA_DUPE_GEM_REFUND = 10
 
 
 # ---------------------------------------------------------------------------
@@ -785,45 +787,53 @@ EQUIPMENT_DB = {
     # weapons -> atk
     "rusty_sword":  dict(name="Rusty Sword",   slot="weapon",    rarity="R",  stats=dict(atk=6),  price=120, sell=40),
     "steel_blade":  dict(name="Steel Blade",   slot="weapon",    rarity="SR", stats=dict(atk=14), price=400, sell=140),
-    "dragon_fang":  dict(name="Dragon Fang",   slot="weapon",    rarity="SSR",stats=dict(atk=24), price=1200, sell=480),
+    "dragon_fang":  dict(name="Dragon Fang",   slot="weapon",    rarity="SSR",stats=dict(atk=24), price=1800, sell=480),
     "mage_rod":     dict(name="Mage Rod",      slot="weapon",    rarity="SR", stats=dict(atk=10, mp=10), price=450, sell=160),
     # armor -> hp, defn
     "leather_armor":dict(name="Leather Armor", slot="armor",     rarity="R",  stats=dict(hp=20, defn=4), price=120, sell=40),
     "plate_mail":   dict(name="Plate Mail",    slot="armor",     rarity="SR", stats=dict(hp=40, defn=10), price=420, sell=150),
-    "aether_vest":  dict(name="Aether Vest",   slot="armor",     rarity="SSR",stats=dict(hp=70, defn=18), price=1300, sell=520),
+    "aether_vest":  dict(name="Aether Vest",   slot="armor",     rarity="SSR",stats=dict(hp=70, defn=18), price=1900, sell=520),
     # accessory -> spd / mp / misc
     "swift_boots":  dict(name="Swift Boots",   slot="accessory", rarity="R",  stats=dict(spd=4), price=120, sell=40),
     "mana_pendant": dict(name="Mana Pendant",  slot="accessory", rarity="SR", stats=dict(mp=14, atk=4), price=440, sell=160),
-    "hero_crest":   dict(name="Hero Crest",    slot="accessory", rarity="SSR",stats=dict(spd=5, atk=8, hp=30), price=1400, sell=560),
+    "hero_crest":   dict(name="Hero Crest",    slot="accessory", rarity="SSR",stats=dict(spd=5, atk=8, hp=30), price=2000, sell=560),
     # --- new equipment (Phase B) ---
-    "inferno_blade":dict(name="Inferno Blade", slot="weapon",    rarity="SSR",stats=dict(atk=28, hp=20), price=1600, sell=640),
+    "inferno_blade":dict(name="Inferno Blade", slot="weapon",    rarity="SSR",stats=dict(atk=28, hp=20), price=2400, sell=640),
     "frost_staff":  dict(name="Frost Staff",   slot="weapon",    rarity="SR", stats=dict(atk=12, mp=12), price=480, sell=170),
-    "void_blade":   dict(name="Void Blade",    slot="weapon",    rarity="SSR",stats=dict(atk=26, spd=4), price=1500, sell=600),
-    "guardian_aegis":dict(name="Guardian Aegis",slot="armor",    rarity="SSR",stats=dict(hp=90, defn=22), price=1700, sell=680),
+    "void_blade":   dict(name="Void Blade",    slot="weapon",    rarity="SSR",stats=dict(atk=26, spd=4), price=2200, sell=600),
+    "guardian_aegis":dict(name="Guardian Aegis",slot="armor",    rarity="SSR",stats=dict(hp=90, defn=22), price=2500, sell=680),
     "shadow_cloak": dict(name="Shadow Cloak",  slot="armor",     rarity="SR", stats=dict(hp=30, defn=12, spd=3), price=520, sell=190),
     "berserker_ring":dict(name="Berserker Ring",slot="accessory",rarity="SR", stats=dict(atk=10, spd=3), price=560, sell=200),
-    "sage_amulet":  dict(name="Sage Amulet",   slot="accessory", rarity="SSR",stats=dict(mp=20, atk=6, hp=40), price=1700, sell=680),
+    "sage_amulet":  dict(name="Sage Amulet",   slot="accessory", rarity="SSR",stats=dict(mp=20, atk=6, hp=40), price=2500, sell=680),
 }
 
 # Equipment set bonuses: equip a matching set across the 3 slots for a bonus.
 # A "set" is keyed by a prefix on the item id. Bonuses stack onto the hero.
 EQUIPMENT_SETS = {
     "ember":  dict(name="Ember Warden",  items=("inferno_blade", "aether_vest", "berserker_ring"),
-                  bonus=dict(atk_pct=0.10, hp=30), desc="+10% ATK, +30 HP"),
-    "frost":  dict(name="Frost Sovereign", items=("frost_staff", "guardian_aegis", "sage_amulet"),
-                  bonus=dict(defn_pct=0.12, hp=60), desc="+12% DEF, +60 HP"),
+                  bonus=dict(atk_pct=0.10, hp=30, crit_dmg=0.15), desc="+10% ATK, +30 HP, +15% crit dmg",
+                  bonus2=dict(atk_pct=0.05)),
+    "frost":  dict(name="Aegis Sovereign", items=("frost_staff", "guardian_aegis", "sage_amulet"),
+                  bonus=dict(defn_pct=0.12, hp=60), desc="+12% DEF, +60 HP",
+                  bonus2=dict(defn_pct=0.05)),
     "void":   dict(name="Voidwalker",   items=("void_blade", "shadow_cloak", "mana_pendant"),
-                  bonus=dict(atk_pct=0.06, crit=0.10, crit_dmg=0.20), desc="+6% ATK, +10% crit, +20% crit dmg"),
+                  bonus=dict(atk_pct=0.06, crit=0.10, crit_dmg=0.20), desc="+6% ATK, +10% crit, +20% crit dmg",
+                  bonus2=dict(atk_pct=0.03)),
     "hero":   dict(name="Hero's Valor", items=("dragon_fang", "plate_mail", "hero_crest"),
-                  bonus=dict(atk_pct=0.06, hp=40, defn=8), desc="+6% ATK, +40 HP, +8 DEF"),
+                  bonus=dict(atk_pct=0.06, hp=40, defn=8), desc="+6% ATK, +40 HP, +8 DEF",
+                  bonus2=dict(hp=20)),
 }
 
 def equipment_set_bonus(equipped_ids):
-    """Return (set_name, bonus_dict) for a complete set, or (None, {})."""
+    """Return (set_name, bonus_dict) for a complete set (3/3) or a 2-piece
+    partial bonus, or (None, {})."""
     eqset = set(equipped_ids)
     for sid, sdef in EQUIPMENT_SETS.items():
-        if set(sdef["items"]).issubset(eqset):
+        items = set(sdef["items"])
+        if items.issubset(eqset):
             return sdef["name"], dict(sdef["bonus"])
+        if len(items & eqset) >= 2 and sdef.get("bonus2"):
+            return sdef["name"] + " (2/3)", dict(sdef["bonus2"])
     return None, {}
 
 # ---------------------------------------------------------------------------
@@ -831,13 +841,13 @@ def equipment_set_bonus(equipped_ids):
 # ---------------------------------------------------------------------------
 CONSUMABLES_DB = {
     "hp_potion":    dict(name="HP Potion",     type="heal_hp",   power=60,  price=40,  sell=8,  desc="Restore 60 HP to one hero."),
-    "mp_potion":    dict(name="MP Potion",     type="heal_mp",   power=30,  price=50,  sell=10, desc="Restore 30 MP to one hero."),
+    "mp_potion":    dict(name="MP Potion",     type="heal_mp",   power=40,  price=30,  sell=10, desc="Restore 40 MP to one hero."),
     "full_elixir":  dict(name="Full Elixir",   type="heal_full", power=0,   price=200, sell=40, desc="Fully restore HP & MP of one hero."),
     "revive_scroll":dict(name="Revive Scroll", type="revive",    power=0.5, price=300, sell=60, desc="Revive a fallen ally at 50% HP."),
     "bomb":         dict(name="Bomb",          type="damage",    power=80,  price=80,  sell=16, desc="Deal 80 damage to one enemy."),
     # --- new consumables (Phase B) ---
-    "mega_potion":  dict(name="Mega Potion",   type="heal_hp",   power=200, price=120, sell=24, desc="Restore 200 HP to one hero."),
-    "ether":        dict(name="Ether",         type="heal_mp",   power=80,  price=140, sell=28, desc="Restore 80 MP to one hero."),
+    "mega_potion":  dict(name="Mega Potion",   type="heal_hp",   power=200, price=100, sell=24, desc="Restore 200 HP to one hero."),
+    "ether":        dict(name="Ether",         type="heal_mp",   power=80,  price=120, sell=28, desc="Restore 80 MP to one hero."),
     "mega_bomb":    dict(name="Mega Bomb",     type="damage",    power=240, price=220, sell=44, desc="Deal 240 damage to one enemy."),
 }
 
@@ -845,9 +855,9 @@ CONSUMABLES_DB = {
 # Shop offers (gems for gold, equipment, consumables)
 # ---------------------------------------------------------------------------
 SHOP_GEMS = [
-    dict(id="gems_small",  name="100 Gems",  gems=100,  price=500),
-    dict(id="gems_medium", name="600 Gems",  gems=600,  price=2500),
-    dict(id="gems_large",  name="1500 Gems", gems=1500, price=5500),
+    dict(id="gems_small",  name="100 Gems",  gems=100,  price=800),
+    dict(id="gems_medium", name="600 Gems",  gems=600,  price=4200),
+    dict(id="gems_large",  name="1500 Gems", gems=1500, price=9500),
 ]
 
 # ---------------------------------------------------------------------------
@@ -910,6 +920,18 @@ ACHIEVEMENTS = {
     "rich":        dict(name="Treasure Hoard", desc="Earn 5000 gold total.",
                         reward_gems=120,
                         check=lambda p: p.stats.get("gold_earned", 0) >= 5000),
+    "dodge_master": dict(name="Untouchable", desc="Land 50 perfect dodges.",
+                         reward_gems=200,
+                         check=lambda p: p.stats.get("perfect_dodges", 0) >= 50),
+    "combo_king":   dict(name="Combo King", desc="Reach a 10-hit combo.",
+                         reward_gems=150,
+                         check=lambda p: p.stats.get("max_combo", 0) >= 10),
+    "alchemist":    dict(name="Alchemist", desc="Trigger 100 elemental reactions.",
+                         reward_gems=200,
+                         check=lambda p: p.stats.get("reactions_triggered", 0) >= 100),
+    "ultimate":     dict(name="Unleashed", desc="Use your ultimate 50 times.",
+                         reward_gems=150,
+                         check=lambda p: p.stats.get("ults_used", 0) >= 50),
 }
 
 # ---------------------------------------------------------------------------
@@ -919,9 +941,9 @@ ACHIEVEMENTS = {
 # ---------------------------------------------------------------------------
 DAILY_QUESTS = {
     "win_battles":    dict(name="Slay 20 Foes", desc="Defeat 20 enemies in the world today.",
-                           goal=20, reward_gems=60),
+                           goal=20, reward_gems=90),
     "defeat_enemies": dict(name="Defeat 10 Foes", desc="Defeat 10 enemies today.",
-                           goal=10, reward_gems=50),
+                           goal=10, reward_gems=40),
     "summon":         dict(name="Summon Once", desc="Summon at least once.",
                           goal=1, reward_gems=40),
     "explore":        dict(name="Explore 3 Maps", desc="Discover 3 new maps today.",

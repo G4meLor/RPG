@@ -121,18 +121,55 @@ class MapRenderer:
         surf = base.copy()
         g1 = pal["ground"]
         tile = WD.TILE
-        # a winding path through the map (a lighter trail) so the world reads
-        # like a place you walk through, not an empty field
+        # a winding path through the map so the world reads like a place you
+        # walk through, not an empty field. The path shape varies per biome so
+        # a plains road and a void road aren't the same winding ribbon: plains
+        # = a wider brighter dirt road, forest = a narrow winding deer trail,
+        # castle = a straight paved road, void = a thin glowing accent line.
         rng = random.Random(WD.cell_seed(c, r) + 99)
-        path_col = (min(255, g1[0] + 30), min(255, g1[1] + 30), min(255, g1[2] + 26))
-        px = rng.randint(4, WD.MAP_TW - 5) * tile
-        for step in range(WD.MAP_TH + 6):
-            py = step * tile - tile
-            pw = tile * 2
-            pygame.draw.rect(surf, path_col, (px - pw // 2, py, pw, tile + 2), border_radius=6)
-            if rng.random() < 0.35:
-                px += rng.choice([-tile, tile])
-                px = max(tile, min(WD.MAP_W - tile, px))
+        accent = pal["accent"]
+        if biome == "void":
+            # a thin glowing accent rift line down the map
+            px = WD.MAP_W // 2
+            for step in range(WD.MAP_TH + 2):
+                py = step * tile
+                pygame.draw.line(surf, accent, (px, py), (px, py + tile + 2), 3)
+                if rng.random() < 0.25:
+                    px += rng.choice([-tile, tile])
+                    px = max(tile, min(WD.MAP_W - tile, px))
+        elif biome == "castle":
+            # a straight paved road: alternating g1/g2 tiles down the middle
+            px = WD.MAP_W // 2
+            for step in range(WD.MAP_TH + 2):
+                py = step * tile
+                col = g1 if step % 2 == 0 else pal["ground2"]
+                pygame.draw.rect(surf, col, (px - tile, py, tile * 2, tile + 2),
+                                border_radius=4)
+        elif biome == "forest":
+            # a narrow winding deer trail, darker than the ground
+            dark = (max(0, g1[0] - 12), max(0, g1[1] - 12), max(0, g1[2] - 12))
+            px = rng.randint(4, WD.MAP_TW - 5) * tile
+            for step in range(WD.MAP_TH + 6):
+                py = step * tile - tile
+                pw = tile
+                pygame.draw.rect(surf, dark, (px - pw // 2, py, pw, tile + 2),
+                                 border_radius=4)
+                if rng.random() < 0.4:
+                    px += rng.choice([-tile, tile])
+                    px = max(tile, min(WD.MAP_W - tile, px))
+        else:
+            # plains / cave: the default wider winding road
+            path_col = (min(255, g1[0] + 30), min(255, g1[1] + 30),
+                        min(255, g1[2] + 26))
+            px = rng.randint(4, WD.MAP_TW - 5) * tile
+            for step in range(WD.MAP_TH + 6):
+                py = step * tile - tile
+                pw = tile * 2
+                pygame.draw.rect(surf, path_col, (px - pw // 2, py, pw, tile + 2),
+                                 border_radius=6)
+                if rng.random() < 0.35:
+                    px += rng.choice([-tile, tile])
+                    px = max(tile, min(WD.MAP_W - tile, px))
         # left/right edge portals so the world reads as connected (a glowing
         # arch where you walk through to the next map)
         self._draw_edge_portal(surf, "left", pal)
@@ -147,8 +184,12 @@ class MapRenderer:
         return surf
 
     def _draw_edge_portal(self, surf, edge, pal):
-        """A glowing arch at a traversable edge so the world reads connected."""
+        """A glowing arch at a traversable edge so the world reads connected.
+        A biome-specific silhouette element is layered on the arch so a cave
+        portal and a castle portal aren't the same glowing arch in a different
+        hue (castle = iron portcullis bars, void = a spiral)."""
         accent = pal["accent"]
+        obs = pal["obstacle"]
         glow = pygame.Surface((120, 120), pygame.SRCALPHA)
         for rr in range(54, 0, -4):
             a = int(40 * (1 - rr / 54))
@@ -165,14 +206,36 @@ class MapRenderer:
         elif edge == "bottom":
             surf.blit(glow, (WD.MAP_W // 2 - 60, WD.MAP_H - 120))
             pygame.draw.arc(surf, accent, (WD.MAP_W // 2 - 50, WD.MAP_H - 66, 100, 60), 3.5, 6.0, 4)
+        # biome-specific portal motif on top of the arch
+        biome = pal.get("name", "")
+        if "Citadel" in biome and edge in ("left", "right"):
+            # castle: iron portcullis bars (vertical lines in obstacle color)
+            bx0 = 6 if edge == "left" else WD.MAP_W - 66
+            for k in range(4):
+                pygame.draw.line(surf, obs,
+                                 (bx0 + 8 + k * 12, WD.MAP_H // 2 - 40),
+                                 (bx0 + 8 + k * 12, WD.MAP_H // 2 + 40), 3)
+        elif "Void" in biome and edge in ("left", "right"):
+            # void: a small spiral around the arch center
+            cx0 = 30 if edge == "left" else WD.MAP_W - 30
+            cy0 = WD.MAP_H // 2
+            for k in range(5):
+                ang = k * 0.9
+                rr = 6 + k * 5
+                pygame.draw.circle(surf, accent,
+                                   (int(cx0 + math.cos(ang) * rr),
+                                    int(cy0 + math.sin(ang) * rr)), 2)
 
     def _draw_deco(self, surf, x, y, kind, size, pal):
         if kind == "tree":
-            # trunk
-            pygame.draw.rect(surf, (70, 50, 30), (x - 5, y - 4, 10, 18))
-            pygame.draw.rect(surf, (50, 34, 22), (x - 5, y - 4, 5, 18))
-            # canopy with layered shading
+            # trunk — darkened from the biome's obstacle color so a cave tree
+            # reads as petrified/blue, not a plains brown trunk
             obs = pal["obstacle"]
+            trunk = (max(0, obs[0] - 10), max(0, obs[1] - 8), max(0, obs[2] - 6))
+            trunk_d = (max(0, obs[0] - 18), max(0, obs[1] - 14), max(0, obs[2] - 12))
+            pygame.draw.rect(surf, trunk, (x - 5, y - 4, 10, 18))
+            pygame.draw.rect(surf, trunk_d, (x - 5, y - 4, 5, 18))
+            # canopy with layered shading
             obs_dark = (max(0, obs[0] - 24), max(0, obs[1] - 24), max(0, obs[2] - 24))
             for rr in range(size, 6, -4):
                 pygame.draw.circle(surf, obs, (x, y - 8), rr)
@@ -199,6 +262,35 @@ class MapRenderer:
             pygame.draw.circle(surf, obs, (x - size // 3, y - 2), size // 3)
             pygame.draw.circle(surf, obs, (x + size // 3, y - 2), size // 3)
             pygame.draw.circle(surf, pal["accent"], (x - 3, y - 3), max(2, size // 4))
+        elif kind == "crystal":
+            # cave signature: a faceted accent-colored crystal with a white core
+            acc = pal["accent"]
+            pts = [(x, y - size), (x + size // 2, y - size // 4),
+                   (x + size // 3, y + size // 2), (x - size // 3, y + size // 2),
+                   (x - size // 2, y - size // 4)]
+            pygame.draw.polygon(surf, acc, pts)
+            pygame.draw.polygon(surf, (255, 255, 255), pts, 1)
+            pygame.draw.circle(surf, (255, 255, 255), (x, y - size // 4),
+                               max(2, size // 4))
+        elif kind == "banner":
+            # castle signature: a tall accent-colored flag on a pole
+            obs = pal["obstacle"]
+            pygame.draw.rect(surf, obs, (x - 2, y - size, 4, size * 2))
+            pygame.draw.rect(surf, pal["accent"], (x + 2, y - size, size, size // 2 + 2))
+        elif kind == "torch":
+            # castle signature: a pillar + a flickering accent flame
+            obs = pal["obstacle"]
+            pygame.draw.rect(surf, obs, (x - 3, y - size, 6, size * 2))
+            pygame.draw.circle(surf, pal["accent"], (x, y - size - 2), max(3, size // 3))
+            pygame.draw.circle(surf, (255, 220, 120), (x, y - size - 2),
+                               max(2, size // 5))
+        elif kind == "rift":
+            # void signature: a jagged accent-colored diagonal crack
+            acc = pal["accent"]
+            pts = [(x - size, y - size), (x - size // 3, y - size // 4),
+                   (x + size // 3, y + size // 4), (x + size, y + size)]
+            pygame.draw.lines(surf, acc, False, pts, 3)
+            pygame.draw.circle(surf, acc, (x, y), max(2, size // 4))
 
 
 # ---------------------------------------------------------------------------
@@ -293,6 +385,13 @@ class TeleportOverlay:
                     pygame.draw.rect(surf, (30, 30, 40), rect, border_radius=8)
                     pygame.draw.rect(surf, (60, 60, 80), rect, 2, border_radius=8)
                     text(surf, "?", 24, (90, 90, 110), rect.center, center=True)
+        # selected-cell info line so the player knows the destination's name +
+        # biome before committing to a teleport (was navigating blind)
+        sc, sr = self.sel
+        name = WD.cell_name(sc, sr)
+        cid = WD.cell_id(sc, sr)
+        tag = " (discovered)" if cid in discovered else " (undiscovered)"
+        text(surf, f"{name}{tag}", 22, (255, 240, 180), (640, 660), center=True)
 
 
 # ---------------------------------------------------------------------------
@@ -564,12 +663,23 @@ class EvolveOverlay:
             # short desc (first ~22 chars)
             desc = node["desc"]
             text(surf, desc[:24], 10, (220, 220, 240), (cx, cy - 2), center=True)
+            # show the passive the node grants + a dead-upgrade warning (when the
+            # node's passive duplicates the hero's base passive) so the player
+            # can see a waste before spending shards
+            pid = node.get("passive")
+            if pid:
+                pname = D.PASSIVES_DB.get(pid, {}).get("name", pid)
+                base_pid = D.HERO_PASSIVES.get(hid)
+                dead = (pid == base_pid)
+                pcol = (220, 140, 140) if dead else (140, 240, 160)
+                tag = f"{pname} (have)" if dead else pname
+                text(surf, tag, 9, pcol, (cx, cy + 12), center=True)
             if is_unlocked:
-                text(surf, "UNLOCKED", 10, (140, 240, 160), (cx, cy + 16), center=True)
+                text(surf, "UNLOCKED", 10, (140, 240, 160), (cx, cy + 26), center=True)
             else:
                 cost = node.get("cost", 20)
                 ccol = (120, 220, 140) if can_unlock else (220, 140, 140)
-                text(surf, f"{cost} shards", 10, ccol, (cx, cy + 16), center=True)
+                text(surf, f"{cost} shards", 10, ccol, (cx, cy + 26), center=True)
         # ascend tier button (flat evolve)
         ar = pygame.Rect(panel.centerx - 110, panel.bottom - 56, 220, 40)
         self._ascend_rect = ar
@@ -596,8 +706,18 @@ class EvolveOverlay:
         if eb.get("def_pct"): parts.append(f"DEF +{int(eb['def_pct']*100)}%")
         if eb.get("crit"):    parts.append(f"CRIT +{int(eb['crit']*100)}%")
         if eb.get("energy_pct"): parts.append(f"Energy +{int(eb['energy_pct']*100)}%")
+        if eb.get("crit_dmg"): parts.append(f"CRIT DMG +{int(eb['crit_dmg']*100)}%")
+        cm = eb.get("skill_cost_mult", 1.0)
+        if cm and cm < 1.0:
+            parts.append(f"Skill cost -{int((1 - cm) * 100)}%")
         text(surf, "  ".join(parts) if parts else "none yet", 12, (160, 240, 200),
              (panel.x + 16, by + 18))
+        # name the granted passive so the player sees the passive they paid for
+        pid = eb.get("passive")
+        if pid:
+            pname = D.PASSIVES_DB.get(pid, {}).get("name", pid)
+            text(surf, f"Passive: {pname}", 12, (180, 220, 255),
+                 (panel.x + 16, by + 34))
 
 
 # Reusable dim overlay for modal screens (teleport/pause). Allocated once and
@@ -779,7 +899,12 @@ class WorldScene:
         self._combo_pitch_tier = 0
 
         # discover neighbors of the current cell so the map shows reachable ones
-        self._discover_neighbors()
+        # _discover_neighbors is now run inside _load_map on every map enter
+        # (walk or teleport), so the standalone __init__ call is redundant —
+        # _load_map already ran it for the initial cell. Kept as a no-op safety
+        # net for any code path that constructs the scene without _load_map.
+        # (No call here: _load_map above already discovered the start cell's
+        # neighbors.)
 
     # -----------------------------------------------------------------
     # Background pre-warm of all 50 maps (so first visit = cache hit)
@@ -866,6 +991,13 @@ class WorldScene:
         self._map_data = m
         self.enemies = []
         self.drops = []
+        # reset any stale boss intro/defeat banner timers on a non-boss map so a
+        # cinematic from a previous boss arena doesn't bleed onto the wrong map
+        if not m["is_boss"]:
+            self._boss_intro_t = 0.0
+            self._boss_intro_name = ""
+            self._boss_defeat_t = 0.0
+            self._boss_defeat_name = ""
         # treasure chests on this map (open on walk-over): a reward pickup that
         # gives exploration a point beyond killing enemies. Chests the player
         # already opened on a prior visit are restored as opened (persisted in
@@ -899,10 +1031,13 @@ class WorldScene:
         # spawn enemies
         if not m["is_boss"]:
             pool, _ = WD.ROW_ENEMIES[self.r]
-            # at night (day phase 0.5..0.95) enemies are tougher: +1 level so
+            # at night (day phase 0.4..0.95) enemies are tougher: +1 level so
             # the world feels more dangerous after dark (better drops follow from
-            # the higher-level enemy gold/xp scaling)
-            night_bonus = 1 if 0.5 <= self._world_time <= 0.95 else 0
+            # the higher-level enemy gold/xp scaling). The window matches the
+            # _night_overlay visual-darkening window so the danger cue and the
+            # visual cue agree (was 0.5, leaving a 0.4-0.5 slice where the world
+            # looked dark but enemies weren't tougher).
+            night_bonus = 1 if 0.4 <= self._world_time <= 0.95 else 0
             for (sx, sy) in m["spawns"]:
                 eid = random.choice(pool)
                 self.enemies.append(WorldEnemy(eid, sx, sy, level + night_bonus, is_boss=False))
@@ -927,12 +1062,18 @@ class WorldScene:
         self._map_surf = self.map_renderer.get_locked(self.c, self.r,
                                                       getattr(self, "_warm_lock", None))
         self._map_cell = (self.c, self.r)
-        # discover
+        # discover: a NEW cell advances the 'explore' quest; any map enter
+        # (walk or teleport) reveals the neighbors so the frontier grows and
+        # the teleport overlay shows reachable cells (was only run once in
+        # __init__, capping the discoverable world at ~3 cells).
         cid = WD.cell_id(self.c, self.r)
         if cid not in self.game.player.ow_discovered:
             self.game.player.ow_discovered.append(cid)
             self.game.player.quest_progress("explore", 1)
-        # reveal the neighbors of the new cell too so the minimap shows the
+        # 'explore' also counts revisits so the daily quest stays completable for
+        # a mid/late-game player who has already discovered all 50 maps
+        self.game.player.quest_progress("explore", 1)
+        # reveal the neighbors of the new cell so the minimap shows the
         # reachable frontier (not just cells the player has physically stood in)
         self._discover_neighbors()
         self._persist_party()
@@ -942,7 +1083,7 @@ class WorldScene:
         # start the looping biome ambience on map enter (a quiet bed so the
         # world isn't silent between hits). Respects the master sound toggle.
         if self.game.player.settings.get("sound", True):
-            audio.set_ambience(True, volume=0.22)
+            audio.set_ambience(True, volume=0.22, biome=WD.cell_biome(self.c, self.r))
 
     def _discover_neighbors(self):
         for (nc, nr) in WD.neighbors(self.c, self.r):
@@ -970,6 +1111,8 @@ class WorldScene:
         # frame, cached one next frame).
         self.map_renderer.get_locked(nc, nr, getattr(self, "_warm_lock", None))
         self._load_map(enter_edge=opp, target_cell=(nc, nr))
+        # a soft whoosh on edge transitions so a map change has an audible cue
+        audio.play("skill", 0.25)
         self.set_message(f"Entering {WD.cell_name(nc, nr)}")
 
     def teleport_to(self, c, r):
@@ -981,6 +1124,8 @@ class WorldScene:
         if self.party[self.active]:
             self.party[self.active].x = WD.MAP_W // 2
             self.party[self.active].y = WD.MAP_H // 2
+        # a UI warp-confirm cue so the teleport isn't silent
+        audio.play("menu_click", 0.4)
         self.set_message(f"Teleported to {WD.cell_name(c, r)}")
 
     # -----------------------------------------------------------------
@@ -1021,12 +1166,23 @@ class WorldScene:
                 label, col = "+100 gold", (255, 220, 120)
         p.stats["treasures_opened"] = p.stats.get("treasures_opened", 0) + 1
         p.quest_progress("open_chests", 1)
-        p.check_achievements()
+        for aid in p.check_achievements():
+            ach = D.ACHIEVEMENTS.get(aid, {})
+            self.set_message(
+                f"Achievement: {ach.get('name', '?')}! +{ach.get('reward_gems', 0)} gems",
+                3.0)
         self.floats.append(FloatText(cx, cy - 20, label, col, size=22))
         # a gold sparkle burst + ring so the open feels rewarding
         self.particles.burst(cx, cy, (255, 220, 120), n=24, speed=240, size=6, life=0.6, grav=-60)
         self.particles.ring(cx, cy, (255, 240, 160), n=20, speed=300, size=5, life=0.5)
-        audio.play("buff", 0.5)
+        # vary the cue by reward tier: equipment gets the reveal chime, shards
+        # the buff hum, gold/gems a small pickup tick
+        if kind == "equipment":
+            audio.play("gacha_reveal", 0.6)
+        elif kind == "shards":
+            audio.play("buff", 0.6)
+        else:
+            audio.play("menu_click", 0.3)
         if p.settings.get("auto_save", True):
             p.save()
 
@@ -1130,6 +1286,9 @@ class WorldScene:
 
     def _do_skill(self, wc, idx):
         if not wc.can_skill(idx):
+            # soft denied buzz on a rejected skill (on cooldown / no energy) so
+            # the player gets audible feedback that the input was rejected
+            audio.play("weak", 0.15)
             return
         sk = wc.skill_list()[idx]
         if sk is None:
@@ -1280,6 +1439,8 @@ class WorldScene:
 
     def _do_ultimate(self, wc):
         if not wc.can_ultimate():
+            # soft denied buzz so a rejected ult isn't silent
+            audio.play("weak", 0.15)
             return
         skill = D.SKILLS_DB[wc.hero.ultimate]
         col = D.ELEMENT_COLORS.get(skill["element"], ((255, 255, 200),))[0]
@@ -1343,12 +1504,19 @@ class WorldScene:
         # hit of a streak gets 0% bonus and the ramp builds from there.
         self._combo_count = min(D.COMBO_MAX, self._combo_count + 1)
         self._combo_t = self._combo_window
+        # per-enemy weakness: a hero whose element matches the enemy's listed
+        # weakness deals +50% (the Genshin-style break). Surfaced as a "WEAK!"
+        # tag on the float so the player sees the counter-element pay off.
+        weak_hit = bool(getattr(en.enemy, "weakness", None)) and en.enemy.weakness == wc.element
         if self.game.player.settings.get("damage_numbers", True):
             col = (255, 220, 80) if is_crit else (255, 255, 255)
             # crits get a "!" suffix and a bigger font
             label = f"{dmg}!" if is_crit else str(dmg)
             self.floats.append(FloatText(en.x, en.y - 20, label, col,
                                          size=30 if is_crit else 20))
+            if weak_hit:
+                self.floats.append(FloatText(en.x, en.y - 8, "WEAK!",
+                                            (255, 180, 80), size=16))
         el_col = D.ELEMENT_COLORS.get(wc.element, ((200, 200, 200),))[0]
         self.particles.burst(en.x, en.y, el_col, n=8, speed=200, size=4, life=0.3)
         # elemental reaction: if this hit's element differs from the last one
@@ -1388,7 +1556,7 @@ class WorldScene:
                 self.particles.burst(en.x, en.y, rcol, n=30, speed=340, size=7, life=0.6)
                 self.particles.ring(en.x, en.y, rcol, n=20, speed=380, size=6, life=0.5)
             self.camera.add_shake(6, self._shake_mul)
-            audio.play("skill", 0.4)
+            audio.play("explosion", 0.4)
         # record this hit's element + refresh the reaction window for the next hit
         en._last_element_hit = wc.element
         en._element_hit_t = D.REACTION_WINDOW
@@ -1431,11 +1599,12 @@ class WorldScene:
         # float
         self.floats.append(FloatText(en.x, en.y - 40, f"+{gold}g", (255, 220, 120), size=18))
         # shards from bosses / elites — bosses scale by row so deeper bosses
-        # are worth more (row0=3 ... row4=19); elites rarely drop 1.
+        # are worth more (row0=3 ... row4=19); elites rarely drop 1. Non-boss
+        # shard drop rate is 15% (was 8%, near-zero sustained shard income).
         shards = 0
         if en.is_boss:
             shards = 3 + self.r * 4
-        elif random.random() < 0.08:
+        elif random.random() < 0.15:
             shards = 1
         if shards:
             p.shards += shards
@@ -1444,12 +1613,18 @@ class WorldScene:
         if random.random() < 0.12:
             p.add_item("hp_potion", 1)
             self.floats.append(FloatText(en.x, en.y + 10, "+Potion", (140, 240, 160), size=16))
-        # equipment drop from bosses
-        if en.is_boss and random.random() < 0.7:
-            pool = [k for k, v in D.EQUIPMENT_DB.items() if v["rarity"] in ("SR", "SSR")]
+        # equipment drop from bosses — only on the first clear of the cell (gated
+        # by ow_bosses_cleared) so the drop can't be farm-grounded; weight the
+        # rarity by row so deeper bosses drop better gear.
+        cid = WD.cell_id(self.c, self.r)
+        first_clear = en.is_boss and cid not in set(p.ow_bosses_cleared)
+        if first_clear and random.random() < 0.6:
+            rar = "SSR" if (self.r >= 3 and random.random() < 0.5) else "SR"
+            pool = [k for k, v in D.EQUIPMENT_DB.items() if v["rarity"] == rar]
             if pool:
                 p.add_equipment(random.choice(pool))
-                self.floats.append(FloatText(en.x, en.y + 30, "+Equipment!", (255, 200, 120), size=18))
+                self.floats.append(FloatText(en.x, en.y + 30, "+Equipment!",
+                                            (255, 200, 120), size=18))
         # boss cleared -> mark + row-scaled bonus gems (only the first clear per
         # cell pays out, so bosses can't be farm-grounded for infinite gems).
         if en.is_boss:
@@ -1462,7 +1637,7 @@ class WorldScene:
             p.stats["bosses_defeated"] = p.stats.get("bosses_defeated", 0) + 1
             if first_clear:
                 p.ow_bosses_cleared = sorted(cleared | {cid})
-            self.set_message(f"Boss defeated! +100 gems, +{shards} shards")
+            self.set_message(f"Boss defeated! +{boss_gem} gems, +{shards} shards")
             # defeat celebration: a long hit-stop, a big flash, a victory burst,
             # and a "BOSS DEFEATED" banner with the boss name for ~2.5s
             self.hit_stop = max(self.hit_stop, 0.5)
@@ -1481,7 +1656,13 @@ class WorldScene:
         p.stats["enemies_defeated"] = p.stats.get("enemies_defeated", 0) + 1
         p.quest_progress("defeat_enemies", 1)
         p.quest_progress("win_battles", 1)
-        p.check_achievements()
+        # surface newly-unlocked achievements as real-time toasts (the return
+        # value was discarded, so unlocks were invisible until the Records tab)
+        for aid in p.check_achievements():
+            ach = D.ACHIEVEMENTS.get(aid, {})
+            self.set_message(
+                f"Achievement: {ach.get('name', '?')}! +{ach.get('reward_gems', 0)} gems",
+                3.0)
         # save hero levels back
         for other in self.party:
             if other:
@@ -1496,7 +1677,8 @@ class WorldScene:
         h = wc.hero
         self.floats.append(FloatText(wc.x, wc.y - 50, f"LV {h.level}!", (255, 230, 120), size=26))
         self.particles.burst(wc.x, wc.y, (255, 220, 120), n=24, speed=220, size=6, life=0.6, grav=-60)
-        audio.play("buff", 0.5)
+        # the ascending arpeggio fits a milestone better than the generic buff hum
+        audio.play("revive", 0.5)
 
     def _hero_damaged(self, wc, dmg):
         if self.game.player.settings.get("damage_numbers", True):
@@ -1529,6 +1711,9 @@ class WorldScene:
                 self.active = i
                 self.swap_flash = 0.3
                 self.set_message(f"{wc.hero.name} is up!")
+                # a hero-downed sting so the auto-swap isn't silent (only the
+                # full-party-wipe case below plays 'defeat')
+                audio.play("weak", 0.4)
                 return
         # all down -> respawn at hub
         self.set_message("Party defeated... reviving at hub")
@@ -1553,8 +1738,13 @@ class WorldScene:
                 for i in range(3):
                     wc.skill_cd[i] = 0.0
                 wc.ult_cd = 0.0
-        # gold penalty
-        self.game.player.gold = max(0, self.game.player.gold - 50)
+        # gold penalty scaled by progress so late-game deaths matter (was a flat
+        # 50, trivial at row 3+ where one kill yields ~180-260 gold), plus a
+        # small gem/shard sting so dying isn't free.
+        penalty_gold = 50 + self.r * 30
+        self.game.player.gold = max(0, self.game.player.gold - penalty_gold)
+        self.game.player.gems = max(0, self.game.player.gems - 10)
+        self.game.player.shards = max(0, self.game.player.shards - 2)
         self.teleport_to(0, 0)
 
     # -----------------------------------------------------------------
@@ -1583,7 +1773,9 @@ class WorldScene:
         self.particles.burst(old.x, old.y, (180, 220, 255), n=18, speed=240, size=5, life=0.4)
         self.particles.burst(new.x, new.y, el_col, n=24, speed=300, size=6, life=0.5, grav=-40)
         self.camera.add_shake(2)
-        audio.play("menu_click", 0.4)
+        # a party swap is a combat action (elemental-reaction setup + i-frames),
+        # not a menu click — give it the skill whoosh instead of the click tick
+        audio.play("skill", 0.3)
 
     # -----------------------------------------------------------------
     # Update
@@ -1681,12 +1873,30 @@ class WorldScene:
                 elif e.key == pygame.K_4:
                     self._switch(3)
                 elif e.key == pygame.K_r:
-                    # use potion on active (R = recovery item)
-                    if wc and wc.alive and self.game.player.has_item("hp_potion"):
-                        self.game.player.use_item("hp_potion")
-                        wc.heal(120)
-                        self.floats.append(FloatText(wc.x, wc.y - 30, "+120", (140, 240, 160), size=22))
-                        audio.play("heal", 0.4)
+                    # use the strongest heal potion the player owns on the active
+                    # hero (R = recovery item). Picks mega_potion (>hp_potion) so
+                    # the upgrade tiers matter, and heals by the item's actual
+                    # power (was a hardcoded 120, 3x the hp_potion's listed 60).
+                    if wc and wc.alive:
+                        used = None
+                        for pid in ("mega_potion", "hp_potion"):
+                            if self.game.player.has_item(pid):
+                                used = pid
+                                break
+                        if used is not None:
+                            item = D.CONSUMABLES_DB[used]
+                            amt = item.get("power", 60)
+                            self.game.player.use_item(used)
+                            wc.heal(amt)
+                            self.floats.append(FloatText(wc.x, wc.y - 30, f"+{amt}",
+                                                         (140, 240, 160), size=22))
+                            audio.play("heal", 0.4)
+                        else:
+                            self.set_message("No potions left", 0.8)
+                            audio.play("hit", 0.15)
+                    else:
+                        self.set_message("Hero is down", 0.8)
+                        audio.play("hit", 0.15)
                 elif e.key == pygame.K_m:
                     self.teleport = TeleportOverlay(self.game)
                 elif e.key == pygame.K_g:
@@ -1766,9 +1976,22 @@ class WorldScene:
                         if res == "perfect_dodge":
                             self._on_perfect_dodge(wc)
                         else:
-                            dealt, _ = res
+                            dealt, reflected = res
                             if dealt:
                                 self._hero_damaged(wc, dealt)
+                                # thorns / reflect: send the reflected damage back
+                                # to the projectile's owner (the source enemy) so
+                                # the passive isn't silently discarded.
+                                if reflected > 0:
+                                    en = p.source
+                                    if en is not None and en.alive:
+                                        en.enemy.hp -= reflected
+                                        if en.enemy.hp <= 0:
+                                            en.enemy.hp = 0
+                                            en.alive = False
+                                        self.floats.append(FloatText(
+                                            en.x, en.y - 20, str(reflected),
+                                            (180, 220, 255), size=18))
                         continue
                     new_proj.append(p)
         self.projectiles = new_proj
@@ -1823,9 +2046,18 @@ class WorldScene:
         elif name == "enemy_shoot":
             audio.play("skill", 0.2)
         elif name == "boss_ult":
-            # boss ultimate: big AoE around boss
+            # boss ultimate: big AoE around boss. The radius/damage scale with the
+            # mapped BOSS_ULT skill so the 6 bosses differ (frost = wider+freeze,
+            # storm = wider high-damage, abyssal = lingering, hellfire = big).
+            ult_id = D.BOSS_ULT.get(en.id)
+            usk = D.SKILLS_DB.get(ult_id, {}) if ult_id else {}
+            upower = usk.get("power", 1.8)
+            radius = 260
+            if ult_id in ("frost_cataclysm", "storm_of_embers"):
+                radius = 320
             col = D.ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
             self.particles.burst(en.x, en.y, col, n=50, speed=360, size=8, life=0.8, grav=0)
+            self.particles.ring(en.x, en.y, col, n=36, speed=440, size=7, life=0.6)
             self.camera.add_shake(12, self._shake_mul)
             self.flash = 0.35
             if self._reduce_motion:
@@ -1833,15 +2065,27 @@ class WorldScene:
             audio.play("boss_ult", 0.7)
             # damage active hero if close
             wc = self.party[self.active]
-            if wc and wc.alive and math.hypot(wc.x - en.x, wc.y - en.y) < 260:
-                dmg = int(en.enemy.atk * 1.8 * self._element_mult(en.element, wc.element))
+            if wc and wc.alive and math.hypot(wc.x - en.x, wc.y - en.y) < radius:
+                dmg = int(en.enemy.atk * upower * self._element_mult(en.element, wc.element))
                 res = wc.take_damage(dmg, en.x, en.y, is_melee=False)
                 if res == "perfect_dodge":
                     self._on_perfect_dodge(wc)
                 else:
-                    dealt, _ = res
+                    dealt, reflected = res
                     if dealt:
                         self._hero_damaged(wc, dealt)
+                        # thorns/reflect: send reflected damage back to the boss
+                        if reflected > 0 and en.alive:
+                            en.enemy.hp -= reflected
+                            if en.enemy.hp <= 0:
+                                en.enemy.hp = 0
+                                en.alive = False
+                            self.floats.append(FloatText(
+                                en.x, en.y - 20, str(reflected),
+                                (180, 220, 255), size=18))
+                # frost cataclysm also briefly freezes a hero caught in the blast
+                if ult_id == "frost_cataclysm" and wc.alive:
+                    wc._react_stun = max(getattr(wc, "_react_stun", 0.0), 1.2)
         elif name == "boss_phase":
             # boss advanced a phase: a telegraph flash + a warning sound so the
             # player feels the fight escalate (the new patterns start next)
@@ -1852,8 +2096,10 @@ class WorldScene:
             audio.play("boss_intro", 0.5)
             self.set_message(f"{en.enemy.name} — Phase {en._boss_phase}!", 1.5)
         elif name == "boss_warn":
-            # a boss pattern is telegraphing: a low warning ping + a small flash
-            audio.play("boss_ult", 0.25)
+            # a boss pattern is telegraphing: a distinct low warning ping (was
+            # the boss_ult sound at 0.25 — a quieted version of the BIG boss
+            # ult sound, easy to miss and confusing). Use 'weak' as the tell.
+            audio.play("weak", 0.3)
         elif name == "boss_charge":
             # the boss finished its charge dash: damage the active hero if the
             # boss overlaps them (the dash is dodgeable by sidestepping the line)
@@ -1864,9 +2110,17 @@ class WorldScene:
                 if res == "perfect_dodge":
                     self._on_perfect_dodge(wc)
                 else:
-                    dealt, _ = res
+                    dealt, reflected = res
                     if dealt:
                         self._hero_damaged(wc, dealt)
+                        if reflected > 0 and en.alive:
+                            en.enemy.hp -= reflected
+                            if en.enemy.hp <= 0:
+                                en.enemy.hp = 0
+                                en.alive = False
+                            self.floats.append(FloatText(
+                                en.x, en.y - 20, str(reflected),
+                                (180, 220, 255), size=18))
             col = D.ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
             self.particles.burst(en.x, en.y, col, n=24, speed=300, size=6, life=0.5)
             self.camera.add_shake(8, self._shake_mul)
@@ -1881,9 +2135,17 @@ class WorldScene:
                 if res == "perfect_dodge":
                     self._on_perfect_dodge(wc)
                 else:
-                    dealt, _ = res
+                    dealt, reflected = res
                     if dealt:
                         self._hero_damaged(wc, dealt)
+                        if reflected > 0 and en.alive:
+                            en.enemy.hp -= reflected
+                            if en.enemy.hp <= 0:
+                                en.enemy.hp = 0
+                                en.alive = False
+                            self.floats.append(FloatText(
+                                en.x, en.y - 20, str(reflected),
+                                (180, 220, 255), size=18))
             col = D.ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
             # a big expanding ring + burst so the slam reads as a shockwave
             self.particles.ring(en.x, en.y, col, n=40, speed=500, size=8, life=0.6)
@@ -1938,6 +2200,27 @@ class WorldScene:
         # projectiles
         for p in self.projectiles:
             p.draw(surf, ox, oy)
+
+        # RMB click-to-move ground marker — a pulsing reticle at the auto-walk
+        # target so the player sees where the click registered and where the
+        # hero is heading (was invisible: the hero just started walking).
+        if wc and getattr(wc, "move_target", None):
+            tx, ty = wc.move_target
+            sx, sy = int(tx - ox), int(ty - oy)
+            if -60 < sx < 1340 and -60 < sy < 780:
+                pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.01)
+                pygame.draw.circle(surf, (255, 255, 255),
+                                   (sx, sy), 8, 2)
+                pygame.draw.circle(surf, (255, 255, 255),
+                                   (sx, sy), 2)
+                # fade the ring as the hero approaches the target
+                d = math.hypot(tx - wc.x, ty - wc.y)
+                if d < 40:
+                    a = int(120 * pulse * (d / 40))
+                    ring = scratch(24, 24)
+                    pygame.draw.circle(ring, (255, 255, 255, a),
+                                       (12, 12), 10, 2)
+                    surf.blit(ring, (sx - 12, sy - 12))
 
         # treasure chests — a glowing crate with a soft pulse; dimmed once opened
         for ch in self.chests:
@@ -2033,6 +2316,10 @@ class WorldScene:
         else:
             a = 1.0
         alpha = int(220 * a)
+        # honor reduce_motion: keep the banner a subtle low-contrast notification
+        if getattr(self, "_reduce_motion", False):
+            alpha = min(alpha, 80)
+            a = min(a, 0.4)
         # a dark band across the upper-middle of the screen
         band = pygame.Surface((1280, 140), pygame.SRCALPHA)
         pygame.draw.rect(band, (10, 8, 16, int(180 * a)), band.get_rect())
@@ -2062,7 +2349,10 @@ class WorldScene:
         # the anchor; the phase shifts it. Quantize the phase to 1/16 so the
         # _biome_atmos cache key stays stable (otherwise the continuous phase
         # would allocate a fresh 3.5MB overlay every frame — a memory leak).
-        sky = self._sky_for_phase(sky, _qphase=round(self._world_time, 4))
+        # quantize the phase to 1/16 so the _biome_atmos cache key stays stable
+        # (otherwise the continuous phase would allocate a fresh 3.5MB overlay
+        # every frame — a memory leak). 16 buckets per biome is ~56MB total.
+        sky = self._sky_for_phase(sky, _qphase=round(self._world_time * 16) / 16 % 1.0)
         # base atmosphere (vignette + sky gradient) — one cached blit per biome+phase
         base = self._biome_atmos(sky)
         surf.blit(base, (0, 0))
@@ -2090,21 +2380,26 @@ class WorldScene:
                 # a directional slide-wipe for edge transitions, a soft circle
                 # wipe for teleports; falls back to a flat fade
                 a = int(190 * (self.map_enter_t / 0.45))
+                if self._reduce_motion:
+                    a = min(a, 60)
                 d = self._enter_dir
                 if d in ("left", "right", "top", "bottom"):
                     prog = 1 - (self.map_enter_t / 0.45)   # 0..1 as it clears
+                    # the wipe band retreats in the direction of travel so the
+                    # hero's entry edge is uncovered first (was inverted: the
+                    # band sat on the entry edge and hid the hero until the end)
                     if d == "right":
                         wband = int((1 - prog) * 1280)
-                        ov.fill((0, 0, 0, a), (0, 0, wband, 720))
+                        ov.fill((0, 0, 0, a), (1280 - wband, 0, wband, 720))
                     elif d == "left":
                         wband = int((1 - prog) * 1280)
-                        ov.fill((0, 0, 0, a), (1280 - wband, 0, wband, 720))
+                        ov.fill((0, 0, 0, a), (0, 0, wband, 720))
                     elif d == "bottom":
                         hband = int((1 - prog) * 720)
-                        ov.fill((0, 0, 0, a), (0, 0, 1280, hband))
+                        ov.fill((0, 0, 0, a), (0, 720 - hband, 1280, hband))
                     elif d == "top":
                         hband = int((1 - prog) * 720)
-                        ov.fill((0, 0, 0, a), (0, 720 - hband, 1280, hband))
+                        ov.fill((0, 0, 0, a), (0, 0, 1280, hband))
                 else:
                     ov.fill((0, 0, 0, a))
             if self.swap_flash > 0:
@@ -2129,10 +2424,15 @@ class WorldScene:
                 a = int(22 * (1 - t))
                 pygame.draw.rect(ov, (*sky, a), (0, y, 1280, 4))
             # vignette — darker corners (the inset grows outward, so the alpha
-            # is highest at the outermost ring = the corners, not the center)
+            # is highest at the outermost ring = the corners, not the center).
+            # Tint the vignette with a darkened sky color so the depth shading
+            # reads as the biome's own (cave = deep-blue, castle = warm-brown)
+            # rather than pure black in every biome.
+            sky_dark = (sky[0] // 4, sky[1] // 4, sky[2] // 4)
             for i in range(0, 220, 6):
                 a = int(80 * (1 - i / 220) ** 2)
-                pygame.draw.rect(ov, (0, 0, 0, a), (i, i, 1280 - 2 * i, 720 - 2 * i), 6)
+                pygame.draw.rect(ov, (*sky_dark, a),
+                                 (i, i, 1280 - 2 * i, 720 - 2 * i), 6)
             self._light_cache[key] = ov
         return ov
 
@@ -2168,28 +2468,35 @@ class WorldScene:
         # brightness curve: full (1.0) near p=0.25 (midday), dim (~0.45) at
         # p=0.75 (night). cos(2*pi*(p-0.25)) is +1 at midday, -1 at night.
         bright = 0.72 + 0.28 * math.cos(2 * math.pi * (p - 0.25))
-        if p < 0.5:
-            # day half (dawn -> midday -> dusk): warm tint peaks at midday
-            warm = max(0, math.cos(2 * math.pi * (p - 0.25)))
-            r = min(255, int(r * bright + 18 * warm))
-            g = min(255, int(g * bright))
-            b = min(255, int(b * bright - 8 * warm))
-        else:
-            # night half (dusk -> night -> pre-dawn): darker + a cool blue shift
-            r = max(10, int(r * bright * 0.78))
-            g = max(10, int(g * bright * 0.86))
-            b = min(255, int(b * bright * 0.95 + 16))
+        # a single continuous warm/cool model across the whole cycle (no branch
+        # at p=0.5 — the old day/night halves used different multipliers and
+        # kicked the color by ~24 R-units in one frame at dusk). Warmth flares
+        # at the two horizons (dawn ~0.0, dusk ~0.5) and is ~0 at noon, so the
+        # warm hue reads as dawn/dusk, not midday. Cool grows as brightness
+        # falls so night skews blue.
+        warm = 0.9 * math.exp(-((p - 0.0) / 0.10) ** 2) + \
+               0.9 * math.exp(-((p - 0.5) / 0.10) ** 2)
+        warm = min(1.0, warm)
+        cool = max(0, 1 - bright)
+        r = min(255, int(r * bright + 22 * warm))
+        g = min(255, int(g * bright + 4 * warm))
+        b = min(255, max(10, int(b * bright + 16 * cool - 10 * warm)))
         return (r, g, b)
 
     def _night_overlay(self):
         """A cached full-screen darkening overlay whose strength follows the day
-        phase — strongest at night (0.5..1.0), none during the day. Quantized
-        to 8 steps so the cache key stays stable (one overlay per night level)."""
+        phase — strongest near midnight, none during the day. Quantized to 8
+        steps so the cache key stays stable (one overlay per night level). The
+        active window ramps up after dusk, peaks near midnight, and ramps back
+        down through pre-dawn with no hard snap (was: a one-frame cut at 0.95)."""
         p = self._world_time
-        # only night-time (p in 0.45..0.95) darkens; max ~90 alpha at midnight
-        if p < 0.4 or p > 0.95:
+        # distance from midnight (0.75) along the wrapped cycle; 0 at midnight,
+        # 0.5 at noon. Only darken once we're past dusk (p >= 0.4).
+        dp = abs(((p - 0.75) + 0.5) % 1.0 - 0.5)   # 0 at 0.75, 0.5 at 0.25
+        if p < 0.4 or dp > 0.35:
             return None
-        level = int((p - 0.4) / 0.55 * 8)   # 0..8
+        # 8 at midnight (dp=0), fading to 0 at the edges of the window (dp=0.35)
+        level = int(8 * (1 - dp / 0.35))
         level = max(1, min(8, level))
         key = ("night", level)
         ov = self._light_cache.get(key)
@@ -2278,7 +2585,14 @@ class WorldScene:
             draw_bar(surf, (96, 68, 200, 14), hero.hp / max(1, hero.max_hp), (220, 70, 80))
             # energy bar
             draw_bar(surf, (96, 86, 200, 10), hero.energy / max(1, hero.max_energy), (90, 150, 240))
-            text(surf, f"{int(hero.hp)}/{hero.max_hp}", 12, (255, 255, 255), (302, 66), center=False)
+            # HP + energy numerics, right-aligned inside their bars so a 999/999
+            # doesn't overflow the 300px panel (was left-aligned at x=302)
+            hp_txt = f"{int(hero.hp)}/{hero.max_hp}"
+            hp_w = _font(12).size(hp_txt)[0]
+            text(surf, hp_txt, 12, (255, 255, 255), (96 + 200 - hp_w - 2, 66), center=False)
+            en_txt = f"{int(hero.energy)}/{hero.max_energy}"
+            en_w = _font(12).size(en_txt)[0]
+            text(surf, en_txt, 10, (200, 220, 255), (96 + 200 - en_w - 2, 84), center=False)
             # low-HP warning pulse on the panel border
             if hero.hp / max(1, hero.max_hp) < 0.3:
                 pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.012)
@@ -2330,21 +2644,33 @@ class WorldScene:
                 surf.blit(dim2, r2.topleft)
                 text(surf, "DOWN", 12, (255, 80, 80), r2.center, center=True)
 
-        # top-right: map name + resources
-        text(surf, WD.cell_name(self.c, self.r), 20, (255, 240, 180), (1264, 20),
-             center=False)
-        # right-align: measure
+        # top-right: map name (right-aligned to the screen edge so long boss-cell
+        # names like "Whispering Woods - Sanctum" don't overflow off-screen)
         fnt = _font(20)
-        res = f"Gems {p.gems}   Gold {p.gold}   Shards {p.shards}"
-        rt = fnt.render(res, True, (255, 220, 120))
-        surf.blit(rt, (1264 - rt.get_width(), 44))
+        name = WD.cell_name(self.c, self.r)
+        nrt = fnt.render(name, True, (255, 240, 180))
+        surf.blit(nrt, (1276 - nrt.get_width(), 20))
+        # resources — each currency in its own color (gems blue, gold yellow,
+        # shards purple) so the player can glance and distinguish them, stacked
+        # right-aligned under the map name
+        parts = [(f"Gems {p.gems}", (120, 200, 255)),
+                 (f"Gold {p.gold}", (255, 210, 90)),
+                 (f"Shards {p.shards}", (200, 160, 255))]
+        yy = 44
+        for txt, col in parts:
+            rt = fnt.render(txt, True, col)
+            surf.blit(rt, (1264 - rt.get_width(), yy))
+            yy += 22
 
         # combo counter — only show once a streak is building (>= 2 hits), with
-        # a shrinking timer bar so the player feels the window closing
+        # a shrinking timer bar so the player feels the window closing. The
+        # label shows the damage bonus (count * COMBO_BONUS_PER) so the streak's
+        # point is legible, not just a number.
         if self._combo_count >= 2:
             cx = 640
             cy = 120
-            label = f"x{self._combo_count} COMBO"
+            bonus = int(self._combo_count * D.COMBO_BONUS_PER * 100)
+            label = f"x{self._combo_count}  +{bonus}% DMG"
             col = (255, 220, 80) if self._combo_count < 10 else (255, 120, 120)
             text(surf, label, 26, col, (cx, cy), center=True)
             # timer bar
@@ -2378,12 +2704,20 @@ class WorldScene:
             # boss name + level, centered over the bar
             text(surf, f"{boss.enemy.name}  Lv {boss.enemy.level}", 18, (255, 230, 230),
                  (640, by + 1), center=True)
-            # phase indicator: when the boss has used its ult (below 50%), show
-            # an "ENRAGED" tag so the player knows the fight escalated
+            # phase number (right-aligned inside the frame) + numeric HP, so the
+            # player can tell which phase the boss is in and how close to death
+            ph_txt = f"Phase {boss._boss_phase}/3"
+            ph_w = _font(11).size(ph_txt)[0]
+            text(surf, ph_txt, 11, (255, 200, 200), (bx + bw - ph_w - 4, by + 2),
+                 center=False)
+            text(surf, f"{int(boss.enemy.hp)}/{boss.enemy.max_hp} ({int(frac*100)}%)",
+                 12, (255, 230, 230), (640, by + 22), center=True)
+            # enraged tag — centered UNDER the boss name so it doesn't collide
+            # with the right-aligned resources line (was at bx+bw+14 = 974)
             if getattr(boss, "ult_used", False):
                 pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.01)
                 col = (int(200 * pulse + 55), 40, 50)
-                text(surf, "ENRAGED", 12, col, (bx + bw + 14, by + 2))
+                text(surf, "ENRAGED", 12, col, (640, by + 40), center=True)
 
         # controls hint (bottom)
         if self.game.player.settings.get("show_hints", True):
@@ -2528,12 +2862,17 @@ class WorldScene:
             chip_w = 150
             cx0 = ux - chip_w - 14
             cy0 = uy + 6
-            cr = pygame.Rect(cx0, cy0, chip_w, slot - 12)
+            cr = pygame.Rect(cx0, cy0, chip_w, slot - 2)
             pygame.draw.rect(surf, (24, 22, 40), cr, border_radius=8)
             pygame.draw.rect(surf, (140, 200, 160), cr, 1, border_radius=8)
             text(surf, "PASSIVE", 10, (160, 220, 180), (cr.x + 6, cr.y + 3))
             text(surf, pv["name"], 12, (220, 240, 220), (cr.x + 6, cr.y + 18))
-            text(surf, pv["desc"][:20], 9, (170, 190, 170), (cr.x + 6, cr.y + 33))
+            # word-wrap the desc into 2 lines so the meaning isn't cut mid-word
+            # (was [:20] which yielded 'Heal for 12% of basi')
+            desc = pv["desc"]
+            text(surf, desc[:24], 9, (170, 190, 170), (cr.x + 6, cr.y + 33))
+            if len(desc) > 24:
+                text(surf, desc[24:48], 9, (170, 190, 170), (cr.x + 6, cr.y + 44))
 
 
 # ---------------------------------------------------------------------------

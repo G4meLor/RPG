@@ -330,7 +330,7 @@ class TitleScene(Scene):
             Button((WIDTH // 2 - 120, 492, 240, 56), "Shop", (70, 90, 130), (100, 130, 190)),
             Button((WIDTH // 2 - 120, 556, 240, 56), "Codex", (70, 110, 90), (110, 170, 130)),
             Button((WIDTH // 2 - 120, 620, 240, 56), "Records", (60, 70, 110), (90, 110, 160), size=20),
-            Button((WIDTH // 2 - 120, 684, 240, 40), "Settings", (110, 90, 60), (170, 140, 80), size=18),
+            Button((WIDTH // 2 - 120, 676, 240, 40), "Settings", (110, 90, 60), (170, 140, 80), size=18),
         ]
         # shimmering embers rising from the bottom for atmosphere (cached colors)
         self.particles = []
@@ -398,13 +398,14 @@ class TitleScene(Scene):
             b.draw(surf)
         text(surf, f"Gems: {self.game.player.gems}   Gold: {self.game.player.gold}", 18, GOLD,
              (WIDTH // 2, 280), center=True)
-        # login bonus popup
+        # login bonus popup — placed at the top so it stays on-screen and does
+        # not overlap the Settings button (which sits at the bottom of the stack)
         bonus = getattr(self.game, "_login_bonus", None)
         if bonus:
             amt, streak = bonus
-            draw_panel(surf, (WIDTH // 2 - 220, 700, 440, 40))
+            draw_panel(surf, (WIDTH // 2 - 220, 60, 440, 40))
             text(surf, f"Daily login! Day {streak}: +{amt} gems", 18, (255, 240, 160),
-                 (WIDTH // 2, 720), center=True)
+                 (WIDTH // 2, 80), center=True)
             if self.t > 4.0:
                 self.game._login_bonus = None
 
@@ -416,6 +417,7 @@ class RosterScene(Scene):
         self.back_btn = Button((40, 40, 140, 48), "Back", (60, 60, 90), (90, 90, 130), size=20)
         self.scroll = 0
         self.t = 0
+        self.cols = 4   # card columns (kept here so scroll clamping can reuse it)
         self.portrait_cache = {}
         # cached scaled card art: (hid) -> (frame_surf, portrait_surf) at the
         # fixed card size, built once so draw() doesn't smoothscale per frame.
@@ -444,9 +446,9 @@ class RosterScene(Scene):
     def _build_cards(self):
         owned_ids = list(self.game.player.owned.keys())
         card_w, card_h = 180, 240
-        # 5 columns so the last column (x=60+4*196=844, right=1024) doesn't
-        # overlap the Battle Team panel (x=920). 6 cols at x=1040 overlapped it.
-        cols = 5
+        # 4 columns so the last column (x=60+3*196=648, right=828) clears the
+        # Battle Team panel (x=920). 5 cols at x=844 still overlapped it by 104px.
+        cols = 4
         gap = 16
         start_x = 60
         start_y = 110
@@ -474,7 +476,13 @@ class RosterScene(Scene):
                         self.game.goto("hero_detail", hero_id=hid)
                         return
             if e.type == pygame.MOUSEWHEEL:
-                self.scroll = max(0, self.scroll - e.y * 40)
+                # clamp scroll to the content height so the roster can't scroll
+                # past its end (which left a blank screen with no way back).
+                n = len(self.game.player.owned)
+                rows = (n + self.cols - 1) // self.cols
+                content_h = rows * (256)   # card_h (240) + gap (16)
+                max_scroll = max(0, content_h - (HEIGHT - 110 - 40))
+                self.scroll = max(0, min(self.scroll - e.y * 40, max_scroll))
 
     def draw(self, surf):
         surf.fill(BG_DARK)
@@ -518,6 +526,20 @@ class RosterScene(Scene):
             for a in range(D.MAX_ASCENSION):
                 col = (255, 120, 200) if a < asc else (70, 60, 80)
                 pygame.draw.circle(surf, col, (rect.x + 24 + a * 16, rect.y + 12), 5)
+            # equipment set-progress hint: nudge the player toward a set bonus by
+            # showing the completed set name or a "2/3" in-progress line.
+            eq = info.get("equipment", {})
+            eq_ids = set(eq.values()) if eq else set()
+            for sdef in D.EQUIPMENT_SETS.values():
+                have = len(set(sdef["items"]) & eq_ids)
+                if have == 3:
+                    text(surf, sdef["name"], 10, (255, 220, 120),
+                         (rect.centerx, rect.y + pw + 72), center=True)
+                    break
+                if have == 2:
+                    text(surf, f"{sdef['name']} 2/3", 10, (200, 180, 120),
+                         (rect.centerx, rect.y + pw + 72), center=True)
+                    break
         self.back_btn.draw(surf)
         text(surf, f"Heroes owned: {len(self.game.player.owned)}  |  Scroll: mouse wheel", 16, DIM,
              (WIDTH // 2, HEIGHT - 30), center=True)
@@ -655,34 +677,36 @@ class HeroDetailScene(Scene):
         stats = [("HP", h_inst.max_hp, HP_RED), ("ATK", h_inst.atk, (255, 120, 80)),
                  ("DEF", h_inst.defn, (140, 180, 255)), ("SPD", h_inst.spd, (180, 240, 220)),
                  ("MP", h_inst.max_mp, MP_BLUE), ("Crit", f"{int(h_inst.crit_chance*100)}%", (255, 220, 120))]
+        # stat rows are kept in the LEFT of the panel (x 460..680) so the bars
+        # and values are not obscured by the equipment slots on the right.
         for i, (lbl, val, col) in enumerate(stats):
-            y = 170 + i * 44
-            text(surf, lbl, 20, WHITE, (480, y))
+            y = 160 + i * 36
+            text(surf, lbl, 20, WHITE, (470, y))
             if isinstance(val, int):
-                # stat bar (relative)
+                # stat bar (relative) — narrow so it stays clear of the slots
                 frac = min(1, val / 400)
-                draw_bar(surf, (560, y + 4, 300, 20), frac, col)
-            text(surf, str(val), 20, col, (880, y))
-        # level + xp
-        text(surf, f"Level {rec['level']}", 22, WHITE, (480, 410))
+                draw_bar(surf, (540, y + 4, 110, 20), frac, col)
+            text(surf, str(val), 20, col, (660, y))
+        # level + xp (left zone, below the stat rows)
+        text(surf, f"Level {rec['level']}", 22, WHITE, (470, 384))
         xp_need = D.xp_to_next(rec["level"])
-        draw_bar(surf, (560, 416, 300, 18), rec["xp"] / max(1, xp_need), XP_PURPLE)
-        text(surf, f"XP {rec['xp']}/{xp_need}", 16, DIM, (880, 412))
-        # ultimate
+        draw_bar(surf, (540, 390, 110, 18), rec["xp"] / max(1, xp_need), XP_PURPLE)
+        text(surf, f"XP {rec['xp']}/{xp_need}", 13, DIM, (660, 386))
+        # ultimate / passive / skills / evo — moved up inside the panel (which
+        # ends at y=470) so they are no longer overlapped by the inventory list.
         ult_name = D.SKILLS_DB[hd["ultimate"]]["name"] if hd.get("ultimate") else "None"
-        text(surf, f"Ultimate: {ult_name}", 18, (255, 180, 120), (480, 444))
-        # passive + Q/W/E abilities (LoL-style) summary
+        text(surf, f"Ultimate: {ult_name}", 18, (255, 180, 120), (470, 412))
         pv = h_inst.passive
         if pv:
-            text(surf, f"Passive: {pv['name']}", 16, (160, 220, 180), (480, 464))
+            text(surf, f"Passive: {pv['name']}", 14, (160, 220, 180), (470, 432))
         ab = D.hero_abilities(hd)
         ab_names = [D.SKILLS_DB[s]["name"] if s and s in D.SKILLS_DB else "-" for s in ab]
-        text(surf, f"Skills:  Q {ab_names[0]}  |  W {ab_names[1]}  |  E {ab_names[2]}",
-             14, (200, 220, 255), (480, 484))
+        text(surf, f"Q {ab_names[0]}  W {ab_names[1]}  E {ab_names[2]}",
+             13, (200, 220, 255), (470, 450))
         # evolution tree progress
         nn = len(rec.get("evo_nodes", []))
-        text(surf, f"Evolution Tree: {nn}/5 nodes  |  Evolve Tier: {h_inst.evolve_title()}",
-             14, (220, 180, 255), (480, 504))
+        text(surf, f"Evo {nn}/5  Tier {h_inst.evolve_title()}",
+             13, (220, 180, 255), (470, 466))
         # equipment slots
         text(surf, "Equipment", 22, GOLD, (680, 168))
         self._item_rects = []
@@ -698,15 +722,16 @@ class HeroDetailScene(Scene):
                 ic = load_item_icon(eq, 120)
                 surf.blit(ic, (sr.centerx - 60, sr.y + 20))
                 text(surf, D.EQUIPMENT_DB[eq]["name"], 13, WHITE, (sr.centerx, sr.bottom + 24), center=True)
-        # active set bonus indicator
+        # active set bonus indicator (below the equipment slots)
         set_name = h_inst.set_name()
         if set_name:
             set_def = next((v for v in D.EQUIPMENT_SETS.values() if v["name"] == set_name), None)
             if set_def:
                 text(surf, f"Set: {set_name} ({set_def['desc']})", 13, (255, 220, 120), (680, 372))
-        # equipment inventory list
-        text(surf, "Inventory (click to equip)", 20, GOLD, (460, 400))
-        ex, ey = 460, 430
+        # equipment inventory list — moved below the stats panel (y=490+) so it
+        # no longer overlaps the skills/evo text that sat at y=484/504.
+        text(surf, "Inventory (click to equip)", 20, GOLD, (460, 484))
+        ex, ey = 460, 504
         for i, item_id in enumerate(self.game.player.equipment_inv[:8]):
             col = i % 4
             row = i // 4
@@ -744,6 +769,9 @@ class GachaScene(Scene):
         self.particles = []
         self.spark_t = 0
         self._rolled_sound = False
+        # compact summary of the last batch so a skipped reveal still leaves an
+        # at-a-glance record on the idle screen (list of (hid, rar)).
+        self._last_summary = []
         # snapshot of owned hero ids before a pull, so the reveal can show NEW!
         self._pre_pull_owned = set(self.game.player.owned.keys())
         self._banner_rects = []    # (banner_id, rect) for the banner selector
@@ -808,31 +836,70 @@ class GachaScene(Scene):
             self.particles = [p for p in self.particles if p[4] > 0]
             if self.anim_t > 1.6:
                 self.state = "reveal"; self.reveal_idx = 0; self.reveal_t = 0
-                # play a stronger reveal sound for SSR results
-                top_rar = self.results[0][1] if self.results else "R"
-                audio.play("gacha_reveal", 0.8 if top_rar == "SSR" else 0.5)
+                # opening reveal sound scaled to the BEST rarity in the batch
+                # (not the first card) so an SSR buried later still triggers the
+                # strong cue. Reuse 'victory' as the SSR fanfare.
+                _rank = {"SSR": 3, "SR": 2, "R": 1}
+                best = max(self.results, key=lambda r: _rank.get(r[1], 1))[1] if self.results else "R"
+                if best == "SSR":
+                    audio.play("gacha_reveal", 0.9)
+                    audio.play("victory", 0.6)
+                elif best == "SR":
+                    audio.play("gacha_reveal", 0.6)
+                else:
+                    audio.play("gacha_reveal", 0.4)
+                # seed a rarity-scaled radial burst for the first card shown
+                if self.results:
+                    self._seed_reveal_burst(self.results[0][1])
         elif self.state == "reveal":
             self.reveal_t += dt
+            # update + cull the reveal burst particles
+            for p in self.particles:
+                p[0] += p[2] * dt; p[1] += p[3] * dt; p[4] -= dt
+            self.particles = [p for p in self.particles if p[4] > 0]
             for e in events:
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 or \
                    (e.type == pygame.KEYDOWN and e.key in (pygame.K_RETURN, pygame.K_SPACE)):
-                    # skip to the end on a second click/enter
+                    # advance to the next card; play a per-card rarity sound
                     if self.reveal_idx < len(self.results) - 1:
                         self.reveal_idx += 1; self.reveal_t = 0
-                        audio.play("gacha_reveal", 0.4)
+                        nrar = self.results[self.reveal_idx][1]
+                        if nrar == "SSR":
+                            audio.play("gacha_reveal", 0.8)
+                        elif nrar == "SR":
+                            audio.play("gacha_reveal", 0.5)
+                        else:
+                            audio.play("menu_click", 0.3)
+                        self._seed_reveal_burst(nrar)
                     else:
                         self.state = "idle"; self.results = []
                     return
-                # Esc / right-click skips the whole reveal
+                # Esc / right-click skips the whole reveal (summary is retained)
                 if (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE) or \
                    (e.type == pygame.MOUSEBUTTONDOWN and e.button == 3):
                     self.state = "idle"; self.results = []
                     return
-            if self.reveal_t > 2.0:
+            # auto-advance with a rarity-scaled dwell so SSR breathes and R
+            # dismisses quickly (a 10-pull of mostly R cards does not drag).
+            rar = self.results[self.reveal_idx][1] if self.results else "R"
+            dwell = {"SSR": 3.2, "SR": 2.2, "R": 1.2}.get(rar, 2.0)
+            if self.reveal_t > dwell:
                 if self.reveal_idx < len(self.results) - 1:
                     self.reveal_idx += 1; self.reveal_t = 0
+                    self._seed_reveal_burst(self.results[self.reveal_idx][1])
                 else:
                     self.state = "idle"; self.results = []
+
+    def _seed_reveal_burst(self, rar):
+        """Seed a rarity-scaled radial particle burst for a revealed card."""
+        n_burst = 50 if rar == "SSR" else (25 if rar == "SR" else 0)
+        for _ in range(n_burst):
+            ang = random.uniform(0, math.tau)
+            spd = random.uniform(140, 380) if rar == "SSR" else random.uniform(90, 220)
+            self.particles.append([WIDTH // 2, HEIGHT // 2 - 20,
+                                  math.cos(ang) * spd, math.sin(ang) * spd,
+                                  random.uniform(0.6, 1.2),
+                                  D.RARITY_COLORS.get(rar, (255, 240, 180))])
 
     def _do_pull(self, count):
         self._pre_pull_owned = set(self.game.player.owned.keys())
@@ -845,6 +912,13 @@ class GachaScene(Scene):
         for hid, rar, is_feat in raw:
             status, refund = self.gacha.apply_result(hid, rar, is_feat)
             self.results.append((hid, rar, is_feat, status, refund))
+        # sort worst-to-best so the reveal builds toward the rarest card
+        # ("save the best for last") and the opening cue matches the best pull.
+        _order = {"R": 0, "SR": 1, "SSR": 2}
+        self.results.sort(key=lambda r: _order.get(r[1], 0))
+        # keep a compact summary of the last batch so a skipped reveal still
+        # leaves an at-a-glance record on the idle screen.
+        self._last_summary = [(r[0], r[1]) for r in self.results]
         self.game.player.check_achievements()
         self.game.player.save()
         self.state = "animating"; self.anim_t = 0
@@ -927,6 +1001,13 @@ class GachaScene(Scene):
             text(surf, "SSR 6%  |  SR 30%  |  R 64%", 18, DIM, (WIDTH // 2, 670), center=True)
             text(surf, "Guaranteed SR+ every 10 pulls  |  Guaranteed SSR every 60 pulls",
                  14, (200, 160, 120), (WIDTH // 2, 694), center=True)
+            # compact "Last pull" summary so a skipped reveal still leaves a
+            # record of the most recent batch (shown on the idle screen).
+            if self._last_summary:
+                from collections import Counter
+                cnt = Counter(r for _, r in self._last_summary)
+                summary = "  ".join(f"{cnt[r]}{r}" for r in ("SSR", "SR", "R") if cnt.get(r))
+                text(surf, f"Last pull: {summary}", 14, (200, 200, 220), (220, 612), center=True)
             self.back_btn.draw(surf)
         elif self.state == "reveal":
             self._draw_reveal(surf)
@@ -937,13 +1018,31 @@ class GachaScene(Scene):
         rcol = D.RARITY_COLORS.get(rar, (200, 200, 200))
         # dim backdrop (cached)
         surf.blit(_dim_overlay(180), (0, 0))
-        pop = min(1.0, self.reveal_t * 4)
-        scale = 0.6 + 0.4 * pop
-        if self.reveal_t < 0.3:
-            scale *= 1 + math.sin(self.reveal_t * 20) * 0.05
+        # multi-stage scale keyed to rarity: SSR gets a slow zoom + overshoot,
+        # SR a single pop, R a quick snap — so an SSR lands with more weight.
+        if rar == "SSR":
+            if self.reveal_t < 0.6:
+                scale = 0.3 + 0.3 * (self.reveal_t / 0.6)
+            elif self.reveal_t < 1.0:
+                u = (self.reveal_t - 0.6) / 0.4
+                scale = 0.6 + 0.4 * u + math.sin(u * math.pi) * 0.12
+            else:
+                scale = 1.0 + math.sin((self.reveal_t - 1.0) * 6) * 0.03
+        elif rar == "SR":
+            pop = min(1.0, self.reveal_t * 4)
+            scale = 0.6 + 0.4 * pop
+            if self.reveal_t < 0.3:
+                scale *= 1 + math.sin(self.reveal_t * 20) * 0.05
+        else:  # R - quick snap, no fanfare
+            pop = min(1.0, self.reveal_t * 6)
+            scale = 0.6 + 0.4 * pop
         cw, ch = int(360 * scale), int(460 * scale)
         cx, cy = WIDTH // 2, HEIGHT // 2 - 20
-        rect = pygame.Rect(0, 0, cw, ch); rect.center = (cx, cy)
+        # decaying screen shake for SSR on entry (first 0.5s only)
+        shake_x = 0
+        if rar == "SSR" and self.reveal_t < 0.5:
+            shake_x = math.sin(self.reveal_t * 40) * 8 * (1 - self.reveal_t / 0.5)
+        rect = pygame.Rect(0, 0, cw, ch); rect.center = (cx + int(shake_x), cy)
         # rarity glow behind the card (reused scratch surface)
         glow = _scratch(cw + 120, ch + 120)
         for r in range(60, 0, -6):
@@ -957,26 +1056,41 @@ class GachaScene(Scene):
         p = load_portrait(hid, int(cw * 0.9))
         p2 = pygame.transform.smoothscale(p, (int(cw * 0.9), int(cw * 0.9)))
         surf.blit(p2, (rect.centerx - p2.get_width() // 2, rect.y + 16))
-        # rotating rays for high-rarity reveals (one reused scratch surface)
-        if rar in ("SSR", "SR"):
+        # rotating rays scaled by rarity (SSR denser + counter-rotating set)
+        if rar == "SSR":
+            ray = _scratch(WIDTH, HEIGHT)
+            for i in range(16):
+                a = self.reveal_t * 2 + i * math.pi / 8
+                x1 = cx + math.cos(a) * 50; y1 = cy + math.sin(a) * 50
+                x2 = cx + math.cos(a) * 700; y2 = cy + math.sin(a) * 700
+                pygame.draw.line(ray, (255, 240, 180, 90), (x1, y1), (x2, y2), 10)
+            for i in range(8):
+                a = -self.reveal_t * 2 + i * math.pi / 4
+                x1 = cx + math.cos(a) * 40; y1 = cy + math.sin(a) * 40
+                x2 = cx + math.cos(a) * 400; y2 = cy + math.sin(a) * 400
+                pygame.draw.line(ray, (255, 200, 240, 50), (x1, y1), (x2, y2), 4)
+            surf.blit(ray, (0, 0))
+        elif rar == "SR":
             ray = _scratch(WIDTH, HEIGHT)
             for i in range(8):
                 a = self.reveal_t * 2 + i * math.pi / 4
-                x1 = cx + math.cos(a) * 50
-                y1 = cy + math.sin(a) * 50
-                x2 = cx + math.cos(a) * 600
-                y2 = cy + math.sin(a) * 600
-                pygame.draw.line(ray, (255, 240, 180, 40 if rar == "SSR" else 20),
-                                 (x1, y1), (x2, y2), 8)
+                x1 = cx + math.cos(a) * 50; y1 = cy + math.sin(a) * 50
+                x2 = cx + math.cos(a) * 500; y2 = cy + math.sin(a) * 500
+                pygame.draw.line(ray, (255, 240, 180, 30), (x1, y1), (x2, y2), 6)
             surf.blit(ray, (0, 0))
         is_new = status == "new"
         text(surf, hd["name"], 36, WHITE, (cx, rect.bottom - 90), center=True)
         text(surf, hd["title"], 20, DIM, (cx, rect.bottom - 50), center=True)
         draw_stars(surf, cx - 60, rect.bottom - 24, 3 if rar == "SSR" else (2 if rar == "SR" else 1), size=14)
+        # rarity label — SSR appears after the flash stage with a pulse; SR after
+        # a short delay; R immediately, so the rarity itself is the climax.
         if rar == "SSR":
-            text(surf, "SSR!", 56, (255, 120, 180), (cx, 120), center=True)
+            if self.reveal_t > 0.6:
+                c = (255, 120 + int(60 * math.sin(self.reveal_t * 8)), 180)
+                text(surf, "SSR!", 56, c, (cx, 120), center=True)
         elif rar == "SR":
-            text(surf, "SR!", 48, (255, 180, 80), (cx, 120), center=True)
+            if self.reveal_t > 0.3:
+                text(surf, "SR!", 48, (255, 180, 80), (cx, 120), center=True)
         else:
             text(surf, "R", 40, (180, 200, 220), (cx, 120), center=True)
         if is_feat:
@@ -987,7 +1101,10 @@ class GachaScene(Scene):
             text(surf, "DUPE", 24, (200, 180, 120), (cx, 200), center=True)
             if refund:
                 text(surf, f"+{refund} gems (maxed)", 16, (255, 220, 120), (cx, 226), center=True)
-        # multi-reveal progress dots
+        # reveal burst particles (drawn in the reveal state too)
+        for p in self.particles:
+            pygame.draw.circle(surf, p[5], (int(p[0]), int(p[1])), int(p[4] * 6))
+        # multi-reveal progress dots: revealed full, current pulsing, future dim
         n = len(self.results)
         dot_y = HEIGHT - 70
         dot_w = 14
@@ -996,9 +1113,17 @@ class GachaScene(Scene):
         for i in range(n):
             r_i = self.results[i][1]
             c = D.RARITY_COLORS.get(r_i, (120, 120, 140))
-            if i == self.reveal_idx:
-                pygame.draw.circle(surf, (255, 255, 255), (dx + i * (dot_w + 8) + dot_w // 2, dot_y), dot_w // 2 + 2)
-            pygame.draw.circle(surf, c, (dx + i * (dot_w + 8) + dot_w // 2, dot_y), dot_w // 2)
+            cx_d = dx + i * (dot_w + 8) + dot_w // 2
+            if i < self.reveal_idx:
+                pygame.draw.circle(surf, c, (cx_d, dot_y), dot_w // 2)
+            elif i == self.reveal_idx:
+                dr = dot_w // 2 + int(2 + 2 * math.sin(self.reveal_t * 8))
+                pygame.draw.circle(surf, (255, 255, 255), (cx_d, dot_y), dr)
+                pygame.draw.circle(surf, c, (cx_d, dot_y), dot_w // 2)
+            else:
+                # not-yet-revealed: dimmed, no spoiler
+                dim_c = tuple(int(v * 0.4) for v in c)
+                pygame.draw.circle(surf, dim_c, (cx_d, dot_y), dot_w // 2)
         text(surf, f"{self.reveal_idx + 1} / {n}  -  Click to continue  (Esc skip)",
              18, DIM, (WIDTH // 2, HEIGHT - 40), center=True)
 
@@ -1058,10 +1183,10 @@ class ShopScene(Scene):
                 self.game.back("title")
             # equipment list scroll (mouse wheel) so all 17 items are reachable
             if e.type == pygame.MOUSEWHEEL:
-                # 3 rows fit on screen (470 + 2*180 = 830 > 720, so scroll up to
-                # the last row's top). Clamp so the first row doesn't scroll above
-                # the equipment header and the last row stays reachable.
-                max_scroll = max(0, (len(D.EQUIPMENT_DB) // 5) * 180 - 180)
+                # Scroll enough to bring the last row fully into view. Clamped so
+                # the list doesn't scroll past its end.
+                rows = (len(D.EQUIPMENT_DB) + 4) // 5
+                max_scroll = max(0, 470 + (rows - 1) * 180 + 160 - HEIGHT)
                 self.equip_scroll = max(0, min(max_scroll, self.equip_scroll - e.y * 40))
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 for iid, r in self.consumable_rects:
@@ -1117,6 +1242,10 @@ class ShopScene(Scene):
             text(surf, f"{item['price']}G", 18, GOLD if can else (120, 100, 60), (r.centerx, r.y + 138), center=True)
         # equipment
         text(surf, "Equipment", 24, WHITE, (80, 440))
+        # clip the equipment grid to the region below the header so scrolled rows
+        # don't overlap the consumables above while the player reaches row 3.
+        old_clip = surf.get_clip()
+        surf.set_clip(pygame.Rect(0, 440, WIDTH, HEIGHT - 440))
         for iid, r in self.equip_rects:
             item = D.EQUIPMENT_DB[iid]
             can = self.game.player.gold >= item["price"]
@@ -1128,6 +1257,7 @@ class ShopScene(Scene):
             stat_str = " ".join(f"+{v} {k.upper()}" for k, v in item["stats"].items())
             text(surf, stat_str, 11, DIM, (r.centerx, r.y + 116), center=True)
             text(surf, f"{item['price']}G", 18, GOLD if can else (120, 100, 60), (r.centerx, r.y + 138), center=True)
+        surf.set_clip(old_clip)
         # gem packs
         text(surf, "Gem Packs", 22, (120, 200, 255), (WIDTH - 160, 150), center=True)
         for oid, r in self.gem_rects:
@@ -1493,6 +1623,18 @@ class SettingsScene(Scene):
             if self.back_btn.clicked(e) or (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
                 self.game.back("title")
                 return
+            # keyboard tab switching (Left/Right arrows) for consistency with the
+            # world scene's full keyboard control.
+            if e.type == pygame.KEYDOWN and e.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                idx = self.TABS.index(self.tab) if self.tab in self.TABS else 0
+                if e.key == pygame.K_LEFT:
+                    self.tab = self.TABS[max(0, idx - 1)]
+                else:
+                    self.tab = self.TABS[min(len(self.TABS) - 1, idx + 1)]
+                self.confirming = False
+                self._build_tab()
+                audio.play("menu_click", 0.3)
+                return
             for name, b in self.tab_btns:
                 if b.clicked(e):
                     self.tab = name
@@ -1572,18 +1714,28 @@ class StatsScene(Scene):
         self.tab_stats = Button((WIDTH // 2 - 240, 100, 140, 44), "Stats", (60, 80, 120), (90, 120, 180), size=18)
         self.tab_ach = Button((WIDTH // 2 - 90, 100, 140, 44), "Awards", (60, 80, 120), (90, 120, 180), size=18)
         self.tab_quest = Button((WIDTH // 2 + 60, 100, 160, 44), "Daily Quests", (60, 80, 120), (90, 120, 180), size=16)
+        # "Claim All" button for the Daily Quests tab (reduces the daily chore
+        # from one click per quest to one click for the whole board).
+        self.claim_all_btn = Button((WIDTH // 2 - 110, 158, 220, 34), "Claim All",
+                                    (90, 160, 110), (120, 200, 130), size=16)
         self.scroll = 0
         self.quest_rects = []
         self.t = 0
+        # reward toast (shown after claiming a quest or the whole board)
+        self.toast = ""
+        self.toast_t = 0
 
     def update(self, dt, events):
         self.t += dt
+        if self.toast_t > 0:
+            self.toast_t -= dt
         mp = pygame.mouse.get_pos()
         mdown = pygame.mouse.get_pressed()[0]
         self.back_btn.update(mp, mdown)
         self.tab_stats.update(mp, mdown)
         self.tab_ach.update(mp, mdown)
         self.tab_quest.update(mp, mdown)
+        self.claim_all_btn.update(mp, mdown)
         self.game.player.reset_quests_if_needed()
         self.quest_rects = []
         for i, qid in enumerate(D.DAILY_QUESTS):
@@ -1599,14 +1751,48 @@ class StatsScene(Scene):
                 self.tab = "ach"; self.scroll = 0
             if self.tab_quest.clicked(e):
                 self.tab = "quest"; self.scroll = 0
+            # keyboard tab switching (Left/Right arrows) for consistency with the
+            # world scene's full keyboard control.
+            if e.type == pygame.KEYDOWN and e.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                order = ["stats", "ach", "quest"]
+                idx = order.index(self.tab) if self.tab in order else 0
+                if e.key == pygame.K_LEFT:
+                    self.tab = order[max(0, idx - 1)]
+                else:
+                    self.tab = order[min(len(order) - 1, idx + 1)]
+                self.scroll = 0
+                audio.play("menu_click", 0.3)
+                return
+            if self.tab == "quest" and self.claim_all_btn.clicked(e):
+                total = 0
+                for qid in D.DAILY_QUESTS:
+                    if self.game.player.claim_quest(qid):
+                        total += D.DAILY_QUESTS[qid]["reward_gems"]
+                if total > 0:
+                    self.toast = f"Claimed all: +{total} gems!"
+                    self.toast_t = 2.0
+                    audio.play("menu_click", 0.5)
+                return
             if self.tab == "quest" and e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 for qid, r in self.quest_rects:
                     if r.collidepoint(e.pos):
                         if self.game.player.claim_quest(qid):
-                            audio.play("menu_click")
+                            q = D.DAILY_QUESTS[qid]
+                            self.toast = f"+{q['reward_gems']} gems!"
+                            self.toast_t = 1.6
+                            audio.play("menu_click", 0.4)
                         return
             if e.type == pygame.MOUSEWHEEL:
-                self.scroll = max(0, self.scroll - e.y * 40)
+                # clamp scroll to the active tab's content height so the list
+                # can't scroll past its end (which left a blank screen).
+                if self.tab == "stats":
+                    content_h = 10 * 60
+                elif self.tab == "ach":
+                    content_h = len(D.ACHIEVEMENTS) * 72
+                else:
+                    content_h = len(D.DAILY_QUESTS) * 80
+                max_scroll = max(0, content_h - (HEIGHT - 180 - 40))
+                self.scroll = max(0, min(self.scroll - e.y * 40, max_scroll))
 
     def draw(self, surf):
         surf.fill(BG_DARK)
@@ -1649,6 +1835,7 @@ class StatsScene(Scene):
                     text(surf, "DONE", 16, (140, 220, 160), (WIDTH // 2 + 260, y + 40), center=True)
                 y += 72
         else:  # quest
+            self.claim_all_btn.draw(surf)
             for qid, r in self.quest_rects:
                 q = D.DAILY_QUESTS[qid]
                 st = p.quests.get(qid, dict(progress=0, claimed=False, goal=q["goal"]))
@@ -1669,6 +1856,10 @@ class StatsScene(Scene):
                     text(surf, "Claim", 16, WHITE, claim_rect.center, center=True)
                 elif claimed:
                     text(surf, "Claimed", 16, (140, 220, 160), claim_rect.center, center=True)
+        # reward toast (claim feedback)
+        if self.toast_t > 0:
+            draw_panel(surf, (WIDTH // 2 - 150, HEIGHT - 80, 300, 48))
+            text(surf, self.toast, 22, (120, 200, 255), (WIDTH // 2, HEIGHT - 56), center=True)
         self.back_btn.draw(surf)
 
 
@@ -1702,7 +1893,12 @@ class CodexScene(Scene):
                 self.game.back("title")
                 return
             if e.type == pygame.MOUSEWHEEL:
-                self.scroll = max(0, self.scroll - e.y * 40)
+                # clamp scroll to the codex content height so it can't scroll
+                # past the last row (which left a blank screen with no way back).
+                rows = (len(D.HEROES_DB) + 6) // 7
+                content_h = rows * (200 + 16)
+                max_scroll = max(0, content_h - (HEIGHT - 130 - 40))
+                self.scroll = max(0, min(self.scroll - e.y * 40, max_scroll))
 
     def draw(self, surf):
         surf.fill(BG_DARK)

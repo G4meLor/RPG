@@ -323,6 +323,10 @@ class Hero(Combatant):
         # crit + crit-dmg bonuses from the evolution tree
         self.crit_chance += eb.get("crit", 0)
         self.crit_dmg_bonus = eb.get("crit_dmg", 0)
+        # set-bonus crit/crit-dmg (applied after the tree — the void set grants
+        # +10% crit + 20% crit-dmg; without this the bonus is dead weight)
+        self.crit_chance += sb.get("crit", 0)
+        self.crit_dmg_bonus += sb.get("crit_dmg", 0)
         # HSR-style energy gauge (replaces MP as the action resource)
         # energy pool can be enlarged by the tree
         self.max_energy = int(D.ENERGY_MAX * (1 + eb.get("energy_pct", 0)))
@@ -406,7 +410,10 @@ class Hero(Combatant):
         return self.energy >= self.skill_energy_cost(skill_id)
 
     def can_ultimate(self):
-        return bool(self.ultimate) and self.energy >= D.ENERGY_MAX
+        # the ult is ready when the energy bar is full; use the hero's own
+        # max_energy (which the tree can enlarge) so the HUD bar + the readiness
+        # check agree (otherwise a tree-extended bar shows full but can't ult)
+        return bool(self.ultimate) and self.energy >= self.max_energy
 
     # --- evolution tree ---
     def evo_tree(self):

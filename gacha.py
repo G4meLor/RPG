@@ -59,7 +59,9 @@ class GachaSystem:
 
     def pull_one(self, banner, pull_index_in_batch):
         """Roll one hero from a banner. Returns (hero_id, rarity, is_featured).
-        pull_index_in_batch is 0-based; the 10th pull (index 9) is SR+ guaranteed."""
+        The SR+ guarantee fires on every Nth pull since the last SR+ (cumulative
+        per-banner), so it works for single pulls + any batch size, not just 10s.
+        """
         bid = banner["id"]
         pity = self.pity(bid)
         self._set_pity(bid, pity + 1)
@@ -70,25 +72,37 @@ class GachaSystem:
             rarity = "SSR"
         else:
             rarity = self._roll_rarity(banner)
-            # soft pity ramp: after SOFT_PITY pulls, SSR chance climbs
+            # soft pity ramp: after SOFT_PITY pulls, SSR chance climbs — but cap
+            # below 100% so the hard pity (60) stays the real, honest guarantee
             if rarity != "SSR" and pity >= self.SOFT_PITY:
-                if random.random() < (pity - self.SOFT_PITY + 1) * 0.08:
+                # smooth ramp capped at 0.9; hard pity is the true floor
+                ramp = min(0.9, (pity - self.SOFT_PITY + 1) * 0.08)
+                if random.random() < ramp:
                     rarity = "SSR"
-            # 10-pull SR+ guarantee on the last pull of a 10-pull
-            if rarity == "R" and pull_index_in_batch == 9:
+            # SR+ guarantee: every Nth pull since the last SR+ is at least SR.
+            # Tracked cumulatively per banner so single pulls + non-10 batches
+            # are covered (not just the 10th of a 10-pull).
+            sr_counter = self.player.gacha_pity.get(bid + "_sr", 0) + 1
+            self.player.gacha_pity[bid + "_sr"] = sr_counter
+            if rarity == "R" and sr_counter >= self.SR_GUARANTEE_EVERY:
                 rarity = self._roll_rarity(banner, force_sr_floor=True)
+            if rarity in ("SSR", "SR"):
+                # reset the SR+ counter whenever we hit SR or better
+                self.player.gacha_pity[bid + "_sr"] = 0
 
         if rarity == "SSR":
             self._set_pity(bid, 0)
 
-        # pick the hero within the rarity, applying rate-up
+        # pick the hero within the rarity, applying rate-up — exclude the
+        # featured hero from the fallback pool so the split is an honest 50/50
         feat_ssr = banner.get("featured_ssr")
         feat_sr = banner.get("featured_sr")
         if rarity == "SSR" and feat_ssr and feat_ssr in banner["pool"]["SSR"]:
-            # 50% of SSR pulls land on the featured hero
-            hero_id = feat_ssr if random.random() < 0.5 else random.choice(banner["pool"]["SSR"])
+            others = [h for h in banner["pool"]["SSR"] if h != feat_ssr]
+            hero_id = feat_ssr if (random.random() < 0.5 or not others) else random.choice(others)
         elif rarity == "SR" and feat_sr and feat_sr in banner["pool"]["SR"]:
-            hero_id = feat_sr if random.random() < 0.5 else random.choice(banner["pool"]["SR"])
+            others = [h for h in banner["pool"]["SR"] if h != feat_sr]
+            hero_id = feat_sr if (random.random() < 0.5 or not others) else random.choice(others)
         else:
             hero_id = random.choice(banner["pool"][rarity])
 

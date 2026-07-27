@@ -932,6 +932,9 @@ class WorldScene:
         if cid not in self.game.player.ow_discovered:
             self.game.player.ow_discovered.append(cid)
             self.game.player.quest_progress("explore", 1)
+        # reveal the neighbors of the new cell too so the minimap shows the
+        # reachable frontier (not just cells the player has physically stood in)
+        self._discover_neighbors()
         self._persist_party()
         self.game.player.ow_current = [self.c, self.r]
         if self.game.player.settings.get("auto_save", True):
@@ -1903,6 +1906,9 @@ class WorldScene:
         if self.party[self.active]:
             self.game.player.ow_pos = [int(self.party[self.active].x), int(self.party[self.active].y)]
         self.game.player.save()
+        # stop the looping biome ambience when leaving the world scene (otherwise
+        # it keeps playing under the title/menu music)
+        audio.set_ambience(False)
         self.pause = None
         self.game.goto("title")
 
@@ -2122,9 +2128,10 @@ class WorldScene:
                 t = y / 720
                 a = int(22 * (1 - t))
                 pygame.draw.rect(ov, (*sky, a), (0, y, 1280, 4))
-            # vignette — darker corners, drawn on top of the gradient once
+            # vignette — darker corners (the inset grows outward, so the alpha
+            # is highest at the outermost ring = the corners, not the center)
             for i in range(0, 220, 6):
-                a = int(80 * (i / 220) ** 2)
+                a = int(80 * (1 - i / 220) ** 2)
                 pygame.draw.rect(ov, (0, 0, 0, a), (i, i, 1280 - 2 * i, 720 - 2 * i), 6)
             self._light_cache[key] = ov
         return ov

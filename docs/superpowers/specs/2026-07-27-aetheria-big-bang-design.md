@@ -22,6 +22,30 @@ The set is **20 enhancements: 8 P0 (cheap, high-impact, mostly draw/data/wiring)
 
 ---
 
+## P0 bug fixes (from user playtest feedback — root-caused headless)
+
+These three user-reported bugs are root-caused and fixed FIRST (before the enhancement P0 set), because they make the game feel broken.
+
+### B1. Passive energy regen + usable skills  *(combat, S)*
+**Root cause (verified):** energy has NO time-based regen — it only gains on-hit (`ENERGY_GAIN_BASIC=25` on a basic hit, `ENERGY_GAIN_DEAL=8` on a skill; world_scene.py:1270/1438). The cooldown timer DOES recover (world_entities.py:542), but a hero entering a fight with low energy can't afford any skill (cost 12-30 vs max 120) and can't gain energy without landing a basic hit — so it feels like "skills don't recover / mana doesn't increase". `can_use_skill` (entities.py:162) gates purely on `energy >= cost`.
+**Fix:** add a slow time-based energy regen in `WorldCharacter.update` (e.g. `+max_energy * 0.04 / sec`, ~4.8/sec at max 120 — full bar in ~25s out of combat, slower in combat) so energy recovers passively like every ARPG. Add `ENERGY_REGEN_PCT` to data.py. Keep the on-hit gains (they reward aggression). Ensure `ENERGY_START` is applied on map enter so a fresh fight starts with usable energy.
+**Files:** world_entities.py, data.py
+**Verify (headless):** load world, clear enemies, run 60 idle frames, assert `wc.hero.energy` increased from the start value.
+
+### B2. Clean up stray white circles (click-to-move reticle + fog motes)  *(ui/graphics, S)*
+**Root cause (verified):** the RMB click-to-move reticle (world_scene.py:2212-2215) draws a bright white pulsing ring + dot at `move_target`; it persists when auto-walk is blocked by a wall (`_collide` zeroes vx/vy but `move_target` is not cleared, world_entities.py:580). The fog motes (world_scene.py:868, soft drifting circles) read as "clouds". Together they show as stray white circles.
+**Fix:** (a) clear `move_target` when the hero is blocked (no progress toward target for >0.3s) OR when `_collide` stops the hero; (b) make the reticle subtler — smaller, element-tinted (not pure white), fade out over 0.5s; (c) review the fog motes — keep them subtle/low-alpha or tinted to the biome, not bright white.
+**Files:** world_scene.py, world_entities.py
+**Verify (headless):** set a move_target behind a wall, run 60 frames, assert `move_target` cleared; visually audit the draw (no bright white circles).
+
+### B3. Brighten the gacha reveal face  *(graphics, S)*
+**Root cause (verified):** the gacha reveal draws the portrait (`load_portrait`, main.py:1056) which has a dark vignette `(0,0,0,150)` (generate_assets.py:2319), a dark bg gradient (line 2285), and a face core shadow `(30,40,60,55)` (line 354). At card size the face region measures mean RGB ~3 (near-black) — the face is lost in the dark frame.
+**Fix (pick one, the fix agent decides):** (a) in the gacha reveal, draw the character sprite (`load_char_sprite` — the chibi on a transparent bg) over a bright element-tinted card instead of the portrait; OR (b) brighten the portrait — reduce the vignette alpha, lighten the bg gradient, lift the face core shadow; OR (c) add a bright element-tinted radial glow behind the face in the reveal. Prefer (a) for the reveal (the portrait stays as the codex headshot) + (b) a lighter portrait for the codex.
+**Files:** main.py, generate_assets.py
+**Verify (headless):** render a portrait, measure the face-region mean RGB > 80 (was ~3); render the reveal card, assert the face is visible.
+
+---
+
 ## P0 — ship first (cheap, high-impact)
 
 ### 1. Hero Lore, Bio & Personality Text  *(characters, S)*
@@ -209,12 +233,15 @@ Add a compact in-world quest tracker (top-right under the resource counters) sho
 
 ## Implementation shape (Phase 2, after this spec is approved)
 
-Each enhancement → **one specialist agent with worktree isolation** (the pattern that shipped the 134 audit fixes: parallel edits, no conflict, each agent owns its files, runs a headless smoke test, then merge + full verify + commit). Grouped into batches by shared-file dependency to avoid worktree conflicts:
+A **gated fix-and-enhance loop** (per the user's request): a verification gate checks the whole system after each batch; if anything is broken, the loop spawns more specialist agents to fix it before the next batch. The loop only stops when the gate passes cleanly.
 
-- **Batch A — data-heavy (no hot-loop risk):** #1 lore, #8 colorblind palette, #12 resonance, #9 constellations, #11 ult variants, #19 Aetheric Cycle, #15 rifts.
-- **Batch B — combat wiring (world_scene/world_entities hot paths):** #2 DoT, #3 toughness-break, #4 boss HUD, #7 variable hit-stop, #13 combo climax, #10 signature passives.
-- **Batch C — world/atmosphere:** #6 breakables, #14 weather, #16 torchlight, #20 quest compass.
-- **Batch D — audio:** #5 reaction stings, #17 leitmotifs, #18 gacha crescendo.
+- **Batch A — bug fixes first (B1/B2/B3):** the 3 user-reported bugs, root-caused in this spec. Each → one specialist agent. Gate must pass before any enhancement.
+- **Batch B — data-heavy (no hot-loop risk):** #1 lore, #8 colorblind palette, #12 resonance, #9 constellations, #11 ult variants, #19 Aetheric Cycle, #15 rifts.
+- **Batch C — combat wiring (world_scene/world_entities hot paths):** #2 DoT, #3 toughness-break, #4 boss HUD, #7 variable hit-stop, #13 combo climax, #10 signature passives.
+- **Batch D — world/atmosphere:** #6 breakables, #14 weather, #16 torchlight, #20 quest compass.
+- **Batch E — audio:** #5 reaction stings, #17 leitmotifs, #18 gacha crescendo.
+
+Each batch: every enhancement → **one specialist agent with worktree isolation** (the pattern that shipped the 134 audit fixes: parallel edits, no conflict, each agent owns its files, runs a headless smoke test). Merge after each batch + headless verify + commit. The **gate agent** runs the full headless suite (20-test + 8-feature + 1200-frame stress + benchmark + the 3 bug-fix assertions) after each batch; on failure it lists the regressions and the loop spawns fix agents targeting exactly those, re-gating until clean.
 
 Each batch runs as a workflow; within a batch, each enhancement is one agent in its own worktree. Merge after each batch + headless verify; commit per batch.
 

@@ -1467,6 +1467,18 @@ class WorldScene:
                     # real-time combat has no per-enemy effect list, so a brief
                     # telegraph-stun is the readable outcome)
                     nearest._react_stun = max(nearest._react_stun, 1.5)
+                    # apply each debuff in the skill's debuff list (e.g.
+                    # ["burn", "atk_down"]) so DoTs actually tick + stat debuffs
+                    # land. DoT types (burn/bleed/poison) use the skill's
+                    # dot_potency (distinct per debuff skill); stat debuffs use
+                    # the generic potency. add_effect dedupes by type so
+                    # re-application refreshes duration instead of double-stacking.
+                    dur = skill.get("dur", 3)
+                    dot_pot = skill.get("dot_potency", 0.3)
+                    stat_pot = skill.get("potency", 0.3)
+                    for db in skill["debuff"]:
+                        pot = dot_pot if db in ("burn", "bleed", "poison") else stat_pot
+                        nearest.enemy.add_effect(db, dur, pot)
                     self.particles.burst(nearest.x, nearest.y, col, n=12, speed=160, size=5, life=0.4)
         elif kind == "revive":
             # revive a downed party member at half HP; if none downed, big heal
@@ -1609,8 +1621,8 @@ class WorldScene:
         #   self_heal  - heal the active hero for val * max_hp
         #   party_buff - a temporary atk_up on each party member (3s, val potency)
         #   atk_buff   - a temporary atk_up on the active hero (3s, val potency)
-        # Burn/freeze DoT variants are deferred to the Batch C DoT-engine task
-        # (tick_effects is not driven in the real-time world loop yet).
+        # Burn/freeze DoT variants are wired through the DoT engine (tick_effects
+        # is now driven in the real-time world loop — see the enemy update loop).
         ux = getattr(a, "ult_extra", {}) or {}
         if ux:
             if ux.get("self_heal"):
@@ -2077,6 +2089,24 @@ class WorldScene:
             if en.alive:
                 en.update(sim_dt, wc, self._map_data["obstacles"], self.projectiles,
                           self.particles, self._on_enemy_event)
+                # drive the DoT/status engine: burn/bleed/poison/regen tick in
+                # real time and surface as a FloatText over the enemy. The tick
+                # applies damage directly to the Combatant (en.enemy) via
+                # take_damage on the base class, so the HP move is real and the
+                # death path below fires when a DoT kills the enemy.
+                if en.enemy.effects:
+                    for res in en.enemy.tick_effects(sim_dt):
+                        text, col = res
+                        if self.game.player.settings.get("damage_numbers", True):
+                            self.floats.append(FloatText(
+                                en.x, en.y - 20, text, col, size=18))
+                        # a DoT kill: take_damage already set hp=0 + alive=False
+                        # on the Combatant; mirror to the WorldEnemy so the
+                        # death/drops path fires on the next pass.
+                        if en.enemy.hp <= 0:
+                            en.alive = False
+                            self._on_enemy_death(en, wc)
+                            break
 
         # projectiles
         new_proj = []

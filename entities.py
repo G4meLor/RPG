@@ -49,12 +49,20 @@ def load_item_icon(item_id, size=64):
 class StatusEffect:
     def __init__(self, etype, duration, potency=0):
         self.type = etype
-        self.duration = duration
+        self.duration = duration      # now in seconds (time-based)
         self.potency = potency
+        self.t = 0.0                  # time accumulator for the tick cadence
 
-    def tick(self):
-        """Return (kind, value) to apply this turn, or None."""
-        self.duration -= 1
+    def tick(self, dt):
+        """Return (kind, value) to apply when the accumulator crosses ~0.5s,
+        or None. Duration is consumed in seconds (time-based, not per-turn)."""
+        self.duration -= dt
+        self.t += dt
+        if self.t < 0.5:
+            return None
+        # emit one tick per 0.5s and carry the remainder so high frame rates
+        # don't drop ticks
+        self.t -= 0.5
         if self.type == "poison":
             return ("damage", self.potency)
         if self.type == "burn":
@@ -66,7 +74,7 @@ class StatusEffect:
         return None
 
     def expired(self):
-        return self.duration < 0
+        return self.duration <= 0
 
 
 class Combatant:
@@ -231,11 +239,11 @@ class Combatant:
                 return
         self.effects.append(StatusEffect(etype, duration, potency))
 
-    def tick_effects(self):
-        """Apply per-turn effect ticks. Returns list of (text, color) floats."""
+    def tick_effects(self, dt):
+        """Apply time-based effect ticks. Returns list of (text, color) floats."""
         results = []
         for e in list(self.effects):
-            res = e.tick()
+            res = e.tick(dt)
             if res:
                 kind, val = res
                 if kind == "damage":

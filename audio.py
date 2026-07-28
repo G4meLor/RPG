@@ -443,6 +443,86 @@ def synth_r_rupture(sr=22050, dur=0.55):
     return _make_sound(wave * 0.65 * _envelope(n, 0.005, 0.5), sr)
 
 
+def synth_leitmotif(element, sr=22050):
+    """A short per-element musical sting played on a Genshin-style party swap
+    (1/2/3/4). Five distinct motifs so each of the 5 elements reads as its own
+    identity (the same identity the reaction system cares about):
+      fire  = a quick brass-like rising 2-note (saw-ish sine + noise),
+      water = a cool descending bell (sine + harmonic),
+      wind  = an open airy chirp (upward sweep + airy noise),
+      light = a bright major-3rd pluck (sine + brighter harmonics),
+      dark  = a low dissonant 2-note (two close low notes that beat).
+    Cached as leit_<element> in SOUNDS so the swap call site is a dict lookup,
+    not a re-synth per swap. Unknown elements fall back to a neutral tone."""
+    dur = 0.32
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    if element == "fire":
+        # quick brass-like rising 2-note: a saw-ish sine (fundamental + 2 odd
+        # harmonics for the brass edge) + a noise burst, two ascending notes.
+        wave = np.zeros(n)
+        for i, f in enumerate([392, 523]):  # G4 -> C5, a rising 4th
+            start = int(i * n / 2)
+            st = t - t[start]
+            seg = (np.sin(2 * math.pi * f * st)
+                   + 0.5 * np.sin(2 * math.pi * 3 * f * st)
+                   + 0.3 * np.sin(2 * math.pi * 5 * f * st)) / 1.8
+            seg *= np.exp(-st * 8)
+            wave += np.where(np.arange(n) >= start, seg, 0)
+        noise = (np.random.rand(n) - 0.5) * 2 * np.exp(-t * 18)
+        wave = 0.7 * wave + 0.3 * noise
+        return _make_sound(wave * _envelope(n, 0.01, 0.5) * 0.6, sr)
+    if element == "water":
+        # cool descending bell: a sine + a higher harmonic, two descending
+        # notes with a long bell-like decay.
+        wave = np.zeros(n)
+        for i, f in enumerate([784, 523]):  # G5 -> C5, a descending 5th
+            start = int(i * n / 2)
+            st = t - t[start]
+            seg = (np.sin(2 * math.pi * f * st)
+                   + 0.4 * np.sin(2 * math.pi * 2 * f * st)) / 1.4
+            seg *= np.exp(-st * 4)
+            wave += np.where(np.arange(n) >= start, seg, 0)
+        return _make_sound(wave * _envelope(n, 0.005, 0.6) * 0.55, sr)
+    if element == "wind":
+        # open airy chirp: a quick upward sine sweep + an airy noise bed.
+        sweep = np.sin(2 * math.pi * (600 + 800 * t / dur) * t) * np.exp(-t * 9)
+        airy = _bandpass_noise(n, sr, 3000, 7000) * np.exp(-t * 12) * 0.4
+        wave = 0.6 * sweep + 0.4 * airy
+        return _make_sound(wave * _envelope(n, 0.01, 0.55) * 0.55, sr)
+    if element == "light":
+        # bright major-3rd pluck: a plucked string (sine + brighter harmonics)
+        # on a major-3rd interval, sharp attack + medium decay.
+        l_dur = 0.30
+        ln = int(sr * l_dur)
+        lt = np.linspace(0, l_dur, ln)
+        f = 659  # E5 — a bright major-3rd above C5
+        wave = (np.sin(2 * math.pi * f * lt)
+                + 0.5 * np.sin(2 * math.pi * 2 * f * lt)
+                + 0.25 * np.sin(2 * math.pi * 3 * f * lt)) / 1.75
+        wave *= np.exp(-lt * 7)
+        # a quick pluck attack: sharp rise over the first few ms
+        a = max(1, int(ln * 0.005))
+        wave[:a] *= np.linspace(0, 1, a)
+        return _make_sound(wave * 0.6, sr)
+    if element == "dark":
+        # low dissonant 2-note: two close low notes that beat against each
+        # other (the dissonance) + a low noise bed.
+        d_dur = 0.40
+        dn = int(sr * d_dur)
+        dt_ = np.linspace(0, d_dur, dn)
+        low = (np.sin(2 * math.pi * 130 * dt_)
+               + np.sin(2 * math.pi * 138 * dt_)) / 2  # ~8 Hz beat
+        low *= np.exp(-dt_ * 5)
+        noise = (np.random.rand(dn) - 0.5) * 0.6 * np.exp(-dt_ * 10)
+        wave = 0.7 * low + 0.3 * noise
+        return _make_sound(wave * _envelope(dn, 0.01, 0.55) * 0.6, sr)
+    # fallback for an unknown element (shouldn't be reached — the 5 elements
+    # are the only callers): a neutral short decaying tone.
+    wave = np.sin(2 * math.pi * 440 * t) * np.exp(-t * 8)
+    return _make_sound(wave * 0.5, sr)
+
+
 def init():
     global INIT_OK, SOUNDS, ENABLED
     if INIT_OK:
@@ -507,6 +587,15 @@ def init():
             "react_spread": synth_r_spread(),
             "react_freeze": synth_r_freeze(),
             "react_rupture": synth_r_rupture(),
+            # per-element leitmotifs for the Genshin-style party swap (1/2/3/4):
+            # 5 short motifs (fire/water/wind/light/dark) so each element reads
+            # as its own identity on swap. Cached so the _switch call site is a
+            # dict lookup, not a re-synth per swap. Routed as "leit_"+element.
+            "leit_fire": synth_leitmotif("fire"),
+            "leit_water": synth_leitmotif("water"),
+            "leit_wind": synth_leitmotif("wind"),
+            "leit_light": synth_leitmotif("light"),
+            "leit_dark": synth_leitmotif("dark"),
         }
         INIT_OK = True
     except Exception as e:

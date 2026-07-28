@@ -999,6 +999,10 @@ class WorldScene:
         # the first time the streak hits COMBO_MAX, then resets when the combo
         # window expires so the next max streak celebrates again.
         self._combo_max_celebrated = False
+        # party-swap leitmotif spam guard: _switch plays the per-element
+        # leitmotif but skips it if the last swap sound was <0.25s ago so a
+        # frantic 1/2/3/4 mash doesn't stack 4 stings on top of each other.
+        self._last_swap_sound_t = -1.0
 
         # discover neighbors of the current cell so the map shows reachable ones
         # _discover_neighbors is now run inside _load_map on every map enter
@@ -2363,8 +2367,17 @@ class WorldScene:
         self.particles.burst(new.x, new.y, el_col, n=24, speed=300, size=6, life=0.5, grav=-40)
         self.camera.add_shake(2)
         # a party swap is a combat action (elemental-reaction setup + i-frames),
-        # not a menu click — give it the skill whoosh instead of the click tick
-        audio.play("skill", 0.3)
+        # not a menu click — play the per-element leitmotif so each of the 5
+        # elements has its own identity on swap (Genshin-style), with a quieter
+        # skill whoosh layered under the motif so the swap still reads as a
+        # combat action. A 0.25s spam guard keeps a frantic 1/2/3/4 mash from
+        # stacking 4 stings on top of each other (the motif is skipped, not the
+        # swap itself — the i-frames/resonances still fire).
+        now = time.time()
+        if now - self._last_swap_sound_t >= 0.25:
+            audio.play("leit_" + new.element, 0.4)
+            audio.play("skill", 0.15)
+            self._last_swap_sound_t = now
         # combo climax: clear the empowered flags on a swap so a player can't
         # bank a milestone bonus on one hero and spend it on another. The combo
         # counter itself stays (the streak is a party-wide resource), but the

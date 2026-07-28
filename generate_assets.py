@@ -15,7 +15,8 @@ SEED = 1337
 random.seed(SEED)
 
 ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-for sub in ["characters", "enemies", "skills", "backgrounds", "ui", "portraits", "effects", "items"]:
+for sub in ["characters", "enemies", "skills", "backgrounds", "ui", "portraits",
+            "effects", "items", "terrain", "landmarks", "villages", "drops"]:
     os.makedirs(os.path.join(ASSET_DIR, sub), exist_ok=True)
 
 # ---------------------------------------------------------------------------
@@ -2234,6 +2235,465 @@ def make_items():
     for name, surf in items:
         pygame.image.save(surf, os.path.join(ASSET_DIR, "items", f"{name}.png"))
 
+# ---------------------------------------------------------------------------
+# v2 world sprites — terrain tiles + landmarks + village buildings + ground
+# loot drops (Task A4). Each is pixel-art: palette-locked solid fills, 2-color
+# checker dithers for gradients (px_dither/px_dither_surf), no anti-aliasing,
+# no smoothscale. Sizes match the v2 world enrichment: water/bridge 40x40
+# (one TILE), landmarks ~80x80, village buildings ~60x60, drops ~16x16.
+# Biome tinting happens at draw time in C3, so a single neutral water/bridge
+# tile is shipped (the biome variants are produced by tint+blend there).
+# ---------------------------------------------------------------------------
+# water/bridge tile size matches WD.TILE (40). Imported lazily so the asset
+# generator stays runnable without the world module (the constant is fixed).
+TILE_PX = 40
+
+def draw_water_tile(surf, biome_pal=None):
+    """A 40x40 water tile — a 2-tone dithered blue fill with a few dithered
+    ripple lines so it reads as water, not a flat blue square (pixel-art: no
+    AA gradient). biome_pal is the optional biome palette dict; when given the
+    base tints toward the biome's ground color so the same water sprite can be
+    re-tinted per biome by C3 (we ship a single neutral tile here).
+    """
+    w = h = TILE_PX
+    # base water blues (palette-locked, 2-tone checker dither, no AA gradient)
+    c1 = ( 70, 130, 210)
+    c2 = ( 36,  78, 150)
+    if biome_pal is not None:
+        # tint toward the biome ground so plains water reads greener, void
+        # water reads purpler, etc. A single lerp step keeps it chunky.
+        gnd = biome_pal.get("ground", (90, 130, 180))
+        c1 = lerp_color(c1, gnd, 0.30)
+        c2 = lerp_color(c2, gnd, 0.45)
+    px_dither(surf, c1, c2, (0, 0, w, h))
+    # dithered ripple lines — two horizontal bands of the light tone so the
+    # surface reads as a ripple pattern, not a flat fill (solid blocks, no AA)
+    ripple = (180, 215, 245)
+    for ry in (8, 22):
+        for xx in range(0, w, PIXEL):
+            # checker-stagger the ripple so it shimmers, not a straight line
+            off = PIXEL if ((ry // PIXEL) % 2) else 0
+            if (xx + off) % (PIXEL * 2) < PIXEL:
+                pygame.draw.rect(surf, ripple, (xx, ry, PIXEL, PIXEL))
+    # a couple of bright sparkles (solid blocks, no AA)
+    pygame.draw.rect(surf, (220, 235, 255), (5, 5, PIXEL, PIXEL))
+    pygame.draw.rect(surf, (220, 235, 255), (28, 18, PIXEL, PIXEL))
+    # outline (solid, no AA)
+    pygame.draw.rect(surf, (20, 40, 80), (0, 0, w, h), 1)
+
+def draw_bridge_tile(surf, biome_pal=None):
+    """A 40x40 bridge tile — wood planks laid over water (pixel-art: no AA).
+    Two plank rows of dithered wood over a dithered water underlay, with a
+    dark plank-gap line between them and iron studs at the corners.
+    """
+    w = h = TILE_PX
+    # water underlay (a thin strip top + bottom so the bridge reads as over
+    # water, not a wood raft). Same dithered fill as draw_water_tile.
+    water_c1, water_c2 = ( 70, 130, 210), ( 36,  78, 150)
+    if biome_pal is not None:
+        gnd = biome_pal.get("ground", (90, 130, 180))
+        water_c1 = lerp_color(water_c1, gnd, 0.30)
+        water_c2 = lerp_color(water_c2, gnd, 0.45)
+    px_dither(surf, water_c1, water_c2, (0, 0, w, 4))
+    px_dither(surf, water_c1, water_c2, (0, h - 4, w, 4))
+    # plank wood — 2-tone dithered fill (no AA horizontal gradient)
+    wood_l, wood_d = (150, 100, 60), (90, 60, 30)
+    px_dither(surf, wood_l, wood_d, (0, 4, w, h - 8))
+    # plank-gap line (solid dark, no AA) splitting the two plank rows
+    pygame.draw.rect(surf, (60, 40, 20), (0, h // 2 - 1, w, 2))
+    # wood grain lines (solid, no AA) — a couple of staggered lines per row
+    for gy in (10, 24):
+        for xx in range(0, w, PIXEL * 2):
+            pygame.draw.rect(surf, shade(wood_d, 0.8), (xx + (gy % 8), gy, PIXEL, 1))
+    # iron corner studs (solid blocks, no AA)
+    for cx, cy in ((4, 7), (w - 7, 7), (4, h - 7), (w - 7, h - 7)):
+        pygame.draw.rect(surf, (90, 90, 100), (cx, cy, 3, 3))
+        pygame.draw.rect(surf, (40, 40, 50), (cx, cy, 3, 3), 1)
+    # outline (solid, no AA)
+    pygame.draw.rect(surf, (40, 25, 15), (0, 4, w, h - 8), 1)
+
+def draw_landmark(surf, kind, element_color=None):
+    """A ~80x80 landmark sprite, per-kind. Pixel-art: dithered fills clipped
+    to shape, solid palette fills, no AA. kind is one of:
+    statue / ruin / shrine / obelisk / rift_anchor. element_color is an
+    optional (r,g,b) accent so the same landmark can be re-tinted per biome.
+    The sprite is drawn on a 80x80 surface; the caller blits it at the tile.
+    """
+    cx, cy = 40, 44
+    outline = (30, 26, 40)
+    accent = element_color if element_color is not None else (200, 170, 90)
+    accent_l = shade(accent, 1.25)
+    accent_d = shade(accent, 0.65)
+
+    # ground shadow (chunky ellipse, no AA) under every landmark
+    shadow = pygame.Surface((72, 22), pygame.SRCALPHA)
+    pygame.draw.ellipse(shadow, (0, 0, 0, 90), shadow.get_rect())
+    surf.blit(shadow, (cx - 36, 70))
+
+    if kind == "statue":
+        # a robed figure on a pedestal. Pedestal — 2-tone dithered stone fill
+        # clipped to a rounded rect (no AA).
+        ped = px_dither_surf(56, 18, (200, 200, 200), (140, 140, 150))
+        clip_to_rect(ped, pygame.Rect(0, 0, 56, 18), border_radius=3)
+        surf.blit(ped, (cx - 28, 56))
+        pygame.draw.rect(surf, outline, (cx - 28, 56, 56, 18), 2, border_radius=3)
+        # robe body — 2-tone dithered fill clipped to a trapezoid (no AA)
+        robe_pts = [(cx - 20, 22), (cx + 20, 22), (cx + 26, 58), (cx - 26, 58)]
+        xs = [p[0] for p in robe_pts]; ys = [p[1] for p in robe_pts]
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+        rg = px_dither_surf(maxx - minx, maxy - miny, accent_l, accent_d)
+        m = pygame.Surface((maxx - minx, maxy - miny), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                            [(p[0] - minx, p[1] - miny) for p in robe_pts])
+        rg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(rg, (minx, miny))
+        pygame.draw.polygon(surf, outline, robe_pts, 2)
+        # head — 2-tone dithered fill clipped to a circle (no AA)
+        head = px_dither_surf(28, 28, (235, 215, 180), (180, 150, 120))
+        clip_to_circle(head, (14, 14), 14)
+        surf.blit(head, (cx - 14, 8))
+        pygame.draw.circle(surf, outline, (cx, 22), 14, 2)
+        # halo — a thin accent ring (solid, no AA)
+        pygame.draw.circle(surf, accent_l, (cx, 22), 18, 2)
+    elif kind == "ruin":
+        # a broken pillar — a tall shaft with a jagged top + a fallen chunk.
+        # Shaft — 2-tone dithered stone fill (no AA vertical gradient).
+        shaft = px_dither_surf(28, 60, (200, 195, 188), (130, 125, 120))
+        clip_to_rect(shaft, pygame.Rect(0, 0, 28, 60), border_radius=2)
+        surf.blit(shaft, (cx - 14, 14))
+        pygame.draw.rect(surf, outline, (cx - 14, 14, 28, 60), 2, border_radius=2)
+        # jagged top — a chunky block broken at an angle (solid, no AA)
+        pygame.draw.polygon(surf, (160, 155, 148),
+                            [(cx - 14, 14), (cx + 14, 14), (cx + 10, 6), (cx + 2, 12), (cx - 6, 8)])
+        pygame.draw.polygon(surf, outline,
+                            [(cx - 14, 14), (cx + 14, 14), (cx + 10, 6), (cx + 2, 12), (cx - 6, 8)], 2)
+        # capital block on top (solid, no AA)
+        pygame.draw.rect(surf, (180, 175, 168), (cx - 18, 8, 36, 6), border_radius=2)
+        pygame.draw.rect(surf, outline, (cx - 18, 8, 36, 6), 2, border_radius=2)
+        # fallen chunk at the base (solid dithered block, no AA)
+        chunk = px_dither_surf(22, 14, (190, 185, 178), (130, 125, 120))
+        clip_to_rect(chunk, pygame.Rect(0, 0, 22, 14), border_radius=2)
+        surf.blit(chunk, (cx + 16, 58))
+        pygame.draw.rect(surf, outline, (cx + 16, 58, 22, 14), 2, border_radius=2)
+        # crack lines (solid, no AA)
+        pygame.draw.line(surf, shade(outline, 0.8), (cx - 8, 30), (cx + 6, 44), 2)
+        pygame.draw.line(surf, shade(outline, 0.8), (cx + 4, 22), (cx - 2, 34), 1)
+    elif kind == "shrine":
+        # a small shrine — a peaked roof on four posts over a stone base.
+        # Stone base — 2-tone dithered fill (no AA).
+        base = px_dither_surf(56, 12, (190, 185, 178), (130, 125, 120))
+        clip_to_rect(base, pygame.Rect(0, 0, 56, 12), border_radius=2)
+        surf.blit(base, (cx - 28, 58))
+        pygame.draw.rect(surf, outline, (cx - 28, 58, 56, 12), 2, border_radius=2)
+        # four posts (solid dithered blocks, no AA)
+        for px in (cx - 22, cx - 6, cx + 10):
+            post = px_dither_surf(8, 26, (180, 140, 90), (110, 80, 50))
+            clip_to_rect(post, pygame.Rect(0, 0, 8, 26))
+            surf.blit(post, (px, 32))
+            pygame.draw.rect(surf, outline, (px, 32, 8, 26), 2)
+        # peaked roof — 2-tone dithered fill clipped to a triangle (no AA)
+        roof_pts = [(cx - 32, 32), (cx + 32, 32), (cx, 8)]
+        xs = [p[0] for p in roof_pts]; ys = [p[1] for p in roof_pts]
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+        rg = px_dither_surf(maxx - minx, maxy - miny, accent_l, accent_d)
+        m = pygame.Surface((maxx - minx, maxy - miny), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                            [(p[0] - minx, p[1] - miny) for p in roof_pts])
+        rg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(rg, (minx, miny))
+        pygame.draw.polygon(surf, outline, roof_pts, 2)
+        # offering bowl on the base (solid dithered disc, no AA)
+        bowl = px_dither_surf(14, 8, accent_l, accent_d)
+        clip_to_rect(bowl, pygame.Rect(0, 0, 14, 8), border_radius=3)
+        surf.blit(bowl, (cx - 7, 54))
+        pygame.draw.rect(surf, outline, (cx - 7, 54, 14, 8), 1, border_radius=3)
+    elif kind == "obelisk":
+        # a tall obelisk — a tapered shaft with a pyramid cap.
+        # Shaft — 2-tone dithered fill clipped to a tapered trapezoid (no AA).
+        shaft_pts = [(cx - 14, 18), (cx + 14, 18), (cx + 10, 64), (cx - 10, 64)]
+        xs = [p[0] for p in shaft_pts]; ys = [p[1] for p in shaft_pts]
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+        sg = px_dither_surf(maxx - minx, maxy - miny, (200, 195, 188), (120, 115, 110))
+        m = pygame.Surface((maxx - minx, maxy - miny), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                            [(p[0] - minx, p[1] - miny) for p in shaft_pts])
+        sg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(sg, (minx, miny))
+        pygame.draw.polygon(surf, outline, shaft_pts, 2)
+        # pyramid cap — 2-tone dithered fill clipped to a triangle (no AA)
+        cap_pts = [(cx - 14, 18), (cx + 14, 18), (cx, 2)]
+        cx2 = [p[0] for p in cap_pts]; cy2 = [p[1] for p in cap_pts]
+        minx2, maxx2, miny2, maxy2 = min(cx2), max(cx2), min(cy2), max(cy2)
+        cg = px_dither_surf(maxx2 - minx2, maxy2 - miny2, accent_l, accent_d)
+        cm = pygame.Surface((maxx2 - minx2, maxy2 - miny2), pygame.SRCALPHA)
+        pygame.draw.polygon(cm, (255, 255, 255, 255),
+                            [(p[0] - minx2, p[1] - miny2) for p in cap_pts])
+        cg.blit(cm, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(cg, (minx2, miny2))
+        pygame.draw.polygon(surf, outline, cap_pts, 2)
+        # base block (solid, no AA)
+        pygame.draw.rect(surf, (160, 155, 148), (cx - 18, 64, 36, 8), border_radius=2)
+        pygame.draw.rect(surf, outline, (cx - 18, 64, 36, 8), 2, border_radius=2)
+        # glyph runes (solid accent blocks, no AA)
+        for ry in (28, 42, 54):
+            pygame.draw.rect(surf, accent_l, (cx - 4, ry, 8, 4))
+    elif kind == "rift_anchor":
+        # a glowing rift anchor — a floating crystal over a cracked base with
+        # a violet glow. The crystal — 2-tone dithered fill clipped to a
+        # diamond + a violet glow (chunky block, no AA soft-glow).
+        glow = pygame.Surface((80, 80), pygame.SRCALPHA)
+        for rr in range(34, 8, -4):
+            a = int(70 * (1 - (rr - 8) / 26))
+            pygame.draw.circle(glow, (180, 80, 220, a), (40, 36), rr)
+        surf.blit(glow, (0, 0))
+        # cracked base — 2-tone dithered fill (no AA)
+        base = px_dither_surf(52, 12, (120, 90, 150), (60, 40, 90))
+        clip_to_rect(base, pygame.Rect(0, 0, 52, 12), border_radius=2)
+        surf.blit(base, (cx - 26, 58))
+        pygame.draw.rect(surf, outline, (cx - 26, 58, 52, 12), 2, border_radius=2)
+        # crack lines across the base (solid, no AA)
+        pygame.draw.line(surf, (200, 120, 240), (cx - 20, 62), (cx + 20, 66), 2)
+        pygame.draw.line(surf, (200, 120, 240), (cx - 12, 66), (cx + 12, 62), 1)
+        # crystal — 2-tone dithered fill clipped to a diamond (no AA)
+        cryst_pts = [(cx, 12), (cx + 18, 36), (cx, 58), (cx - 18, 36)]
+        xs = [p[0] for p in cryst_pts]; ys = [p[1] for p in cryst_pts]
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+        cg2 = px_dither_surf(maxx - minx, maxy - miny, (230, 190, 255), (120, 60, 180))
+        cm2 = pygame.Surface((maxx - minx, maxy - miny), pygame.SRCALPHA)
+        pygame.draw.polygon(cm2, (255, 255, 255, 255),
+                           [(p[0] - minx, p[1] - miny) for p in cryst_pts])
+        cg2.blit(cm2, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(cg2, (minx, miny))
+        pygame.draw.polygon(surf, (220, 160, 255), cryst_pts, 2)
+        # core shine (solid block, no AA)
+        pygame.draw.rect(surf, (255, 240, 255), (cx - 3, 30, 6, 10))
+        # anchor chains — two short violet lines from the crystal to the base
+        pygame.draw.line(surf, (200, 120, 240), (cx - 14, 44), (cx - 14, 58), 2)
+        pygame.draw.line(surf, (200, 120, 240), (cx + 14, 44), (cx + 14, 58), 2)
+    else:
+        # unknown kind — a plain dithered stone block (solid, no AA) so the
+        # caller never gets a blank surface
+        blk = px_dither_surf(56, 56, (190, 185, 178), (120, 115, 110))
+        clip_to_rect(blk, pygame.Rect(0, 0, 56, 56), border_radius=4)
+        surf.blit(blk, (cx - 28, 12))
+        pygame.draw.rect(surf, outline, (cx - 28, 12, 56, 56), 2, border_radius=4)
+
+def draw_village_building(surf, kind, color=None):
+    """A ~60x60 village building sprite, per-kind. Pixel-art: dithered fills
+    clipped to shape, solid palette fills, no AA. kind is one of:
+    house / shop / temple. color is an optional (r,g,b) tint so the same
+    building can be re-tinted per village; default is a warm thatch tone.
+    """
+    cx, cy = 30, 36
+    outline = (30, 26, 30)
+    base = color if color is not None else (170, 120, 70)
+    base_l = shade(base, 1.25)
+    base_d = shade(base, 0.65)
+    roof_l = shade(base, 1.05)
+    roof_d = shade(base, 0.55)
+
+    # ground shadow (chunky ellipse, no AA)
+    shadow = pygame.Surface((56, 16), pygame.SRCALPHA)
+    pygame.draw.ellipse(shadow, (0, 0, 0, 90), shadow.get_rect())
+    surf.blit(shadow, (cx - 28, 50))
+
+    if kind == "house":
+        # peaked-roof house. Walls — 2-tone dithered fill (no AA).
+        wall = px_dither_surf(44, 28, base_l, base_d)
+        clip_to_rect(wall, pygame.Rect(0, 0, 44, 28))
+        surf.blit(wall, (cx - 22, 28))
+        pygame.draw.rect(surf, outline, (cx - 22, 28, 44, 28), 2)
+        # door (solid, no AA)
+        pygame.draw.rect(surf, (90, 60, 30), (cx - 6, 36, 12, 20))
+        pygame.draw.rect(surf, outline, (cx - 6, 36, 12, 20), 2)
+        pygame.draw.circle(surf, (255, 220, 120), (cx + 3, 46), 2)
+        # window (solid dithered block, no AA)
+        win = px_dither_surf(10, 10, (220, 230, 240), (120, 140, 170))
+        clip_to_rect(win, pygame.Rect(0, 0, 10, 10))
+        surf.blit(win, (cx - 18, 32))
+        pygame.draw.rect(surf, outline, (cx - 18, 32, 10, 10), 2)
+        # peaked roof — 2-tone dithered fill clipped to a triangle (no AA)
+        roof_pts = [(cx - 28, 28), (cx + 28, 28), (cx, 4)]
+        xs = [p[0] for p in roof_pts]; ys = [p[1] for p in roof_pts]
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+        rg = px_dither_surf(maxx - minx, maxy - miny, roof_l, roof_d)
+        m = pygame.Surface((maxx - minx, maxy - miny), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                            [(p[0] - minx, p[1] - miny) for p in roof_pts])
+        rg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(rg, (minx, miny))
+        pygame.draw.polygon(surf, outline, roof_pts, 2)
+        # chimney (solid, no AA)
+        pygame.draw.rect(surf, (140, 100, 60), (cx + 8, 8, 6, 14))
+        pygame.draw.rect(surf, outline, (cx + 8, 8, 6, 14), 2)
+    elif kind == "shop":
+        # shop with a sign — wider walls + a hanging sign + a flat awning.
+        # Walls — 2-tone dithered fill (no AA).
+        wall = px_dither_surf(48, 26, base_l, base_d)
+        clip_to_rect(wall, pygame.Rect(0, 0, 48, 26))
+        surf.blit(wall, (cx - 24, 30))
+        pygame.draw.rect(surf, outline, (cx - 24, 30, 48, 26), 2)
+        # door (solid, no AA)
+        pygame.draw.rect(surf, (90, 60, 30), (cx - 6, 36, 12, 20))
+        pygame.draw.rect(surf, outline, (cx - 6, 36, 12, 20), 2)
+        # awning — 2-tone dithered fill clipped to a trapezoid (no AA)
+        awn_pts = [(cx - 26, 28), (cx + 26, 28), (cx + 22, 38), (cx - 22, 38)]
+        xs = [p[0] for p in awn_pts]; ys = [p[1] for p in awn_pts]
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+        ag = px_dither_surf(maxx - minx, maxy - miny, (220, 80, 80), (150, 40, 40))
+        m = pygame.Surface((maxx - minx, maxy - miny), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                            [(p[0] - minx, p[1] - miny) for p in awn_pts])
+        ag.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(ag, (minx, miny))
+        pygame.draw.polygon(surf, outline, awn_pts, 2)
+        # awning stripes (solid, no AA)
+        for sx in range(cx - 22, cx + 22, 8):
+            pygame.draw.line(surf, (255, 220, 200), (sx, 30), (sx - 2, 38), 2)
+        # hanging sign (solid dithered block, no AA)
+        sign = px_dither_surf(20, 12, (180, 140, 70), (120, 90, 40))
+        clip_to_rect(sign, pygame.Rect(0, 0, 20, 12), border_radius=2)
+        surf.blit(sign, (cx - 10, 14))
+        pygame.draw.rect(surf, outline, (cx - 10, 14, 20, 12), 2, border_radius=2)
+        # sign post (solid, no AA)
+        pygame.draw.line(surf, outline, (cx, 10), (cx, 14), 2)
+        # window (solid dithered block, no AA)
+        win = px_dither_surf(10, 10, (220, 230, 240), (120, 140, 170))
+        clip_to_rect(win, pygame.Rect(0, 0, 10, 10))
+        surf.blit(win, (cx + 14, 34))
+        pygame.draw.rect(surf, outline, (cx + 14, 34, 10, 10), 2)
+        # flat roof (solid, no AA)
+        pygame.draw.rect(surf, roof_d, (cx - 26, 28, 52, 4))
+        pygame.draw.rect(surf, outline, (cx - 26, 28, 52, 4), 1)
+    elif kind == "temple":
+        # temple with a spire — a tall spire over a pillared hall.
+        # Hall walls — 2-tone dithered fill (no AA).
+        wall = px_dither_surf(48, 24, base_l, base_d)
+        clip_to_rect(wall, pygame.Rect(0, 0, 48, 24))
+        surf.blit(wall, (cx - 24, 36))
+        pygame.draw.rect(surf, outline, (cx - 24, 36, 48, 24), 2)
+        # four pillars (solid dithered blocks, no AA)
+        for px in (cx - 20, cx - 8, cx + 4):
+            pillar = px_dither_surf(6, 22, (220, 215, 210), (150, 145, 140))
+            clip_to_rect(pillar, pygame.Rect(0, 0, 6, 22))
+            surf.blit(pillar, (px, 36))
+            pygame.draw.rect(surf, outline, (px, 36, 6, 22), 2)
+        # door (solid, no AA)
+        pygame.draw.rect(surf, (60, 40, 20), (cx - 6, 42, 12, 18))
+        pygame.draw.rect(surf, outline, (cx - 6, 42, 12, 18), 2)
+        # spire — 2-tone dithered fill clipped to a tall triangle (no AA)
+        spire_pts = [(cx - 10, 36), (cx + 10, 36), (cx, 4)]
+        xs = [p[0] for p in spire_pts]; ys = [p[1] for p in spire_pts]
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+        sg2 = px_dither_surf(maxx - minx, maxy - miny, (240, 230, 200), (170, 140, 90))
+        m = pygame.Surface((maxx - minx, maxy - miny), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                           [(p[0] - minx, p[1] - miny) for p in spire_pts])
+        sg2.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(sg2, (minx, miny))
+        pygame.draw.polygon(surf, outline, spire_pts, 2)
+        # spire cap orb — 2-tone dithered fill clipped to a circle (no AA)
+        orb = px_dither_surf(12, 12, (255, 240, 180), (200, 150, 40))
+        clip_to_circle(orb, (6, 6), 5)
+        surf.blit(orb, (cx - 6, 0))
+        pygame.draw.circle(surf, outline, (cx, 6), 5, 2)
+        # step base (solid, no AA)
+        pygame.draw.rect(surf, shade(base_d, 0.8), (cx - 26, 58, 52, 4))
+        pygame.draw.rect(surf, outline, (cx - 26, 58, 52, 4), 1)
+    else:
+        # unknown kind — a plain dithered block (solid, no AA) so the caller
+        # never gets a blank surface
+        blk = px_dither_surf(44, 36, base_l, base_d)
+        clip_to_rect(blk, pygame.Rect(0, 0, 44, 36))
+        surf.blit(blk, (cx - 22, 24))
+        pygame.draw.rect(surf, outline, (cx - 22, 24, 44, 36), 2)
+
+def draw_drop(surf, kind, color=None):
+    """A ~16x16 ground loot drop sprite, per-kind. Pixel-art: dithered fills
+    clipped to shape, solid palette fills, no AA. kind is one of:
+    gold / potion / shard / equipment. color is an optional (r,g,b) tint so
+    the same drop can be re-tinted per rarity; defaults per kind below.
+    """
+    cx, cy = 8, 8
+    outline = (30, 26, 30)
+
+    if kind == "gold":
+        # a coin — 2-tone dithered fill clipped to a circle + a $ sheen (no AA)
+        gold_l = color if color is not None else (255, 220, 90)
+        gold_d = shade(gold_l, 0.55)
+        coin = px_dither_surf(14, 14, gold_l, gold_d)
+        clip_to_circle(coin, (7, 7), 7)
+        surf.blit(coin, (1, 1))
+        pygame.draw.circle(surf, outline, (cx, cy), 7, 2)
+        # $ sheen (solid block, no AA)
+        pygame.draw.rect(surf, (255, 250, 200), (cx - 1, cy - 4, 2, 8))
+        pygame.draw.rect(surf, (255, 250, 200), (cx - 3, cy - 2, 6, 2))
+        pygame.draw.rect(surf, (255, 250, 200), (cx - 3, cy + 2, 6, 2))
+    elif kind == "potion":
+        # a small bottle — dithered liquid body + cork + shine (no AA)
+        pot_l = color if color is not None else (220, 80, 90)
+        pot_d = shade(pot_l, 0.55)
+        # cork (solid, no AA)
+        pygame.draw.rect(surf, (180, 130, 70), (cx - 2, 0, 4, 3))
+        pygame.draw.rect(surf, outline, (cx - 2, 0, 4, 3), 1)
+        # body — 2-tone dithered fill clipped to a rounded rect (no AA)
+        body = px_dither_surf(10, 12, pot_l, pot_d)
+        clip_to_rect(body, pygame.Rect(0, 0, 10, 12), border_radius=3)
+        surf.blit(body, (cx - 5, 3))
+        pygame.draw.rect(surf, outline, (cx - 5, 3, 10, 12), 2, border_radius=3)
+        # shine (solid block, no AA)
+        pygame.draw.rect(surf, (255, 255, 255), (cx - 3, 5, 2, 4))
+    elif kind == "shard":
+        # a crystal shard — 2-tone dithered fill clipped to a diamond + glow (no AA)
+        shard_l = color if color is not None else (180, 220, 255)
+        shard_d = shade(shard_l, 0.45)
+        # glow (chunky block, no AA soft-glow)
+        pygame.draw.circle(surf, (*shade(shard_l, 1.1), 0), (cx, cy), 8)
+        glow = pygame.Surface((16, 16), pygame.SRCALPHA)
+        pygame.draw.circle(glow, (*shard_l, 70), (8, 8), 8)
+        surf.blit(glow, (0, 0))
+        # diamond — 2-tone dithered fill clipped to a diamond (no AA)
+        diam_pts = [(cx, 1), (cx + 6, cy), (cx, 15), (cx - 6, cy)]
+        xs = [p[0] for p in diam_pts]; ys = [p[1] for p in diam_pts]
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+        dg = px_dither_surf(maxx - minx, maxy - miny, shard_l, shard_d)
+        m = pygame.Surface((maxx - minx, maxy - miny), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                           [(p[0] - minx, p[1] - miny) for p in diam_pts])
+        dg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(dg, (minx, miny))
+        pygame.draw.polygon(surf, outline, diam_pts, 2)
+        # core shine (solid block, no AA)
+        pygame.draw.rect(surf, (255, 255, 255), (cx - 1, cy - 3, 2, 6))
+    elif kind == "equipment":
+        # a gear/sword — a small sword icon (solid + dithered, no AA)
+        eq_l = color if color is not None else (220, 225, 240)
+        eq_d = shade(eq_l, 0.6)
+        # blade — 2-tone dithered fill clipped to a blade polygon (no AA)
+        blade_pts = [(cx, 1), (cx + 2, 1), (cx + 2, 11), (cx, 14), (cx - 2, 11)]
+        xs = [p[0] for p in blade_pts]; ys = [p[1] for p in blade_pts]
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+        bg2 = px_dither_surf(maxx - minx, maxy - miny, eq_l, eq_d)
+        m = pygame.Surface((maxx - minx, maxy - miny), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                           [(p[0] - minx, p[1] - miny) for p in blade_pts])
+        bg2.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(bg2, (minx, miny))
+        pygame.draw.polygon(surf, outline, blade_pts, 1)
+        # crossguard (solid, no AA)
+        pygame.draw.rect(surf, (140, 100, 50), (cx - 4, 10, 8, 2))
+        pygame.draw.rect(surf, outline, (cx - 4, 10, 8, 2), 1)
+        # grip (solid, no AA)
+        pygame.draw.rect(surf, (90, 60, 30), (cx - 1, 12, 2, 4))
+        pygame.draw.rect(surf, outline, (cx - 1, 12, 2, 4), 1)
+    else:
+        # unknown kind — a plain dithered disc (solid, no AA) so the caller
+        # never gets a blank surface
+        disc = px_dither_surf(12, 12, (200, 200, 200), (120, 120, 120))
+        clip_to_circle(disc, (6, 6), 6)
+        surf.blit(disc, (cx - 6, cy - 6))
+        pygame.draw.circle(surf, outline, (cx, cy), 6, 2)
+
 def draw_star(surf, cx, cy, r, points, color, inner_color):
     pts = []
     for i in range(points * 2):
@@ -2546,6 +3006,42 @@ def main():
     # ui
     make_ui()
     print("  UI elements")
+
+    # v2 terrain tiles — one neutral water + one bridge (biome tinting happens
+    # at draw time in C3, so a single tile per kind is shipped here).
+    for name in ("water", "bridge"):
+        s = pygame.Surface((TILE_PX, TILE_PX), pygame.SRCALPHA)
+        if name == "water":
+            draw_water_tile(s)
+        else:
+            draw_bridge_tile(s)
+        pygame.image.save(s, os.path.join(ASSET_DIR, "terrain", f"{name}.png"))
+    print("  terrain tiles")
+
+    # v2 landmarks — one sprite per kind (statue / ruin / shrine / obelisk /
+    # rift_anchor). The accent is a neutral gold so the same sprite reads in
+    # any biome; C3 re-tints by passing an element color to draw_landmark.
+    for kind in ("statue", "ruin", "shrine", "obelisk", "rift_anchor"):
+        s = pygame.Surface((80, 80), pygame.SRCALPHA)
+        draw_landmark(s, kind)
+        pygame.image.save(s, os.path.join(ASSET_DIR, "landmarks", f"{kind}.png"))
+    print("  landmarks")
+
+    # v2 village buildings — one sprite per kind (house / shop / temple).
+    for kind in ("house", "shop", "temple"):
+        s = pygame.Surface((60, 60), pygame.SRCALPHA)
+        draw_village_building(s, kind)
+        pygame.image.save(s, os.path.join(ASSET_DIR, "villages", f"{kind}.png"))
+    print("  village buildings")
+
+    # v2 ground loot drops — one sprite per kind (gold / potion / shard /
+    # equipment). C2 re-tints by passing a rarity color to draw_drop.
+    for kind in ("gold", "potion", "shard", "equipment"):
+        s = pygame.Surface((16, 16), pygame.SRCALPHA)
+        draw_drop(s, kind)
+        pygame.image.save(s, os.path.join(ASSET_DIR, "drops", f"{kind}.png"))
+    print("  drop sprites")
+
     print("Done. Assets saved to", ASSET_DIR)
 
 if __name__ == "__main__":

@@ -84,6 +84,10 @@ def main():
         "portraits": (512, 512),
         "enemies": (256, 256),
         "skills": (128, 128),
+        "terrain": (40, 40),
+        "landmarks": (80, 80),
+        "villages": (60, 60),
+        "drops": (16, 16),
     }
     failures = []
 
@@ -146,6 +150,119 @@ def main():
         print(f"{name:18s} el={el:5s} {sz}")
         if sz != EXPECT["skills"]:
             failures.append(f"skills/{name}: {sz} != {EXPECT['skills']}")
+
+    # v2 world sprites (Task A4) — terrain tiles, landmarks, village buildings,
+    # ground loot drops. Render each via the real draw_ helpers + assert the
+    # on-disk files exist at the expected sizes.
+    print()
+    print("=" * 64)
+    print("TERRAIN TILES (40x40)")
+    print("=" * 64)
+    for name in ("water", "bridge"):
+        s = pygame.Surface((40, 40), pygame.SRCALPHA)
+        if name == "water":
+            GA.draw_water_tile(s)
+        else:
+            GA.draw_bridge_tile(s)
+        st = _stats(s)
+        print(f"{name:8s} {st['size']} cov={st['coverage_pct']:5.1f}% "
+              f"bbox={st['bbox']} mean={st['mean_rgb_opaque']}")
+        if st["size"] != EXPECT["terrain"]:
+            failures.append(f"terrain/{name}: {st['size']} != {EXPECT['terrain']}")
+        if st["coverage_pct"] < 80.0:
+            failures.append(f"terrain/{name}: coverage {st['coverage_pct']}% < 80")
+        path = os.path.join(ASSET_DIR, "terrain", f"{name}.png")
+        if not os.path.exists(path):
+            failures.append(f"terrain/{name}.png missing")
+        else:
+            ds = pygame.image.load(path)
+            if ds.get_size() != EXPECT["terrain"]:
+                failures.append(f"terrain/{name} on-disk: {ds.get_size()} != {EXPECT['terrain']}")
+
+    print()
+    print("=" * 64)
+    print("LANDMARKS (80x80)")
+    print("=" * 64)
+    for kind in ("statue", "ruin", "shrine", "obelisk", "rift_anchor"):
+        s = pygame.Surface((80, 80), pygame.SRCALPHA)
+        GA.draw_landmark(s, kind)
+        st = _stats(s)
+        print(f"{kind:14s} {st['size']} cov={st['coverage_pct']:5.1f}% "
+              f"bbox={st['bbox']} mean={st['mean_rgb_opaque']} hue~{_hue_bucket(st['mean_rgb_opaque'])}")
+        if st["size"] != EXPECT["landmarks"]:
+            failures.append(f"landmarks/{kind}: {st['size']} != {EXPECT['landmarks']}")
+        if st["coverage_pct"] < 8.0:
+            failures.append(f"landmarks/{kind}: coverage {st['coverage_pct']}% < 8")
+        path = os.path.join(ASSET_DIR, "landmarks", f"{kind}.png")
+        if not os.path.exists(path):
+            failures.append(f"landmarks/{kind}.png missing")
+        else:
+            ds = pygame.image.load(path)
+            if ds.get_size() != EXPECT["landmarks"]:
+                failures.append(f"landmarks/{kind} on-disk: {ds.get_size()} != {EXPECT['landmarks']}")
+
+    print()
+    print("=" * 64)
+    print("VILLAGE BUILDINGS (60x60)")
+    print("=" * 64)
+    for kind in ("house", "shop", "temple"):
+        s = pygame.Surface((60, 60), pygame.SRCALPHA)
+        GA.draw_village_building(s, kind)
+        st = _stats(s)
+        print(f"{kind:8s} {st['size']} cov={st['coverage_pct']:5.1f}% "
+              f"bbox={st['bbox']} mean={st['mean_rgb_opaque']}")
+        if st["size"] != EXPECT["villages"]:
+            failures.append(f"villages/{kind}: {st['size']} != {EXPECT['villages']}")
+        if st["coverage_pct"] < 15.0:
+            failures.append(f"villages/{kind}: coverage {st['coverage_pct']}% < 15")
+        path = os.path.join(ASSET_DIR, "villages", f"{kind}.png")
+        if not os.path.exists(path):
+            failures.append(f"villages/{kind}.png missing")
+        else:
+            ds = pygame.image.load(path)
+            if ds.get_size() != EXPECT["villages"]:
+                failures.append(f"villages/{kind} on-disk: {ds.get_size()} != {EXPECT['villages']}")
+
+    print()
+    print("=" * 64)
+    print("GROUND LOOT DROPS (16x16)")
+    print("=" * 64)
+    for kind in ("gold", "potion", "shard", "equipment"):
+        s = pygame.Surface((16, 16), pygame.SRCALPHA)
+        GA.draw_drop(s, kind)
+        st = _stats(s)
+        print(f"{kind:11s} {st['size']} cov={st['coverage_pct']:5.1f}% "
+              f"bbox={st['bbox']} mean={st['mean_rgb_opaque']} hue~{_hue_bucket(st['mean_rgb_opaque'])}")
+        if st["size"] != EXPECT["drops"]:
+            failures.append(f"drops/{kind}: {st['size']} != {EXPECT['drops']}")
+        if st["coverage_pct"] < 5.0:
+            failures.append(f"drops/{kind}: coverage {st['coverage_pct']}% < 5")
+        path = os.path.join(ASSET_DIR, "drops", f"{kind}.png")
+        if not os.path.exists(path):
+            failures.append(f"drops/{kind}.png missing")
+        else:
+            ds = pygame.image.load(path)
+            if ds.get_size() != EXPECT["drops"]:
+                failures.append(f"drops/{kind} on-disk: {ds.get_size()} != {EXPECT['drops']}")
+
+    # loader smoke test — the 4 new entities.py loaders must resolve + return a
+    # converted-alpha surface (so the scene can blit them without a per-frame
+    # convert). Catches a path mismatch or a missing file.
+    print()
+    print("=" * 64)
+    print("LOADER SMOKE TEST (entities.load_terrain/landmark/village/drop)")
+    print("=" * 64)
+    import entities as E
+    for fn, args in (("load_terrain", ("water",)),
+                     ("load_landmark", ("statue",)),
+                     ("load_village", ("house",)),
+                     ("load_drop", ("gold",))):
+        try:
+            surf = getattr(E, fn)(*args)
+            print(f"{fn}({args[0]!r}) -> {surf.get_size()} OK")
+        except Exception as e:
+            failures.append(f"{fn}({args[0]!r}): {e}")
+            print(f"{fn}({args[0]!r}) FAIL {e}")
 
     print()
     if failures:

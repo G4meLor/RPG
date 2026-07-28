@@ -45,6 +45,21 @@ def load_ui(name):
 def load_item_icon(item_id, size=64):
     return load_image(os.path.join("items", item_id + ".png"), (size, size))
 
+# v2 world sprites — terrain tiles, landmarks, village buildings, ground loot
+# drops (Task A4). Each routes through the same load_image cache (entities.py:16)
+# so the scene reuses one converted-alpha copy per (path, scale).
+def load_terrain(name, scale=None):
+    return load_image(os.path.join("terrain", name + ".png"), scale)
+
+def load_landmark(kind, scale=None):
+    return load_image(os.path.join("landmarks", kind + ".png"), scale)
+
+def load_village(kind, scale=None):
+    return load_image(os.path.join("villages", kind + ".png"), scale)
+
+def load_drop(kind, scale=None):
+    return load_image(os.path.join("drops", kind + ".png"), scale)
+
 
 class StatusEffect:
     def __init__(self, etype, duration, potency=0):

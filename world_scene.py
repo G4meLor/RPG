@@ -1052,7 +1052,7 @@ class WorldScene:
         opened_idx = set(self.game.player.ow_chests_opened.get(cid, []))
         self.chests = [dict(x=x, y=y, kind=kind, opened=(i in opened_idx))
                        for i, (x, y, kind) in enumerate(m.get("chests", []))]
-        level = WD.cell_level(self.c, self.r, ng_cycle=p.ng_cycle)
+        level = WD.cell_level(self.c, self.r, ng_cycle=self.game.player.ng_cycle)
         # the active hero entry point (offset slightly inward from the edge so
         # the hero slides into the new map instead of snapping)
         ep = WD.entry_point(enter_edge) if enter_edge else (WD.MAP_W // 2, WD.MAP_H // 2)

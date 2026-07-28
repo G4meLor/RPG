@@ -518,6 +518,18 @@ class RosterScene(Scene):
             else:
                 text(surf, "Empty", 18, DIM, (tx + 100, slot_y + 14))
         text(surf, f"Team Power: {self.game.player.team_power()}", 20, (140, 220, 160), (tx + 16, 300))
+        # elemental resonance — show active resonance buffs under Team Power so
+        # the player sees what their party composition grants before entering the
+        # world. Each line is the resonance name + value in the element's color.
+        resonances = D.team_resonances(self.game.player.team)
+        ry = 326
+        for r in resonances:
+            el = next((e for e, d in D.ELEMENTAL_RESONANCE.items()
+                       if d.get("buff") == r.get("buff")), None)
+            col = D.ELEMENT_COLORS.get(el, ((180, 200, 220),))[0]
+            val_pct = int(r.get("val", 0) * 100)
+            text(surf, f"  {r['name']}  +{val_pct}%", 13, col, (tx + 16, ry))
+            ry += 16
         # cards
         for hid, rect in self.cards:
             hd = D.HERO_BY_ID[hid]

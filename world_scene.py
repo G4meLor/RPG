@@ -816,6 +816,7 @@ class WorldScene:
         # build the party of WorldCharacters
         self.party = []          # list of WorldCharacter (4 slots)
         self.active = 0
+        self._resonances = []   # active elemental resonance buffs (see _build_party)
         self._build_party()
 
         # boss intro/defeat cinematic state. _boss_intro_t counts down from the
@@ -973,6 +974,47 @@ class WorldScene:
         a = self.party[self.active]
         if a:
             a.x, a.y = pos[0], pos[1]
+        # elemental resonance: 2+ of the same element in the 4-hero party grants
+        # a themed buff (fire +ATK, water +heal, wind +move, light +energy regen,
+        # dark +crit dmg). Capped at 2-of-a-kind (no 3x/4x scaling). Recomputed on
+        # every party swap (see _switch) so the active buffs track the live team.
+        self._compute_resonances()
+
+    def _compute_resonances(self):
+        """Recompute self._resonances from the current party's elements and push
+        the per-hero resonance bonuses onto each WorldCharacter. Stores a list of
+        active resonance dicts (buff kind + val). Only heroes actually present
+        in a slot count; None slots are skipped. The per-hero _res_* fields are
+        read by effective_atk / move_speed / heal / add_energy, so the buffs apply
+        to every hero in the party (not just the active one) — resonance is a
+        party-wide buff."""
+        team_ids = []
+        for wc in self.party:
+            team_ids.append(wc.hero.id if wc else None)
+        self._resonances = D.team_resonances(team_ids)
+        # flatten into a kind -> val map for the per-hero fields
+        rmap = {}
+        for r in self._resonances:
+            rmap[r["buff"]] = r.get("val", 0)
+        for wc in self.party:
+            if wc is None:
+                continue
+            wc._res_atk_pct = rmap.get("atk_pct", 0)
+            wc._res_heal_amp = rmap.get("heal_amp", 0)
+            wc._res_move_speed = rmap.get("move_speed", 0)
+            wc._res_energy_regen = rmap.get("energy_regen", 0)
+            wc._res_crit_dmg = rmap.get("crit_dmg", 0)
+
+    def _resonance(self, buff_kind):
+        """Return the total resonance bonus for a buff kind, or 0 if inactive.
+        Multiple resonances of the same kind don't stack (capped at 2-of-a-kind
+        per element, and each element maps to a distinct kind), so this is a
+        simple lookup. Used by combat helpers that need the scene-level value
+        (e.g. crit_dmg, which is applied in the damage roll, not on the hero)."""
+        for r in self._resonances:
+            if r.get("buff") == buff_kind:
+                return r.get("val", 0)
+        return 0
 
     def _persist_party(self):
         p = self.game.player
@@ -1222,8 +1264,11 @@ class WorldScene:
         if a.passive and a.passive.get("kind") == "crit_up":
             crit_chance += a.passive.get("val", 0.1)
         atk = wc.effective_atk()
-        # crit damage multiplier: base 1.6 + tree crit_dmg bonus
-        crit_mul = 1.6 + getattr(a, "crit_dmg_bonus", 0)
+        # crit damage multiplier: base 1.6 + tree crit_dmg bonus + dark elemental
+        # resonance (+crit_dmg when 2+ dark heroes in party). Additive on the
+        # crit multiplier's bonus term so it stacks with the tree/set crit-dmg,
+        # not multiplicatively on the whole crit.
+        crit_mul = 1.6 + getattr(a, "crit_dmg_bonus", 0) + wc._res_crit_dmg
         if style == "ranged":
             # projectile toward the nearest enemy in the facing direction, or a
             # straight shot in the facing dir if no target — so ranged heroes
@@ -1273,7 +1318,10 @@ class WorldScene:
                         total_dmg += dealt
                         hit_any = True
             if hit_any:
-                a.energy = min(a.max_energy, a.energy + D.ENERGY_GAIN_BASIC)
+                # routed through wc.add_energy so the light resonance
+                # (energy_regen) and the p_energy (Flow State) passive add
+                # instead of both multiplying the base.
+                wc.add_energy(D.ENERGY_GAIN_BASIC)
                 audio.play("hit", 0.3)
                 self.camera.add_shake(3, self._shake_mul)
                 # impact shockwave ring on a clean hit
@@ -1437,11 +1485,13 @@ class WorldScene:
             # fallback: small burst
             self.particles.burst(wc.x, wc.y, col, n=14, speed=200, size=5, life=0.4)
             audio.play("skill", 0.4)
-        # energy gain for using a skill (small); flow-state passive boosts it
+        # energy gain for using a skill (small); flow-state passive + light
+        # elemental resonance boost it. Routed through wc.add_energy so the
+        # resonance (energy_regen) and the passive (energy_gen) add rather than
+        # both multiplying the base (the old inline code only applied the
+        # passive; add_energy now sums them).
         gain = D.ENERGY_GAIN_DEAL
-        if a.passive and a.passive.get("kind") == "energy_gen":
-            gain = int(gain * (1 + a.passive.get("val", 0.5)))
-        a.energy = min(a.max_energy, a.energy + gain)
+        wc.add_energy(gain)
 
     def _do_ultimate(self, wc):
         if not wc.can_ultimate():
@@ -1782,6 +1832,9 @@ class WorldScene:
         # a party swap is a combat action (elemental-reaction setup + i-frames),
         # not a menu click — give it the skill whoosh instead of the click tick
         audio.play("skill", 0.3)
+        # recompute elemental resonances — the active buffs track the live party,
+        # so swapping in a 2nd hero of an element enables its resonance live.
+        self._compute_resonances()
 
     # -----------------------------------------------------------------
     # Update
@@ -1955,12 +2008,13 @@ class WorldScene:
                                 # ranged basic-attack energy: the melee branch grants
                                 # ENERGY_GAIN_BASIC on a hit; do the same for the
                                 # projectile source so ranged heroes charge energy + ult.
-                                a = p.source.hero
-                                a.energy = min(a.max_energy,
-                                               a.energy + D.ENERGY_GAIN_BASIC)
+                                # Routed through add_energy so the light resonance
+                                # (energy_regen) and the p_energy passive add.
+                                p.source.add_energy(D.ENERGY_GAIN_BASIC)
                                 # lifesteal passive for ranged heroes (the melee branch
                                 # has its own lifesteal block; mirror it here so pyra /
                                 # cinder / ranged staffs actually heal on basic hits)
+                                a = p.source.hero
                                 if (a.passive and a.passive.get("kind") == "lifesteal"
                                         and dealt > 0):
                                     heal = max(1, int(dealt * a.passive.get("val", 0.12)))
@@ -2650,6 +2704,33 @@ class WorldScene:
                 dim2.fill((0, 0, 0, 120))
                 surf.blit(dim2, r2.topleft)
                 text(surf, "DOWN", 12, (255, 80, 80), r2.center, center=True)
+
+        # elemental resonance badges — a row under the party icons showing each
+        # active resonance (2+ of the same element). Each badge is a small
+        # element-colored pill with the buff short-name + value, so the player
+        # sees what their party composition is granting. Hidden when no
+        # resonance is active (a rainbow team shows nothing, which is the point —
+        # resonance is a reward for committing to an element).
+        if self._resonances:
+            bx = 16
+            by = 178
+            for r in self._resonances:
+                el = next((e for e, d in D.ELEMENTAL_RESONANCE.items()
+                           if d.get("buff") == r.get("buff")), None)
+                col = D.ELEMENT_COLORS.get(el, ((180, 200, 220),))[0]
+                val_pct = int(r.get("val", 0) * 100)
+                # short label per buff kind (kept terse so the row fits 2-3 badges)
+                short = {"atk_pct": "ATK", "heal_amp": "HEAL",
+                         "move_speed": "SPD", "energy_regen": "ENER",
+                         "crit_dmg": "CRIT"}.get(r.get("buff"), "BUFF")
+                label = f"{r.get('name', 'Resonance')}  +{val_pct}% {short}"
+                fnt_r = _font(12)
+                lw = fnt_r.size(label)[0] + 16
+                pill = pygame.Rect(bx, by, lw, 22)
+                pygame.draw.rect(surf, (20, 20, 30, 200), pill, border_radius=8)
+                pygame.draw.rect(surf, col, pill, 2, border_radius=8)
+                text(surf, label, 12, col, (bx + 8, by + 4))
+                bx += lw + 6
 
         # top-right: map name (right-aligned to the screen edge so long boss-cell
         # names like "Whispering Woods - Sanctum" don't overflow off-screen)

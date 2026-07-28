@@ -304,6 +304,15 @@ class WorldCharacter:
         # window opens when the dash ends and counts down.
         self._perfect_dodge_t = 0.0
         self._dmg_buff_t = 0.0        # 1.5x damage buff after a perfect dodge
+        # elemental resonance bonuses (set by WorldScene._compute_resonances via
+        # apply_resonances). Zero when no resonance of that kind is active. Kept
+        # on the WorldCharacter (not the Hero) so swapping the party updates them
+        # without rebuilding hero instances. Additive with the matching passive.
+        self._res_atk_pct = 0.0
+        self._res_heal_amp = 0.0
+        self._res_move_speed = 0.0
+        self._res_energy_regen = 0.0
+        self._res_crit_dmg = 0.0
         # click-to-move target (LoL-style RMB): when set, the hero auto-walks
         # toward this point. Cleared on WASD input, reaching the target, or a
         # combat action. None = no auto-move target.
@@ -424,7 +433,8 @@ class WorldCharacter:
         return self.hero.passive
 
     def effective_atk(self):
-        """ATK with the adrenaline passive + the perfect-dodge damage buff."""
+        """ATK with the adrenaline passive + the perfect-dodge damage buff +
+        the fire elemental resonance (+atk_pct when 2+ fire heroes in party)."""
         a = self.hero.atk
         if self.hero.passive and self.hero.passive.get("kind") == "adrenaline":
             if self.hero.hp < self.hero.max_hp * 0.35:
@@ -432,21 +442,52 @@ class WorldCharacter:
         # perfect-dodge reward: a 1.5x damage buff for 2s after a perfect dodge
         if self._dmg_buff_t > 0:
             a = int(a * 1.5)
+        # elemental resonance (fire -> atk_pct). Applied as a flat additive on
+        # the base ATK so it stacks additively with adrenaline/dodge-buff rather
+        # than multiplicatively (those are situational; resonance is always-on).
+        if self._res_atk_pct:
+            a = int(a * (1 + self._res_atk_pct))
         return a
 
     @property
     def move_speed(self):
-        """Max speed with the swift passive applied."""
+        """Max speed with the swift passive + the wind elemental resonance."""
         s = self.max_speed
         if self.hero.passive and self.hero.passive.get("kind") == "swift":
             s *= (1 + self.hero.passive.get("val", 0.15))
+        # elemental resonance (wind -> move_speed). Additive with the swift
+        # passive: a swift hero in a 2-wind party gets +(0.15 + 0.10) = +25%.
+        if self._res_move_speed:
+            s *= (1 + self._res_move_speed)
         return s
 
     def heal(self, amount):
-        self.hero.hp = min(self.hero.max_hp, self.hero.hp + amount)
+        """Heal with the water elemental resonance (+heal_amp when 2+ water
+        heroes in party). Additive with the p_heal_amp passive: the resonance
+        bonus and the passive bonus sum (both are flat fractions of the heal
+        amount), so a Mercy hero in a 2-water party heals +45% instead of the
+        resonance * passive double-dipping the base."""
+        amt = amount
+        amp = self._res_heal_amp
+        if self.hero.passive and self.hero.passive.get("kind") == "heal_amp":
+            amp += self.hero.passive.get("val", 0.25)
+        if amp:
+            amt = int(round(amt * (1 + amp)))
+        self.hero.hp = min(self.hero.max_hp, self.hero.hp + amt)
 
     def add_energy(self, n):
-        self.hero.energy = min(self.hero.max_energy, self.hero.energy + n)
+        """Energy gain with the light elemental resonance (+energy_regen when
+        2+ light heroes in party). Additive with the p_energy (Flow State)
+        passive: the resonance bonus and the passive bonus sum on the gain, so
+        a Flow-State hero in a 2-light party gains +65% energy instead of the
+        resonance * passive double-dipping."""
+        gain = n
+        regen = self._res_energy_regen
+        if self.hero.passive and self.hero.passive.get("kind") == "energy_gen":
+            regen += self.hero.passive.get("val", 0.5)
+        if regen:
+            gain = int(round(gain * (1 + regen)))
+        self.hero.energy = min(self.hero.max_energy, self.hero.energy + gain)
 
     def update(self, dt, input_dir, obstacles, want_dash):
         # knockback decays
@@ -565,9 +606,14 @@ class WorldCharacter:
                                self.hero.hp + self.hero.max_hp * self.hero.passive.get("val", 0.02) * dt)
         # passive energy regen: recover energy over time so a hero with low
         # energy can use skills again without landing a hit (the "skills don't
-        # recover / mana doesn't increase" fix). Slower in combat.
+        # recover / mana doesn't increase" fix). Slower in combat. The light
+        # elemental resonance (energy_regen) boosts the rate additively (a 2-light
+        # party regens 15% faster); the p_energy (Flow State) passive only applies
+        # to discrete energy gains from hits/skills, not to this passive trickle,
+        # so there's no double-apply to guard here.
         if self.alive and self.hero.energy < self.hero.max_energy:
             rate = D.ENERGY_REGEN_PCT * (0.5 if self._last_combat_t < 1.5 else 1.0)
+            rate *= (1 + self._res_energy_regen)
             self.hero.energy = min(self.hero.max_energy,
                                    self.hero.energy + self.hero.max_energy * rate * dt)
 

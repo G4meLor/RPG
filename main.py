@@ -725,7 +725,9 @@ class HeroDetailScene(Scene):
         # constellation nodes (C1-C6) — 6 pips in a row, lit for each unlocked
         # star, with the NEXT perk's description under the Ascend button so the
         # player sees what the next star will do before spending a dupe.
-        perks = D.hero_constellation_perks(hd)
+        # (Task A2) constellation perks come from HERO_ASSETS (same data, one bundle).
+        hero_assets = D.HERO_ASSETS.get(hid)
+        perks = hero_assets["constellation"] if hero_assets else D.hero_constellation_perks(hd)
         cx0 = 240 - 90   # center 6 pips of width ~30 each
         for i in range(6):
             cx = cx0 + i * 30
@@ -742,7 +744,8 @@ class HeroDetailScene(Scene):
         else:
             text(surf, "Constellation MAX", 12, (255, 220, 240), (240, 640), center=True)
         # lore panel: bio + centered italic quote, below the portrait (space at y~620+)
-        lore = D.HERO_LORE.get(hid)
+        # (Task A2) lore comes from HERO_ASSETS (same data, one bundle).
+        lore = hero_assets["lore"] if hero_assets else D.HERO_LORE.get(hid)
         if lore:
             # "italic" via a SysFont with italic=True, cached so we don't rebuild it each frame.
             if not hasattr(self, "_lore_font"):
@@ -817,29 +820,57 @@ class HeroDetailScene(Scene):
         text(surf, f"XP {rec['xp']}/{xp_need}", 13, DIM, (660, 386))
         # ultimate / passive / skills / evo — moved up inside the panel (which
         # ends at y=470) so they are no longer overlapped by the inventory list.
-        # B5: show the per-hero variant name + desc when one is defined, falling
-        # back to the generic SKILLS_DB name otherwise.
-        ult_var = D.ULTIMATE_VARIANTS.get(hd["id"]) if hd.get("ultimate") else None
-        if ult_var:
+        # (Task A2) read the per-hero ultimate + skills from HERO_ASSETS — the
+        # single source of truth — falling back to the combat dicts only if the
+        # manifest is somehow missing this hero.
+        if hero_assets:
+            ult_entry = next((s for s in hero_assets["skills"]
+                              if s["id"] == hd.get("ultimate")), None)
+        else:
+            ult_entry = None
+        ult_var = hero_assets["ultimate"] if hero_assets else (
+            D.ULTIMATE_VARIANTS.get(hd["id"]) if hd.get("ultimate") else None)
+        if ult_entry:
+            ult_name = ult_entry["name"]
+        elif ult_var:
             ult_name = ult_var["name"]
-            ult_desc = ult_var.get("desc", "")
         else:
             ult_name = D.SKILLS_DB[hd["ultimate"]]["name"] if hd.get("ultimate") else "None"
-            ult_desc = ""
+        ult_desc = ult_var.get("desc", "") if ult_var else ""
         text(surf, f"Ultimate: {ult_name}", 18, (255, 180, 120), (470, 412))
         if ult_desc:
             text(surf, ult_desc, 12, (200, 180, 150), (470, 430))
-        pv = h_inst.passive
+        # signature passive from HERO_ASSETS (falls back to the instance passive)
+        sig = hero_assets["signature"] if hero_assets else None
+        pv = sig if sig else h_inst.passive
         if pv:
             text(surf, f"Passive: {pv['name']}", 14, (160, 220, 180), (470, 448))
-        ab = D.hero_abilities(hd)
-        ab_names = [D.SKILLS_DB[s]["name"] if s and s in D.SKILLS_DB else "-" for s in ab]
-        text(surf, f"Q {ab_names[0]}  W {ab_names[1]}  E {ab_names[2]}",
+        # active skills: names from HERO_ASSETS, with a compact how_to_use hint
+        # line under each so the player sees the key + aim note at a glance.
+        if hero_assets:
+            actives = [s for s in hero_assets["skills"] if s["id"] != "basic_attack"
+                       and s["type"] != "ultimate"]
+        else:
+            ab = D.hero_abilities(hd)
+            actives = [{"name": D.SKILLS_DB[s]["name"] if s and s in D.SKILLS_DB else "-",
+                        "how_to_use": ""} for s in ab]
+        # pad to 3 so the HUD line is stable
+        while len(actives) < 3:
+            actives.append({"name": "-", "how_to_use": ""})
+        text(surf, f"Q {actives[0]['name']}  W {actives[1]['name']}  E {actives[2]['name']}",
              13, (200, 220, 255), (470, 466))
+        # how_to_use hint line — one compact row of the 3 active keys' aim notes,
+        # shown just under the Q/W/E line so the player sees the aim note at a glance.
+        hints = [s.get("how_to_use", "") for s in actives[:3]]
+        if any(hints):
+            compact = "  |  ".join(h.split("—")[1].strip() if "—" in h else h
+                                  for h in hints if h)
+            if compact:
+                text(surf, compact[:90], 10, (150, 170, 200), (470, 482))
         # evolution tree progress
         nn = len(rec.get("evo_nodes", []))
         text(surf, f"Evo {nn}/5  Tier {h_inst.evolve_title()}",
-             13, (220, 180, 255), (470, 482))
+             13, (220, 180, 255), (470, 498))
         # equipment slots
         text(surf, "Equipment", 22, GOLD, (680, 168))
         self._item_rects = []
@@ -2105,8 +2136,11 @@ class CodexScene(Scene):
                 text(surf, hd["name"], 14, (120, 120, 140), (r.centerx, r.y + cw + 4), center=True)
         # bio tooltip on hover: a small panel under the hovered card with the bio.
         # Only for owned heroes (silhouettes have no identity to reveal yet).
+        # (Task A2) read the bio from HERO_ASSETS — the single source of truth —
+        # falling back to HERO_LORE only if the manifest is somehow missing.
         if hovered_id is not None and hovered_rect is not None and hovered_id in p.owned:
-            lore = D.HERO_LORE.get(hovered_id)
+            ha = D.HERO_ASSETS.get(hovered_id)
+            lore = ha["lore"] if ha else D.HERO_LORE.get(hovered_id)
             if lore:
                 bio = lore["bio"]
                 tt_w, tt_h = 360, 60

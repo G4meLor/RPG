@@ -1261,6 +1261,355 @@ def constellation_perks_for(hero_def, ascension):
 
 
 # ---------------------------------------------------------------------------
+# HERO_ASSETS — per-character manifest (Task A2)
+#   The single source of truth for the codex, hero-detail screen, and (later)
+#   skill tooltips. Each entry bundles the hero's identity (name/title/element/
+#   role), lore, the 2-3 active skills + ultimate + basic_attack (each with a
+#   human-readable description + how-to-use), the signature passive, the 6
+#   constellation perks, and the ultimate variant.
+#   This is a PRESENTATION layer: it REFERENCES the combat dicts
+#   (SKILLS_DB / ULTIMATE_VARIANTS / HERO_SIGNATURE / CONSTELLATION_PERKS /
+#   HERO_LORE) for mechanics — it does NOT duplicate the combat data. Skill
+#   costs/types come from SKILLS_DB; the description/how_to_use are the
+#   per-hero flavor written here.
+# ---------------------------------------------------------------------------
+_SKILL_CATEGORY = {
+    "attack": "Attack", "magic": "Magic",
+    "aoe_attack": "AoE", "aoe_magic": "AoE",
+    "heal": "Heal", "buff": "Buff", "debuff": "Debuff",
+    "ultimate": "Ultimate", "revive": "Revive",
+}
+
+# Per-hero, per-skill description + how-to-use. Keyed by (hero_id, skill_id).
+#   description  - a <=100-char sentence tied to the hero's title/element/role.
+#   how_to_use   - names the key (Q/W/E for the 3 active, U/Space for ult, J
+#                  for basic_attack) + a hold-to-aim note for attack/aoe/magic
+#                  skills + the AoE/range.
+_HERO_SKILL_TEXT = {
+    # --- aria (light, destruction, Knight of Dawn) ---
+    ("aria", "light_slash"):   dict(description="A radiant slash of dawn's light. Hits one foe in front.",
+                                    how_to_use="Q — tap to slash in facing; hold to aim the arc."),
+    ("aria", "light_heal"):    dict(description="Mending light restores an ally's wounds.",
+                                    how_to_use="W — tap to heal the nearest ally."),
+    ("aria", "blessing"):      dict(description="A blessing raising all allies' DEF.",
+                                    how_to_use="E — tap to bless the whole party."),
+    ("aria", "light_hymn"):    dict(description="A solar hymn healing all allies and shielding them.",
+                                    how_to_use="U/Space — full energy; heals party + shields for 3s."),
+    ("aria", "basic_attack"):  dict(description="A knight's measured strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- kael (fire, destruction, Ember Warrior) ---
+    ("kael", "fire_slash"):    dict(description="A blazing slash carrying the ember wars. May burn.",
+                                    how_to_use="Q — tap to slash in facing; hold to aim the arc."),
+    ("kael", "inferno"):      dict(description="Scorch all enemies with the fire that burned his city.",
+                                    how_to_use="W — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("kael", "fire_bolt"):     dict(description="Hurl a bolt of the ember wars. Ranged single-target.",
+                                    how_to_use="E — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("kael", "meteor"):        dict(description="Call a meteor to obliterate all enemies. Burns.",
+                                    how_to_use="U/Space — full energy; strikes all enemies on screen."),
+    ("kael", "basic_attack"):  dict(description="An ember warrior's strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- mira (water, erudition, Tide Caller) ---
+    ("mira", "water_bolt"):    dict(description="A piercing lance of ice reading the tides. May freeze.",
+                                    how_to_use="Q — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("mira", "water_heal"):    dict(description="Soothing tide restores an ally's HP.",
+                                    how_to_use="W — tap to heal the nearest ally."),
+    ("mira", "tidal_wave"):    dict(description="Wash over all enemies with a tide of drowned empires.",
+                                    how_to_use="E — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("mira", "tsunami"):       dict(description="A towering wave engulfs all enemies.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("mira", "basic_attack"):  dict(description="A scholar's measured strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- zephyr (wind, hunt, Sky Ranger) ---
+    ("zephyr", "wind_arrow"):  dict(description="A swift arrow of wind. High crit, ranged single-target.",
+                                    how_to_use="Q — tap to fire at nearest foe; hold to aim the trajectory."),
+    ("zephyr", "wind_aoe"):    dict(description="A cyclone tears through all enemies.",
+                                    how_to_use="W — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("zephyr", "swift_buff"):  dict(description="Raise an ally's ATK with the wind's swiftness.",
+                                    how_to_use="E — tap to buff the nearest ally."),
+    ("zephyr", "tempest"):     dict(description="A cataclysmic cyclone tearing through all enemies.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("zephyr", "basic_attack"):dict(description="A sky ranger's quick strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- luna (dark, nihility, Nightshade) ---
+    ("luna", "dark_bolt"):     dict(description="A bolt of dark energy silencing kings. Ranged.",
+                                    how_to_use="Q — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("luna", "dark_curse"):    dict(description="Curse an enemy: poison + ATK down.",
+                                    how_to_use="W — tap to curse the nearest foe."),
+    ("luna", "dark_aoe"):      dict(description="A void storm hits all enemies in the night court.",
+                                    how_to_use="E — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("luna", "void_nova"):     dict(description="Unleash the void. Massive dark damage to all.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("luna", "basic_attack"):  dict(description="An assassin's silent strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- pyra (fire, nihility, Crimson Empress) ---
+    ("pyra", "fire_curse"):    dict(description="Curse an enemy with living fire: burn + ATK down.",
+                                    how_to_use="Q — tap to curse the nearest foe."),
+    ("pyra", "fire_bolt"):     dict(description="Hurl a bolt of the empress's flame. Ranged.",
+                                    how_to_use="W — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("pyra", "inferno"):       dict(description="Scorch all enemies with crowned living fire.",
+                                    how_to_use="E — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("pyra", "meteor"):        dict(description="A crimson meteor blasts all enemies away.",
+                                    how_to_use="U/Space — full energy; strikes all enemies on screen."),
+    ("pyra", "basic_attack"):  dict(description="An empress's burning strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- lyra (light, abundance, Moon Oracle) ---
+    ("lyra", "light_heal"):    dict(description="Moonlit light restores an ally's HP.",
+                                    how_to_use="Q — tap to heal the nearest ally."),
+    ("lyra", "blessing"):      dict(description="A blessing raising all allies' DEF by moonlight.",
+                                    how_to_use="W — tap to bless the whole party."),
+    ("lyra", "revive"):        dict(description="Speak for the dead: revive a fallen ally at half HP.",
+                                    how_to_use="E — tap to revive a fallen ally."),
+    ("lyra", "light_hymn"):    dict(description="A moonlit hymn healing all allies and shielding them.",
+                                    how_to_use="U/Space — full energy; heals party + shields for 3s."),
+    ("lyra", "basic_attack"):  dict(description="An oracle's measured strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- thorne (wind, preservation, Stoneguard) ---
+    ("thorne", "wind_arrow"):  dict(description="A stoneguard's arrow of wind. Ranged, high crit.",
+                                    how_to_use="Q — tap to fire at nearest foe; hold to aim the trajectory."),
+    ("thorne", "shield_ward"): dict(description="A shadow veil shielding an ally, reducing damage.",
+                                    how_to_use="W — tap to shield the nearest ally."),
+    ("thorne", "tempest"):     dict(description="A stoneguard's wrath: a cyclone tearing all enemies.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("thorne", "basic_attack"):dict(description="A wall of stone's strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- sera (light, abundance, Cleric of Light) ---
+    ("sera", "sanctuary"):     dict(description="A great clerical heal mending an ally's wounds.",
+                                    how_to_use="Q — tap to heal the nearest ally."),
+    ("sera", "blessing"):      dict(description="A blessing raising all allies' DEF with light.",
+                                    how_to_use="W — tap to bless the whole party."),
+    ("sera", "revive"):        dict(description="Miracle: revive a fallen ally with half HP.",
+                                    how_to_use="E — tap to revive a fallen ally."),
+    ("sera", "light_hymn"):    dict(description="A cleric's dawn hymn healing all allies + shielding.",
+                                    how_to_use="U/Space — full energy; heals party + shields for 3s."),
+    ("sera", "basic_attack"):  dict(description="A cleric's gentle strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- rune (dark, erudition, Void Mage) ---
+    ("rune", "dark_bolt"):     dict(description="A bolt of the void between the stars. Ranged.",
+                                    how_to_use="Q — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("rune", "dark_curse"):    dict(description="Curse an enemy: poison + ATK down from the void.",
+                                    how_to_use="W — tap to curse the nearest foe."),
+    ("rune", "dark_aoe"):      dict(description="A void storm hits all enemies between the stars.",
+                                    how_to_use="E — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("rune", "void_nova"):     dict(description="Unleash the arcane abyss. Massive dark damage to all.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("rune", "basic_attack"):  dict(description="A scholar's void strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- blaze (fire, destruction, Flame Berserker) ---
+    ("blaze", "fire_slash"):   dict(description="A berserker's blazing slash. Burns hotter with rage.",
+                                    how_to_use="Q — tap to slash in facing; hold to aim the arc."),
+    ("blaze", "fire_bolt"):    dict(description="Hurl a bolt of berserker flame. Ranged.",
+                                    how_to_use="W — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("blaze", "meteor"):       dict(description="A berserker's inferno: meteors obliterate all enemies.",
+                                    how_to_use="U/Space — full energy; strikes all enemies on screen."),
+    ("blaze", "basic_attack"): dict(description="A berserker's reckless strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- nami (water, harmony, Sea Oracle) ---
+    ("nami", "water_bolt"):    dict(description="A sea oracle's lance of ice. May freeze. Ranged.",
+                                    how_to_use="Q — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("nami", "water_heal"):    dict(description="Soothing tide restores an ally's HP.",
+                                    how_to_use="W — tap to heal the nearest ally."),
+    ("nami", "tidal_wave"):    dict(description="Sing the sea: wash over all enemies.",
+                                    how_to_use="E — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("nami", "tsunami"):       dict(description="A tsunami blessing engulfs all enemies.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("nami", "basic_attack"):  dict(description="A tide-reader's strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- gale (wind, erudition, Wind Dancer) ---
+    ("gale", "gust"):          dict(description="A sweeping gale hits all enemies. AoE.",
+                                    how_to_use="Q — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("gale", "wind_aoe"):      dict(description="A cyclone hits all enemies in the dancer's wake.",
+                                    how_to_use="W — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("gale", "evasion"):       dict(description="Raise an ally's SPD with the wind's mirage.",
+                                    how_to_use="E — tap to buff the nearest ally."),
+    ("gale", "tempest"):       dict(description="A gale cataclysm flinging all enemies back.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("gale", "basic_attack"):  dict(description="A wanderer's quick strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- vex (dark, hunt, Shade Rogue) ---
+    ("vex", "dark_bolt"):      dict(description="A shade's bolt slipping through locked doors. Ranged.",
+                                    how_to_use="Q — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("vex", "dark_curse"):     dict(description="Curse an enemy: poison + ATK down from the shade.",
+                                    how_to_use="W — tap to curse the nearest foe."),
+    ("vex", "void_nova"):      dict(description="The shade's end: void nova to all enemies.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("vex", "basic_attack"):   dict(description="A rogue's unseen strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- ember (fire, destruction, Ashen Revenant) ---
+    ("ember", "fire_strike"):  dict(description="A heavy burning blow from the ash. May burn.",
+                                    how_to_use="Q — tap to strike in facing; hold to aim the arc."),
+    ("ember", "inferno"):      dict(description="Scorch all enemies; the revenant still burns.",
+                                    how_to_use="W — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("ember", "phoenix"):      dict(description="Rise from ash: recover HP and gain ATK up.",
+                                    how_to_use="E — tap to self-heal + buff."),
+    ("ember", "meteor"):       dict(description="An ashen meteor strike obliterates all enemies.",
+                                    how_to_use="U/Space — full energy; strikes all enemies on screen."),
+    ("ember", "basic_attack"): dict(description="A revenant's burning strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- tide (water, preservation, Glacier Warden) ---
+    ("tide", "water_bolt"):    dict(description="A glacier's lance of ice. May freeze. Ranged.",
+                                    how_to_use="Q — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("tide", "frost_nova"):    dict(description="Freeze all enemies in the warden's ice. AoE.",
+                                    how_to_use="W — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("tide", "tide_shield"):   dict(description="A tide aegis shielding an ally.",
+                                    how_to_use="E — tap to shield the nearest ally."),
+    ("tide", "tsunami"):        dict(description="A glacier's ward tsunami shields the party.",
+                                    how_to_use="U/Space — full energy; hits all enemies + party shield."),
+    ("tide", "basic_attack"):  dict(description="A warden's cold strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- zephyra (wind, hunt, Storm Herald) ---
+    ("zephyra", "wind_arrow"): dict(description="A herald's arrow of wind. Ranged, high crit.",
+                                     how_to_use="Q — tap to fire at nearest foe; hold to aim the trajectory."),
+    ("zephyra", "gust"):       dict(description="A sweeping gale ahead of the lightning. AoE.",
+                                     how_to_use="W — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("zephyra", "evasion"):    dict(description="Raise an ally's SPD, outrunning the storm.",
+                                     how_to_use="E — tap to buff the nearest ally."),
+    ("zephyra", "tempest"):    dict(description="The storm herald's fury: a cyclone tearing all.",
+                                     how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("zephyra", "basic_attack"):dict(description="A herald's swift strike.",
+                                     how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- selene (light, hunt, Dawnbringer) ---
+    ("selene", "light_slash"):  dict(description="A dawnbringer's slash of light. Hits one foe.",
+                                      how_to_use="Q — tap to slash in facing; hold to aim the arc."),
+    ("selene", "sanctuary"):    dict(description="A great heal mending an ally at the dawn's edge.",
+                                      how_to_use="W — tap to heal the nearest ally."),
+    ("selene", "blessing"):     dict(description="A blessing raising all allies' DEF at dawn.",
+                                      how_to_use="E — tap to bless the whole party."),
+    ("selene", "judgement_aoe"):dict(description="Divine wrath smites all enemies at the world's edge.",
+                                      how_to_use="U/Space — full energy; smites all enemies on screen."),
+    ("selene", "basic_attack"): dict(description="A dawnbringer's relentless strike.",
+                                      how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- nox (dark, destruction, Eclipse Lord) ---
+    ("nox", "soul_drain"):     dict(description="Drain a foe's soul; heals the lord a little. Ranged.",
+                                    how_to_use="Q — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("nox", "dark_bolt"):      dict(description="A bolt of the eclipsed hour. Ranged.",
+                                    how_to_use="W — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("nox", "dark_aoe"):       dict(description="The eclipse lord's void storm hits all enemies.",
+                                    how_to_use="E — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("nox", "death_coil"):     dict(description="Drain the life of all enemies in the forgotten hour.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("nox", "basic_attack"):   dict(description="An eclipse lord's strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- cinder (fire, destruction, Cinder Knight) ---
+    ("cinder", "fire_strike"):  dict(description="A cinder knight's heavy burning blow. May burn.",
+                                      how_to_use="Q — tap to strike in facing; hold to aim the arc."),
+    ("cinder", "fire_bolt"):    dict(description="Hurl a bolt of the cinder wars. Ranged.",
+                                      how_to_use="W — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("cinder", "meteor"):       dict(description="A cinder knight's fall: meteor scatters all enemies.",
+                                      how_to_use="U/Space — full energy; strikes all enemies on screen."),
+    ("cinder", "basic_attack"): dict(description="A cinder knight's grim strike.",
+                                      how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- mist (wind, harmony, Veil Dancer) ---
+    ("mist", "wind_arrow"):    dict(description="A veil dancer's arrow of wind. Ranged, high crit.",
+                                     how_to_use="Q — tap to fire at nearest foe; hold to aim the trajectory."),
+    ("mist", "evasion"):       dict(description="Raise an ally's SPD behind the veils.",
+                                     how_to_use="W — tap to buff the nearest ally."),
+    ("mist", "shield_ward"):   dict(description="A shadow veil shielding an ally, reducing damage.",
+                                     how_to_use="E — tap to shield the nearest ally."),
+    ("mist", "tempest"):       dict(description="A veil dancer's storm: a cyclone tearing all.",
+                                     how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("mist", "basic_attack"):  dict(description="A dancer's elusive strike.",
+                                     how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- sol (light, abundance, Sun Priest) ---
+    ("sol", "light_heal"):     dict(description="A sun priest's light restores an ally's HP.",
+                                    how_to_use="Q — tap to heal the nearest ally."),
+    ("sol", "blessing"):       dict(description="A blessing raising all allies' DEF with noon sun.",
+                                    how_to_use="W — tap to bless the whole party."),
+    ("sol", "light_hymn"):     dict(description="A solar hymn healing all allies + shielding them.",
+                                    how_to_use="U/Space — full energy; heals party + shields for 3s."),
+    ("sol", "basic_attack"):   dict(description="A priest's warm strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- gaia (wind, preservation, Earthwarden) ---
+    ("gaia", "taunt_skill"):   dict(description="Provoke enemies and raise DEF; the land holds.",
+                                    how_to_use="Q — tap to taunt + buff self."),
+    ("gaia", "shield_ward"):   dict(description="A shadow veil shielding an ally, reducing damage.",
+                                    how_to_use="W — tap to shield the nearest ally."),
+    ("gaia", "gust"):          dict(description="A sweeping wind hits all enemies the land holds.",
+                                    how_to_use="E — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("gaia", "tempest"):       dict(description="The earthwarden's fury: a tempest shielding the party.",
+                                    how_to_use="U/Space — full energy; hits all enemies + party shield."),
+    ("gaia", "basic_attack"):  dict(description="The earthwarden's heavy strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- echo (water, harmony, Mirror Sage) ---
+    ("echo", "water_bolt"):    dict(description="A mirror sage's lance of ice. May freeze. Ranged.",
+                                    how_to_use="Q — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("echo", "reflect_ward"):  dict(description="Reflect a share of damage taken back at foes.",
+                                    how_to_use="W — tap to ward the nearest ally."),
+    ("echo", "tide_shield"):   dict(description="A tide aegis shielding an ally.",
+                                    how_to_use="E — tap to shield the nearest ally."),
+    ("echo", "tsunami"):       dict(description="A mirror sage's tide echo engulfs all enemies.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("echo", "basic_attack"):  dict(description="A sage's mirrored strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+    # --- raven (dark, nihility, Blood Reaper) ---
+    ("raven", "rupture"):      dict(description="Inflict bleed + DEF down; the ledger demands it.",
+                                    how_to_use="Q — tap to curse the nearest foe."),
+    ("raven", "soul_drain"):   dict(description="Drain a foe's soul; the reaper takes his due. Ranged.",
+                                    how_to_use="W — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("raven", "dark_aoe"):     dict(description="A void storm hits all enemies in the harvest.",
+                                    how_to_use="E — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("raven", "death_coil"):   dict(description="The blood reaper's harvest: drain all enemies' life.",
+                                    how_to_use="U/Space — full energy; hits all enemies on screen."),
+    ("raven", "basic_attack"): dict(description="A reaper's morbid strike.",
+                                    how_to_use="J — tap to strike in facing; hold to aim."),
+}
+
+
+def _build_hero_assets():
+    """Assemble HERO_ASSETS from the combat dicts + the per-hero text above.
+    References — does not duplicate — SKILLS_DB / ULTIMATE_VARIANTS /
+    HERO_SIGNATURE / CONSTELLATION_PERKS / HERO_LORE / PASSIVES_DB."""
+    assets = {}
+    for h in HEROES_DB:
+        hid = h["id"]
+        active = [s for s in h["skills"] if s != "basic_attack"]   # 2-3 ids
+        ult = h.get("ultimate")
+        # skills list = 3 active + ultimate + basic_attack (real skills only)
+        skill_ids = list(active) + ([ult] if ult else []) + ["basic_attack"]
+        skills_list = []
+        for sid in skill_ids:
+            if not sid or sid not in SKILLS_DB:
+                continue
+            sk = SKILLS_DB[sid]
+            entry = {
+                "id": sid,
+                "name": sk["name"],
+                "type": sk["type"],
+                "category": _SKILL_CATEGORY.get(sk["type"], sk["type"].title()),
+                "cost": sk.get("cost", 0),
+            }
+            txt = _HERO_SKILL_TEXT.get((hid, sid))
+            if txt:
+                entry["description"] = txt["description"]
+                entry["how_to_use"] = txt["how_to_use"]
+            else:
+                entry["description"] = sk.get("desc", "")
+                entry["how_to_use"] = ""
+            skills_list.append(entry)
+        # signature passive (name + desc from PASSIVES_DB via HERO_SIGNATURE)
+        sig_id = HERO_SIGNATURE.get(hid)
+        sig = None
+        if sig_id and sig_id in PASSIVES_DB:
+            sp = PASSIVES_DB[sig_id]
+            sig = {"name": sp["name"], "desc": sp["desc"]}
+        # constellation: 6 perks (name + desc) from the role/hero template
+        const = [{"name": p["name"], "desc": p["desc"]}
+                 for p in hero_constellation_perks(h)]
+        assets[hid] = {
+            "name": h["name"], "title": h["title"],
+            "element": h["element"], "role": h["role"],
+            "lore": HERO_LORE.get(hid, {}),
+            "skills": skills_list,
+            "signature": sig,
+            "constellation": const,
+            "ultimate": ULTIMATE_VARIANTS.get(hid),
+        }
+    return assets
+
+
+HERO_ASSETS = _build_hero_assets()
+
+
+# ---------------------------------------------------------------------------
 # Evolve (soul-shard ascension)
 #   Beyond MAX_ASCENSION, shards evolve a hero into higher tiers. Each evolve
 #   tier is a big stat jump + a flair color used in the world HUD.

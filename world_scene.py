@@ -2780,9 +2780,15 @@ class WorldScene:
         surf.blit(self._map_surf, (-ox, -oy))
 
         # depth-sorted drawables: enemies + active hero + projectiles
+        # the boss aura reads the night level (expanded at night) — set it once
+        # per frame on each enemy so WorldEnemy.draw doesn't re-derive it per
+        # enemy (the boss aura + the hero torch + the vignette all share one
+        # quantized night level, no cache thrash).
+        night_level = self._night_level()
         drawables = []
         for en in self.enemies:
             if en.alive:
+                en._night_level = night_level
                 drawables.append((en.y, "enemy", en))
         # breakable props — sorted with the rest so they occlude correctly
         # against the hero/enemies (a pot behind the hero is drawn first).
@@ -3033,14 +3039,34 @@ class WorldScene:
         # (otherwise the continuous phase would allocate a fresh 3.5MB overlay
         # every frame — a memory leak). 16 buckets per biome is ~56MB total.
         sky = self._sky_for_phase(sky, _qphase=round(self._world_time * 16) / 16 % 1.0)
-        # base atmosphere (vignette + sky gradient) — one cached blit per biome+phase
-        base = self._biome_atmos(sky)
+        # night level (0 = day, 1..8 = night depth) — the single quantized value
+        # the atmosphere base + the darkening overlay + the torch pool + the
+        # boss aura all read so they share one quantization (no cache thrash).
+        night_level = self._night_level()
+        # base atmosphere (vignette + sky gradient) — one cached blit per
+        # biome+phase+night. The vignette is stronger at night (multiplied by a
+        # night factor) so the world reads as a deeper, more enclosed space.
+        base = self._biome_atmos(sky, night_level)
         surf.blit(base, (0, 0))
         # a darkening overlay at night so the world reads as night-time (a flat
         # low-alpha blue-black over everything below phase 0.5..1.0 night)
         night = self._night_overlay()
         if night is not None:
             surf.blit(night, (0, 0))
+            # torchlight: a warm radial light pool follows the active hero so the
+            # night reads as torch-lit, not just uniformly dark. The pool is
+            # warm-tinted (255,220,160) + BLEND_RGBA_ADD so it brightens the night
+            # overlay without erasing it (a torch glow, not a white-out). The pool
+            # is positioned at the hero's screen pos (camera-adjusted, so it
+            # tracks the hero under camera shake too — the shake is in ox/oy).
+            wc = self.party[self.active]
+            if wc is not None:
+                torch_sp = self._torch_sprite(night_level)
+                tw, th = torch_sp.get_size()
+                tx = int(wc.x - ox - tw // 2)
+                ty = int(wc.y - oy - th // 2)
+                surf.blit(torch_sp, (tx, ty),
+                          special_flags=pygame.BLEND_RGBA_ADD)
         # drifting fog motes — a few big soft circles (pre-rendered sprite, one
         # blit each) that parallax slowly with the camera for a sense of depth
         fog = pal.get("fog", (120, 120, 140))
@@ -3104,10 +3130,15 @@ class WorldScene:
                 ov.fill((255, 255, 255, a))
             surf.blit(ov, (0, 0))
 
-    def _biome_atmos(self, sky):
+    def _biome_atmos(self, sky, night_level=0):
         """Cached per-biome atmosphere base: a soft vignette + a top-down sky
-        gradient, baked into one 1280x720 overlay. Built once per biome."""
-        key = ("atmos", sky)
+        gradient, baked into one 1280x720 overlay. Built once per biome +
+        night level (the vignette is stronger at night — multiply the vignette
+        alpha by a night factor — so the night reads as a deeper, more
+        claustrophobic space). Reuses the quantized night levels as part of the
+        cache key so the cache doesn't thrash (8 night buckets per biome +
+        16 day-phase buckets per biome = ~128 cached overlays total)."""
+        key = ("atmos", sky, night_level)
         ov = self._light_cache.get(key)
         if ov is None:
             ov = pygame.Surface((1280, 720), pygame.SRCALPHA)
@@ -3121,10 +3152,14 @@ class WorldScene:
             # is highest at the outermost ring = the corners, not the center).
             # Tint the vignette with a darkened sky color so the depth shading
             # reads as the biome's own (cave = deep-blue, castle = warm-brown)
-            # rather than pure black in every biome.
+            # rather than pure black in every biome. At night the vignette is
+            # stronger (multiply the alpha by a night factor up to 1.6x at the
+            # deepest night) so the world reads as a deeper, more enclosed space
+            # — the lit pool in the center reads brighter by contrast.
+            vign_mul = 1.0 + 0.075 * night_level   # 1.0 day, ~1.6 at deepest night
             sky_dark = (sky[0] // 4, sky[1] // 4, sky[2] // 4)
             for i in range(0, 220, 6):
-                a = int(80 * (1 - i / 220) ** 2)
+                a = int(min(255, 80 * (1 - i / 220) ** 2 * vign_mul))
                 pygame.draw.rect(ov, (*sky_dark, a),
                                  (i, i, 1280 - 2 * i, 720 - 2 * i), 6)
             self._light_cache[key] = ov
@@ -3215,21 +3250,31 @@ class WorldScene:
         b = min(255, max(10, int(b * bright + 16 * cool - 10 * warm)))
         return (r, g, b)
 
-    def _night_overlay(self):
-        """A cached full-screen darkening overlay whose strength follows the day
-        phase — strongest near midnight, none during the day. Quantized to 8
-        steps so the cache key stays stable (one overlay per night level). The
-        active window ramps up after dusk, peaks near midnight, and ramps back
-        down through pre-dawn with no hard snap (was: a one-frame cut at 0.95)."""
+    def _night_level(self):
+        """Quantized night level (0 = day, 1..8 = night depth). The single
+        source of truth for night-scaled effects: the darkening overlay, the
+        hero torchlight, the boss aura, and the vignette boost all read this so
+        they share one quantization (8 buckets — no per-frame cache thrash).
+        The active window ramps up after dusk (p >= 0.4), peaks near midnight
+        (0.75), and ramps back down through pre-dawn with no hard snap."""
         p = self._world_time
         # distance from midnight (0.75) along the wrapped cycle; 0 at midnight,
         # 0.5 at noon. Only darken once we're past dusk (p >= 0.4).
         dp = abs(((p - 0.75) + 0.5) % 1.0 - 0.5)   # 0 at 0.75, 0.5 at 0.25
         if p < 0.4 or dp > 0.35:
-            return None
+            return 0
         # 8 at midnight (dp=0), fading to 0 at the edges of the window (dp=0.35)
         level = int(8 * (1 - dp / 0.35))
-        level = max(1, min(8, level))
+        return max(1, min(8, level))
+
+    def _night_overlay(self):
+        """A cached full-screen darkening overlay whose strength follows the day
+        phase — strongest near midnight, none during the day. Quantized to 8
+        steps (via _night_level) so the cache key stays stable (one overlay per
+        night level)."""
+        level = self._night_level()
+        if level == 0:
+            return None
         key = ("night", level)
         ov = self._light_cache.get(key)
         if ov is None:
@@ -3238,6 +3283,26 @@ class WorldScene:
             ov.fill((6, 8, 24, a))
             self._light_cache[key] = ov
         return ov
+
+    def _torch_sprite(self, level):
+        """A cached warm radial light pool for the hero torchlight — one per
+        night level (reuses the quantized night levels as the cache key so the
+        cache doesn't thrash: 8 buckets, built once). A ~280px warm-tinted
+        (255,220,160) radial gradient, blitted with BLEND_RGBA_ADD so the pool
+        brightens the night overlay without erasing it (a torch glow, not a
+        white-out). Intensity scales with the night level (deeper night =
+        stronger torch)."""
+        key = ("torch", level)
+        sp = self._light_cache.get(key)
+        if sp is None:
+            R = 140
+            sp = pygame.Surface((R * 2, R * 2), pygame.SRCALPHA)
+            warm = (255, 220, 160)
+            for k in range(R, 0, -8):
+                a = int(10 * level * (1 - k / R))
+                pygame.draw.circle(sp, (*warm, a), (R, R), k)
+            self._light_cache[key] = sp
+        return sp
 
     def _draw_edge_hints(self, surf, ox, oy):
         # glowing chevron arrows at traversable map edges, pointing the way out

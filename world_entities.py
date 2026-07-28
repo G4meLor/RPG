@@ -1344,14 +1344,24 @@ class WorldEnemy:
         sh = scratch(self.r * 2, 12)
         pygame.draw.ellipse(sh, (0, 0, 0, max(50, 90 - bob * 8)), sh.get_rect())
         surf.blit(sh, (x - self.r, y + self.r - 4))
-        # boss aura (a pulsing element-tinted glow around boss feet)
+        # boss aura (a pulsing element-tinted glow around boss feet). At night
+        # the aura expands + intensifies so the boss arena reads as a lit pool
+        # (the hero's torch pool only covers the hero; the boss gets its own so
+        # the arena reads as lit from within, not just dark). The night_level
+        # (0..8) is set on the enemy by the scene each frame so the boss aura +
+        # the hero torch + the vignette all share one quantization (no thrash).
         if self.is_boss:
-            gw = self.r * 3
+            nl = max(0, min(8, int(getattr(self, "_night_level", 0))))
+            # at night: +60% radius, +60% intensity (0.4..0.95 = night window)
+            rad_mul = 1.0 + 0.6 * (nl / 8.0)
+            int_mul = 1.0 + 0.6 * (nl / 8.0)
+            gw = int(self.r * 3 * rad_mul)
             g = scratch(gw, gw)
             pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.005)
             ec = D.ELEMENT_COLORS.get(self.element, ((220, 60, 60),))[0]
-            for rr in range(self.r + 18, self.r, -3):
-                a = int(50 * pulse * (1 - (rr - self.r) / 18))
+            ring_w = int(18 * rad_mul)
+            for rr in range(self.r + ring_w, self.r, -3):
+                a = int(min(255, 50 * pulse * (1 - (rr - self.r) / max(1, ring_w)) * int_mul))
                 pygame.draw.circle(g, (*ec, a), (gw // 2, gw // 2), rr)
             surf.blit(g, (x - gw // 2, y - gw // 2))
         # telegraph glow (a growing red ring that snaps to the strike)

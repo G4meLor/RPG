@@ -6,6 +6,8 @@ graph (neighbor links), and difficulty scaling. All static so it is cheap.
 import random
 import math
 
+import data as D
+
 # ---------------------------------------------------------------------------
 # Grid + tile geometry
 # ---------------------------------------------------------------------------
@@ -65,9 +67,14 @@ def cell_biome(c, r):
     return ROW_BIOME[r]
 
 
-def cell_level(c, r):
-    """Enemy level for cell (c, r). Bosses add a flat bonus."""
-    return 1 + r * 6 + int(c * 1.5)
+def cell_level(c, r, ng_cycle=0):
+    """Enemy level for cell (c, r). Bosses add a flat bonus. NG+ cycles add
+    NG_PLUS_LEVEL_BONUS per cycle on top of the base level so a replayed world
+    stays challenging after Ascending."""
+    base = 1 + r * 6 + int(c * 1.5)
+    if ng_cycle:
+        base += ng_cycle * D.NG_PLUS_LEVEL_BONUS
+    return base
 
 
 def is_boss_cell(c, r):

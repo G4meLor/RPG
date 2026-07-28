@@ -122,6 +122,14 @@ COMBO_MAX = 10
 DEFEND_MITIGATION = 0.45     # defending reduces incoming damage by this fraction
 
 # ---------------------------------------------------------------------------
+# Aetheric Cycle (NG+) — per-cycle enemy level bonus applied on top of the
+# base cell_level when the player has Ascended the World. Each cycle adds this
+# flat amount to every enemy so a replayed world stays challenging while the
+# player's heroes/equipment carry over.
+# ---------------------------------------------------------------------------
+NG_PLUS_LEVEL_BONUS = 8
+
+# ---------------------------------------------------------------------------
 # HSR-style Energy (replaces MP as the per-hero action resource)
 #   - Basic attack is free and *generates* energy.
 #   - Skills cost energy (cost * ENERGY_COST_MULT).

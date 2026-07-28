@@ -828,6 +828,10 @@ class WorldScene:
         self._boss_intro_name = ""
         self._boss_defeat_t = 0.0
         self._boss_defeat_name = ""
+        # Aetheric Cycle: a "World Ascended!" banner shown for ~3s after the
+        # final boss (Demon King at 9,4) is defeated, telling the player they
+        # can now Ascend the World from the title screen.
+        self._ascend_banner_t = 0.0
 
         # day/night cycle: a slow global phase (0..1, 4-minute full cycle) that
         # tints the biome atmosphere + scales enemy level at night. Loaded from
@@ -1048,7 +1052,7 @@ class WorldScene:
         opened_idx = set(self.game.player.ow_chests_opened.get(cid, []))
         self.chests = [dict(x=x, y=y, kind=kind, opened=(i in opened_idx))
                        for i, (x, y, kind) in enumerate(m.get("chests", []))]
-        level = WD.cell_level(self.c, self.r)
+        level = WD.cell_level(self.c, self.r, ng_cycle=p.ng_cycle)
         # the active hero entry point (offset slightly inward from the edge so
         # the hero slides into the new map instead of snapping)
         ep = WD.entry_point(enter_edge) if enter_edge else (WD.MAP_W // 2, WD.MAP_H // 2)
@@ -1780,6 +1784,19 @@ class WorldScene:
             audio.play("victory", 0.7)
             self._boss_defeat_name = en.enemy.name
             self._boss_defeat_t = 2.5
+            # Aetheric Cycle: when the FINAL boss (the Demon King at 9,4) is
+            # defeated for the first time this cycle, show a "World Ascended!"
+            # banner so the player knows they can now Ascend the World from
+            # the title screen to start NG+. The cell is (9,4) and the boss id
+            # for row 4 is "demonking" — check both so a non-final boss on the
+            # same row (none currently, but defensive) can't trigger this.
+            if (WD.is_boss_cell(self.c, self.r) and self.c == WD.GRID_W - 1
+                    and self.r == WD.GRID_H - 1
+                    and getattr(en, "id", None) == "demonking"):
+                self._ascend_banner_t = 3.0
+                self.set_message(
+                    "World Ascended! Return to the title to start a new cycle.",
+                    4.0)
         # particles
         self.particles.burst(en.x, en.y, (200, 80, 80), n=20, speed=240, size=6, life=0.5)
         # stats + quests + achievements
@@ -2156,6 +2173,8 @@ class WorldScene:
             self._boss_intro_t = max(0, self._boss_intro_t - dt)
         if self._boss_defeat_t > 0:
             self._boss_defeat_t = max(0, self._boss_defeat_t - dt)
+        if self._ascend_banner_t > 0:
+            self._ascend_banner_t = max(0, self._ascend_banner_t - dt)
         # combo window: count down; reset the streak when it expires
         if self._combo_t > 0:
             self._combo_t -= dt
@@ -2428,6 +2447,11 @@ class WorldScene:
         if self._boss_defeat_t > 0:
             self._draw_boss_banner(surf, self._boss_defeat_name, self._boss_defeat_t,
                                    intro=False)
+        # Aetheric Cycle "World Ascended!" banner — shown for ~3s after the
+        # final boss (Demon King at 9,4) is defeated, signalling that the
+        # player can now Ascend the World from the title screen.
+        if self._ascend_banner_t > 0:
+            self._draw_ascend_banner(surf, self._ascend_banner_t)
 
         # modal overlays (teleport map, evolve, pause hub) on top of everything
         if self.teleport:
@@ -2467,6 +2491,32 @@ class WorldScene:
         else:
             text(surf, "BOSS DEFEATED", 48, (255, 220, 120), (640, 250), center=True)
             text(surf, name, 28, (255, 240, 200), (640, 300), center=True)
+
+    def _draw_ascend_banner(self, surf, t):
+        """A full-width cinematic banner shown after the final boss (Demon King
+        at 9,4) is defeated, signalling the player can Ascend the World to
+        start a new Aetheric Cycle (NG+). Reuses the boss-banner fade shape."""
+        dur = 3.0
+        if t > dur * 0.8:
+            a = max(0, 1 - (t - dur * 0.8) / (dur * 0.2))   # fading out
+        elif t < dur * 0.2:
+            a = max(0, 1 - (dur * 0.2 - t) / (dur * 0.2))   # fading in
+        else:
+            a = 1.0
+        alpha = int(220 * a)
+        if getattr(self, "_reduce_motion", False):
+            alpha = min(alpha, 80)
+            a = min(a, 0.4)
+        # a golden band (vs the boss banner's red) so the ascend cue reads as a
+        # world-tier milestone, not another boss kill
+        band = pygame.Surface((1280, 160), pygame.SRCALPHA)
+        pygame.draw.rect(band, (16, 12, 8, int(180 * a)), band.get_rect())
+        pygame.draw.rect(band, (255, 200, 80, alpha), (0, 60, 1280, 4))
+        pygame.draw.rect(band, (255, 200, 80, alpha), (0, 96, 1280, 4))
+        surf.blit(band, (0, 360))
+        text(surf, "WORLD ASCENDED!", 56, (255, 230, 140), (640, 410), center=True)
+        text(surf, "Return to the title to Ascend the World (NG+)",
+             24, (255, 240, 200), (640, 470), center=True)
 
     def _draw_atmosphere(self, surf, ox, oy):
         """Biome-tinted drifting fog motes + a soft vignette for depth.

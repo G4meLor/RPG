@@ -336,6 +336,12 @@ class TitleScene(Scene):
         self.bg = load_bg("title")
         self.bg = pygame.transform.smoothscale(self.bg, (WIDTH, HEIGHT))
         self.t = 0
+        # Aetheric Cycle: when the final boss (Demon King at 9,4) is cleared,
+        # show an "Ascend World" button so the player can reset the world for
+        # NG+ (keeping heroes/equipment, scaling enemy levels per cycle). The
+        # button is appended after the base 7 so the main menu stays familiar;
+        # its index is stored because the list is rebuilt each __init__.
+        self._ascend_idx = None
         self.buttons = [
             Button((WIDTH // 2 - 120, 300, 240, 56), "Enter World", (70, 120, 90), (110, 180, 130)),
             Button((WIDTH // 2 - 120, 364, 240, 56), "Heroes", (90, 80, 50), (160, 130, 70)),
@@ -345,6 +351,13 @@ class TitleScene(Scene):
             Button((WIDTH // 2 - 120, 620, 240, 56), "Records", (60, 70, 110), (90, 110, 160), size=20),
             Button((WIDTH // 2 - 120, 676, 240, 40), "Settings", (110, 90, 60), (170, 140, 80), size=18),
         ]
+        if self.game.player.can_ascend_world():
+            # place it just under the Settings button so the base layout is
+            # unchanged; a gold-toned button so it reads as a world-tier action
+            self.buttons.append(
+                Button((WIDTH // 2 - 120, 724, 240, 44), "Ascend World",
+                       (130, 90, 40), (200, 150, 70), size=20))
+            self._ascend_idx = len(self.buttons) - 1
         # shimmering embers rising from the bottom for atmosphere (cached colors)
         self.particles = []
         embers = [(255, 220, 140), (255, 180, 120), (200, 200, 255), (180, 220, 255)]
@@ -381,6 +394,18 @@ class TitleScene(Scene):
                 self.game.goto("stats")
             if self.buttons[6].clicked(e):
                 self.game.goto("settings")
+            # Aetheric Cycle: "Ascend World" resets the world for NG+ and
+            # drops the player into the fresh world at (0,0) on cycle N+1.
+            if self._ascend_idx is not None and self.buttons[self._ascend_idx].clicked(e):
+                self.game.player.reset_world_for_ng()
+                self.game.player.save()
+                # rebuild the title so the Ascend button hides itself (the
+                # final boss is no longer cleared after the reset) and the
+                # cycle label updates
+                self.buttons = [b for i, b in enumerate(self.buttons)
+                                if i != self._ascend_idx]
+                self._ascend_idx = None
+                self.game.goto("world")
 
     def draw(self, surf):
         surf.blit(self.bg, (0, 0))
@@ -411,6 +436,12 @@ class TitleScene(Scene):
             b.draw(surf)
         text(surf, f"Gems: {self.game.player.gems}   Gold: {self.game.player.gold}", 18, GOLD,
              (WIDTH // 2, 280), center=True)
+        # Aetheric Cycle: show the current NG+ cycle under the gems/gold line
+        # so the player sees their progress on the title screen (Cycle 1+ only;
+        # a first play stays quiet so the label doesn't read as a regression).
+        if self.game.player.ng_cycle > 0:
+            text(surf, f"Cycle {self.game.player.ng_cycle}", 22, (255, 220, 140),
+                 (WIDTH // 2, 768), center=True)
         # login bonus popup — placed at the top so it stays on-screen and does
         # not overlap the Settings button (which sits at the bottom of the stack)
         bonus = getattr(self.game, "_login_bonus", None)

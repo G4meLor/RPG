@@ -68,6 +68,11 @@ class Player:
         # boss cells the player has already cleared — bosses in these cells pay
         # out a reduced "rematch" reward on re-kill (no infinite gem farming).
         self.ow_bosses_cleared = []     # list of "c,r" cell ids
+        # Aetheric Cycle (NG+): how many times the player has "Ascended the
+        # World" after defeating the final boss (Demon King at 9,4). Each cycle
+        # adds NG_PLUS_LEVEL_BONUS to every enemy's level so a replayed world
+        # stays challenging while heroes/equipment carry over. 0 = first play.
+        self.ng_cycle = 0
         # init owned heroes
         for hid in D.STARTING_OWNED:
             self.owned[hid] = dict(level=1, xp=0, dupes=0, ascension=0,
@@ -375,6 +380,27 @@ class Player:
             self.stats["gems_earned"] = self.stats.get("gems_earned", 0) + 50
         return True
 
+    # --- Aetheric Cycle (NG+) ---
+    def can_ascend_world(self):
+        """True when the player has cleared the final boss (Demon King at 9,4)
+        and may now Ascend the World to start a new cycle."""
+        return "9,4" in self.ow_bosses_cleared
+
+    def reset_world_for_ng(self):
+        """Ascend the World: reset open-world exploration (discovered cells,
+        current cell, position, opened chests, cleared bosses) while keeping
+        heroes, equipment, gems, gold and shards. Increments ng_cycle so
+        enemies scale by NG_PLUS_LEVEL_BONUS per cycle on the next play."""
+        # keep the final-boss flag out of the cleared list too — a new cycle
+        # should let the player re-clear every boss (including the Demon King)
+        # for full first-clear rewards again.
+        self.ow_discovered = ["0,0"]
+        self.ow_current = [0, 0]
+        self.ow_pos = [0, 0]
+        self.ow_chests_opened = {}
+        self.ow_bosses_cleared = []
+        self.ng_cycle = self.ng_cycle + 1
+
     # --- save / load ---
     def save(self):
         os.makedirs(SAVE_DIR, exist_ok=True)
@@ -399,7 +425,8 @@ class Player:
             "ow_time": self.ow_time,
             "ow_chests_opened": self.ow_chests_opened,
             "ow_bosses_cleared": self.ow_bosses_cleared,
-            "version": 5,
+            "ng_cycle": self.ng_cycle,
+            "version": 6,
         }
         with open(SAVE_FILE, "w") as f:
             json.dump(data, f, indent=2)
@@ -466,6 +493,9 @@ class Player:
             p.ow_time = d.get("ow_time", 0.0)
             p.ow_chests_opened = d.get("ow_chests_opened", {})
             p.ow_bosses_cleared = d.get("ow_bosses_cleared", [])
+            # Aetheric Cycle (NG+) — added in save version 6. Older saves
+            # default to cycle 0 (first play) so they load cleanly.
+            p.ng_cycle = d.get("ng_cycle", 0)
             return p
         except Exception:
             return cls()

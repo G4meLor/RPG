@@ -77,6 +77,16 @@ def main():
     pygame.init()
     pygame.display.set_mode((1, 1))  # needed for some font/surface ops
 
+    # Expected sprite sizes (sacred — a regression here breaks load_char_sprite /
+    # load_portrait / load_enemy_sprite / load_skill_icon + the scene caches).
+    EXPECT = {
+        "characters": (256, 256),
+        "portraits": (512, 512),
+        "enemies": (256, 256),
+        "skills": (128, 128),
+    }
+    failures = []
+
     print("=" * 64)
     print("CHARACTERS (chibi 256x256)")
     print("=" * 64)
@@ -88,6 +98,8 @@ def main():
         rows.append((name, element, st))
         print(f"{name:9s} el={element:5s} {st['size']} cov={st['coverage_pct']:5.1f}% "
               f"bbox={st['bbox']} mean={st['mean_rgb_opaque']} hue~{_hue_bucket(st['mean_rgb_opaque'])}")
+        if st["size"] != EXPECT["characters"]:
+            failures.append(f"characters/{name}: {st['size']} != {EXPECT['characters']}")
 
     # quick distinctness check: no two heroes should have identical mean color
     means = [r[2]["mean_rgb_opaque"] for r in rows]
@@ -107,6 +119,8 @@ def main():
         st = _stats(s)
         print(f"{name:9s} el={element:5s} {st['size']} cov={st['coverage_pct']:5.1f}% "
               f"bbox={st['bbox']} mean={st['mean_rgb_opaque']}")
+        if st["size"] != EXPECT["portraits"]:
+            failures.append(f"portraits/{name}: {st['size']} != {EXPECT['portraits']}")
 
     print()
     print("=" * 64)
@@ -118,9 +132,28 @@ def main():
         st = _stats(s)
         print(f"{name:13s} el={el:5s} {st['size']} cov={st['coverage_pct']:5.1f}% "
               f"bbox={st['bbox']} mean={st['mean_rgb_opaque']}")
+        if st["size"] != EXPECT["enemies"]:
+            failures.append(f"enemies/{name}: {st['size']} != {EXPECT['enemies']}")
 
     print()
-    print("OK — all rendered without error.")
+    print("=" * 64)
+    print("SKILL ICONS (128x128) — on-disk size check")
+    print("=" * 64)
+    for name, el, kind in GA.SKILLS:
+        path = os.path.join(ASSET_DIR, "skills", f"{name}.png")
+        s = pygame.image.load(path)
+        sz = s.get_size()
+        print(f"{name:18s} el={el:5s} {sz}")
+        if sz != EXPECT["skills"]:
+            failures.append(f"skills/{name}: {sz} != {EXPECT['skills']}")
+
+    print()
+    if failures:
+        print("FAIL — size regressions:")
+        for f in failures:
+            print(f"  {f}")
+        sys.exit(1)
+    print("OK — all rendered without error, sizes unchanged.")
 
 
 if __name__ == "__main__":

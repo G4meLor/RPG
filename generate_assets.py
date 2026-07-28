@@ -29,6 +29,14 @@ ELEMENT_COLORS = {
     "dark":  ( (150, 90,200),  (210,170,240), ( 56, 28, 84) ),
 }
 
+# pixel-art scale: each logical pixel is rendered as a PIXEL×PIXEL block so the
+# art reads as chunky pixel-art at higher density than Stardew (Stardew tiles are
+# 16x16; a 256px sprite at PIXEL=5 -> ~51 logical pixels, 3x Stardew). Palette is
+# locked per element (base/light/shadow/outline/accent) so gradients dither
+# instead of smoothing. Re-exported from data.py so the rest of the codebase can
+# import a single source of truth.
+from data import PIXEL, PIXEL_PALETTE  # noqa: E402 (re-export; same values as data.py)
+
 RARITY_COLORS = {
     "R":   (140, 150, 165),
     "SR":  (220, 150, 60),
@@ -74,6 +82,47 @@ def aa_circle(surf, color, pos, radius):
 
 def aa_polygon(surf, color, points):
     pygame.draw.polygon(surf, color, points)
+
+# ---------------------------------------------------------------------------
+# Pixel-art primitives (chunky pixels, limited palette, dithered gradients, no
+# anti-aliasing). Every "logical pixel" below is a PIXEL×PIXEL block so the art
+# reads as pixel-art at ~48-logical-pixel density (3x Stardew's 16x16). Gradients
+# are 2-color checker dithers (px_dither) instead of smooth lerp_color ramps.
+# ---------------------------------------------------------------------------
+def px_fill(surf, color, rect):
+    """Fill a rect with a single solid color (pixel-art: no anti-aliasing)."""
+    pygame.draw.rect(surf, color, rect)
+
+def px_dither(surf, c1, c2, rect, step=None):
+    """A 2-color checker dither over a rect (replaces smooth gradients with a
+    pixel-art gradient). step is the checker size in px (defaults to PIXEL so the
+    dither matches the chunky-pixel grid)."""
+    if step is None:
+        step = PIXEL
+    x, y, w, h = rect
+    for yy in range(y, y + h, step):
+        for xx in range(x, x + w, step):
+            c = c1 if ((xx + yy) // step) % 2 == 0 else c2
+            pygame.draw.rect(surf, c, (xx, yy, step, step))
+
+def px_dither_surf(w, h, c1, c2, step=None):
+    """Build a small SRCALPHA surface filled with a 2-color checker dither, then
+    return it (so it can be clipped to a shape with BLEND_RGBA_MIN)."""
+    if step is None:
+        step = PIXEL
+    s = pygame.Surface((w, h), pygame.SRCALPHA)
+    for yy in range(0, h, step):
+        for xx in range(0, w, step):
+            c = c1 if ((xx + yy) // step) % 2 == 0 else c2
+            pygame.draw.rect(s, c, (xx, yy, step, step))
+    return s
+
+def px_snap(v, step=None):
+    """Snap a coordinate to the nearest pixel-grid boundary (so shapes align to
+    the chunky-pixel grid)."""
+    if step is None:
+        step = PIXEL
+    return int(round(v / step) * step)
 
 # ---------------------------------------------------------------------------
 # High-quality vector helpers (numpy-backed gradients + soft glows)
@@ -179,194 +228,190 @@ HAIR_STYLES = ["spiky", "long", "short", "twin", "hood",
 def draw_chibi(surf, element, body_color, hair_color, accent,
                weapon="sword", hair_style="spiky", eye_color=(40, 40, 60),
                expression="neutral", eye_shape="round", skin=None):
-    """Draw a polished chibi hero centered on surf (256x256)."""
+    """Draw a pixel-art chibi hero centered on surf (256x256).
+
+    Pixel-art aesthetic: palette-locked fills + dithered gradients (2-color
+    checker, no smooth lerp_color ramps) + no anti-aliasing. Each "logical
+    pixel" is a PIXEL×PIXEL block so the art reads as chunky pixel-art at ~48
+    logical pixels (3x Stardew's 16x16). Per-hero parameter signature + 256x256
+    output size are unchanged so load_char_sprite and the scene caches keep
+    working."""
     cx, cy = 128, 150
-    outline = (30, 26, 40)
-    body_light = shade(body_color, 1.22)
+    # pixel-art palette: lock to the per-element PIXEL_PALETTE so the dithering
+    # stays in-palette; body/hair/accent still take the per-hero colors but get a
+    # 2-tone dither for shading instead of smooth gradients.
+    pal = PIXEL_PALETTE[element]
+    outline = pal["outline"]
+    body_light = shade(body_color, 1.18)
     body_dark = shade(body_color, 0.62)
     body_vdark = shade(body_color, 0.42)
     accent_dark = shade(accent, 0.65)
-    accent_light = shade(accent, 1.25)
-    hair_light = shade(hair_color, 1.28)
-    hair_dark = shade(hair_color, 0.55)
+    accent_light = shade(accent, 1.22)
+    hair_light = shade(hair_color, 1.22)
+    hair_dark = shade(hair_color, 0.58)
     if skin is None:
         skin = (255, 226, 200)
         skin_light = (255, 240, 222)
         skin_dark = (224, 178, 158)
     else:
-        skin_light = shade(skin, 1.08)
-        skin_dark = shade(skin, 0.78)
+        skin_light = shade(skin, 1.06)
+        skin_dark = shade(skin, 0.80)
     main_el, light_el, dark_el = ELEMENT_COLORS[element]
+    el_base = pal["base"]
+    el_light = pal["light"]
+    el_shadow = pal["shadow"]
+    el_accent = pal["accent"]
 
-    # ground shadow (soft, elongated)
+    # ground shadow (chunky ellipse, no AA)
     shadow = pygame.Surface((190, 50), pygame.SRCALPHA)
     pygame.draw.ellipse(shadow, (0, 0, 0, 70), shadow.get_rect())
     surf.blit(shadow, (cx - 95, 234))
 
-    # element aura glow behind the body (three-layer: outer halo + mid glow + tight core)
-    aura = soft_glow(200, 200, light_el, 48, center=(100, 100), radius=100, falloff=1.6)
-    surf.blit(aura, (cx - 100, 62))
-    aura2 = soft_glow(144, 144, light_el, 64, center=(72, 72), radius=72, falloff=1.35)
-    surf.blit(aura2, (cx - 72, 94))
-    aura3 = soft_glow(96, 96, light_el, 45, center=(48, 48), radius=48, falloff=1.2)
-    surf.blit(aura3, (cx - 48, 114))
-    # element-specific particles in the aura (fire=embers, water=bubbles, wind=leaves, light=sparkles, dark=motes)
+    # element aura: a 2-tone dithered disc behind the body (no soft-glow AA).
+    # Outer ring = shadow, inner = light, both clipped to a circle so it reads
+    # as a chunky pixel halo.
+    aura_r = 100
+    aura = pygame.Surface((aura_r * 2, aura_r * 2), pygame.SRCALPHA)
+    pygame.draw.circle(aura, (*el_shadow, 90), (aura_r, aura_r), aura_r)
+    pygame.draw.circle(aura, (*el_base, 120), (aura_r, aura_r), aura_r - 25)
+    pygame.draw.circle(aura, (*el_light, 140), (aura_r, aura_r), aura_r - 50)
+    surf.blit(aura, (cx - aura_r, 62))
+
+    # element-specific particles in the aura (chunky blocks, no AA circles).
     # NOTE: use a stable, salt-free hash so the particle layout is reproducible
     # across runs (Python's built-in hash() is salted per process via PYTHONHASHSEED).
     rng = random.Random(sum(ord(c) for c in element) * 1000003 + 17)
     for _ in range(6 if element in ("fire", "light") else (5 if element == "dark" else 4)):
         px = cx + rng.uniform(-50, 50)
         py = cy + rng.uniform(-30, 60)
-        pr = rng.uniform(1.5, 4.0)
+        ps = rng.randint(2, 4) * PIXEL // 2  # block size on the pixel grid
         if element == "fire":
-            pa = rng.randint(120, 200)
-            pygame.draw.circle(surf, (*light_el, pa), (int(px), int(py)), int(pr))
+            pygame.draw.rect(surf, el_light, (px_snap(px), px_snap(py), ps, ps))
         elif element == "water":
-            pa = rng.randint(100, 180)
-            pygame.draw.circle(surf, (*light_el, pa), (int(px), int(py)), int(pr))
-            pygame.draw.circle(surf, (255, 255, 255, pa // 2), (int(px - pr * 0.3), int(py - pr * 0.3)), max(1, int(pr * 0.4)))
+            pygame.draw.rect(surf, el_light, (px_snap(px), px_snap(py), ps, ps))
+            pygame.draw.rect(surf, (255, 255, 255), (px_snap(px - ps // 4), px_snap(py - ps // 4), max(1, ps // 2), max(1, ps // 2)))
         elif element == "wind":
-            pa = rng.randint(80, 160)
-            lx = px + rng.uniform(-6, 6)
-            ly = py + rng.uniform(-3, 3)
-            pygame.draw.line(surf, (*light_el, pa), (int(px), int(py)), (int(lx), int(ly)), max(1, int(pr)))
+            lx = px + rng.uniform(-10, 10)
+            ly = py + rng.uniform(-5, 5)
+            pygame.draw.line(surf, el_light, (px_snap(px), px_snap(py)), (px_snap(lx), px_snap(ly)), max(1, ps // 2))
         elif element == "light":
-            pa = rng.randint(130, 220)
-            pygame.draw.circle(surf, (255, 255, 255, pa), (int(px), int(py)), max(1, int(pr * 0.6)))
-            # 4-point star sparkle
-            for ang2 in (0, math.pi / 2, math.pi, 3 * math.pi / 2):
-                ex2 = px + math.cos(ang2) * pr * 2
-                ey2 = py + math.sin(ang2) * pr * 2
-                pygame.draw.line(surf, (255, 255, 255, pa // 2), (int(px), int(py)), (int(ex2), int(ey2)), 1)
+            pygame.draw.rect(surf, (255, 255, 255), (px_snap(px), px_snap(py), ps, ps))
+            # 4-point star sparkle (chunky cross)
+            pygame.draw.line(surf, (255, 255, 255), (px_snap(px - ps), px_snap(py)), (px_snap(px + ps), px_snap(py)), 1)
+            pygame.draw.line(surf, (255, 255, 255), (px_snap(px), px_snap(py - ps)), (px_snap(px), px_snap(py + ps)), 1)
         elif element == "dark":
-            pa = rng.randint(60, 140)
-            pygame.draw.circle(surf, (*light_el, pa), (int(px), int(py)), int(pr))
+            pygame.draw.rect(surf, el_light, (px_snap(px), px_snap(py), ps, ps))
 
-    # cape/cloak flowing behind the body (shaded, with a center highlight fold)
+    # cape/cloak flowing behind the body — palette-locked fill + 2-tone dither
+    # for the top->bottom shading (replaces the smooth vgrad_surf ramp).
     cape_dark = shade(body_color, 0.48)
     cape = [(cx - 34, 150), (cx - 60, 252), (cx - 44, 232),
             (cx - 30, 248), (cx - 16, 236), (cx, 248),
             (cx + 16, 236), (cx + 30, 248), (cx + 44, 232),
             (cx + 60, 252), (cx + 34, 150)]
     pygame.draw.polygon(surf, cape_dark, cape)
-    # cape gradient (top lighter -> bottom darker) clipped to the cape shape
-    cg = vgrad_surf(120, 110, shade(body_color, 0.92), cape_dark)
+    # dithered cape gradient (top lighter -> bottom darker) clipped to the cape
+    cg = px_dither_surf(120, 110, shade(body_color, 0.92), cape_dark)
     cg2 = pygame.Surface((120, 110), pygame.SRCALPHA)
     pygame.draw.polygon(cg2, (255, 255, 255, 255),
                         [(p[0] - (cx - 60), p[1] - 142) for p in cape])
     cg.blit(cg2, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     surf.blit(cg, (cx - 60, 142))
     pygame.draw.polygon(surf, outline, cape, 2)
-    # cape inner highlight streak
+    # cape inner highlight streak (solid block, no AA)
     cape_hi = [(cx - 8, 152), (cx - 6, 240), (cx + 6, 240), (cx + 8, 152)]
     pygame.draw.polygon(surf, shade(body_color, 0.75), cape_hi)
 
-    # legs (shaded) + boots
+    # legs (palette-locked fill + 2-tone dither) + boots (solid accent blocks)
     leg_y = 210
     for sx in (-26, 6):
-        lg = diag_grad_surf(20, 30, body_light, body_dark)
+        lg = px_dither_surf(20, 30, body_light, body_dark)
         clip_to_rect(lg, pygame.Rect(0, 0, 20, 30))
         surf.blit(lg, (cx + sx, leg_y))
         pygame.draw.rect(surf, outline, (cx + sx, leg_y, 20, 30), 2, border_radius=8)
     for sx in (-28, 4):
-        bg = vgrad_surf(24, 12, accent_light, accent_dark)
+        bg = px_dither_surf(24, 12, accent_light, accent_dark)
         clip_to_rect(bg, pygame.Rect(0, 0, 24, 12))
         surf.blit(bg, (cx + sx, leg_y + 22))
         pygame.draw.rect(surf, outline, (cx + sx, leg_y + 22, 24, 12), 2, border_radius=6)
         pygame.draw.rect(surf, accent_dark, (cx + sx, leg_y + 30, 24, 4), border_radius=3)
 
-    # body / torso with diagonal shading (left-lit, right-shaded) + fabric fold lines
+    # body / torso — palette-locked fill + 2-tone diagonal dither (left-lit,
+    # right-shaded). Replaces the smooth diag_grad_surf ramp.
     torso = pygame.Rect(cx - 36, 150, 72, 70)
-    bodyg = diag_grad_surf(72, 70, body_light, body_dark)
+    bodyg = px_dither_surf(72, 70, body_light, body_dark)
     clip_to_rect(bodyg, pygame.Rect(0, 0, 72, 70), border_radius=18)
     surf.blit(bodyg, torso.topleft)
-    # fabric fold lines (subtle vertical curves for cloth drape)
+    # fabric fold lines (solid vertical blocks, no AA)
     for fx in (-16, -2, 12):
-        fold_alpha = 35 if fx < 0 else 25
-        fold = pygame.Surface((4, 62), pygame.SRCALPHA)
-        pygame.draw.line(fold, (*body_vdark, fold_alpha), (2, 0), (2, 62), 3)
-        surf.blit(fold, (cx + fx, 154))
-    # collar (accent triangle at the neck, with layered depth)
+        pygame.draw.rect(surf, body_vdark, (cx + fx, 154, 3, 62))
+    # collar (accent triangle at the neck, solid palette colors, no AA)
     pygame.draw.polygon(surf, shade(accent, 0.8), [(cx - 14, 150), (cx + 14, 150), (cx, 170)])
     pygame.draw.polygon(surf, accent, [(cx - 12, 151), (cx + 12, 151), (cx, 168)])
     pygame.draw.polygon(surf, accent_light, [(cx - 10, 152), (cx - 2, 152), (cx - 6, 163)])
     pygame.draw.polygon(surf, outline, [(cx - 14, 150), (cx + 14, 150), (cx, 170)], 2)
-    # right-side core shadow (ambient occlusion feel)
+    # right-side core shadow (solid block, no AA)
     sh = pygame.Surface((28, 66), pygame.SRCALPHA)
     pygame.draw.rect(sh, (*body_vdark, 130), sh.get_rect(), border_radius=14)
     surf.blit(sh, (cx + 8, 152))
-    # left rim light (warm edge light, wider and softer)
-    rim = soft_glow(20, 70, body_light, 100, center=(10, 8), radius=11, falloff=1.25)
-    surf.blit(rim, (cx - 36, 152))
-    # subtle under-shadow (ambient occlusion at the bottom of the torso)
+    # left rim light (a vertical block, no soft-glow AA)
+    pygame.draw.rect(surf, body_light, (cx - 36, 152, 4, 66))
+    # subtle under-shadow (solid block, no AA)
     us = pygame.Surface((64, 10), pygame.SRCALPHA)
     pygame.draw.rect(us, (*body_vdark, 80), us.get_rect(), border_radius=6)
     surf.blit(us, (cx - 32, 210))
     pygame.draw.rect(surf, outline, torso, 3, border_radius=18)
-    # belt (shaded)
-    beltg = hgrad_surf(72, 10, accent_dark, shade(accent_dark, 0.6))
-    clip_to_rect(beltg, pygame.Rect(0, 0, 72, 10))
-    surf.blit(beltg, (cx - 36, 198))
+    # belt (solid accent fill, no gradient)
+    pygame.draw.rect(surf, accent_dark, (cx - 36, 198, 72, 10))
     pygame.draw.rect(surf, outline, (cx - 36, 198, 72, 10), 2)
-    # belt buckle
+    # belt buckle (solid block, no AA)
     pygame.draw.rect(surf, accent_light, (cx - 6, 199, 12, 8), border_radius=2)
     pygame.draw.rect(surf, outline, (cx - 6, 199, 12, 8), 1, border_radius=2)
-    # chest emblem (element gem with depth)
-    gemg = radial_grad_surf(26, 26, light_el, dark_el, center=(11, 9), radius=13)
-    clip_to_circle(gemg, (13, 13), 13)
-    surf.blit(gemg, (cx - 13, 165))
-    pygame.draw.circle(surf, accent, (cx, 178), 11)
-    pygame.draw.circle(surf, light_el, (cx - 3, 175), 4)
-    pygame.draw.circle(surf, (255, 255, 255), (cx - 5, 173), 2)
+    # chest emblem (element gem: solid palette discs, dithered, no AA)
+    pygame.draw.circle(surf, el_base, (cx, 178), 13)
+    pygame.draw.circle(surf, el_light, (cx - 3, 175), 8)
+    pygame.draw.circle(surf, el_accent, (cx - 5, 173), 4)
     pygame.draw.circle(surf, outline, (cx, 178), 13, 2)
 
-    # arms (shaded)
+    # arms (palette-locked fill + 2-tone dither, no AA)
     # back arm (darker)
-    bg_arm = vgrad_surf(18, 50, body_dark, body_vdark)
+    bg_arm = px_dither_surf(18, 50, body_dark, body_vdark)
     clip_to_rect(bg_arm, pygame.Rect(0, 0, 18, 50))
     surf.blit(bg_arm, (cx - 50, 156))
     pygame.draw.rect(surf, outline, (cx - 50, 156, 18, 50), 2, border_radius=9)
     # front arm
-    fg_arm = diag_grad_surf(18, 50, body_light, body_dark)
+    fg_arm = px_dither_surf(18, 50, body_light, body_dark)
     clip_to_rect(fg_arm, pygame.Rect(0, 0, 18, 50))
     surf.blit(fg_arm, (cx + 32, 156))
     pygame.draw.rect(surf, outline, (cx + 32, 156, 18, 50), 2, border_radius=9)
-    # hands (with soft shading)
+    # hands (solid palette fill, no AA)
     for hx, base in ((cx - 41, skin_dark), (cx + 41, skin)):
-        hg = radial_grad_surf(22, 22, skin_light, base, center=(8, 8), radius=11)
-        clip_to_circle(hg, (11, 11), 11)
-        surf.blit(hg, (hx - 11, 197))
+        pygame.draw.circle(surf, skin, (hx, 208), 10)
+        pygame.draw.circle(surf, skin_light, (hx - 3, 205), 5)
         pygame.draw.circle(surf, outline, (hx, 208), 10, 2)
 
-    # head (skin with soft spherical shading + subsurface-approximation rim)
+    # head — solid skin fill + 2-tone dither for the spherical shading (replaces
+    # the radial_grad_surf + soft_glow AA ramps). No anti-aliasing.
     head_r = 46
-    # base skin with warm offset lighting from upper-left (per-hero skin tone)
-    headg = radial_grad_surf(head_r * 2, head_r * 2, skin_light, skin_dark,
-                             center=(head_r - 18, head_r - 18), radius=head_r + 3)
+    # base skin disc (solid fill)
+    pygame.draw.circle(surf, skin, (cx, 110), head_r)
+    # dithered shading: a 2-tone checker clipped to the head circle (light
+    # upper-left, dark lower-right) — reads as chunky pixel shading.
+    headg = px_dither_surf(head_r * 2, head_r * 2, skin_light, skin_dark)
     clip_to_circle(headg, (head_r, head_r), head_r)
     surf.blit(headg, (cx - head_r, 110 - head_r))
-    # warm subsurface glow on the left edge (light passes through the skin edge)
-    subsurf = soft_glow(head_r * 2, head_r * 2, (255, 200, 170), 70,
-                        center=(head_r + 8, head_r), radius=head_r - 6, falloff=1.8)
-    clip_to_circle(subsurf, (head_r, head_r), head_r)
-    surf.blit(subsurf, (cx - head_r, 110 - head_r))
-    # face core shadow (lighter — was 55, now 30 so the face isn't darkened)
+    # face core shadow (a solid darker disc offset to the right, no AA)
     fshade = pygame.Surface((head_r * 2, head_r * 2), pygame.SRCALPHA)
     pygame.draw.circle(fshade, (30, 40, 60, 30), (head_r, head_r), head_r)
     pygame.draw.circle(fshade, (0, 0, 0, 0), (head_r - 16, head_r), head_r - 4)
     surf.blit(fshade, (cx - head_r, 110 - head_r))
-    # warm nose/cheek tint
-    nose_warm = pygame.Surface((20, 14), pygame.SRCALPHA)
-    pygame.draw.ellipse(nose_warm, (255, 180, 160, 45), nose_warm.get_rect())
-    surf.blit(nose_warm, (cx - 10, 120))
-    # cheek blush (soft, on both sides)
-    blush = pygame.Surface((20, 12), pygame.SRCALPHA)
-    pygame.draw.ellipse(blush, (255, 148, 165, 100), blush.get_rect())
-    surf.blit(blush, (cx - 32, 120))
-    surf.blit(blush, (cx + 12, 120))
-    # small nose dot
-    pygame.draw.circle(surf, (210, 160, 145), (cx, 122), 3)
-    pygame.draw.circle(surf, outline, (cx, 122), 3, 1)
+    # warm nose/cheek tint (solid blocks, no AA)
+    pygame.draw.rect(surf, (255, 180, 160), (cx - 8, 118, 16, 8))
+    # cheek blush (solid blocks, on both sides)
+    pygame.draw.rect(surf, (255, 148, 165), (cx - 32, 120, 12, 8))
+    pygame.draw.rect(surf, (255, 148, 165), (cx + 20, 120, 12, 8))
+    # small nose dot (solid, no AA)
+    pygame.draw.rect(surf, (210, 160, 145), (cx - 2, 120, 4, 4))
     pygame.draw.circle(surf, outline, (cx, 110), head_r, 3)
 
     # hair
@@ -899,66 +944,69 @@ def draw_weapon(surf, cx, cy, weapon, accent, outline, element):
 # Enemy sprites
 # ---------------------------------------------------------------------------
 def _grad_ellipse(surf, rect, inner, outer, center=None, falloff=1.0):
-    """Fill an ellipse with a radial gradient (inner at center, outer at edge)."""
+    """Fill an ellipse with a 2-tone dithered fill (pixel-art: no AA radial
+    gradient). inner at center, outer at edge, clipped to the ellipse shape."""
     x, y, w, h = rect
-    g = radial_grad_surf(w, h, inner, outer, center=center, radius=max(w, h) / 2.0, falloff=falloff)
+    g = px_dither_surf(w, h, inner, outer)
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.ellipse(m, (255, 255, 255, 255), m.get_rect())
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     surf.blit(g, (x, y))
 
 def _grad_round_rect(surf, rect, top_left, bot_right, border_radius=0):
-    """Fill a (rounded) rect with a diagonal gradient."""
+    """Fill a (rounded) rect with a 2-tone dithered fill (pixel-art: no AA
+    diagonal gradient)."""
     x, y, w, h = rect
-    g = diag_grad_surf(w, h, top_left, bot_right)
+    g = px_dither_surf(w, h, top_left, bot_right)
     clip_to_rect(g, pygame.Rect(0, 0, w, h), border_radius=border_radius)
     surf.blit(g, (x, y))
 
 def _glowing_eye(surf, pos, core, glow_col, r_core=5, r_glow=14):
-    """A glowing eye: soft halo + bright core + dark pupil."""
+    """A glowing eye: a chunky block halo + bright core + dark pupil (pixel-art:
+    no soft-glow AA)."""
     gx, gy = pos
-    halo = soft_glow(r_glow * 2, r_glow * 2, glow_col, 150, radius=r_glow, falloff=1.6)
+    # chunky block halo (a filled disc of the glow color, no AA falloff)
+    halo = pygame.Surface((r_glow * 2, r_glow * 2), pygame.SRCALPHA)
+    pygame.draw.circle(halo, (*glow_col, 120), (r_glow, r_glow), r_glow)
     surf.blit(halo, (gx - r_glow, gy - r_glow))
     pygame.draw.circle(surf, core, (gx, gy), r_core)
-    pygame.draw.circle(surf, (255, 255, 255), (gx - r_core // 3, gy - r_core // 3), max(1, r_core // 3))
+    pygame.draw.circle(surf, shade(core, 1.3), (gx - r_core // 3, gy - r_core // 3), max(1, r_core // 3))
     pygame.draw.circle(surf, (30, 26, 40), (gx, gy), r_core, 1)
 
 def draw_enemy(surf, kind, palette):
     cx, cy = 128, 140
     outline = (30, 26, 40)
     main, accent, dark = palette
-    main_light = shade(main, 1.28)
+    main_light = shade(main, 1.22)
     main_dark = shade(main, 0.62)
-    accent_light = shade(accent, 1.25)
-    dark_light = shade(dark, 1.3)
+    accent_light = shade(accent, 1.22)
+    dark_light = shade(dark, 1.25)
 
-    # soft ground shadow
+    # ground shadow (chunky ellipse, no AA)
     shadow = pygame.Surface((180, 44), pygame.SRCALPHA)
     pygame.draw.ellipse(shadow, (0, 0, 0, 80), shadow.get_rect())
     surf.blit(shadow, (cx - 90, 222))
 
     if kind == "slime":
-        # gelatinous body with radial gradient + glossy highlight
+        # gelatinous body — 2-tone dithered fill clipped to an ellipse (no AA)
         body_r = pygame.Rect(cx - 60, cy - 30, 120, 90)
         _grad_ellipse(surf, body_r, main_light, main_dark, center=(40, 24), falloff=1.3)
         pygame.draw.ellipse(surf, outline, body_r, 4)
-        # glossy highlight blob
-        hl = soft_glow(44, 30, (255, 255, 255), 150, center=(14, 10), radius=20, falloff=1.4)
-        surf.blit(hl, (cx - 40, cy - 22))
-        # a second smaller shine
-        pygame.draw.ellipse(surf, (255, 255, 255, 200), (cx - 30, cy - 14, 16, 10))
+        # glossy highlight (solid blocks, no AA)
+        pygame.draw.rect(surf, (255, 255, 255), (cx - 40, cy - 22, 16, 10))
+        pygame.draw.rect(surf, shade(main_light, 1.1), (cx - 30, cy - 14, 16, 10))
         draw_eyes(surf, cx, cy + 8, (20, 20, 30), outline, "dark")
     elif kind == "goblin":
-        # body with diagonal shading
+        # body — 2-tone dithered fill (no AA diagonal gradient)
         body_r = pygame.Rect(cx - 30, cy, 60, 70)
         _grad_round_rect(surf, body_r, main_light, main_dark, border_radius=16)
         pygame.draw.rect(surf, outline, body_r, 3, border_radius=16)
-        # head with radial shading
-        head_g = radial_grad_surf(68, 68, main_light, main_dark, center=(24, 20), radius=36)
+        # head — 2-tone dithered fill clipped to a circle (no AA radial gradient)
+        head_g = px_dither_surf(68, 68, main_light, main_dark)
         clip_to_circle(head_g, (34, 34), 34)
         surf.blit(head_g, (cx - 34, cy - 54))
         pygame.draw.circle(surf, outline, (cx, cy - 20), 34, 3)
-        # ears (shaded)
+        # ears (solid palette fills, no AA)
         for sx in (-1, 1):
             ear = [(cx + sx * 34, cy - 22), (cx + sx * 56, cy - 36), (cx + sx * 30, cy - 8)]
             pygame.draw.polygon(surf, main, ear)
@@ -966,85 +1014,83 @@ def draw_enemy(surf, kind, palette):
             pygame.draw.polygon(surf, outline, ear, 3)
         for sx in (-12, 12):
             _glowing_eye(surf, (cx + sx, cy - 22), (255, 230, 60), (255, 200, 40), r_core=4, r_glow=10)
-        # club (shaded wood + knob)
-        club_shaft = vgrad_surf(10, 60, (140, 95, 55), (90, 60, 35))
-        clip_to_rect(club_shaft, pygame.Rect(0, 0, 10, 60))
-        surf.blit(club_shaft, (cx + 36, cy - 10))
-        knob = radial_grad_surf(32, 32, (150, 100, 60), (80, 50, 28), center=(12, 10), radius=16)
+        # club (solid wood block + dithered knob, no AA)
+        pygame.draw.rect(surf, (140, 95, 55), (cx + 36, cy - 10, 10, 60))
+        pygame.draw.rect(surf, (90, 60, 35), (cx + 36, cy - 10, 5, 60))
+        knob = px_dither_surf(32, 32, (150, 100, 60), (80, 50, 28))
         clip_to_circle(knob, (16, 16), 16)
         surf.blit(knob, (cx + 25, cy - 26))
         pygame.draw.rect(surf, outline, (cx + 36, cy - 10, 10, 60), 2)
         pygame.draw.circle(surf, outline, (cx + 41, cy - 10), 16, 3)
     elif kind == "bat":
-        # body with radial shading
-        body_g = radial_grad_surf(60, 60, shade(dark, 1.3), dark, center=(20, 18), radius=32)
+        # body — 2-tone dithered fill clipped to a circle (no AA)
+        body_g = px_dither_surf(60, 60, shade(dark, 1.25), dark)
         clip_to_circle(body_g, (30, 30), 30)
         surf.blit(body_g, (cx - 30, cy - 30))
         pygame.draw.circle(surf, outline, (cx, cy), 30, 3)
-        # wings with membrane gradient + finger bones
+        # wings — 2-tone dithered fill clipped to the wing polygon (no AA)
         for sx in (-1, 1):
             pts = [(cx, cy - 6), (cx + sx * 70, cy - 40), (cx + sx * 80, cy), (cx + sx * 50, cy + 6), (cx + sx * 30, cy - 6)]
-            wg = diag_grad_surf(90, 50, main, shade(main, 0.6))
+            wg = px_dither_surf(90, 50, main, shade(main, 0.6))
             m = pygame.Surface((90, 50), pygame.SRCALPHA)
             pygame.draw.polygon(m, (255, 255, 255, 255),
                                 [(p[0] - (cx - 10), p[1] - (cy - 40)) if sx > 0 else (p[0] - (cx - 80), p[1] - (cy - 40)) for p in pts])
             wg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
             surf.blit(wg, (cx - 10 if sx > 0 else cx - 80, cy - 40))
             pygame.draw.polygon(surf, outline, pts, 3)
-            # wing finger bones
+            # wing finger bones (solid lines, no AA)
             pygame.draw.line(surf, dark, (cx, cy - 6), (cx + sx * 70, cy - 40), 2)
             pygame.draw.line(surf, dark, (cx, cy - 6), (cx + sx * 78, cy - 4), 2)
             pygame.draw.line(surf, dark, (cx, cy - 6), (cx + sx * 50, cy + 6), 2)
         for sx in (-10, 10):
             _glowing_eye(surf, (cx + sx, cy - 4), (255, 70, 70), (255, 40, 40), r_core=4, r_glow=10)
-        # fangs
+        # fangs (solid blocks, no AA)
         pygame.draw.polygon(surf, (240, 240, 230), [(cx - 6, cy + 14), (cx - 8, cy + 22), (cx - 4, cy + 16)])
         pygame.draw.polygon(surf, (240, 240, 230), [(cx + 6, cy + 14), (cx + 8, cy + 22), (cx + 4, cy + 16)])
         pygame.draw.polygon(surf, outline, [(cx - 6, cy + 14), (cx, cy + 22), (cx + 6, cy + 14)], 2)
     elif kind == "skeleton":
         bone = (240, 240, 232)
         bone_dark = (200, 200, 192)
-        # skull with radial shading
-        skull = radial_grad_surf(64, 64, (255, 255, 250), bone_dark, center=(22, 20), radius=34)
+        # skull — 2-tone dithered fill clipped to a circle (no AA)
+        skull = px_dither_surf(64, 64, (255, 255, 250), bone_dark)
         clip_to_circle(skull, (32, 32), 32)
         surf.blit(skull, (cx - 32, cy - 56))
         pygame.draw.circle(surf, outline, (cx, cy - 24), 32, 3)
-        # eye sockets (dark voids with faint glow)
+        # eye sockets (solid dark voids, no AA)
         for sx in (-12, 12):
-            pygame.draw.circle(surf, (20, 20, 30), (cx + sx, cy - 22), 8)
-            pygame.draw.circle(surf, (60, 60, 80), (cx + sx - 2, cy - 24), 3)
-        # nose
+            pygame.draw.rect(surf, (20, 20, 30), (cx + sx - 6, cy - 26, 12, 12))
+            pygame.draw.rect(surf, (60, 60, 80), (cx + sx - 6, cy - 26, 4, 4))
+        # nose (solid triangle, no AA)
         pygame.draw.polygon(surf, (20, 20, 30), [(cx - 3, cy - 14), (cx + 3, cy - 14), (cx, cy - 8)])
-        # ribcage (shaded)
+        # ribcage — 2-tone dithered fill (no AA)
         rib_r = pygame.Rect(cx - 22, cy + 8, 44, 50)
         _grad_round_rect(surf, rib_r, bone, bone_dark, border_radius=10)
         pygame.draw.rect(surf, outline, rib_r, 3, border_radius=10)
         for i in range(4):
             yy = cy + 16 + i * 10
             pygame.draw.line(surf, shade(outline, 0.8), (cx - 18, yy), (cx + 18, yy), 2)
-        # spine
+        # spine (solid line, no AA)
         pygame.draw.line(surf, bone_dark, (cx, cy + 8), (cx, cy + 56), 2)
-        # sword (metal gradient)
-        blade = hgrad_surf(8, 70, (220, 222, 235), (160, 165, 180))
-        clip_to_rect(blade, pygame.Rect(0, 0, 8, 70))
-        surf.blit(blade, (cx + 30, cy - 50))
+        # sword (solid metal block + edge, no AA)
+        pygame.draw.rect(surf, (220, 222, 235), (cx + 30, cy - 50, 8, 70))
+        pygame.draw.rect(surf, (160, 165, 180), (cx + 30, cy - 50, 4, 70))
         pygame.draw.rect(surf, (245, 248, 255), (cx + 30, cy - 50, 2, 70))
         pygame.draw.rect(surf, outline, (cx + 30, cy - 50, 8, 70), 2)
     elif kind == "wolf":
-        # body with radial shading
+        # body — 2-tone dithered fill clipped to an ellipse (no AA)
         body_r = pygame.Rect(cx - 50, cy - 10, 100, 60)
         _grad_ellipse(surf, body_r, main_light, main_dark, center=(34, 18), falloff=1.2)
         pygame.draw.ellipse(surf, outline, body_r, 3)
-        # head snout
+        # head snout — 2-tone dithered fill clipped to the snout polygon (no AA)
         snout = [(cx - 40, cy - 6), (cx - 70, cy - 30), (cx - 30, cy - 30)]
-        sg = diag_grad_surf(50, 30, main_light, main_dark)
+        sg = px_dither_surf(50, 30, main_light, main_dark)
         m = pygame.Surface((50, 30), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255),
                             [(p[0] - (cx - 70), p[1] - (cy - 30)) for p in snout])
         sg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(sg, (cx - 70, cy - 30))
         pygame.draw.polygon(surf, outline, snout, 3)
-        # ears
+        # ears (solid palette fills, no AA)
         for ex in ((cx - 56, cy - 26), (cx - 44, cy - 28)):
             pygame.draw.polygon(surf, main, [(ex[0], ex[1]), (ex[0] - 8, ex[1] - 18), (ex[0] + 6, ex[1] - 6)])
             pygame.draw.polygon(surf, outline, [(ex[0], ex[1]), (ex[0] - 8, ex[1] - 18), (ex[0] + 6, ex[1] - 6)], 2)
@@ -1053,16 +1099,16 @@ def draw_enemy(surf, kind, palette):
         pygame.draw.polygon(surf, (40, 30, 30), [(cx - 18, cy + 10), (cx - 10, cy + 18), (cx - 2, cy + 10)])
         pygame.draw.polygon(surf, outline, [(cx - 18, cy + 10), (cx - 10, cy + 18), (cx - 2, cy + 10)], 2)
     elif kind == "orc":
-        # body with diagonal shading
+        # body — 2-tone dithered fill (no AA)
         body_r = pygame.Rect(cx - 36, cy - 10, 72, 80)
         _grad_round_rect(surf, body_r, main_light, main_dark, border_radius=18)
         pygame.draw.rect(surf, outline, body_r, 3, border_radius=18)
-        # head with radial shading
-        head_g = radial_grad_surf(80, 80, main_light, main_dark, center=(28, 24), radius=42)
+        # head — 2-tone dithered fill clipped to a circle (no AA)
+        head_g = px_dither_surf(80, 80, main_light, main_dark)
         clip_to_circle(head_g, (40, 40), 40)
         surf.blit(head_g, (cx - 40, cy - 70))
         pygame.draw.circle(surf, outline, (cx, cy - 30), 40, 3)
-        # tusks (shaded)
+        # tusks (solid palette fills, no AA)
         for sx in (-1, 1):
             tusk = [(cx + sx * 12, cy - 18), (cx + sx * 16, cy - 2), (cx + sx * 8, cy - 8)]
             pygame.draw.polygon(surf, (245, 245, 235), tusk)
@@ -1070,13 +1116,12 @@ def draw_enemy(surf, kind, palette):
             pygame.draw.polygon(surf, outline, tusk, 2)
         for sx in (-14, 14):
             _glowing_eye(surf, (cx + sx, cy - 34), (255, 60, 60), (255, 30, 30), r_core=5, r_glow=11)
-        # axe (wood shaft + metal head with gradient)
-        shaft = vgrad_surf(8, 90, (140, 95, 55), (90, 60, 35))
-        clip_to_rect(shaft, pygame.Rect(0, 0, 8, 90))
-        surf.blit(shaft, (cx + 40, cy - 40))
+        # axe (solid wood shaft + dithered metal head, no AA)
+        pygame.draw.rect(surf, (140, 95, 55), (cx + 40, cy - 40, 8, 90))
+        pygame.draw.rect(surf, (90, 60, 35), (cx + 40, cy - 40, 4, 90))
         pygame.draw.rect(surf, outline, (cx + 40, cy - 40, 8, 90), 2)
         head_pts = [(cx + 30, cy - 50), (cx + 70, cy - 50), (cx + 64, cy - 10), (cx + 36, cy - 10)]
-        hg = diag_grad_surf(44, 44, accent_light, shade(accent, 0.6))
+        hg = px_dither_surf(44, 44, accent_light, shade(accent, 0.6))
         m = pygame.Surface((44, 44), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255),
                             [(p[0] - (cx + 26), p[1] - (cy - 54)) for p in head_pts])
@@ -1085,58 +1130,57 @@ def draw_enemy(surf, kind, palette):
         pygame.draw.polygon(surf, outline, head_pts, 3)
         pygame.draw.line(surf, (255, 255, 255), (cx + 32, cy - 48), (cx + 38, cy - 14), 2)
     elif kind == "golem":
-        # body (rocky, diagonal shaded)
+        # body (rocky, 2-tone dithered fill, no AA)
         body_r = pygame.Rect(cx - 44, cy - 40, 88, 110)
         _grad_round_rect(surf, body_r, main_light, main_dark, border_radius=12)
         pygame.draw.rect(surf, outline, body_r, 4, border_radius=12)
-        # head (rocky block)
+        # head (rocky block, 2-tone dithered fill, no AA)
         head_r = pygame.Rect(cx - 34, cy - 70, 68, 40)
         _grad_round_rect(surf, head_r, main_light, main_dark, border_radius=10)
         pygame.draw.rect(surf, outline, head_r, 4, border_radius=10)
         for sx in (-16, 16):
-            # glowing crystal eyes
+            # glowing crystal eyes (chunky block halo, no AA)
             _glowing_eye(surf, (cx + sx, cy - 52), (255, 230, 90), (255, 200, 60), r_core=5, r_glow=12)
-        # rocky cracks (darker, branching)
+        # rocky cracks (solid lines, no AA)
         pygame.draw.line(surf, dark, (cx - 20, cy - 10), (cx - 4, cy + 20), 3)
         pygame.draw.line(surf, dark, (cx - 4, cy + 20), (cx + 16, cy + 6), 3)
         pygame.draw.line(surf, dark, (cx + 18, cy - 20), (cx + 28, cy + 10), 2)
-        # mossy accent at the base
+        # mossy accent at the base (solid block, no AA)
         pygame.draw.rect(surf, shade(accent, 0.9), (cx - 40, cy + 60, 80, 10), border_radius=4)
     elif kind == "wraith":
-        # ghostly robe with vertical gradient (ethereal)
+        # ghostly robe — 2-tone dithered fill clipped to the robe polygon (no AA)
         pts = [(cx - 40, cy - 30), (cx + 40, cy - 30), (cx + 50, cy + 70),
                (cx + 30, cy + 50), (cx + 10, cy + 80), (cx - 10, cy + 50), (cx - 50, cy + 70)]
-        rg = vgrad_surf(110, 120, main_light, shade(main, 0.5))
+        rg = px_dither_surf(110, 120, main_light, shade(main, 0.5))
         m = pygame.Surface((110, 120), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255),
                             [(p[0] - (cx - 55), p[1] - (cy - 30)) for p in pts])
         rg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(rg, (cx - 55, cy - 30))
         pygame.draw.polygon(surf, outline, pts, 3)
-        # tattered hem glow at the bottom
+        # tattered hem glow at the bottom (chunky blocks, no AA)
         for sx in (-30, -10, 10, 30):
-            halo = soft_glow(20, 20, (120, 255, 200), 80, radius=10, falloff=1.5)
-            surf.blit(halo, (cx + sx - 10, cy + 60))
-        # hood/head
-        head_g = radial_grad_surf(70, 70, main_light, shade(main, 0.5), center=(24, 22), radius=36)
+            pygame.draw.rect(surf, (120, 255, 200), (cx + sx - 10, cy + 60, 20, 20))
+        # hood/head — 2-tone dithered fill clipped to a circle (no AA)
+        head_g = px_dither_surf(70, 70, main_light, shade(main, 0.5))
         clip_to_circle(head_g, (35, 35), 34)
         surf.blit(head_g, (cx - 35, cy - 64))
         pygame.draw.circle(surf, outline, (cx, cy - 30), 34, 3)
         for sx in (-12, 12):
             _glowing_eye(surf, (cx + sx, cy - 30), (140, 255, 210), (80, 255, 200), r_core=5, r_glow=11)
     elif kind == "dragon":
-        # body with radial shading
+        # body — 2-tone dithered fill clipped to an ellipse (no AA)
         body_r = pygame.Rect(cx - 70, cy - 30, 140, 110)
         _grad_ellipse(surf, body_r, main_light, main_dark, center=(50, 30), falloff=1.25)
         pygame.draw.ellipse(surf, outline, body_r, 4)
-        # belly (lighter, scaled)
+        # belly (lighter, scaled) — 2-tone dithered fill (no AA)
         belly_r = pygame.Rect(cx - 50, cy, 100, 70)
         _grad_ellipse(surf, belly_r, accent_light, accent, center=(36, 24), falloff=1.2)
-        # scale texture lines on belly (proper overlapping scales)
+        # scale texture lines on belly (solid lines, no AA)
         for i in range(6):
             yy = cy + 6 + i * 13
-            pygame.draw.arc(surf, shade(accent, 0.65), (cx - 44, yy, 88, 14), 0.2, math.pi - 0.2, 1)
-        # body scale texture (subtle diamond pattern on the back)
+            pygame.draw.line(surf, shade(accent, 0.65), (cx - 44, yy), (cx + 44, yy), 1)
+        # body scale texture (subtle diamond pattern on the back, solid blocks)
         for si in range(8):
             sx2 = cx - 40 + si * 16
             sy3 = cy - 20 + (si % 3) * 8
@@ -1144,15 +1188,15 @@ def draw_enemy(surf, kind, palette):
                                 [(sx2, sy3), (sx2 + 8, sy3 - 4), (sx2 + 16, sy3), (sx2 + 8, sy3 + 4)])
             pygame.draw.polygon(surf, shade(main, 0.7),
                                 [(sx2, sy3), (sx2 + 8, sy3 - 4), (sx2 + 16, sy3), (sx2 + 8, sy3 + 4)], 1)
-        # fire breath glow near the mouth
-        breath_glow = soft_glow(44, 30, (255, 200, 80), 90, center=(22, 10), radius=24, falloff=1.5)
-        surf.blit(breath_glow, (cx + 80, cy - 58))
-        # head with radial shading
-        head_g = radial_grad_surf(80, 80, main_light, main_dark, center=(28, 24), radius=42)
+        # fire breath glow near the mouth (chunky block, no AA)
+        pygame.draw.circle(surf, (255, 200, 80), (cx + 90, cy - 50), 18)
+        pygame.draw.circle(surf, (255, 240, 140), (cx + 90, cy - 50), 10)
+        # head — 2-tone dithered fill clipped to a circle (no AA)
+        head_g = px_dither_surf(80, 80, main_light, main_dark)
         clip_to_circle(head_g, (40, 40), 40)
         surf.blit(head_g, (cx + 20, cy - 80))
         pygame.draw.circle(surf, outline, (cx + 60, cy - 40), 40, 4)
-        # horns (shaded)
+        # horns (solid palette fills, no AA)
         for sx in (-7, 7):
             horn = [(cx + 57 + sx, cy - 70), (cx + 47 + sx, cy - 100), (cx + 64 + sx, cy - 70)]
             pygame.draw.polygon(surf, dark, horn)
@@ -1160,11 +1204,11 @@ def draw_enemy(surf, kind, palette):
             pygame.draw.polygon(surf, outline, horn, 3)
         # glowing eye
         _glowing_eye(surf, (cx + 70, cy - 44), (255, 230, 60), (255, 200, 40), r_core=7, r_glow=14)
-        # wings (membrane gradient + finger bones)
+        # wings — 2-tone dithered fill clipped to the wing polygon (no AA)
         for i in range(3):
             bx = cx - 30 - i * 20
             wpts = [(cx - 20, cy - 20), (bx, cy - 80), (bx + 20, cy - 30)]
-            wg = diag_grad_surf(60, 70, dark, shade(dark, 0.6))
+            wg = px_dither_surf(60, 70, dark, shade(dark, 0.6))
             m = pygame.Surface((60, 70), pygame.SRCALPHA)
             pygame.draw.polygon(m, (255, 255, 255, 255),
                                 [(p[0] - (bx - 10), p[1] - (cy - 80)) for p in wpts])
@@ -1172,32 +1216,31 @@ def draw_enemy(surf, kind, palette):
             surf.blit(wg, (bx - 10, cy - 80))
             pygame.draw.polygon(surf, outline, wpts, 3)
             pygame.draw.line(surf, shade(dark, 1.2), (cx - 20, cy - 20), (bx + 10, cy - 75), 2)
-        # tail (tapered)
+        # tail — 2-tone dithered fill clipped to the tail polygon (no AA)
         tail = [(cx - 70, cy + 20), (cx - 110, cy), (cx - 100, cy + 40)]
-        tg = diag_grad_surf(50, 50, main, shade(main, 0.6))
+        tg = px_dither_surf(50, 50, main, shade(main, 0.6))
         m = pygame.Surface((50, 50), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255),
                             [(p[0] - (cx - 110), p[1] - cy) for p in tail])
         tg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(tg, (cx - 110, cy))
         pygame.draw.polygon(surf, outline, tail, 3)
-        # tail spade
+        # tail spade (solid block, no AA)
         pygame.draw.polygon(surf, dark, [(cx - 110, cy + 4), (cx - 120, cy - 6), (cx - 118, cy + 18), (cx - 108, cy + 12)])
         pygame.draw.polygon(surf, outline, [(cx - 110, cy + 4), (cx - 120, cy - 6), (cx - 118, cy + 18), (cx - 108, cy + 12)], 2)
     elif kind == "demonking":
-        # big menacing figure (dark, with rim light)
+        # big menacing figure (dark, with rim light) — 2-tone dithered fill (no AA)
         body_r = pygame.Rect(cx - 50, cy - 10, 100, 90)
         _grad_round_rect(surf, body_r, shade(dark, 1.15), shade(dark, 0.5), border_radius=20)
         pygame.draw.rect(surf, outline, body_r, 4, border_radius=20)
-        # rim light on the left edge
-        rim = soft_glow(14, 90, dark_light, 90, center=(7, 45), radius=8, falloff=1.3)
-        surf.blit(rim, (cx - 50, cy - 10))
-        # head with radial shading
-        head_g = radial_grad_surf(92, 92, main, shade(main, 0.5), center=(32, 28), radius=48)
+        # rim light on the left edge (solid block, no AA)
+        pygame.draw.rect(surf, dark_light, (cx - 50, cy - 10, 4, 90))
+        # head — 2-tone dithered fill clipped to a circle (no AA)
+        head_g = px_dither_surf(92, 92, main, shade(main, 0.5))
         clip_to_circle(head_g, (46, 46), 46)
         surf.blit(head_g, (cx - 46, cy - 86))
         pygame.draw.circle(surf, outline, (cx, cy - 40), 46, 4)
-        # crown of horns (shaded)
+        # crown of horns (solid palette fills, no AA)
         for sx in (-30, -10, 10, 30):
             horn = [(cx + sx, cy - 70), (cx + sx - 8, cy - 100), (cx + sx + 8, cy - 70)]
             pygame.draw.polygon(surf, dark, horn)
@@ -1207,34 +1250,31 @@ def draw_enemy(surf, kind, palette):
         for sx in (-16, 16):
             _glowing_eye(surf, (cx + sx, cy - 42), (255, 70, 70), (255, 30, 30), r_core=8, r_glow=15)
             pygame.draw.circle(surf, (255, 210, 210), (cx + sx - 2, cy - 44), 3)
-        # cape (flowing, with fabric fold lines for depth)
+        # cape — 2-tone dithered fill clipped to the cape polygon (no AA)
         cape_pts = [(cx - 50, cy - 10), (cx - 80, cy + 80), (cx, cy + 50), (cx + 80, cy + 80), (cx + 50, cy - 10)]
-        cg = vgrad_surf(170, 100, accent, shade(accent, 0.45))
+        cg = px_dither_surf(170, 100, accent, shade(accent, 0.45))
         m = pygame.Surface((170, 100), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255),
                             [(p[0] - (cx - 80), p[1] - (cy - 10)) for p in cape_pts])
         cg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(cg, (cx - 80, cy - 10))
-        # cape fold lines (darker vertical curves on the cape for fabric drape)
+        # cape fold lines (solid vertical blocks, no AA)
         for cfx in (-20, 0, 20):
-            fold = pygame.Surface((4, 90), pygame.SRCALPHA)
-            pygame.draw.line(fold, (*shade(accent, 0.6), 80), (2, 0), (2, 90), 3)
-            surf.blit(fold, (cx + cfx, cy + 4))
-        # dark void aura behind the demonking (menacing)
-        dark_aura = soft_glow(180, 180, shade(dark, 1.05), 40, center=(90, 100), radius=92, falloff=1.6)
-        surf.blit(dark_aura, (cx - 90, cy - 30))
+            pygame.draw.rect(surf, shade(accent, 0.6), (cx + cfx, cy + 4, 3, 90))
+        # dark void aura behind the demonking (chunky block, no AA)
+        pygame.draw.circle(surf, shade(dark, 1.05), (cx, cy + 40), 90)
         pygame.draw.polygon(surf, outline, cape_pts, 3)
     elif kind == "imp":
-        # small horned fiend (shaded body)
+        # small horned fiend — 2-tone dithered fill (no AA)
         body_r = pygame.Rect(cx - 22, cy - 6, 44, 60)
         _grad_round_rect(surf, body_r, main_light, main_dark, border_radius=14)
         pygame.draw.rect(surf, outline, body_r, 3, border_radius=14)
-        # head with radial shading
-        head_g = radial_grad_surf(56, 56, main_light, main_dark, center=(20, 18), radius=30)
+        # head — 2-tone dithered fill clipped to a circle (no AA)
+        head_g = px_dither_surf(56, 56, main_light, main_dark)
         clip_to_circle(head_g, (28, 28), 28)
         surf.blit(head_g, (cx - 28, cy - 52))
         pygame.draw.circle(surf, outline, (cx, cy - 24), 28, 3)
-        # horns (shaded)
+        # horns (solid palette fills, no AA)
         for sx in (-12, 12):
             horn = [(cx + sx, cy - 44), (cx + sx - 6, cy - 64), (cx + sx + 6, cy - 44)]
             pygame.draw.polygon(surf, dark, horn)
@@ -1243,209 +1283,195 @@ def draw_enemy(surf, kind, palette):
         for sx in (-9, 9):
             _glowing_eye(surf, (cx + sx, cy - 24), (255, 230, 70), (255, 200, 50), r_core=4, r_glow=9)
     elif kind == "harpy":
-        # winged bird-woman
+        # winged bird-woman — 2-tone dithered fill (no AA)
         body_r = pygame.Rect(cx - 30, cy - 10, 60, 70)
         _grad_ellipse(surf, body_r, main_light, main_dark, center=(22, 18), falloff=1.2)
         pygame.draw.ellipse(surf, outline, body_r, 3)
-        # head with radial shading
-        head_g = radial_grad_surf(52, 52, main_light, main_dark, center=(18, 16), radius=28)
+        # head — 2-tone dithered fill clipped to a circle (no AA)
+        head_g = px_dither_surf(52, 52, main_light, main_dark)
         clip_to_circle(head_g, (26, 26), 26)
         surf.blit(head_g, (cx - 26, cy - 56))
         pygame.draw.circle(surf, outline, (cx, cy - 30), 26, 3)
-        # feathered wings with gradient + feather lines
+        # feathered wings — 2-tone dithered fill clipped to the wing polygon (no AA)
         for sx in (-1, 1):
             pts = [(cx, cy), (cx + sx * 70, cy - 50), (cx + sx * 90, cy + 10), (cx + sx * 40, cy + 10)]
-            wg = diag_grad_surf(100, 70, accent, shade(accent, 0.6))
+            wg = px_dither_surf(100, 70, accent, shade(accent, 0.6))
             m = pygame.Surface((100, 70), pygame.SRCALPHA)
             pygame.draw.polygon(m, (255, 255, 255, 255),
                                 [(p[0] - (cx - 10 if sx > 0 else cx - 90), p[1] - (cy - 50)) for p in pts])
             wg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
             surf.blit(wg, (cx - 10 if sx > 0 else cx - 90, cy - 50))
             pygame.draw.polygon(surf, outline, pts, 3)
-            # feather ridges
+            # feather ridges (solid lines, no AA)
             for fy in (-30, -10, 10):
                 pygame.draw.line(surf, shade(accent, 0.7),
                                  (cx + sx * 8, cy + fy), (cx + sx * 60, cy + fy - 8), 1)
         for sx in (-8, 8):
             _glowing_eye(surf, (cx + sx, cy - 30), (255, 230, 50), (255, 200, 40), r_core=3, r_glow=8)
-        # beak
+        # beak (solid block, no AA)
         pygame.draw.polygon(surf, (240, 200, 80), [(cx - 4, cy - 22), (cx + 4, cy - 22), (cx, cy - 14)])
         pygame.draw.polygon(surf, outline, [(cx - 4, cy - 22), (cx + 4, cy - 22), (cx, cy - 14)], 1)
     elif kind == "ghoul":
-        # hunched undead (sickly, desaturated shading)
+        # hunched undead — 2-tone dithered fill (no AA)
         body_r = pygame.Rect(cx - 26, cy - 4, 52, 64)
         _grad_round_rect(surf, body_r, main_light, main_dark, border_radius=12)
         pygame.draw.rect(surf, outline, body_r, 3, border_radius=12)
-        # head with radial shading
-        head_g = radial_grad_surf(56, 56, main_light, main_dark, center=(20, 18), radius=30)
+        # head — 2-tone dithered fill clipped to a circle (no AA)
+        head_g = px_dither_surf(56, 56, main_light, main_dark)
         clip_to_circle(head_g, (28, 28), 28)
         surf.blit(head_g, (cx - 28, cy - 54))
         pygame.draw.circle(surf, outline, (cx, cy - 26), 28, 3)
         for sx in (-10, 10):
             _glowing_eye(surf, (cx + sx, cy - 26), (190, 255, 190), (120, 255, 160), r_core=5, r_glow=11)
-        # mouth (toothy)
+        # mouth (toothy, solid blocks, no AA)
         pygame.draw.rect(surf, (30, 26, 40), (cx - 9, cy - 14, 18, 6))
         for tx in (-6, -2, 2, 6):
             pygame.draw.rect(surf, (235, 235, 225), (cx + tx, cy - 14, 3, 6))
-        # claws (shaded)
+        # claws (solid blocks + tips, no AA)
         for sx in (-30, 22):
-            cl = vgrad_surf(8, 24, accent_light, accent)
-            clip_to_rect(cl, pygame.Rect(0, 0, 8, 24))
-            surf.blit(cl, (cx + sx, cy + 20))
+            pygame.draw.rect(surf, accent_light, (cx + sx, cy + 20, 8, 24))
+            pygame.draw.rect(surf, accent, (cx + sx, cy + 20, 4, 24))
             pygame.draw.rect(surf, outline, (cx + sx, cy + 20, 8, 24), 2)
             # claw tips
             pygame.draw.polygon(surf, shade(accent, 0.7), [(cx + sx, cy + 44), (cx + sx + 8, cy + 44), (cx + sx + 4, cy + 50)])
     elif kind == "paladin":
-        # armored fallen knight (metallic)
+        # armored fallen knight (metallic) — 2-tone dithered fill (no AA)
         body_r = pygame.Rect(cx - 30, cy - 6, 60, 76)
         _grad_round_rect(surf, body_r, shade(main, 1.2), shade(main, 0.6), border_radius=16)
         pygame.draw.rect(surf, outline, body_r, 3, border_radius=16)
-        # armor plate highlights
+        # armor plate highlights (solid blocks, no AA)
         pygame.draw.rect(surf, (255, 255, 255), (cx - 26, cy - 2, 8, 60), border_radius=4)
         pygame.draw.rect(surf, shade(main, 0.7), (cx + 18, cy - 2, 8, 60), border_radius=4)
-        # helmet with radial shading
-        head_g = radial_grad_surf(60, 60, shade(main, 1.25), shade(main, 0.55), center=(20, 18), radius=32)
+        # helmet — 2-tone dithered fill clipped to a circle (no AA)
+        head_g = px_dither_surf(60, 60, shade(main, 1.25), shade(main, 0.55))
         clip_to_circle(head_g, (30, 30), 30)
         surf.blit(head_g, (cx - 30, cy - 58))
         pygame.draw.circle(surf, outline, (cx, cy - 28), 30, 3)
-        # visor slit (glowing)
+        # visor slit (solid block, no AA)
         pygame.draw.rect(surf, (20, 20, 30), (cx - 17, cy - 31, 34, 9))
-        visor_glow = soft_glow(40, 14, (255, 80, 80), 120, radius=18, falloff=1.4)
-        surf.blit(visor_glow, (cx - 20, cy - 34))
-        # emblem (radial gem)
-        gem = radial_grad_surf(22, 22, accent_light, shade(accent, 0.4), center=(8, 7), radius=11)
-        clip_to_circle(gem, (11, 11), 10)
-        surf.blit(gem, (cx - 11, cy + 5))
+        pygame.draw.rect(surf, (255, 80, 80), (cx - 17, cy - 31, 34, 4))
+        # emblem (solid gem, no AA)
+        pygame.draw.circle(surf, accent_light, (cx, cy + 16), 10)
+        pygame.draw.circle(surf, shade(accent, 0.4), (cx, cy + 16), 6)
         pygame.draw.circle(surf, outline, (cx, cy + 16), 10, 2)
-        # sword (metal gradient + edge)
-        blade = hgrad_surf(8, 80, (220, 222, 235), (160, 165, 180))
-        clip_to_rect(blade, pygame.Rect(0, 0, 8, 80))
-        surf.blit(blade, (cx + 30, cy - 50))
+        # sword (solid metal block + edge, no AA)
+        pygame.draw.rect(surf, (220, 222, 235), (cx + 30, cy - 50, 8, 80))
+        pygame.draw.rect(surf, (160, 165, 180), (cx + 30, cy - 50, 4, 80))
         pygame.draw.rect(surf, (245, 248, 255), (cx + 30, cy - 50, 2, 80))
         pygame.draw.rect(surf, outline, (cx + 30, cy - 50, 8, 80), 2)
-        # crossguard
+        # crossguard (solid block, no AA)
         pygame.draw.rect(surf, accent, (cx + 24, cy + 28, 20, 6))
         pygame.draw.rect(surf, outline, (cx + 24, cy + 28, 20, 6), 1)
     elif kind == "hydra":
-        # multi-headed serpent (scaled body)
+        # multi-headed serpent — 2-tone dithered fill (no AA)
         body_r = pygame.Rect(cx - 60, cy, 120, 70)
         _grad_ellipse(surf, body_r, main_light, main_dark, center=(42, 22), falloff=1.2)
         pygame.draw.ellipse(surf, outline, body_r, 4)
-        # scale texture
+        # scale texture (solid lines, no AA)
         for i in range(4):
             yy = cy + 10 + i * 14
-            pygame.draw.arc(surf, shade(main, 0.7), (cx - 54, yy, 108, 16), 0.2, math.pi - 0.2, 1)
+            pygame.draw.line(surf, shade(main, 0.7), (cx - 54, yy), (cx + 54, yy), 1)
         for i, sx in enumerate((-36, 0, 36)):
             hy = cy - 30 - (10 if i == 1 else 0)
-            # head with radial shading
-            hg = radial_grad_surf(44, 44, main_light, main_dark, center=(15, 13), radius=23)
+            # head — 2-tone dithered fill clipped to a circle (no AA)
+            hg = px_dither_surf(44, 44, main_light, main_dark)
             clip_to_circle(hg, (22, 22), 22)
             surf.blit(hg, (cx + sx - 22, hy - 22))
             pygame.draw.circle(surf, outline, (cx + sx, hy), 22, 3)
             # glowing eye
             _glowing_eye(surf, (cx + sx + 6, hy - 4), (255, 90, 90), (255, 50, 50), r_core=4, r_glow=9)
-            # forked tongue on the middle head
+            # forked tongue on the middle head (solid lines, no AA)
             if i == 1:
                 pygame.draw.line(surf, (180, 40, 50), (cx + sx, hy + 18), (cx + sx - 6, hy + 26), 2)
                 pygame.draw.line(surf, (180, 40, 50), (cx + sx, hy + 18), (cx + sx + 6, hy + 26), 2)
     elif kind == "frosttitan":
-        # towering ice giant (crystalline)
+        # towering ice giant — 2-tone dithered fill (no AA)
         body_r = pygame.Rect(cx - 48, cy - 40, 96, 120)
         _grad_round_rect(surf, body_r, main_light, main_dark, border_radius=14)
         pygame.draw.rect(surf, outline, body_r, 4, border_radius=14)
-        # ice crystal facets (lighter shards on the body, more varied)
+        # ice crystal facets (2-tone dithered fill, no AA)
         for fx, fy, fw, fh in ((-32, -28, 20, 42), (10, -22, 18, 52), (26, 12, 16, 42), (-24, 10, 14, 36)):
-            fc = diag_grad_surf(fw, fh, (245, 252, 255), shade(main, 1.15))
+            fc = px_dither_surf(fw, fh, (245, 252, 255), shade(main, 1.15))
             clip_to_rect(fc, pygame.Rect(0, 0, fw, fh), border_radius=3)
             surf.blit(fc, (cx + fx, cy + fy))
             pygame.draw.rect(surf, shade(main, 0.65), (cx + fx, cy + fy, fw, fh), 1, border_radius=3)
-            # specular glint on each facet
+            # specular glint on each facet (solid block, no AA)
             pygame.draw.rect(surf, (255, 255, 255), (cx + fx + 2, cy + fy + 2, fw - 4, 2))
-        # frost mist aura around the body
-        frost_aura = soft_glow(180, 180, (200, 240, 255), 50, center=(90, 110), radius=92, falloff=1.5)
-        surf.blit(frost_aura, (cx - 90, cy - 50))
-        # head with radial shading
-        head_g = radial_grad_surf(76, 76, main_light, main_dark, center=(26, 22), radius=40)
+        # frost mist aura around the body (chunky block, no AA)
+        pygame.draw.circle(surf, (200, 240, 255), (cx, cy + 50), 90)
+        # head — 2-tone dithered fill clipped to a circle (no AA)
+        head_g = px_dither_surf(76, 76, main_light, main_dark)
         clip_to_circle(head_g, (38, 38), 38)
         surf.blit(head_g, (cx - 38, cy - 102))
         pygame.draw.circle(surf, outline, (cx, cy - 64), 38, 4)
         for sx in (-14, 14):
             _glowing_eye(surf, (cx + sx, cy - 64), (210, 245, 255), (140, 210, 255), r_core=6, r_glow=12)
-        # ice shards (sharper crystal spires, with specular edges)
+        # ice shards — 2-tone dithered fill clipped to the shard polygon (no AA)
         for sx in (-30, 0, 30):
             sh_pts = [(cx + sx - 6, cy + 80), (cx + sx, cy + 34), (cx + sx + 6, cy + 80)]
-            sg = vgrad_surf(16, 48, (255, 255, 255), shade(accent, 0.8))
+            sg = px_dither_surf(16, 48, (255, 255, 255), shade(accent, 0.8))
             m = pygame.Surface((16, 48), pygame.SRCALPHA)
             pygame.draw.polygon(m, (255, 255, 255, 255),
                                 [(p[0] - (cx + sx - 8), p[1] - (cy + 34)) for p in sh_pts])
             sg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
             surf.blit(sg, (cx + sx - 8, cy + 34))
-            # bright edge on the left side of each shard
+            # bright edge on the left side of each shard (solid line, no AA)
             pygame.draw.line(surf, (255, 255, 255), (cx + sx - 5, cy + 78), (cx + sx - 1, cy + 36), 2)
             pygame.draw.polygon(surf, outline, sh_pts, 2)
-        # frost breath glow (wider, more dramatic)
-        breath = soft_glow(56, 36, (200, 245, 255), 100, center=(28, 16), radius=26, falloff=1.5)
-        surf.blit(breath, (cx + 28, cy - 56))
-        # few floating ice motes near the giant
+        # frost breath glow (chunky block, no AA)
+        pygame.draw.circle(surf, (200, 245, 255), (cx + 50, cy - 40), 26)
+        # few floating ice motes near the giant (solid blocks, no AA)
         for im in range(4):
             mx = cx + random.uniform(-40, 40)
             my = cy + random.uniform(-60, 20)
-            mr = random.uniform(2, 5)
-            moteg = soft_glow(int(mr * 4), int(mr * 4), (210, 240, 255), 120, radius=int(mr * 2), falloff=1.5)
-            surf.blit(moteg, (int(mx - mr * 2), int(my - mr * 2)))
-            pygame.draw.circle(surf, (255, 255, 255), (int(mx), int(my)), int(mr))
+            pygame.draw.rect(surf, (210, 240, 255), (px_snap(mx), px_snap(my), 5, 5))
+            pygame.draw.rect(surf, (255, 255, 255), (px_snap(mx) + 1, px_snap(my) + 1, 2, 2))
     elif kind == "embertyrant":
-        # roaring flame warlord
+        # roaring flame warlord — 2-tone dithered fill (no AA)
         body_r = pygame.Rect(cx - 52, cy - 8, 104, 92)
         _grad_round_rect(surf, body_r, shade(dark, 1.2), shade(dark, 0.5), border_radius=20)
         pygame.draw.rect(surf, outline, body_r, 4, border_radius=20)
-        # ember cracks glowing on the body (branching, lava-like)
+        # ember cracks glowing on the body (solid lines, no AA)
         for ey in (8, 38, 62):
-            crack_glow = soft_glow(52, 10, (255, 180, 60), 180, center=(26, 5), radius=24, falloff=1.4)
-            surf.blit(crack_glow, (cx - 26, cy + ey - 5))
-            # main crack line + branches
+            pygame.draw.rect(surf, (255, 180, 60), (cx - 26, cy + ey - 5, 52, 6))
             pygame.draw.line(surf, (255, 220, 120), (cx - 22, cy + ey), (cx + 22, cy + ey), 3)
             pygame.draw.line(surf, (255, 255, 200), (cx - 22, cy + ey), (cx, cy + ey), 1)
             # branch cracks going up and down
             for bx2 in (-8, 8):
                 pygame.draw.line(surf, (255, 140, 60), (cx + bx2, cy + ey), (cx + bx2 + 6, cy + ey - 8), 2)
-        # molten core glow at chest center
-        core_glow = soft_glow(36, 36, (255, 200, 80), 140, center=(18, 18), radius=18, falloff=1.3)
-        surf.blit(core_glow, (cx - 18, cy + 20))
+        # molten core glow at chest center (solid block, no AA)
+        pygame.draw.circle(surf, (255, 200, 80), (cx, cy + 38), 18)
         pygame.draw.circle(surf, (255, 240, 120), (cx, cy + 38), 8)
         pygame.draw.circle(surf, (255, 255, 200), (cx - 2, cy + 36), 3)
-        # head with radial shading
-        head_g = radial_grad_surf(96, 96, main, shade(main, 0.5), center=(32, 28), radius=50)
+        # head — 2-tone dithered fill clipped to a circle (no AA)
+        head_g = px_dither_surf(96, 96, main, shade(main, 0.5))
         clip_to_circle(head_g, (48, 48), 48)
         surf.blit(head_g, (cx - 48, cy - 88))
         pygame.draw.circle(surf, outline, (cx, cy - 40), 48, 4)
-        # blazing crown (larger, taller, with inner glow core)
+        # blazing crown — 2-tone dithered fill clipped to each flame polygon (no AA)
         for sx in (-30, -10, 10, 30):
             flame = [(cx + sx, cy - 72), (cx + sx - 8, cy - 110), (cx + sx + 8, cy - 72)]
-            fg = vgrad_surf(20, 40, (255, 240, 140), shade(accent, 0.9))
+            fg = px_dither_surf(20, 40, (255, 240, 140), shade(accent, 0.9))
             m = pygame.Surface((20, 40), pygame.SRCALPHA)
             pygame.draw.polygon(m, (255, 255, 255, 255),
                                 [(p[0] - (cx + sx - 10), p[1] - (cy - 72)) for p in flame])
             fg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
             surf.blit(fg, (cx + sx - 10, cy - 72))
-            # inner bright streak in each flame
+            # inner bright streak in each flame (solid line, no AA)
             pygame.draw.line(surf, (255, 255, 200), (cx + sx, cy - 70), (cx + sx, cy - 106), 2)
             pygame.draw.polygon(surf, outline, flame, 3)
         for sx in (-18, 18):
             _glowing_eye(surf, (cx + sx, cy - 42), (255, 240, 120), (255, 200, 60), r_core=9, r_glow=16)
-        # flame aura (orbiting embers with glow + smoke wisps)
+        # flame aura (orbiting embers, solid blocks, no AA)
         for i in range(8):
             ang = i * math.pi / 4
             ex = int(cx + math.cos(ang) * 72)
             ey2 = int(cy + math.sin(ang) * 52)
-            halo = soft_glow(24, 24, (255, 180, 80), 140, center=(12, 12), radius=12, falloff=1.45)
-            surf.blit(halo, (ex - 12, ey2 - 12))
-            pygame.draw.circle(surf, (255, 240, 160), (ex, ey2), 5)
-            pygame.draw.circle(surf, (255, 255, 255), (ex - 2, ey2 - 2), 2)
-            # smoke trail behind each ember
-            smoke = pygame.Surface((10, 6), pygame.SRCALPHA)
-            pygame.draw.ellipse(smoke, (40, 20, 20, 60), smoke.get_rect())
-            surf.blit(smoke, (ex - 14, ey2))
+            pygame.draw.rect(surf, (255, 180, 80), (ex - 6, ey2 - 6, 12, 12))
+            pygame.draw.rect(surf, (255, 240, 160), (ex - 4, ey2 - 4, 8, 8))
+            pygame.draw.rect(surf, (255, 255, 255), (ex - 2, ey2 - 2, 4, 4))
+            # smoke trail behind each ember (solid block, no AA)
+            pygame.draw.rect(surf, (40, 20, 20), (ex - 14, ey2, 10, 6))
 
 # ---------------------------------------------------------------------------
 # Skill icons
@@ -1454,34 +1480,34 @@ def draw_skill_icon(surf, element, kind):
     cx, cy = 64, 64
     outline = (30, 26, 40)
     main, light, dark = ELEMENT_COLORS[element]
-    # base disc — radial gradient for depth (light upper-left -> dark edge)
-    disc = radial_grad_surf(112, 112, shade(main, 1.15), shade(dark, 0.7),
-                            center=(40, 38), radius=58)
+    # base disc — 2-tone dithered fill clipped to a circle (pixel-art: no AA
+    # radial gradient). Light upper-left, dark edge.
+    disc = px_dither_surf(112, 112, shade(main, 1.15), shade(dark, 0.7))
     clip_to_circle(disc, (56, 56), 56)
     surf.blit(disc, (8, 8))
     pygame.draw.circle(surf, outline, (cx, cy), 56, 3)
-    # inner ring highlight
+    # inner ring highlight (solid line, no AA)
     pygame.draw.circle(surf, light, (cx, cy), 50, 2)
-    # soft inner glow
-    inner = soft_glow(96, 96, light, 50, center=(48, 44), radius=48, falloff=1.6)
+    # soft inner glow (a chunky block disc, no AA soft-glow)
+    inner = pygame.Surface((96, 96), pygame.SRCALPHA)
+    pygame.draw.circle(inner, (*light, 90), (48, 48), 40)
+    pygame.draw.circle(inner, (*light, 50), (48, 48), 48)
     surf.blit(inner, (16, 16))
 
     if kind == "slash":
-        # curved slash with a bright edge + motion trail
+        # curved slash — solid palette fills, no AA
         pygame.draw.polygon(surf, light, [(cx - 24, cy + 20), (cx + 24, cy - 20), (cx + 30, cy - 10), (cx - 18, cy + 30)])
         pygame.draw.polygon(surf, (255, 255, 255), [(cx - 20, cy + 16), (cx + 20, cy - 16), (cx + 24, cy - 8), (cx - 14, cy + 26)])
         pygame.draw.polygon(surf, outline, [(cx - 24, cy + 20), (cx + 24, cy - 20), (cx + 30, cy - 10), (cx - 18, cy + 30)], 3)
     elif kind == "bolt":
-        # lightning bolt with a glow + bright core
+        # lightning bolt — solid palette fills, no AA glow
         bolt_pts = [(cx - 6, cy - 28), (cx + 14, cy - 6), (cx + 2, cy - 4), (cx + 12, cy + 28), (cx - 12, cy + 4), (cx + 2, cy + 2)]
-        bg = soft_glow(60, 60, light, 90, center=(30, 30), radius=28, falloff=1.5)
-        surf.blit(bg, (34, 34))
         pygame.draw.polygon(surf, light, bolt_pts)
         pygame.draw.polygon(surf, (255, 255, 230),
                             [(cx - 4, cy - 24), (cx + 10, cy - 6), (cx, cy - 4), (cx + 8, cy + 24), (cx - 8, cy + 4), (cx + 2, cy + 2)])
         pygame.draw.polygon(surf, outline, bolt_pts, 2)
     elif kind == "arrow":
-        # arrow shaft + fletching with a gradient
+        # arrow shaft + fletching — solid palette fills, no AA
         pygame.draw.line(surf, light, (cx - 26, cy + 22), (cx + 22, cy - 22), 6)
         pygame.draw.line(surf, (255, 255, 255), (cx - 26, cy + 22), (cx + 22, cy - 22), 2)
         pygame.draw.polygon(surf, (255, 255, 255), [(cx + 22, cy - 22), (cx + 6, cy - 30), (cx + 30, cy - 6)])
@@ -1489,17 +1515,15 @@ def draw_skill_icon(surf, element, kind):
         pygame.draw.polygon(surf, shade(light, 0.7), [(cx - 26, cy + 22), (cx - 30, cy + 16), (cx - 22, cy + 18)])
         pygame.draw.line(surf, outline, (cx - 26, cy + 22), (cx + 22, cy - 22), 2)
     elif kind == "heal":
-        # plus sign with a soft glow
-        heal_glow = soft_glow(56, 56, light, 80, center=(28, 28), radius=26, falloff=1.6)
-        surf.blit(heal_glow, (36, 36))
+        # plus sign — solid blocks, no AA glow
         pygame.draw.rect(surf, (255, 255, 255), (cx - 8, cy - 24, 16, 48), border_radius=4)
         pygame.draw.rect(surf, (255, 255, 255), (cx - 24, cy - 8, 48, 16), border_radius=4)
         pygame.draw.rect(surf, outline, (cx - 8, cy - 24, 16, 48), 2, border_radius=4)
         pygame.draw.rect(surf, outline, (cx - 24, cy - 8, 48, 16), 2, border_radius=4)
     elif kind == "shield":
-        # shield with a radial gradient + emblem
+        # shield — 2-tone dithered fill clipped to the shield polygon (no AA)
         sh_pts = [(cx, cy - 26), (cx + 22, cy - 14), (cx + 22, cy + 10), (cx, cy + 28), (cx - 22, cy + 10), (cx - 22, cy - 14)]
-        shg = diag_grad_surf(48, 56, (255, 255, 255), shade(light, 0.7))
+        shg = px_dither_surf(48, 56, (255, 255, 255), shade(light, 0.7))
         m = pygame.Surface((48, 56), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - (cx - 24), p[1] - (cy - 26)) for p in sh_pts])
         shg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
@@ -1508,41 +1532,31 @@ def draw_skill_icon(surf, element, kind):
         pygame.draw.circle(surf, light, (cx, cy), 6)
         pygame.draw.circle(surf, (255, 255, 255), (cx - 2, cy - 2), 3)
     elif kind == "orb":
-        # orb with radial gradient + specular shine + glow
-        og = soft_glow(56, 56, light, 90, center=(28, 28), radius=26, falloff=1.5)
-        surf.blit(og, (36, 36))
-        orb = radial_grad_surf(44, 44, light, shade(dark, 0.6), center=(16, 14), radius=22)
+        # orb — 2-tone dithered fill clipped to a circle + specular shine (no AA)
+        orb = px_dither_surf(44, 44, light, shade(dark, 0.6))
         clip_to_circle(orb, (22, 22), 22)
         surf.blit(orb, (cx - 22, cy - 22))
         pygame.draw.circle(surf, (255, 255, 255), (cx - 7, cy - 7), 7)
         pygame.draw.circle(surf, (255, 255, 255), (cx - 3, cy - 3), 3)
         pygame.draw.circle(surf, outline, (cx, cy), 22, 3)
     elif kind == "aoe":
-        # concentric rings with a soft glow center
-        center_glow = soft_glow(60, 60, light, 110, center=(30, 30), radius=28, falloff=1.5)
-        surf.blit(center_glow, (34, 34))
-        for r, a in [(28, 255), (20, 255), (12, 255)]:
-            s = pygame.Surface((2 * r + 4, 2 * r + 4), pygame.SRCALPHA)
-            pygame.draw.circle(s, (*light, a), (r + 2, r + 2), r, 4)
-            surf.blit(s, (cx - r - 2, cy - r - 2))
+        # concentric rings — solid palette fills, no AA glow
+        for r in (28, 20, 12):
+            pygame.draw.circle(surf, light, (cx, cy), r, 4)
         pygame.draw.circle(surf, outline, (cx, cy), 28, 2)
     elif kind == "curse":
-        # dark curse sigil — outer ring with an inner void
-        cg = soft_glow(56, 56, dark, 90, center=(28, 28), radius=26, falloff=1.5)
-        surf.blit(cg, (36, 36))
+        # dark curse sigil — solid palette fills, no AA
         pygame.draw.circle(surf, (255, 255, 255), (cx, cy), 24)
         pygame.draw.circle(surf, outline, (cx, cy), 24, 3)
-        # inner void with a radial gradient
-        void = radial_grad_surf(26, 26, shade(dark, 1.2), dark, center=(10, 9), radius=13)
+        # inner void — 2-tone dithered fill clipped to a circle (no AA)
+        void = px_dither_surf(26, 26, shade(dark, 1.2), dark)
         clip_to_circle(void, (13, 13), 12)
         surf.blit(void, (cx - 13, cy - 13))
         pygame.draw.circle(surf, outline, (cx, cy), 12, 2)
     elif kind == "buff":
-        # upward triangle (buff) with a gradient + glow
-        bg_glow = soft_glow(56, 56, light, 80, center=(28, 28), radius=26, falloff=1.6)
-        surf.blit(bg_glow, (36, 36))
+        # upward triangle (buff) — 2-tone dithered fill clipped to the triangle (no AA)
         tri = [(cx, cy - 26), (cx + 22, cy + 18), (cx - 22, cy + 18)]
-        tg = vgrad_surf(48, 46, (255, 255, 255), shade(light, 0.7))
+        tg = px_dither_surf(48, 46, (255, 255, 255), shade(light, 0.7))
         m = pygame.Surface((48, 46), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - (cx - 24), p[1] - (cy - 26)) for p in tri])
         tg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
@@ -1557,17 +1571,19 @@ def draw_skill_icon(surf, element, kind):
 # ---------------------------------------------------------------------------
 def make_title_bg(path):
     surf = pygame.Surface((1280, 720))
-    vgrad(surf, SKY_TOP, SKY_BOTTOM)
-    # stars
+    # pixel-art sky: 2-tone dithered vertical gradient (no AA lerp_color ramp)
+    px_dither(surf, SKY_TOP, SKY_BOTTOM, (0, 0, 1280, 720))
+    # stars (chunky blocks, no AA)
     for _ in range(120):
         x = random.randint(0, 1280)
         y = random.randint(0, 420)
         b = random.randint(120, 255)
-        pygame.draw.circle(surf, (b, b, b), (x, y), random.choice([1, 1, 2]))
-    # moon
-    rgrad(surf, (960, 160), (255, 250, 220), (240, 220, 170), 120)
-    pygame.draw.circle(surf, (255, 250, 230), (960, 160), 90)
-    # distant mountains
+        pygame.draw.rect(surf, (b, b, b), (x, y, 2, 2))
+    # moon (solid disc + dithered shading, no AA)
+    pygame.draw.circle(surf, (240, 220, 170), (960, 160), 120)
+    pygame.draw.circle(surf, (255, 250, 220), (960, 160), 90)
+    pygame.draw.circle(surf, (255, 250, 230), (960, 160), 60)
+    # distant mountains (solid palette fills, no AA)
     for layer, col in [(0, (70, 60, 100)), (1, (54, 46, 84)), (2, (40, 34, 66))]:
         base_y = 460 + layer * 40
         pts = [(0, 720)]
@@ -1578,31 +1594,33 @@ def make_title_bg(path):
             x += random.randint(120, 220)
         pts.append((1280, 720))
         pygame.draw.polygon(surf, col, pts)
-    # foreground silhouette castle
+    # foreground silhouette castle (solid blocks, no AA)
     pygame.draw.rect(surf, (28, 24, 44), (520, 380, 240, 200))
     for tx in (540, 620, 700):
         pygame.draw.rect(surf, (28, 24, 44), (tx, 340, 40, 240))
         pygame.draw.polygon(surf, (28, 24, 44), [(tx, 340), (tx + 20, 300), (tx + 40, 340)])
     pygame.draw.rect(surf, (28, 24, 44), (620, 300, 40, 60))
     pygame.draw.polygon(surf, (40, 34, 60), [(620, 300), (640, 270), (660, 300)])
-    # logo glow handled in code
     pygame.image.save(surf, path)
 
 def make_battle_bg(path, theme):
     surf = pygame.Surface((1280, 720))
     if theme == "plains":
-        vgrad(surf, (120, 180, 220), (200, 230, 240), target_h=420)
+        # pixel-art sky: 2-tone dithered vertical gradient (no AA)
+        px_dither(surf, (120, 180, 220), (200, 230, 240), (0, 0, 1280, 420))
         grass = pygame.Rect(0, 420, 1280, 300)
         pygame.draw.rect(surf, (90, 170, 90), grass)
         for x in range(0, 1280, 40):
             pygame.draw.polygon(surf, (60, 140, 70), [(x, 420), (x + 20, 400), (x + 40, 420)])
-        # distant hills
+        # distant hills (solid ellipses, no AA)
         pygame.draw.ellipse(surf, (120, 170, 120), (-100, 360, 500, 160))
         pygame.draw.ellipse(surf, (110, 160, 110), (800, 360, 600, 160))
-        # sun
-        rgrad(surf, (200, 120), (255, 240, 200), (255, 200, 120), 90)
+        # sun (solid discs, no AA)
+        pygame.draw.circle(surf, (255, 200, 120), (200, 120), 90)
+        pygame.draw.circle(surf, (255, 240, 200), (200, 120), 60)
     elif theme == "forest":
-        vgrad(surf, (90, 150, 120), (140, 180, 150), target_h=420)
+        # pixel-art sky: 2-tone dithered vertical gradient (no AA)
+        px_dither(surf, (90, 150, 120), (140, 180, 150), (0, 0, 1280, 420))
         pygame.draw.rect(surf, (50, 90, 60), (0, 420, 1280, 300))
         for x in range(-40, 1280, 90):
             pygame.draw.rect(surf, (60, 40, 30), (x, 300, 20, 200))
@@ -1610,45 +1628,51 @@ def make_battle_bg(path, theme):
             pygame.draw.circle(surf, (50, 110, 70), (x - 10, 280), 50)
             pygame.draw.circle(surf, (60, 130, 80), (x + 30, 290), 50)
     elif theme == "cave":
-        vgrad(surf, (40, 30, 50), (70, 50, 80))
+        # pixel-art cave: 2-tone dithered vertical gradient (no AA)
+        px_dither(surf, (40, 30, 50), (70, 50, 80), (0, 0, 1280, 720))
         pygame.draw.rect(surf, (30, 24, 36), (0, 480, 1280, 240))
         for x in range(0, 1280, 120):
             pygame.draw.polygon(surf, (50, 40, 60), [(x, 480), (x + 60, 420), (x + 120, 480)])
-        # crystals
+        # crystals (solid palette fills, no AA)
         for cx, col in [(200, (120, 200, 255)), (1080, (200, 120, 255)), (640, (120, 255, 200))]:
             pygame.draw.polygon(surf, col, [(cx, 480), (cx - 20, 420), (cx, 360), (cx + 20, 420)])
             pygame.draw.polygon(surf, (255, 255, 255), [(cx, 480), (cx - 6, 440), (cx, 400)])
     elif theme == "castle":
-        vgrad(surf, (60, 40, 80), (120, 60, 100))
+        # pixel-art castle: 2-tone dithered vertical gradient (no AA)
+        px_dither(surf, (60, 40, 80), (120, 60, 100), (0, 0, 1280, 720))
         pygame.draw.rect(surf, (40, 30, 50), (0, 460, 1280, 260))
-        # castle silhouette
+        # castle silhouette (solid blocks, no AA)
         pygame.draw.rect(surf, (30, 24, 40), (440, 280, 400, 220))
         for tx in (440, 560, 680, 800):
             pygame.draw.rect(surf, (30, 24, 40), (tx, 240, 80, 260))
             pygame.draw.polygon(surf, (30, 24, 40), [(tx, 240), (tx + 40, 200), (tx + 80, 240)])
-        # windows
+        # windows (solid blocks, no AA)
         for wx in (480, 720):
             pygame.draw.rect(surf, (255, 180, 80), (wx, 360, 40, 60))
-        # moon
-        rgrad(surf, (980, 140), (255, 250, 220), (220, 200, 160), 70)
+        # moon (solid discs, no AA)
+        pygame.draw.circle(surf, (220, 200, 160), (980, 140), 70)
+        pygame.draw.circle(surf, (255, 250, 220), (980, 140), 50)
     elif theme == "void":
-        vgrad(surf, (20, 10, 30), (60, 20, 70))
+        # pixel-art void: 2-tone dithered vertical gradient (no AA)
+        px_dither(surf, (20, 10, 30), (60, 20, 70), (0, 0, 1280, 720))
         for _ in range(80):
             x = random.randint(0, 1280); y = random.randint(0, 720)
-            pygame.draw.circle(surf, (random.randint(120, 200), 80, 160), (x, y), random.choice([1, 2]))
-        # swirling portal
-        rgrad(surf, (640, 380), (180, 80, 200), (40, 10, 60), 300)
+            pygame.draw.rect(surf, (random.randint(120, 200), 80, 160), (x, y, 2, 2))
+        # swirling portal (solid discs, no AA)
+        pygame.draw.circle(surf, (40, 10, 60), (640, 380), 300)
+        pygame.draw.circle(surf, (180, 80, 200), (640, 380), 150)
         pygame.draw.circle(surf, (20, 0, 30), (640, 380), 80)
     pygame.image.save(surf, path)
 
 def make_map_bg(path):
     surf = pygame.Surface((1280, 720))
-    vgrad(surf, (44, 60, 90), (28, 36, 60))
-    # parchment overlay
+    # pixel-art sky: 2-tone dithered vertical gradient (no AA)
+    px_dither(surf, (44, 60, 90), (28, 36, 60), (0, 0, 1280, 720))
+    # parchment overlay (solid fill, no AA)
     parch = pygame.Surface((1080, 600), pygame.SRCALPHA)
     parch.fill((236, 220, 180, 230))
     pygame.draw.rect(parch, (120, 90, 50), parch.get_rect(), 6, border_radius=20)
-    # subtle stains
+    # subtle stains (solid blocks, no AA)
     for _ in range(40):
         x = random.randint(0, 1080); y = random.randint(0, 600)
         pygame.draw.circle(parch, (210, 190, 150, 60), (x, y), random.randint(8, 30))
@@ -1673,125 +1697,121 @@ def vgrad(surface, top, bottom, target_h=None):
 # UI elements
 # ---------------------------------------------------------------------------
 def make_ui():
-    # button (normal + hover) 240x64 — gradient fill + top gloss + rim light
+    # button (normal + hover) 240x64 — 2-tone dithered fill + top gloss + rim (pixel-art, no AA)
     for state, col in [("normal", (60, 70, 110)), ("hover", (90, 110, 170))]:
         s = pygame.Surface((240, 64), pygame.SRCALPHA)
-        bg = vgrad_surf(240, 64, shade(col, 1.18), shade(col, 0.7))
+        bg = px_dither_surf(240, 64, shade(col, 1.18), shade(col, 0.7))
         clip_to_rect(bg, pygame.Rect(0, 0, 240, 64), border_radius=16)
         s.blit(bg, (0, 0))
-        # top-edge highlight (lit from above)
-        hi = soft_glow(232, 20, (255, 255, 255), 120, center=(116, 10), radius=120, falloff=1.4)
-        s.blit(hi, (4, 4))
+        # top-edge highlight (solid block, no AA)
+        pygame.draw.rect(s, (255, 255, 255), (4, 4, 232, 6), border_radius=3)
         pygame.draw.rect(s, (200, 220, 255), s.get_rect(), 3, border_radius=16)
         pygame.image.save(s, os.path.join(ASSET_DIR, "ui", f"button_{state}.png"))
 
-    # panel — dark glass with a soft top sheen
+    # panel — 2-tone dithered fill + top sheen (pixel-art, no AA)
     s = pygame.Surface((400, 300), pygame.SRCALPHA)
-    pg = diag_grad_surf(400, 300, (50, 48, 76), (24, 22, 42))
+    pg = px_dither_surf(400, 300, (50, 48, 76), (24, 22, 42))
     clip_to_rect(pg, pygame.Rect(0, 0, 400, 300), border_radius=18)
     s.blit(pg, (0, 0))
-    sheen = soft_glow(392, 60, (255, 255, 255), 50, center=(196, 26), radius=200, falloff=1.6)
-    s.blit(sheen, (4, 4))
+    pygame.draw.rect(s, (255, 255, 255), (4, 4, 392, 8), border_radius=4)
     pygame.draw.rect(s, (200, 200, 255), s.get_rect(), 3, border_radius=18)
     pygame.image.save(s, os.path.join(ASSET_DIR, "ui", "panel.png"))
 
-    # rarity frames 220x280 — gradient fill + colored rim + inner shine + corner gems
+    # rarity frames 220x280 — 2-tone dithered fill + colored rim + corner gems (pixel-art, no AA)
     for rar, col in RARITY_COLORS.items():
         s = pygame.Surface((220, 280), pygame.SRCALPHA)
-        fg = diag_grad_surf(220, 280, shade(col, 1.2), shade(col, 0.4))
+        fg = px_dither_surf(220, 280, shade(col, 1.2), shade(col, 0.4))
         clip_to_rect(fg, pygame.Rect(0, 0, 220, 280), border_radius=16)
         s.blit(fg, (0, 0))
-        # dark inner panel for contrast
+        # dark inner panel for contrast (solid block, no AA)
         ip = pygame.Surface((208, 268), pygame.SRCALPHA)
         pygame.draw.rect(ip, (20, 20, 30, 210), ip.get_rect(), border_radius=12)
         s.blit(ip, (6, 6))
-        # top sheen
-        sheen = soft_glow(200, 26, (255, 255, 255), 70, center=(100, 12), radius=110, falloff=1.6)
-        s.blit(sheen, (10, 8))
+        # top sheen (solid block, no AA)
+        pygame.draw.rect(s, (255, 255, 255), (10, 8, 200, 8), border_radius=4)
         pygame.draw.rect(s, col, s.get_rect(), 5, border_radius=16)
         pygame.draw.rect(s, shade(col, 1.3), (8, 8, 204, 24), border_radius=12)
-        # corner accent gems
+        # corner accent gems (solid discs, no AA)
         for cx2, cy2 in ((14, 14), (206, 14), (14, 266), (206, 266)):
-            cg = radial_grad_surf(12, 12, shade(col, 1.3), shade(col, 0.4), center=(5, 4), radius=6)
-            clip_to_circle(cg, (6, 6), 5)
-            s.blit(cg, (cx2 - 6, cy2 - 6))
+            pygame.draw.circle(s, shade(col, 1.3), (cx2, cy2), 5)
+            pygame.draw.circle(s, shade(col, 0.4), (cx2, cy2), 3)
         pygame.image.save(s, os.path.join(ASSET_DIR, "ui", f"frame_{rar}.png"))
 
-    # gem icon — faceted crystal with specular
+    # gem icon — faceted crystal (2-tone dithered fill + specular, no AA)
     s = pygame.Surface((64, 64), pygame.SRCALPHA)
-    gem = radial_grad_surf(56, 56, (220, 245, 255), (40, 90, 150), center=(22, 18), radius=28)
+    gem = px_dither_surf(56, 56, (220, 245, 255), (40, 90, 150))
     clip_to_polygon(gem, [(32, 6), (56, 28), (32, 58), (8, 28)])
     s.blit(gem, (0, 0))
     pygame.draw.polygon(s, (220, 245, 255), [(32, 6), (44, 28), (32, 30), (20, 28)])
     pygame.draw.polygon(s, (40, 90, 140), [(32, 6), (56, 28), (32, 58), (8, 28)], 3)
-    pygame.draw.circle(s, (255, 255, 255), (24, 20), 4)
+    pygame.draw.rect(s, (255, 255, 255), (22, 18, 6, 6))
     pygame.image.save(s, os.path.join(ASSET_DIR, "ui", "gem.png"))
 
-    # gold icon — coin with radial sheen + edge
+    # gold icon — coin with 2-tone dithered fill + edge (pixel-art, no AA)
     s = pygame.Surface((64, 64), pygame.SRCALPHA)
-    coin = radial_grad_surf(56, 56, (255, 240, 160), (180, 140, 40), center=(22, 18), radius=28)
+    coin = px_dither_surf(56, 56, (255, 240, 160), (180, 140, 40))
     clip_to_circle(coin, (28, 28), 26)
     s.blit(coin, (6, 6))
     pygame.draw.circle(s, (255, 230, 120), (32, 32), 26, 3)
     pygame.draw.circle(s, (200, 160, 40), (32, 32), 18, 0)
-    pygame.draw.circle(s, (255, 250, 200), (24, 24), 6)
+    pygame.draw.rect(s, (255, 250, 200), (22, 22, 6, 6))
     pygame.image.save(s, os.path.join(ASSET_DIR, "ui", "gold.png"))
 
-    # star (rarity marker) — radial-tinted star + specular dot
+    # star (rarity marker) — solid palette star + specular dot (pixel-art, no AA)
     for rar, col in RARITY_COLORS.items():
         s = pygame.Surface((48, 48), pygame.SRCALPHA)
         draw_star(s, 24, 24, 20, 9, shade(col, 1.15), (255, 255, 255))
-        # specular highlight on the upper point
-        pygame.draw.circle(s, (255, 255, 255), (24, 16), 3)
+        # specular highlight on the upper point (solid block, no AA)
+        pygame.draw.rect(s, (255, 255, 255), (22, 14, 6, 6))
         pygame.image.save(s, os.path.join(ASSET_DIR, "ui", f"star_{rar}.png"))
 
-    # element badge 64x64 — radial element disc + glyph + specular
+    # element badge 64x64 — 2-tone dithered disc + glyph + specular (pixel-art, no AA)
     for el, (main, light, dark) in ELEMENT_COLORS.items():
         s = pygame.Surface((64, 64), pygame.SRCALPHA)
-        disc = radial_grad_surf(60, 60, shade(main, 1.25), shade(dark, 0.6), center=(22, 18), radius=32)
+        disc = px_dither_surf(60, 60, shade(main, 1.25), shade(dark, 0.6))
         clip_to_circle(disc, (30, 30), 30)
         s.blit(disc, (2, 2))
         pygame.draw.circle(s, (255, 255, 255), (32, 32), 30, 2)
         draw_element_glyph(s, 32, 32, el, light)
-        pygame.draw.circle(s, (255, 255, 255), (24, 22), 4)
+        pygame.draw.rect(s, (255, 255, 255), (22, 20, 6, 6))
         pygame.image.save(s, os.path.join(ASSET_DIR, "ui", f"element_{el}.png"))
 
-    # cursor / selector arrow — gradient fill + edge
+    # cursor / selector arrow — 2-tone dithered fill + edge (pixel-art, no AA)
     s = pygame.Surface((48, 48), pygame.SRCALPHA)
-    cur = diag_grad_surf(40, 40, (255, 240, 120), (180, 130, 30))
+    cur = px_dither_surf(40, 40, (255, 240, 120), (180, 130, 30))
     clip_to_polygon(cur, [(8, 8), (8, 34), (18, 26), (28, 40), (34, 36), (24, 22), (36, 22)])
     s.blit(cur, (0, 0))
     pygame.draw.polygon(s, (120, 90, 30), [(8, 8), (8, 34), (18, 26), (28, 40), (34, 36), (24, 22), (36, 22)], 2)
     pygame.image.save(s, os.path.join(ASSET_DIR, "ui", "cursor.png"))
 
-    # victory / defeat banners — gradient + rim + sheen
+    # victory / defeat banners — 2-tone dithered fill + rim + sheen (pixel-art, no AA)
     for name, col in [("victory", (255, 210, 80)), ("defeat", (200, 60, 80))]:
         s = pygame.Surface((600, 120), pygame.SRCALPHA)
-        bg = diag_grad_surf(600, 120, shade(col, 1.15), shade(col, 0.4))
+        bg = px_dither_surf(600, 120, shade(col, 1.15), shade(col, 0.4))
         clip_to_rect(bg, pygame.Rect(0, 0, 600, 120), border_radius=20)
         s.blit(bg, (0, 0))
-        sheen = soft_glow(580, 40, (255, 255, 255), 60, center=(290, 18), radius=300, falloff=1.6)
-        s.blit(sheen, (10, 8))
+        pygame.draw.rect(s, (255, 255, 255), (10, 8, 580, 8), border_radius=4)
         pygame.draw.rect(s, col, s.get_rect(), 5, border_radius=20)
         pygame.image.save(s, os.path.join(ASSET_DIR, "ui", f"banner_{name}.png"))
 
 def make_shop_bg(path):
     surf = pygame.Surface((1280, 720))
-    vgrad(surf, (60, 40, 70), (30, 20, 40))
-    # wooden counter
+    # pixel-art shop: 2-tone dithered vertical gradient (no AA)
+    px_dither(surf, (60, 40, 70), (30, 20, 40), (0, 0, 1280, 720))
+    # wooden counter (solid block, no AA)
     pygame.draw.rect(surf, (80, 50, 30), (0, 520, 1280, 200))
     for x in range(0, 1280, 60):
         pygame.draw.line(surf, (60, 38, 22), (x, 520), (x, 720), 2)
-    # hanging lanterns
+    # hanging lanterns (solid blocks, no AA)
     for x in (200, 640, 1080):
         pygame.draw.line(surf, (40, 30, 20), (x, 0), (x, 120), 2)
         pygame.draw.circle(surf, (255, 180, 80), (x, 130), 22)
         pygame.draw.circle(surf, (255, 220, 140), (x, 130), 22, 2)
-        # glow
+        # glow (chunky block, no AA)
         glow = pygame.Surface((120, 120), pygame.SRCALPHA)
         pygame.draw.circle(glow, (255, 200, 100, 60), (60, 60), 60)
         surf.blit(glow, (x - 60, 70))
-    # shelves with bottles
+    # shelves with bottles (solid blocks, no AA)
     for sy in (240, 360):
         pygame.draw.rect(surf, (50, 34, 22), (120, sy, 1040, 12))
         for bx in range(160, 1120, 120):
@@ -1802,44 +1822,45 @@ def make_shop_bg(path):
 
 def _flask(liquid_top, liquid_bot, cap_col=(200, 200, 210), body_rect=(44, 44, 40, 56),
            cap_pts=((44, 30), (84, 30), (80, 44), (48, 44))):
-    """A potion flask with a gradient liquid + cork + specular shine."""
+    """A potion flask with a 2-tone dithered liquid + cork + specular shine
+    (pixel-art: no AA gradient)."""
     s = pygame.Surface((128, 128), pygame.SRCALPHA)
-    # cork
+    # cork (solid polygon, no AA)
     pygame.draw.polygon(s, cap_col, list(cap_pts))
     pygame.draw.polygon(s, (30, 20, 30), list(cap_pts), 2)
-    # liquid body with vertical gradient
+    # liquid body — 2-tone dithered fill (no AA vertical gradient)
     bx, by, bw, bh = body_rect
-    liq = vgrad_surf(bw, bh, liquid_top, liquid_bot)
+    liq = px_dither_surf(bw, bh, liquid_top, liquid_bot)
     clip_to_rect(liq, pygame.Rect(0, 0, bw, bh), border_radius=10)
     s.blit(liq, (bx, by))
-    # specular highlight streak
-    hl = pygame.Surface((10, bh - 8), pygame.SRCALPHA)
-    pygame.draw.rect(hl, (255, 255, 255, 120), hl.get_rect(), border_radius=5)
-    s.blit(hl, (bx + 5, by + 4))
+    # specular highlight streak (solid block, no AA)
+    pygame.draw.rect(s, (255, 255, 255), (bx + 5, by + 4, 6, bh - 8), border_radius=3)
     pygame.draw.rect(s, (30, 20, 30), (bx, by, bw, bh), 3, border_radius=10)
-    # bubble
-    pygame.draw.circle(s, shade(liquid_top, 1.3), (bx + 8, by + 10), 4)
+    # bubble (solid block, no AA)
+    pygame.draw.rect(s, shade(liquid_top, 1.3), (bx + 6, by + 8, 6, 6))
     return s
 
 def _blade_poly(pts, edge=(255, 255, 255), base=(200, 200, 215), dark=(150, 150, 170)):
-    """A sword blade polygon with a horizontal metal gradient + bright edge."""
+    """A sword blade polygon with a 2-tone dithered metal fill + bright edge
+    (pixel-art: no AA horizontal gradient)."""
     s = pygame.Surface((128, 128), pygame.SRCALPHA)
-    # bounding box of the blade for the gradient
+    # bounding box of the blade for the dithered fill
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     minx, maxx = min(xs), max(xs); miny, maxy = min(ys), max(ys)
     w, h = maxx - minx, maxy - miny
-    g = hgrad_surf(w, h, base, dark)
+    g = px_dither_surf(w, h, base, dark)
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     s.blit(g, (minx, miny))
     pygame.draw.polygon(s, (30, 26, 40), pts, 2)
-    # bright edge (left side)
+    # bright edge (left side, solid line, no AA)
     pygame.draw.line(s, edge, (minx + 1, miny + 2), (minx + 1, maxy - 2), 2)
     return s
 
 def make_items():
-    """Generate item icons (consumables + equipment) with gradient shading."""
+    """Generate item icons (consumables + equipment) with 2-tone dithered fills
+    (pixel-art: no AA gradients)."""
     items = []
 
     # --- Consumables ---
@@ -1849,51 +1870,49 @@ def make_items():
 
     # MP Potion - blue flask
     s = _flask((90, 160, 240), (40, 90, 200))
-    pygame.draw.circle(s, (200, 230, 255), (52, 52), 3)
+    pygame.draw.rect(s, (200, 230, 255), (50, 50, 6, 6))
     items.append(("mp_potion", s))
 
     # Full Elixir - golden flask
     s = _flask((255, 220, 90), (200, 150, 30), cap_col=(220, 220, 230),
                body_rect=(42, 42, 44, 60), cap_pts=((40, 26), (88, 26), (82, 42), (46, 42)))
-    # sparkle
+    # sparkle (solid cross, no AA)
     pygame.draw.line(s, (255, 255, 220), (64, 56), (64, 70), 2)
     pygame.draw.line(s, (255, 255, 220), (58, 63), (70, 63), 2)
-    # soft glow
-    g = soft_glow(40, 40, (255, 230, 120), 80, radius=18, falloff=1.5)
-    s.blit(g, (44, 50))
+    # glow (chunky block, no AA)
+    pygame.draw.circle(s, (255, 230, 120), (64, 70), 18)
+    pygame.draw.circle(s, (255, 255, 200), (64, 70), 10)
     items.append(("full_elixir", s))
 
     # Revive Scroll
     s = pygame.Surface((128, 128), pygame.SRCALPHA)
-    scroll = vgrad_surf(52, 80, (245, 235, 200), (200, 180, 140))
+    scroll = px_dither_surf(52, 80, (245, 235, 200), (200, 180, 140))
     clip_to_rect(scroll, pygame.Rect(0, 0, 52, 80), border_radius=6)
     s.blit(scroll, (38, 24))
     pygame.draw.rect(s, (180, 150, 100), (38, 24, 52, 80), 3, border_radius=6)
-    # seal (radial gradient)
-    seal = radial_grad_surf(26, 26, (255, 100, 100), (160, 30, 30), center=(10, 9), radius=13)
+    # seal — 2-tone dithered fill clipped to a circle (no AA)
+    seal = px_dither_surf(26, 26, (255, 100, 100), (160, 30, 30))
     clip_to_circle(seal, (13, 13), 12)
     s.blit(seal, (51, 37))
     pygame.draw.circle(s, (30, 20, 30), (64, 50), 12, 2)
-    # cross
+    # cross (solid blocks, no AA)
     pygame.draw.rect(s, (255, 245, 245), (61, 42, 6, 16))
     pygame.draw.rect(s, (255, 245, 245), (55, 47, 18, 6))
     items.append(("revive_scroll", s))
 
     # Bomb
     s = pygame.Surface((128, 128), pygame.SRCALPHA)
-    bomb = radial_grad_surf(60, 60, (90, 90, 110), (30, 30, 45), center=(22, 20), radius=32)
+    bomb = px_dither_surf(60, 60, (90, 90, 110), (30, 30, 45))
     clip_to_circle(bomb, (30, 30), 30)
     s.blit(bomb, (34, 44))
     pygame.draw.circle(s, (70, 70, 90), (64, 74), 30, 3)
     pygame.draw.rect(s, (140, 95, 50), (60, 40, 8, 16))
     pygame.draw.rect(s, (30, 26, 30), (60, 40, 8, 16), 1)
-    # spark glow
-    sg = soft_glow(28, 28, (255, 220, 80), 130, radius=12, falloff=1.4)
-    s.blit(sg, (50, 24))
-    pygame.draw.circle(s, (255, 220, 80), (64, 38), 6)
-    pygame.draw.circle(s, (255, 255, 200), (64, 38), 3)
-    # shine
-    pygame.draw.circle(s, (160, 160, 180), (54, 64), 7)
+    # spark glow (chunky block, no AA)
+    pygame.draw.circle(s, (255, 220, 80), (64, 38), 12)
+    pygame.draw.circle(s, (255, 255, 200), (64, 38), 6)
+    # shine (solid block, no AA)
+    pygame.draw.rect(s, (160, 160, 180), (50, 60, 8, 8))
     items.append(("bomb", s))
 
     # --- Equipment ---
@@ -1925,13 +1944,13 @@ def make_items():
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
     w, h = maxx - minx, maxy - miny
-    g = hgrad_surf(w, h, (255, 130, 70), (170, 50, 30))
+    g = px_dither_surf(w, h, (255, 130, 70), (170, 50, 30))
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     s.blit(g, (minx, miny))
     pygame.draw.polygon(s, (255, 160, 60), pts, 2)
-    # serrations
+    # serrations (solid blocks, no AA)
     for i in range(4):
         y = 30 + i * 14
         pygame.draw.polygon(s, (255, 200, 80), [(54, y), (48, y + 6), (54, y + 10)])
@@ -1942,18 +1961,17 @@ def make_items():
 
     # Mage Rod
     s = pygame.Surface((128, 128), pygame.SRCALPHA)
-    shaft = vgrad_surf(8, 80, (150, 100, 60), (90, 60, 35))
+    shaft = px_dither_surf(8, 80, (150, 100, 60), (90, 60, 35))
     clip_to_rect(shaft, pygame.Rect(0, 0, 8, 80))
     s.blit(shaft, (60, 30))
     pygame.draw.rect(s, (30, 26, 30), (60, 30, 8, 80), 2)
-    # orb (radial + glow)
-    og = soft_glow(40, 40, (120, 180, 255), 100, radius=18, falloff=1.5)
-    s.blit(og, (44, 8))
-    orb = radial_grad_surf(36, 36, (200, 230, 255), (60, 120, 200), center=(14, 12), radius=18)
+    # orb — 2-tone dithered fill clipped to a circle + glow (chunky block, no AA)
+    orb = px_dither_surf(36, 36, (200, 230, 255), (60, 120, 200))
     clip_to_circle(orb, (18, 18), 18)
     s.blit(orb, (46, 10))
-    pygame.draw.circle(s, (255, 255, 255), (58, 22), 6)
-    pygame.draw.circle(s, (255, 255, 255), (60, 24), 3)
+    pygame.draw.circle(s, (120, 180, 255), (64, 28), 20)
+    pygame.draw.rect(s, (255, 255, 255), (56, 20, 6, 6))
+    pygame.draw.rect(s, (255, 255, 255), (58, 22, 3, 3))
     pygame.draw.circle(s, (30, 26, 40), (64, 28), 18, 2)
     items.append(("mage_rod", s))
 
@@ -1963,19 +1981,18 @@ def make_items():
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
     w, h = maxx - minx, maxy - miny
-    g = diag_grad_surf(w, h, (150, 100, 60), (90, 60, 30))
+    g = px_dither_surf(w, h, (150, 100, 60), (90, 60, 30))
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     s.blit(g, (minx, miny))
     pygame.draw.polygon(s, (30, 26, 30), pts, 3)
-    # straps
+    # straps (solid blocks, no AA)
     pygame.draw.rect(s, (90, 60, 30), (58, 40, 12, 56))
     pygame.draw.rect(s, (70, 45, 25), (44, 60, 40, 8))
-    # buckle gem
-    bgem = radial_grad_surf(14, 14, (255, 220, 100), (180, 140, 40), center=(5, 4), radius=7)
-    clip_to_circle(bgem, (7, 7), 6)
-    s.blit(bgem, (57, 49))
+    # buckle gem (solid discs, no AA)
+    pygame.draw.circle(s, (255, 220, 100), (64, 56), 6)
+    pygame.draw.circle(s, (180, 140, 40), (64, 56), 4)
     pygame.draw.circle(s, (30, 26, 30), (64, 56), 6, 1)
     items.append(("leather_armor", s))
 
@@ -1985,7 +2002,7 @@ def make_items():
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
     w, h = maxx - minx, maxy - miny
-    g = diag_grad_surf(w, h, (200, 210, 230), (110, 120, 145))
+    g = px_dither_surf(w, h, (200, 210, 230), (110, 120, 145))
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
@@ -1994,10 +2011,9 @@ def make_items():
     for i in range(4):
         y = 44 + i * 14
         pygame.draw.line(s, (220, 230, 245), (36, y), (92, y), 2)
-    # chest gem
-    cgem = radial_grad_surf(18, 18, (255, 255, 255), (120, 130, 150), center=(7, 6), radius=9)
-    clip_to_circle(cgem, (9, 9), 8)
-    s.blit(cgem, (55, 43))
+    # chest gem (solid discs, no AA)
+    pygame.draw.circle(s, (255, 255, 255), (64, 52), 8)
+    pygame.draw.circle(s, (120, 130, 150), (64, 52), 6)
     pygame.draw.circle(s, (120, 130, 150), (64, 52), 8, 2)
     items.append(("plate_mail", s))
 
@@ -2007,17 +2023,16 @@ def make_items():
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
     w, h = maxx - minx, maxy - miny
-    g = diag_grad_surf(w, h, (180, 130, 240), (90, 60, 140))
+    g = px_dither_surf(w, h, (180, 130, 240), (90, 60, 140))
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     s.blit(g, (minx, miny))
     pygame.draw.polygon(s, (220, 160, 255), pts, 3)
-    # glowing runes
+    # glowing runes (solid blocks, no AA)
     for ry in (56, 76):
-        rg = soft_glow(20, 20, (255, 240, 180), 120, radius=9, falloff=1.5)
-        s.blit(rg, (54, ry - 9))
-        pygame.draw.circle(s, (255, 240, 180), (64, ry), 5)
+        pygame.draw.circle(s, (255, 240, 180), (64, ry), 8)
+        pygame.draw.circle(s, (255, 255, 200), (64, ry), 5)
         pygame.draw.circle(s, (30, 26, 40), (64, ry), 6, 1)
     pygame.draw.line(s, (255, 240, 180), (64, 50), (64, 82), 2)
     items.append(("aether_vest", s))
@@ -2029,23 +2044,18 @@ def make_items():
         xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
         minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
         w, h = maxx - minx, maxy - miny
-        g = diag_grad_surf(w, h, (150, 100, 60), (90, 60, 30))
+        g = px_dither_surf(w, h, (150, 100, 60), (90, 60, 30))
         m = pygame.Surface((w, h), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
         g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         s.blit(g, (minx, miny))
         pygame.draw.polygon(s, (30, 26, 30), pts, 2)
-    # wing (with gradient + glow)
-    wg = diag_grad_surf(34, 18, (255, 255, 255), (180, 200, 240))
-    m = pygame.Surface((34, 18), pygame.SRCALPHA)
-    pygame.draw.polygon(m, (255, 255, 255, 255), [(50, 48), (74, 40), (80, 56), (54, 56)])
-    pygame.draw.polygon(m, (0, 0, 0, 0), [(50, 48), (74, 40), (80, 56), (54, 56)])
-    # simpler: just draw the wing with a gradient via a clip
+    # wing — 2-tone dithered fill clipped to the wing polygon (no AA)
     wpts = [(50, 48), (74, 40), (80, 56), (54, 56)]
     wxs = [p[0] for p in wpts]; wys = [p[1] for p in wpts]
     wminx, wmaxx, wminy, wmaxy = min(wxs), max(wxs), min(wys), max(wys)
     ww, whh = wmaxx - wminx, wmaxy - wminy
-    wg2 = diag_grad_surf(ww, whh, (255, 255, 255), (180, 200, 240))
+    wg2 = px_dither_surf(ww, whh, (255, 255, 255), (180, 200, 240))
     wm = pygame.Surface((ww, whh), pygame.SRCALPHA)
     pygame.draw.polygon(wm, (255, 255, 255, 255), [(p[0] - wminx, p[1] - wminy) for p in wpts])
     wg2.blit(wm, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
@@ -2056,14 +2066,13 @@ def make_items():
     s = pygame.Surface((128, 128), pygame.SRCALPHA)
     pygame.draw.line(s, (210, 190, 90), (64, 24), (40, 56), 4)
     pygame.draw.line(s, (210, 190, 90), (64, 24), (88, 56), 4)
-    # gem (radial + glow)
-    pg = soft_glow(48, 48, (120, 180, 255), 110, radius=22, falloff=1.5)
-    s.blit(pg, (40, 46))
-    gem = radial_grad_surf(44, 44, (200, 230, 255), (40, 90, 200), center=(16, 14), radius=22)
+    # gem — 2-tone dithered fill clipped to a circle + glow (chunky block, no AA)
+    pygame.draw.circle(s, (120, 180, 255), (64, 70), 22)
+    gem = px_dither_surf(44, 44, (200, 230, 255), (40, 90, 200))
     clip_to_circle(gem, (22, 22), 22)
     s.blit(gem, (42, 48))
-    pygame.draw.circle(s, (255, 255, 255), (56, 62), 7)
-    pygame.draw.circle(s, (255, 255, 255), (58, 64), 3)
+    pygame.draw.rect(s, (255, 255, 255), (54, 60, 6, 6))
+    pygame.draw.rect(s, (255, 255, 255), (56, 62, 3, 3))
     pygame.draw.circle(s, (30, 26, 50), (64, 70), 22, 2)
     items.append(("mana_pendant", s))
 
@@ -2073,13 +2082,13 @@ def make_items():
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
     w, h = maxx - minx, maxy - miny
-    g = diag_grad_surf(w, h, (255, 220, 120), (200, 150, 40))
+    g = px_dither_surf(w, h, (255, 220, 120), (200, 150, 40))
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     s.blit(g, (minx, miny))
     pygame.draw.polygon(s, (255, 220, 120), pts, 3)
-    # emblem star
+    # emblem star (solid palette fills, no AA)
     draw_star(s, 64, 58, 14, 5, (255, 255, 255), (255, 255, 255))
     pygame.draw.circle(s, (180, 140, 40), (64, 58), 14, 2)
     items.append(("hero_crest", s))
@@ -2088,28 +2097,28 @@ def make_items():
     # Mega Potion - big red flask
     s = _flask((240, 70, 80), (180, 30, 40), cap_col=(200, 200, 210),
                body_rect=(42, 42, 44, 60), cap_pts=((40, 26), (88, 26), (82, 42), (46, 42)))
-    pygame.draw.circle(s, (255, 220, 220), (52, 52), 4)
+    pygame.draw.rect(s, (255, 220, 220), (50, 50, 6, 6))
     items.append(("mega_potion", s))
 
     # Ether - blue bottle
     s = _flask((70, 150, 250), (30, 80, 200), cap_col=(200, 200, 210),
                body_rect=(42, 42, 44, 60), cap_pts=((40, 26), (88, 26), (82, 42), (46, 42)))
-    pygame.draw.circle(s, (200, 230, 255), (52, 52), 4)
+    pygame.draw.rect(s, (200, 230, 255), (50, 50, 6, 6))
     items.append(("ether", s))
 
     # Mega Bomb - bigger bomb
     s = pygame.Surface((128, 128), pygame.SRCALPHA)
-    bomb = radial_grad_surf(72, 72, (100, 100, 120), (30, 30, 45), center=(26, 24), radius=38)
+    bomb = px_dither_surf(72, 72, (100, 100, 120), (30, 30, 45))
     clip_to_circle(bomb, (36, 36), 36)
     s.blit(bomb, (28, 40))
     pygame.draw.circle(s, (70, 70, 90), (64, 76), 36, 3)
     pygame.draw.rect(s, (140, 95, 50), (60, 36, 8, 20))
     pygame.draw.rect(s, (30, 26, 30), (60, 36, 8, 20), 1)
-    sg = soft_glow(32, 32, (255, 200, 80), 140, radius=14, falloff=1.4)
-    s.blit(sg, (48, 16))
-    pygame.draw.circle(s, (255, 200, 80), (64, 32), 8)
+    # spark glow (chunky block, no AA)
+    pygame.draw.circle(s, (255, 200, 80), (64, 32), 14)
+    pygame.draw.circle(s, (255, 255, 200), (64, 32), 8)
     pygame.draw.circle(s, (255, 255, 200), (64, 32), 4)
-    pygame.draw.circle(s, (160, 160, 180), (52, 66), 9)
+    pygame.draw.rect(s, (160, 160, 180), (50, 64, 8, 8))
     items.append(("mega_bomb", s))
 
     # --- new equipment (Phase B) ---
@@ -2119,15 +2128,14 @@ def make_items():
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
     w, h = maxx - minx, maxy - miny
-    g = vgrad_surf(w, h, (255, 220, 120), (220, 90, 40))
+    g = px_dither_surf(w, h, (255, 220, 120), (220, 90, 40))
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     s.blit(g, (minx, miny))
     pygame.draw.polygon(s, (255, 200, 80), pts, 2)
-    # ember glow along the blade
-    eg = soft_glow(20, 80, (255, 180, 80), 90, center=(10, 40), radius=10, falloff=1.5)
-    s.blit(eg, (54, 14))
+    # ember glow along the blade (chunky block, no AA)
+    pygame.draw.rect(s, (255, 180, 80), (54, 14, 20, 80))
     for i in range(5):
         y = 22 + i * 12
         pygame.draw.polygon(s, (255, 220, 120), [(56, y), (50, y + 6), (56, y + 8)])
@@ -2138,14 +2146,13 @@ def make_items():
 
     # Frost Staff - icy staff
     s = pygame.Surface((128, 128), pygame.SRCALPHA)
-    shaft = vgrad_surf(8, 80, (150, 180, 210), (90, 120, 160))
+    shaft = px_dither_surf(8, 80, (150, 180, 210), (90, 120, 160))
     clip_to_rect(shaft, pygame.Rect(0, 0, 8, 80))
     s.blit(shaft, (60, 30))
     pygame.draw.rect(s, (30, 30, 50), (60, 30, 8, 80), 2)
-    # crystal head (radial + glow)
-    cg = soft_glow(48, 48, (180, 220, 255), 110, radius=22, falloff=1.5)
-    s.blit(cg, (40, 2))
-    cryst = radial_grad_surf(40, 40, (230, 245, 255), (90, 150, 210), center=(16, 14), radius=20)
+    # crystal head — 2-tone dithered fill clipped to a diamond + glow (no AA)
+    pygame.draw.circle(s, (180, 220, 255), (64, 26), 22)
+    cryst = px_dither_surf(40, 40, (230, 245, 255), (90, 150, 210))
     cm = pygame.Surface((40, 40), pygame.SRCALPHA)
     pygame.draw.polygon(cm, (255, 255, 255, 255), [(20, 0), (38, 20), (20, 40), (2, 20)])
     cryst.blit(cm, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
@@ -2159,15 +2166,14 @@ def make_items():
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
     w, h = maxx - minx, maxy - miny
-    g = hgrad_surf(w, h, (180, 120, 240), (90, 50, 150))
+    g = px_dither_surf(w, h, (180, 120, 240), (90, 50, 150))
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     s.blit(g, (minx, miny))
     pygame.draw.polygon(s, (200, 140, 255), pts, 2)
-    # void glow down the center
-    vg = soft_glow(16, 80, (200, 160, 255), 100, center=(8, 40), radius=8, falloff=1.5)
-    s.blit(vg, (56, 14))
+    # void glow down the center (chunky block, no AA)
+    pygame.draw.rect(s, (200, 160, 255), (56, 14, 16, 80))
     pygame.draw.rect(s, (100, 70, 150), (60, 92, 8, 24))
     pygame.draw.rect(s, (30, 26, 50), (60, 92, 8, 24), 1)
     items.append(("void_blade", s))
@@ -2178,19 +2184,18 @@ def make_items():
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
     w, h = maxx - minx, maxy - miny
-    g = diag_grad_surf(w, h, (220, 235, 250), (120, 150, 190))
+    g = px_dither_surf(w, h, (220, 235, 250), (120, 150, 190))
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     s.blit(g, (minx, miny))
     pygame.draw.polygon(s, (30, 30, 50), pts, 3)
-    # boss gem (radial + glow)
-    bg = soft_glow(36, 36, (255, 240, 120), 110, radius=16, falloff=1.5)
-    s.blit(bg, (46, 38))
-    gem = radial_grad_surf(30, 30, (255, 250, 180), (180, 150, 40), center=(12, 10), radius=15)
+    # boss gem — 2-tone dithered fill clipped to a circle + glow (no AA)
+    pygame.draw.circle(s, (255, 240, 120), (64, 56), 16)
+    gem = px_dither_surf(30, 30, (255, 250, 180), (180, 150, 40))
     clip_to_circle(gem, (15, 15), 14)
     s.blit(gem, (49, 41))
-    pygame.draw.circle(s, (255, 255, 255), (60, 50), 4)
+    pygame.draw.rect(s, (255, 255, 255), (58, 48, 6, 6))
     pygame.draw.circle(s, (180, 160, 60), (64, 58), 14, 2)
     items.append(("guardian_aegis", s))
 
@@ -2200,14 +2205,14 @@ def make_items():
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
     w, h = maxx - minx, maxy - miny
-    g = vgrad_surf(w, h, (100, 80, 140), (40, 30, 70))
+    g = px_dither_surf(w, h, (100, 80, 140), (40, 30, 70))
     m = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - minx, p[1] - miny) for p in pts])
     g.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     s.blit(g, (minx, miny))
     pygame.draw.polygon(s, (40, 30, 70), pts, 3)
-    # hood (radial)
-    hood = radial_grad_surf(36, 36, (90, 70, 130), (30, 20, 50), center=(14, 12), radius=18)
+    # hood — 2-tone dithered fill clipped to a circle (no AA)
+    hood = px_dither_surf(36, 36, (90, 70, 130), (30, 20, 50))
     clip_to_circle(hood, (18, 18), 18)
     s.blit(hood, (46, 22))
     pygame.draw.circle(s, (30, 20, 50), (64, 40), 18, 2)
@@ -2215,16 +2220,15 @@ def make_items():
 
     # Berserker Ring - red ring
     s = pygame.Surface((128, 128), pygame.SRCALPHA)
-    ring = radial_grad_surf(68, 68, (255, 100, 100), (140, 30, 30), center=(26, 24), radius=34)
+    ring = px_dither_surf(68, 68, (255, 100, 100), (140, 30, 30))
     clip_to_circle(ring, (34, 34), 34)
     s.blit(ring, (30, 30))
     pygame.draw.circle(s, (255, 220, 120), (64, 64), 34, 3)
     pygame.draw.circle(s, (30, 20, 30), (64, 64), 34, 2)
     pygame.draw.circle(s, (30, 20, 30), (64, 64), 18)
-    # gem (radial + glow)
-    gg = soft_glow(24, 24, (255, 220, 120), 120, radius=11, falloff=1.5)
-    s.blit(gg, (52, 42))
-    gem = radial_grad_surf(16, 16, (255, 250, 200), (200, 150, 40), center=(6, 5), radius=8)
+    # gem — 2-tone dithered fill clipped to a circle + glow (no AA)
+    pygame.draw.circle(s, (255, 220, 120), (64, 52), 11)
+    gem = px_dither_surf(16, 16, (255, 250, 200), (200, 150, 40))
     clip_to_circle(gem, (8, 8), 7)
     s.blit(gem, (56, 46))
     items.append(("berserker_ring", s))
@@ -2233,14 +2237,13 @@ def make_items():
     s = pygame.Surface((128, 128), pygame.SRCALPHA)
     pygame.draw.line(s, (210, 170, 90), (64, 24), (40, 56), 4)
     pygame.draw.line(s, (210, 170, 90), (64, 24), (88, 56), 4)
-    # gem (radial + glow)
-    pg = soft_glow(52, 52, (180, 120, 240), 110, radius=24, falloff=1.5)
-    s.blit(pg, (38, 44))
-    gem = radial_grad_surf(48, 48, (230, 190, 255), (90, 50, 150), center=(18, 15), radius=24)
+    # gem — 2-tone dithered fill clipped to a circle + glow (no AA)
+    pygame.draw.circle(s, (180, 120, 240), (64, 70), 24)
+    gem = px_dither_surf(48, 48, (230, 190, 255), (90, 50, 150))
     clip_to_circle(gem, (24, 24), 24)
     s.blit(gem, (40, 46))
-    pygame.draw.circle(s, (255, 255, 255), (56, 62), 7)
-    pygame.draw.circle(s, (255, 255, 255), (58, 64), 3)
+    pygame.draw.rect(s, (255, 255, 255), (54, 60, 6, 6))
+    pygame.draw.rect(s, (255, 255, 255), (56, 62, 3, 3))
     pygame.draw.circle(s, (60, 30, 90), (64, 70), 24, 2)
     items.append(("sage_amulet", s))
 
@@ -2339,55 +2342,50 @@ def make_portrait(element, body, hair, accent, hair_style, weapon, path,
                   eye=(40, 40, 60), expression="neutral", eye_shape="round", skin=None):
     s = pygame.Surface((512, 512), pygame.SRCALPHA)
     main, light, dark = ELEMENT_COLORS[element]
-    # bg: lighter diagonal gradient (was dark top-left -> element-tinted; now
-    # element-tinted -> only slightly darkened, so the face reads at card size)
-    bg = diag_grad_surf(512, 512, lerp_color(main, (0, 0, 0), 0.25),
+    # bg: 2-tone dithered diagonal fill (pixel-art: no AA diagonal gradient).
+    # Element-tinted -> slightly darkened so the face reads at card size.
+    bg = px_dither_surf(512, 512, lerp_color(main, (0, 0, 0), 0.25),
                         lerp_color(main, (0, 0, 0), 0.55))
     s.blit(bg, (0, 0))
-    # large soft radial glow behind the character (element-tinted)
-    glow = soft_glow(520, 520, light, 95, center=(260, 230), radius=280, falloff=1.4)
-    s.blit(glow, (-4, -4))
-    # a secondary, tighter glow near the chest for depth
-    glow2 = soft_glow(300, 300, light, 60, center=(150, 150), radius=150, falloff=1.6)
-    s.blit(glow2, (110, 150))
-    # element particles / motes scattered in the bg (deterministic positions)
+    # large element-tinted glow behind the character (chunky block, no AA soft-glow)
+    pygame.draw.circle(s, (*light, 80), (256, 230), 280)
+    pygame.draw.circle(s, (*light, 60), (160, 200), 150)
+    # element particles / motes scattered in the bg (chunky blocks, no AA)
     for i in range(26):
         sx = 30 + (hash((element, i, "x")) % 452)
         sy = 30 + (hash((element, i, "y")) % 452)
         sr = 1 + (hash((element, i, "r")) % 3)
-        sa = 90 + (hash((element, i, "a")) % 120)
-        # soft mote (glow) + bright core
-        mote = soft_glow(sr * 6, sr * 6, light, sa, radius=sr * 3, falloff=1.5)
-        s.blit(mote, (sx - sr * 3, sy - sr * 3))
-        pygame.draw.circle(s, (255, 255, 255), (sx, sy), 1)
-    # a few trailing wisps (element-tinted arcs) for atmosphere
+        pygame.draw.rect(s, light, (px_snap(sx), px_snap(sy), sr * 2, sr * 2))
+        pygame.draw.rect(s, (255, 255, 255), (px_snap(sx), px_snap(sy), 2, 2))
+    # a few trailing wisps (element-tinted solid lines, no AA)
     for i in range(4):
         wx = 60 + (hash((element, i, "w")) % 392)
         wy = 80 + (hash((element, i, "h")) % 300)
-        pygame.draw.arc(s, (*light, 60), (wx, wy, 120, 60), 0.3, 2.5, 2)
-    # big character (scaled up, soft) — rendered on an opaque-free surface
+        pygame.draw.line(s, light, (wx, wy), (wx + 120, wy + 30), 2)
+    # big character (scaled up) — rendered on an opaque-free surface, then
+    # nearest-neighbor scaled (pixel-art: no smoothscale AA).
     big = pygame.Surface((256, 256), pygame.SRCALPHA)
     draw_chibi(big, element, body, hair, accent, weapon, hair_style, eye,
                expression, eye_shape, skin)
-    big = pygame.transform.smoothscale(big, (470, 470))
-    # subtle ground glow under the character
-    gground = soft_glow(360, 60, light, 70, center=(180, 30), radius=180, falloff=1.5)
-    s.blit(gground, (76, 430))
+    big = pygame.transform.scale(big, (470, 470))
+    # subtle ground glow under the character (chunky block, no AA)
+    pygame.draw.ellipse(s, (*light, 70), (76, 430, 360, 60))
     s.blit(big, (21, 50))
-    # vignette (lighter — was 150, now 90 so the face isn't lost at card size)
-    vig = radial_grad_surf(512, 512, (0, 0, 0, 0), (0, 0, 0, 90),
-                           center=(256, 256), radius=340, falloff=1.8)
+    # vignette (a chunky dark ring, no AA radial gradient)
+    vig = pygame.Surface((512, 512), pygame.SRCALPHA)
+    pygame.draw.circle(vig, (0, 0, 0, 0), (256, 256), 340)
+    pygame.draw.circle(vig, (0, 0, 0, 90), (256, 256), 340)
+    pygame.draw.circle(vig, (0, 0, 0, 0), (256, 256), 320)
     s.blit(vig, (0, 0))
-    # frame: dark border + element-colored ring + thin inner highlight
+    # frame: dark border + element-colored ring + thin inner highlight (no AA)
     pygame.draw.rect(s, (18, 16, 28), s.get_rect(), 12, border_radius=30)
     pygame.draw.rect(s, light, s.get_rect(), 6, border_radius=30)
     pygame.draw.rect(s, (255, 255, 255), (24, 24, 464, 464), 2, border_radius=24)
-    # corner accents (element gems)
+    # corner accents (element gems, solid discs, no AA)
     for cx2, cy2 in ((34, 34), (478, 34), (34, 478), (478, 478)):
-        cg = radial_grad_surf(20, 20, light, dark, center=(8, 7), radius=10)
-        clip_to_circle(cg, (10, 10), 9)
-        s.blit(cg, (cx2 - 10, cy2 - 10))
-        pygame.draw.circle(s, (255, 255, 255), (cx2 - 3, cy2 - 3), 2)
+        pygame.draw.circle(s, light, (cx2, cy2), 9)
+        pygame.draw.circle(s, dark, (cx2, cy2), 6)
+        pygame.draw.rect(s, (255, 255, 255), (cx2 - 4, cy2 - 4, 4, 4))
     pygame.image.save(s, path)
 
 # ---------------------------------------------------------------------------

@@ -73,6 +73,25 @@ ELEMENT_COLORS = {
     "light": ( (245,210, 90),  (255,245,200), (140,110, 30) ),
     "dark":  ( (150, 90,200),  (210,170,240), ( 56, 28, 84) ),
 }
+
+# pixel-art scale: each logical pixel is rendered as a PIXEL×PIXEL block so the
+# art reads as chunky pixel-art at higher density than Stardew (Stardew tiles are
+# 16x16; a 256px sprite at PIXEL=5 -> ~51 logical pixels, 3x Stardew). Palette is
+# locked per element (base/light/shadow/outline/accent) so gradients dither
+# instead of smoothing.
+PIXEL = 5
+PIXEL_PALETTE = {
+    "fire":   {"base": (220, 90, 40), "light": (255, 170, 90), "shadow": (130, 40, 20),
+               "outline": (60, 20, 10), "accent": (255, 230, 140)},
+    "water":  {"base": (40, 120, 210), "light": (120, 200, 255), "shadow": (20, 60, 120),
+               "outline": (10, 30, 60), "accent": (200, 240, 255)},
+    "wind":   {"base": (120, 220, 160), "light": (200, 255, 220), "shadow": (60, 130, 90),
+               "outline": (20, 50, 40), "accent": (240, 255, 200)},
+    "light":  {"base": (250, 220, 90), "light": (255, 250, 200), "shadow": (180, 140, 40),
+               "outline": (80, 60, 20), "accent": (255, 255, 240)},
+    "dark":   {"base": (110, 50, 150), "light": (180, 110, 220), "shadow": (60, 20, 90),
+               "outline": (30, 10, 50), "accent": (200, 160, 255)},
+}
 # Colorblind-friendly element palette (deuteranopia-safe). Single RGB triples
 # (main color only) chosen to stay distinct from each other AND from HP_RED
 # (220,70,80), GOLD/crit-yellow (255,210,90), and HP_GREEN/heal-green

@@ -349,6 +349,13 @@ class Hero(Combatant):
             self.passive = D.PASSIVES_DB.get(eb["passive"], base_passive)
         else:
             self.passive = base_passive
+        # per-hero signature passive (C6) — ADDITIONAL to the shared base
+        # passive above. The world loop checks self.signature in addition to
+        # self.passive, so the signature layers on top of the evolve-tree
+        # passive without replacing it. Distinct from HERO_PASSIVES so pulling
+        # Ember (revive_once) vs Cinder (stacking_atk) — both fire destruction,
+        # both p_lifesteal today — feels like different heroes.
+        self.signature = D.hero_signature(self.id)
         # constellation perks (C1-C6) — layered on top of the flat ascension
         # bonus so old saves don't regress. The flat ASCENSION_BONUS already
         # applied above; here we add the gameplay-changing perks per star.

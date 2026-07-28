@@ -16,6 +16,58 @@ import world_data as WD
 from world_entities import (Camera, Particles, Particle, Projectile, FloatText,
                             WorldCharacter, WorldEnemy, WEAPON_STYLE, scratch)
 
+# ---------------------------------------------------------------------------
+# Signature passive handlers (C6) — dict-lookup dispatch, NOT if/elif chains.
+# These run in the world scene (where they need scene state: the enemy list,
+# particles, audio, the camera). Each hook point has its own dict mapping
+# kind -> handler, so only the relevant handler runs at that point. The
+# signature is ADDITIONAL to the shared base passive — these run in addition to
+# the lifesteal/thorns/shield_when_low/etc. handlers in _do_attack /
+# _on_enemy_death, not instead of them.
+# ---------------------------------------------------------------------------
+
+def _sig_cleave(scene, wc, primary_x, primary_y, atk):
+    """cleave: basic attacks splash to enemies within 60px of the primary
+    target. val is the fraction of ATK dealt as splash (0.5 = 50%). Skips the
+    primary target (already hit by the main arc) and dead enemies. The splash
+    is a separate damage roll (not the main arc) so it doesn't double-dip with
+    the combo multiplier that's already applied to the main hit."""
+    sig = wc.hero.signature
+    if not sig or sig.get("kind") != "cleave":
+        return
+    cleave_dmg = int(atk * sig.get("val", 0.5))
+    col = D.ELEMENT_COLORS.get(wc.element, ((200, 200, 200),))[0]
+    for en in scene.enemies:
+        if not en.alive:
+            continue
+        # skip the primary target (already hit by the main arc)
+        if math.hypot(en.x - primary_x, en.y - primary_y) < 5:
+            continue
+        if math.hypot(en.x - primary_x, en.y - primary_y) < 60 + en.r:
+            dealt = en.take_damage(cleave_dmg, wc.x, wc.y, False,
+                                   on_attack=scene._on_enemy_event)
+            if dealt > 0:
+                scene._on_enemy_hit(en, wc, dealt, False)
+    # a subtle slash streak so the splash reads visually
+    scene.particles.spark(primary_x, primary_y, col, n=6, speed=160, size=4, life=0.2)
+
+def _sig_stacking_atk(scene, wc):
+    """stacking_atk: +val ATK per kill (stacking). The stack is read in
+    WorldCharacter.effective_atk (via _SIG_ATK_MOD) and decays out of combat
+    (via _SIG_UPDATE in world_entities). Reset the decay timer here so a fresh
+    kill restarts the out-of-combat countdown."""
+    sig = wc.hero.signature
+    if not sig or sig.get("kind") != "stacking_atk":
+        return
+    wc._kill_stack += 1
+    wc._kill_stack_t = 0.0
+
+# Dispatch dict for the _do_attack hook point (kind -> handler).
+_SIG_ATTACK = {"cleave": _sig_cleave}
+# Dispatch dict for the _on_enemy_death hook point (kind -> handler).
+_SIG_ON_KILL = {"stacking_atk": _sig_stacking_atk}
+
+
 # Reuse the main.py Button + draw_bar by importing them. main.py is the entry
 # point so it is already loaded when the world scene is constructed.
 from main import Button, draw_bar
@@ -977,6 +1029,11 @@ class WorldScene:
                 if hero.hp <= 0:
                     hero.hp = max(1, hero.max_hp // 2)
                 wc = WorldCharacter(hero, WD.MAP_W // 2, WD.MAP_H // 2)
+                # C6: reset revive_once per combat here (NOT in WorldCharacter.__init__)
+                # to avoid the init-order trap — _build_party runs after the wc is
+                # fully constructed so the reset can't be clobbered by a later field
+                # default. A fresh party starts with revive available.
+                wc._revive_used = False
                 self.party.append(wc)
             else:
                 self.party.append(None)
@@ -986,6 +1043,7 @@ class WorldScene:
             for hid in p.owned:
                 hero = p.get_hero_instance(hid)
                 wc = WorldCharacter(hero, WD.MAP_W // 2, WD.MAP_H // 2)
+                wc._revive_used = False
                 self.party[0] = wc
                 p.team[0] = hid
                 break
@@ -1325,6 +1383,7 @@ class WorldScene:
             ar = 60
             hit_any = False
             total_dmg = 0
+            primary_x, primary_y = None, None  # for the cleave signature
             for en in self.enemies:
                 if not en.alive:
                     continue
@@ -1340,6 +1399,8 @@ class WorldScene:
                         self._on_enemy_hit(en, wc, dealt, is_crit)
                         total_dmg += dealt
                         hit_any = True
+                        if primary_x is None:
+                            primary_x, primary_y = en.x, en.y
             if hit_any:
                 # routed through wc.add_energy so the light resonance
                 # (energy_regen) and the p_energy (Flow State) passive add
@@ -1358,6 +1419,13 @@ class WorldScene:
                                                      (140, 240, 160), size=16))
             else:
                 audio.play("hit", 0.12)
+            # signature passive: cleave (dict-lookup dispatch — basic attacks
+            # splash to enemies within 60px of the primary target). val is the
+            # fraction of ATK dealt as splash (0.5 = 50%). Skips the primary
+            # target (already hit by the main arc) and dead enemies.
+            _sig = _SIG_ATTACK.get(wc._signature_kind)
+            if _sig and primary_x is not None:
+                _sig(self, wc, primary_x, primary_y, atk)
             # melee swing arc (a brighter slash streak)
             self.particles.spark(arc_x, arc_y, col, n=8, speed=180, size=4, life=0.22)
 
@@ -1957,6 +2025,12 @@ class WorldScene:
                     p.owned[hid]["level"] = other.hero.level
                     p.owned[hid]["xp"] = other.hero.xp
         p.save()
+        # signature passive: stacking_atk (dict-lookup dispatch — +val ATK per
+        # kill, decaying out of combat). The stack is read in effective_atk and
+        # decays in update; here we just increment + reset the decay timer.
+        _sig = _SIG_ON_KILL.get(wc._signature_kind)
+        if _sig:
+            _sig(self, wc)
 
     def _on_hero_levelup(self, wc):
         """Celebrate a level-up with a burst + a banner float."""
@@ -1990,6 +2064,17 @@ class WorldScene:
             self.floats.append(FloatText(wc.x, wc.y - 40, "PERFECT!", (255, 240, 180), size=22))
         audio.play("perfect", 0.5)
 
+    def _on_hero_revive(self, wc):
+        """A signature passive (revive_once) brought the hero back from a lethal
+        blow. Celebrate with a bright burst + a 'REVIVE!' float so the player
+        sees the proc. The brief invuln window is already set in take_damage
+        (invuln_t = 1.0); here we just fire the VFX so the proc is visible."""
+        self.floats.append(FloatText(wc.x, wc.y - 50, "REVIVE!", (255, 240, 120), size=26))
+        self.particles.burst(wc.x, wc.y, (255, 240, 160), n=30, speed=300, size=7, life=0.8, grav=-40)
+        self.particles.ring(wc.x, wc.y, (255, 240, 120), n=24, speed=360, size=6, life=0.5)
+        audio.play("revive", 0.6)
+        self.camera.add_shake(6, self._shake_mul)
+
     def _on_hero_down(self):
         # try to switch to a living hero
         for i, wc in enumerate(self.party):
@@ -2021,6 +2106,9 @@ class WorldScene:
                 wc._shield_hp = 0.0
                 wc._perfect_dodge_t = 0.0
                 wc._dmg_buff_t = 0.0
+                # C6: reset revive_once on a full-party-wipe revive so the next
+                # combat has revive available again (mirrors the _build_party reset).
+                wc._revive_used = False
                 for i in range(3):
                     wc.skill_cd[i] = 0.0
                 wc.ult_cd = 0.0
@@ -2293,6 +2381,9 @@ class WorldScene:
                         res = wc.take_damage(dmg, p.x, p.y)
                         if res == "perfect_dodge":
                             self._on_perfect_dodge(wc)
+                        elif res == "revive":
+                            self._on_hero_revive(wc)
+                            self._hero_damaged(wc, dmg)
                         else:
                             dealt, reflected = res
                             if dealt:
@@ -2399,6 +2490,9 @@ class WorldScene:
                 res = wc.take_damage(dmg, en.x, en.y, is_melee=False)
                 if res == "perfect_dodge":
                     self._on_perfect_dodge(wc)
+                elif res == "revive":
+                    self._on_hero_revive(wc)
+                    self._hero_damaged(wc, dmg)
                 else:
                     dealt, reflected = res
                     if dealt:
@@ -2444,6 +2538,9 @@ class WorldScene:
                 res = wc.take_damage(dmg, en.x, en.y, is_melee=True)
                 if res == "perfect_dodge":
                     self._on_perfect_dodge(wc)
+                elif res == "revive":
+                    self._on_hero_revive(wc)
+                    self._hero_damaged(wc, dmg)
                 else:
                     dealt, reflected = res
                     if dealt:
@@ -2469,6 +2566,9 @@ class WorldScene:
                 res = wc.take_damage(dmg, en.x, en.y, is_melee=False)
                 if res == "perfect_dodge":
                     self._on_perfect_dodge(wc)
+                elif res == "revive":
+                    self._on_hero_revive(wc)
+                    self._hero_damaged(wc, dmg)
                 else:
                     dealt, reflected = res
                     if dealt:

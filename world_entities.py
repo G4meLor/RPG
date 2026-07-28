@@ -266,6 +266,84 @@ WEAPON_STYLE = {
 
 
 # ---------------------------------------------------------------------------
+# Signature passive handlers (C6) — dict-lookup dispatch, NOT if/elif chains.
+# Each hook point has its own dict mapping kind -> handler, so only the
+# relevant handler runs at that point. A handler may return a sentinel
+# ("revive") to short-circuit the caller (like the perfect-dodge sentinel).
+# The signature is ADDITIONAL to the shared base passive — these run in
+# addition to the lifesteal/thorns/shield_when_low/etc. handlers in take_damage
+# / effective_atk / move_speed / update, not instead of them.
+# ---------------------------------------------------------------------------
+
+def _sig_revive_once(wc):
+    """revive_once: on a lethal blow, revive at val fraction of max HP once.
+    Returns "revive" so the caller fires the revive VFX instead of _on_hero_down.
+    _revive_used is reset in WorldScene._build_party per combat."""
+    if wc._revive_used:
+        return None
+    sig = wc.hero.signature
+    if not sig or sig.get("kind") != "revive_once":
+        return None
+    wc._revive_used = True
+    wc.hero.hp = int(wc.hero.max_hp * sig.get("val", 0.4))
+    wc.alive = True
+    wc.invuln_t = 1.0
+    return "revive"
+
+def _sig_shield_on_hit(wc, dmg):
+    """shield_on_hit: gain a small shield when damaged (after the hit lands).
+    The shield buffers the NEXT hit (checked at the top of take_damage), so a
+    reactive ward protects against subsequent hits, not the triggering one."""
+    sig = wc.hero.signature
+    if not sig or sig.get("kind") != "shield_on_hit":
+        return
+    wc._shield_hp = max(wc._shield_hp, int(wc.hero.max_hp * sig.get("val", 0.15)))
+
+def _sig_low_hp_frenzy_atk(wc, a):
+    """low_hp_frenzy ATK: +val ATK below 30% HP (additive on the bonus term,
+    stacking with adrenaline/dodge-buff/resonance rather than multiplying)."""
+    if wc.hero.hp < wc.hero.max_hp * 0.3:
+        sig = wc.hero.signature
+        return int(a * (1 + sig.get("val", 0.25)))
+    return a
+
+def _sig_stacking_atk_atk(wc, a):
+    """stacking_atk ATK: +val ATK per kill in the current streak. Decays out of
+    combat (see _sig_stacking_atk_update). Additive on the bonus term."""
+    if wc._kill_stack > 0:
+        sig = wc.hero.signature
+        return int(a * (1 + wc._kill_stack * sig.get("val", 0.05)))
+    return a
+
+def _sig_low_hp_frenzy_spd(wc, s):
+    """low_hp_frenzy SPD: +20% move speed below 30% HP (a fixed +20%, not the
+    val, so the speed bonus stays modest even at high val)."""
+    if wc.hero.hp < wc.hero.max_hp * 0.3:
+        return s * 1.2
+    return s
+
+def _sig_stacking_atk_update(wc, dt):
+    """stacking_atk decay: the kill stack decays by 1 every 3s out of combat so
+    a stale streak doesn't persist forever. _last_combat_t is reset on every
+    combat action, so 'out of combat' = _last_combat_t growing past 3.0."""
+    if wc._last_combat_t > 3.0 and wc._kill_stack > 0:
+        wc._kill_stack = max(0, wc._kill_stack - 1)
+        wc._kill_stack_t = 0.0
+
+# Dispatch dicts per hook point (kind -> handler). Only the kind(s) relevant
+# to each hook point appear, so an if/elif chain over 5 kinds is replaced by a
+# single dict lookup at each point.
+_SIG_ON_DEATH = {"revive_once": _sig_revive_once}
+_SIG_AFTER_DAMAGE = {"shield_on_hit": _sig_shield_on_hit}
+_SIG_ATK_MOD = {
+    "low_hp_frenzy": _sig_low_hp_frenzy_atk,
+    "stacking_atk": _sig_stacking_atk_atk,
+}
+_SIG_SPD_MOD = {"low_hp_frenzy": _sig_low_hp_frenzy_spd}
+_SIG_UPDATE = {"stacking_atk": _sig_stacking_atk_update}
+
+
+# ---------------------------------------------------------------------------
 # WorldCharacter - a hero in the open world (real-time)
 # ---------------------------------------------------------------------------
 class WorldCharacter:
@@ -304,6 +382,15 @@ class WorldCharacter:
         self._shield_cd = 0.0
         self._shield_hp = 0.0
         self._last_combat_t = 0.0    # time since last combat action (for regen)
+        # signature passive runtime state (C6). _revive_used is reset in
+        # WorldScene._build_party per combat (NOT here) to avoid the init-order
+        # trap — _build_party runs after the wc is fully constructed so the
+        # reset can't be clobbered by a later field default. _kill_stack /
+        # _kill_stack_t track the stacking_atk kill streak + its out-of-combat
+        # decay (reset to 0 here since a fresh wc starts with no kills).
+        self._revive_used = False
+        self._kill_stack = 0
+        self._kill_stack_t = 0.0
         # perfect-dash: a brief window after a dash where passing through an
         # enemy attack grants a "perfect dodge" (slow-mo + a damage buff). The
         # window opens when the dash ends and counts down.
@@ -388,7 +475,9 @@ class WorldCharacter:
         """Apply incoming damage to this hero. Always returns a 2-tuple
         (dealt, reflected) for a normal hit, or (0, 0) when negated by
         i-frames/invuln/shield. A perfect dodge returns the sentinel
-        "perfect_dodge" so the caller can fire the dodge VFX + buff."""
+        "perfect_dodge" so the caller can fire the dodge VFX + buff. A
+        revive_once signature returns "revive" so the caller fires the revive
+        VFX instead of _on_hero_down."""
         if self.iframes > 0 or self.invuln_t > 0 or not self.alive:
             return 0, 0
         # perfect-dodge: if a dash just ended (the perfect-dodge window is open),
@@ -428,10 +517,31 @@ class WorldCharacter:
                 and self._shield_cd <= 0 and self.hero.hp < self.hero.max_hp * 0.3):
             self._shield_hp = int(self.hero.max_hp * 0.25)
             self._shield_cd = 12.0
+        # signature passive: shield_on_hit (dict-lookup dispatch — gain a small
+        # shield when damaged, buffering the next hit)
+        _handler = _SIG_AFTER_DAMAGE.get(self._signature_kind)
+        if _handler:
+            _handler(self, dmg)
+        # death + signature: revive_once (dict-lookup dispatch — on a lethal
+        # blow, revive at val HP once per combat; returns "revive" so the caller
+        # fires the revive VFX instead of _on_hero_down)
         if self.hero.hp <= 0:
+            _handler = _SIG_ON_DEATH.get(self._signature_kind)
+            if _handler:
+                result = _handler(self)
+                if result == "revive":
+                    return "revive"
             self.hero.hp = 0
             self.alive = False
         return dmg, reflected
+
+    @property
+    def _signature_kind(self):
+        """The hero's signature passive kind (C6), or None. The signature is
+        ADDITIONAL to the shared base passive — handlers at each hook point
+        dispatch on this via the _SIG_* dicts above (dict-lookup, not if/elif)."""
+        sig = getattr(self.hero, "signature", None)
+        return sig.get("kind") if sig else None
 
     @property
     def passive(self):
@@ -439,7 +549,8 @@ class WorldCharacter:
 
     def effective_atk(self):
         """ATK with the adrenaline passive + the perfect-dodge damage buff +
-        the fire elemental resonance (+atk_pct when 2+ fire heroes in party)."""
+        the fire elemental resonance (+atk_pct when 2+ fire heroes in party)
+        + the signature ATK modifiers (low_hp_frenzy / stacking_atk)."""
         a = self.hero.atk
         if self.hero.passive and self.hero.passive.get("kind") == "adrenaline":
             if self.hero.hp < self.hero.max_hp * 0.35:
@@ -452,11 +563,18 @@ class WorldCharacter:
         # than multiplicatively (those are situational; resonance is always-on).
         if self._res_atk_pct:
             a = int(a * (1 + self._res_atk_pct))
+        # signature ATK modifier (dict-lookup dispatch — low_hp_frenzy below 30%
+        # HP, or stacking_atk per kill). Additive on the bonus term so it stacks
+        # with adrenaline/dodge-buff/resonance rather than double-multiplying.
+        _sig_atk = _SIG_ATK_MOD.get(self._signature_kind)
+        if _sig_atk:
+            a = _sig_atk(self, a)
         return a
 
     @property
     def move_speed(self):
-        """Max speed with the swift passive + the wind elemental resonance."""
+        """Max speed with the swift passive + the wind elemental resonance +
+        the signature SPD modifier (low_hp_frenzy)."""
         s = self.max_speed
         if self.hero.passive and self.hero.passive.get("kind") == "swift":
             s *= (1 + self.hero.passive.get("val", 0.15))
@@ -464,6 +582,11 @@ class WorldCharacter:
         # passive: a swift hero in a 2-wind party gets +(0.15 + 0.10) = +25%.
         if self._res_move_speed:
             s *= (1 + self._res_move_speed)
+        # signature SPD modifier (dict-lookup dispatch — low_hp_frenzy +20% below
+        # 30% HP). Additive with the swift passive + wind resonance.
+        _sig_spd = _SIG_SPD_MOD.get(self._signature_kind)
+        if _sig_spd:
+            s = _sig_spd(self, s)
         return s
 
     def heal(self, amount):
@@ -609,6 +732,11 @@ class WorldCharacter:
                 and self.hero.hp < self.hero.max_hp):
             self.hero.hp = min(self.hero.max_hp,
                                self.hero.hp + self.hero.max_hp * self.hero.passive.get("val", 0.02) * dt)
+        # signature passive update handlers (dict-lookup dispatch). stacking_atk
+        # decays by 1 every 3s out of combat so a stale streak doesn't persist.
+        _sig_upd = _SIG_UPDATE.get(self._signature_kind)
+        if _sig_upd:
+            _sig_upd(self, dt)
         # passive energy regen: recover energy over time so a hero with low
         # energy can use skills again without landing a hit (the "skills don't
         # recover / mana doesn't increase" fix). Slower in combat. The light

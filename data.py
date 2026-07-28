@@ -203,6 +203,24 @@ PASSIVES_DB = {
                         kind="shield_when_low", val=0.25),
     "p_heal_amp":   dict(name="Mercy", desc="Healing skills heal 25% more.",
                         kind="heal_amp", val=0.25),
+    # --- per-hero signature passives (C6) — layered on top of HERO_PASSIVES.
+    # Each of the 25 heroes gets ONE signature id (see HERO_SIGNATURE). Heroes
+    # sharing a kind reuse the same id; the per-hero flavor is the name/desc.
+    # The signature is ADDITIONAL to the shared base passive — handlers in
+    # world_entities/world_scene check the signature in addition to
+    # self.hero.passive, not instead of it. Dispatch is a dict-lookup per hook
+    # point (kind -> handler), NOT an if/elif chain.
+    #   kind values handled in world_entities/world_scene:
+    #     revive_once    - revive at val HP on death, once per combat (reset in _build_party)
+    #     stacking_atk   - +val ATK per kill (stacking), decays out of combat
+    #     shield_on_hit  - gain a shield when damaged (after the hit)
+    #     low_hp_frenzy  - +val ATK & +20% SPD below 30% HP
+    #     cleave         - basic attacks splash to enemies within 60px of the primary target
+    "s_aria_frenzy":   dict(name="Dawn's Wrath",        desc="+25% ATK & SPD below 30% HP.",            kind="low_hp_frenzy",  val=0.25),
+    "s_kael_cleave":   dict(name="Sweeping Strike",     desc="Basic attacks splash to nearby enemies.",  kind="cleave",         val=0.5),
+    "s_luna_revive":   dict(name="Dark Pact",           desc="Revive once at 40% HP on death.",          kind="revive_once",    val=0.4),
+    "s_zephyr_stack":  dict(name="Momentum",           desc="+5% ATK per kill (stacking).",             kind="stacking_atk",   val=0.05),
+    "s_mira_shield":   dict(name="Tide Ward",          desc="Gain a shield when damaged.",              kind="shield_on_hit",  val=0.15),
 }
 
 # Per-hero passive assignment (one each, flavored to their role/element).
@@ -224,6 +242,31 @@ def hero_passive(hero_id):
     if not pid:
         return None
     return PASSIVES_DB.get(pid)
+
+# Per-hero signature passives (C6) — a UNIQUE signature per hero, layered on
+# top of the shared HERO_PASSIVES. Each of the 25 heroes maps to one of the 5
+# signature passive ids above (heroes sharing a kind reuse the same id). This
+# is distinct from HERO_PASSIVES (the shared base) so pulling Ember vs Cinder
+# (both fire destruction, both p_lifesteal today) feels like different heroes:
+# Ember revives once on death, Cinder grows stronger per kill.
+HERO_SIGNATURE = {
+    "aria": "s_aria_frenzy", "kael": "s_kael_cleave", "mira": "s_mira_shield",
+    "zephyr": "s_zephyr_stack", "luna": "s_luna_revive", "pyra": "s_aria_frenzy",
+    "lyra": "s_mira_shield", "thorne": "s_mira_shield", "sera": "s_luna_revive",
+    "rune": "s_zephyr_stack", "blaze": "s_kael_cleave", "nami": "s_mira_shield",
+    "gale": "s_zephyr_stack", "vex": "s_luna_revive", "ember": "s_luna_revive",
+    "tide": "s_mira_shield", "zephyra": "s_zephyr_stack", "selene": "s_aria_frenzy",
+    "nox": "s_zephyr_stack", "cinder": "s_zephyr_stack", "mist": "s_aria_frenzy",
+    "sol": "s_mira_shield", "gaia": "s_mira_shield", "echo": "s_luna_revive",
+    "raven": "s_zephyr_stack",
+}
+
+def hero_signature(hero_id):
+    """Return the signature passive dict for a hero, or None. The signature is
+    ADDITIONAL to the shared base passive (hero_passive) — the world loop
+    checks both."""
+    pid = HERO_SIGNATURE.get(hero_id)
+    return PASSIVES_DB.get(pid) if pid else None
 
 # ---------------------------------------------------------------------------
 # Elemental resonance — a Genshin-style party-composition buff. When 2+ heroes

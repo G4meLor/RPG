@@ -424,31 +424,31 @@ def draw_chibi(surf, element, body_color, hair_color, accent,
     draw_weapon(surf, cx, cy, weapon, accent, outline, element)
 
 def draw_hair(surf, cx, cy, r, color, outline, style, highlight=None):
-    """Premium hair with specular band, strand texture, root shadow, tip highlights."""
+    """Pixel-art hair: 2-tone dithered cap shading + solid specular blocks
+    (no smooth radial_grad/diag_grad ramps, no anti-aliased arcs). All 10 hair
+    styles preserved so per-hero variety stays intact."""
     if highlight is None:
         highlight = shade(color, 1.2)
     shadow_col = shade(color, 0.65)
     dark_col = shade(color, 0.45)
-    spec_col = shade(color, 1.45)  # bright specular for the hair shine band
+    spec_col = shade(color, 1.45)  # bright specular for the hair shine block
     if style == "spiky":
         pts = []
-        for i in range(11):  # more points for smoother silhouette
+        for i in range(11):  # more points for the silhouette
             ang = math.pi + math.pi * (i / 10)
             rr = r + (14 if i % 2 == 0 else -1)
             pts.append((cx + math.cos(ang) * rr, cy + math.sin(ang) * rr * 0.92))
         pygame.draw.polygon(surf, color, pts)
         pygame.draw.polygon(surf, outline, pts, 3)
-        # radial cap shading (light upper-left, darker lower-right)
-        crown = radial_grad_surf(2 * r, 2 * r, highlight, dark_col,
-                                 center=(r - 14, r - 14), radius=r + 6)
+        # cap shading — 2-tone dithered fill clipped to the hair circle (no AA)
+        crown = px_dither_surf(2 * r, 2 * r, highlight, dark_col)
         clip_to_circle(crown, (r, r), r - 1)
         surf.blit(crown, (cx - r, cy - r))
-        # specular band (a bright arc near the top-left of the hair)
-        spec_band = pygame.Surface((2 * r, int(r * 0.5)), pygame.SRCALPHA)
-        pygame.draw.arc(spec_band, (*spec_col, 130), (4, 0, 2 * r - 8, int(r * 0.5)), 0.4, 2.0, 5)
-        pygame.draw.arc(spec_band, (*spec_col, 200), (4, 0, 2 * r - 8, int(r * 0.5)), 0.6, 1.8, 2)
-        surf.blit(spec_band, (cx - r, cy - r + 4))
-        # spiky strand highlights
+        # specular block (a bright solid block near the top-left of the hair,
+        # replacing the smooth arc band)
+        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 6, int(r * 0.6), 4))
+        pygame.draw.rect(surf, shade(spec_col, 0.85), (cx - r + 6, cy - r + 10, int(r * 0.45), 2))
+        # spiky strand highlights (solid lines, no AA)
         for i in (1, 3, 5, 7):
             ang = math.pi + math.pi * (i / 10)
             ex = cx + math.cos(ang) * (r + 8)
@@ -456,127 +456,110 @@ def draw_hair(surf, cx, cy, r, color, outline, style, highlight=None):
             sx2 = cx + math.cos(ang) * (r - 12)
             sy2 = cy + math.sin(ang) * (r - 12) * 0.92
             pygame.draw.line(surf, highlight, (sx2, sy2), (ex, ey), 2)
-        # hairline fringe (a soft dark arc at the hairline)
-        pygame.draw.arc(surf, (*dark_col, 100), (cx - r, cy - r, 2 * r, 2 * r), 0.2, math.pi - 0.2, 2)
-        pygame.draw.arc(surf, outline, (cx - r, cy - r, 2 * r, 2 * r), 0.2, math.pi - 0.2, 3)
+        # hairline fringe (a solid dark block at the hairline, no AA arc)
+        pygame.draw.rect(surf, dark_col, (cx - r + 4, cy + r - 6, 2 * r - 8, 3))
+        pygame.draw.rect(surf, outline, (cx - r + 4, cy + r - 6, 2 * r - 8, 2))
     elif style == "long":
         pygame.draw.circle(surf, color, (cx, cy - 6), r + 2)
         pygame.draw.rect(surf, color, (cx - r, cy - 10, 2 * r, 70), border_radius=24)
-        # diagonal shading (light upper-left -> dark lower-right)
-        lg = diag_grad_surf(2 * r, 70, highlight, dark_col)
+        # 2-tone dithered shading clipped to the long-hair rect (no AA)
+        lg = px_dither_surf(2 * r, 70, highlight, dark_col)
         m = pygame.Surface((2 * r, 70), pygame.SRCALPHA)
         pygame.draw.rect(m, (255, 255, 255, 255), m.get_rect(), border_radius=24)
         lg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(lg, (cx - r, cy - 10))
-        # specular band across the top/crown area
-        spec = pygame.Surface((2 * r, int(r * 0.45)), pygame.SRCALPHA)
-        pygame.draw.arc(spec, (*spec_col, 140), (4, 4, 2 * r - 8, int(r * 0.5) - 4), 0.5, 2.2, 5)
-        pygame.draw.arc(spec, (*spec_col, 220), (4, 4, 2 * r - 8, int(r * 0.5) - 4), 0.7, 1.9, 2)
-        surf.blit(spec, (cx - r, cy - r))
+        # specular block across the top/crown area (solid block, no AA arc)
+        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 4, int(r * 0.9), 5))
+        pygame.draw.rect(surf, shade(spec_col, 0.85), (cx - r + 6, cy - r + 9, int(r * 0.7), 2))
         pygame.draw.circle(surf, outline, (cx, cy - 6), r + 2, 3)
         pygame.draw.rect(surf, outline, (cx - r, cy - 10, 2 * r, 70), 3, border_radius=24)
-        # tips with subtle gradient
-        tips = pygame.Surface((2 * r, 28), pygame.SRCALPHA)
-        for ty in range(28):
-            ta = int(180 * (1 - ty / 28))
-            pygame.draw.line(tips, (*dark_col, ta), (0, ty), (2 * r, ty))
-        pygame.draw.rect(tips, (0, 0, 0, 0), tips.get_rect())
-        surf.blit(tips, (cx - r, cy + 36))
-        # more strand lines (varying thickness and opacity)
-        for dx, s_alpha in ((-20, 60), (-12, 80), (-4, 70), (4, 55), (12, 65)):
-            s = pygame.Surface((2, 56), pygame.SRCALPHA)
-            pygame.draw.line(s, (*shade(color, 0.85), s_alpha), (1, 0), (1, 56), 1)
-            surf.blit(s, (cx + dx, cy - 4))
+        # tips (solid dark block at the bottom, no AA gradient)
+        pygame.draw.rect(surf, dark_col, (cx - r, cy + 36, 2 * r, 10))
+        # strand lines (solid vertical blocks, no AA)
+        for dx in (-20, -12, -4, 4, 12):
+            pygame.draw.rect(surf, shade(color, 0.85), (cx + dx, cy - 4, 2, 56))
     elif style == "short":
         pygame.draw.circle(surf, color, (cx, cy - 8), r)
         pygame.draw.rect(surf, color, (cx - r, cy - 8, 2 * r, 26), border_radius=18)
-        # radial cap shading with specular band
-        cap = radial_grad_surf(2 * r, 2 * r, highlight, dark_col,
-                               center=(r - 14, r - 14), radius=r + 5)
+        # cap shading — 2-tone dithered fill clipped to the cap circle (no AA)
+        cap = px_dither_surf(2 * r, 2 * r, highlight, dark_col)
         clip_to_circle(cap, (r, r), r)
         surf.blit(cap, (cx - r, cy - 8))
-        # specular shine arc
-        spec_short = pygame.Surface((2 * r, r), pygame.SRCALPHA)
-        pygame.draw.arc(spec_short, (*spec_col, 150), (4, 2, 2 * r - 8, r - 4), 0.5, 2.0, 4)
-        surf.blit(spec_short, (cx - r, cy - r + 4))
-        # short strand lines (texture)
+        # specular shine block (solid block, no AA arc)
+        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 4, int(r * 0.8), 4))
+        # short strand lines (solid vertical blocks, no AA)
         for dx2 in (-14, -4, 6):
-            s = pygame.Surface((1, 22), pygame.SRCALPHA)
-            pygame.draw.line(s, (*shade(color, 0.85), 70), (0, 0), (0, 22), 1)
-            surf.blit(s, (cx + dx2, cy - 6))
-        # hairline shadow
-        pygame.draw.arc(surf, (*dark_col, 90), (cx - r, cy - r, 2 * r, 2 * r), 0.3, math.pi - 0.3, 2)
+            pygame.draw.rect(surf, shade(color, 0.85), (cx + dx2, cy - 6, 1, 22))
+        # hairline shadow (solid block, no AA arc)
+        pygame.draw.rect(surf, dark_col, (cx - r + 4, cy + r - 8, 2 * r - 8, 3))
         pygame.draw.circle(surf, outline, (cx, cy - 8), r, 3)
     elif style == "twin":
         pygame.draw.circle(surf, color, (cx, cy - 6), r)
-        # specular on top
-        pygame.draw.arc(surf, (*spec_col, 160), (cx - r, cy - r - 4, 2 * r, int(r * 0.7)), 0.4, 2.4, 4)
+        # specular block on top (solid block, no AA arc)
+        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 2, int(r * 0.8), 4))
         pygame.draw.circle(surf, highlight, (cx - 8, cy - 12), r // 3)
         pygame.draw.circle(surf, outline, (cx, cy - 6), r, 3)
         for sx in (-1, 1):
             tx = cx + sx * (r + 6)
-            # tail with gradient + specular band
-            tailg = vgrad_surf(24, 44, highlight, dark_col)
+            # tail — 2-tone dithered fill clipped to the tail ellipse (no AA)
+            tailg = px_dither_surf(24, 44, highlight, dark_col)
             m = pygame.Surface((24, 44), pygame.SRCALPHA)
             pygame.draw.ellipse(m, (255, 255, 255, 255), m.get_rect())
             tailg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
             surf.blit(tailg, (tx - 12, cy))
-            # specular streak along the tail
-            pygame.draw.line(surf, (*spec_col, 140), (tx, cy + 4), (tx, cy + 36), 2)
+            # specular streak along the tail (solid line, no AA)
+            pygame.draw.line(surf, spec_col, (tx, cy + 4), (tx, cy + 36), 2)
             pygame.draw.ellipse(surf, outline, (tx - 12, cy, 24, 44), 3)
             pygame.draw.circle(surf, color, (tx, cy + 4), 16)
             pygame.draw.circle(surf, outline, (tx, cy + 4), 16, 3)
-            # ribbon tie with specular
+            # ribbon tie with specular (solid discs, no AA)
             pygame.draw.circle(surf, shadow_col, (tx, cy + 2), 7)
             pygame.draw.circle(surf, highlight, (tx - 2, cy), 3)
-            pygame.draw.circle(surf, (255, 255, 255), (tx - 3, cy - 1), 2)
+            pygame.draw.rect(surf, (255, 255, 255), (tx - 4, cy - 2, 4, 4))
             pygame.draw.circle(surf, outline, (tx, cy + 2), 7, 2)
     elif style == "hood":
         pygame.draw.circle(surf, color, (cx, cy - 4), r + 8)
         pygame.draw.polygon(surf, color, [(cx - r - 10, cy - 4), (cx + r + 10, cy - 4),
                                          (cx + r, cy + 40), (cx - r, cy + 40)])
         pygame.draw.circle(surf, outline, (cx, cy - 4), r + 8, 3)
-        # hood diagonal shading (light upper-left -> dark lower-right) with texture folds
-        hoodg = diag_grad_surf(2 * r + 20, 2 * r + 10, highlight, dark_col)
+        # hood shading — 2-tone dithered fill clipped to the hood shape (no AA)
+        hoodg = px_dither_surf(2 * r + 20, 2 * r + 10, highlight, dark_col)
         m = pygame.Surface(hoodg.get_size(), pygame.SRCALPHA)
         pygame.draw.circle(m, (255, 255, 255, 255), (r + 10, r + 4), r + 8)
         pygame.draw.polygon(m, (255, 255, 255, 255),
                             [(0, r), (2 * r + 20, r), (2 * r + 10, 2 * r + 4 + 6), (10, 2 * r + 4 + 6)])
         hoodg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(hoodg, (cx - r - 10, cy - r - 4))
-        # specular rim along the top arc of the hood
-        pygame.draw.arc(surf, (*spec_col, 130), (cx - r - 6, cy - r - 4, 2 * r + 12, 2 * r), 0.3, 2.6, 3)
-        # hood fold shading on the right (deeper)
+        # specular rim along the top of the hood (solid block, no AA arc)
+        pygame.draw.rect(surf, spec_col, (cx - r - 4, cy - r - 2, 2 * r + 8, 4))
+        # hood fold shading on the right (solid polygon, no AA)
         pygame.draw.polygon(surf, shadow_col, [(cx + r - 6, cy - 4), (cx + r + 10, cy - 4),
                                                (cx + r, cy + 40), (cx + r - 16, cy + 40)])
-        # hood fabric folds (vertical cloth drape lines)
+        # hood fabric folds (solid vertical blocks, no AA)
         for hfx in (-10, 0, 10):
-            fold_a = 60 if hfx < 0 else 40
-            fold_l = pygame.Surface((3, 46), pygame.SRCALPHA)
-            pygame.draw.line(fold_l, (*dark_col, fold_a), (1, 0), (1, 46), 2)
-            surf.blit(fold_l, (cx + hfx + 6, cy - 2))
-        # inner hood shadow on the face (darker, deeper)
-        hood_shadow = pygame.Surface((2 * r, r), pygame.SRCALPHA)
-        pygame.draw.ellipse(hood_shadow, (0, 0, 0, 100), hood_shadow.get_rect())
-        surf.blit(hood_shadow, (cx - r, cy - 10))
+            pygame.draw.rect(surf, dark_col, (cx + hfx + 6, cy - 2, 3, 46))
+        # inner hood shadow on the face (solid block, no AA)
+        pygame.draw.rect(surf, (0, 0, 0), (cx - r, cy - 10, 2 * r, r // 2))
     elif style == "ponytail":
         # base cap + a single tail high on the back of the head
         pygame.draw.circle(surf, color, (cx, cy - 6), r)
-        cap = radial_grad_surf(2 * r, 2 * r, highlight, dark_col,
-                               center=(r - 14, r - 14), radius=r + 5)
+        # cap shading — 2-tone dithered fill clipped to the cap circle (no AA)
+        cap = px_dither_surf(2 * r, 2 * r, highlight, dark_col)
         clip_to_circle(cap, (r, r), r)
         surf.blit(cap, (cx - r, cy - 6))
-        pygame.draw.arc(surf, (*spec_col, 150), (cx - r, cy - r - 6, 2 * r, int(r * 0.7)), 0.4, 2.0, 4)
+        # specular block on top (solid block, no AA arc)
+        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 2, int(r * 0.8), 4))
         # the tail (a rounded strand hanging from the top-back)
         tx = cx + r - 6
         ty = cy - r
-        tailg = vgrad_surf(22, 64, highlight, dark_col)
+        # tail — 2-tone dithered fill clipped to the tail rect (no AA)
+        tailg = px_dither_surf(22, 64, highlight, dark_col)
         m = pygame.Surface((22, 64), pygame.SRCALPHA)
         pygame.draw.rect(m, (255, 255, 255, 255), m.get_rect(), border_radius=11)
         tailg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(tailg, (tx - 11, ty))
         pygame.draw.rect(surf, outline, (tx - 11, ty, 22, 64), 3, border_radius=11)
-        # hair tie band
+        # hair tie band (solid blocks, no AA)
         pygame.draw.rect(surf, shadow_col, (tx - 13, ty + 4, 26, 8), border_radius=4)
         pygame.draw.rect(surf, highlight, (tx - 12, ty + 5, 24, 3), border_radius=2)
         pygame.draw.circle(surf, outline, (cx, cy - 6), r, 3)
@@ -584,20 +567,18 @@ def draw_hair(surf, cx, cy, r, color, outline, style, highlight=None):
         # rounded cap that frames the face, chin-length blunt cut
         pygame.draw.circle(surf, color, (cx, cy - 4), r + 2)
         pygame.draw.rect(surf, color, (cx - r - 2, cy - 6, 2 * r + 4, 40), border_radius=20)
-        bg = diag_grad_surf(2 * r + 4, 40, highlight, dark_col)
+        # 2-tone dithered shading clipped to the bob rect (no AA)
+        bg = px_dither_surf(2 * r + 4, 40, highlight, dark_col)
         m = pygame.Surface((2 * r + 4, 40), pygame.SRCALPHA)
         pygame.draw.rect(m, (255, 255, 255, 255), m.get_rect(), border_radius=20)
         bg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(bg, (cx - r - 2, cy - 6))
-        spec = pygame.Surface((2 * r, int(r * 0.4)), pygame.SRCALPHA)
-        pygame.draw.arc(spec, (*spec_col, 150), (4, 2, 2 * r - 8, int(r * 0.4) - 4), 0.5, 2.0, 4)
-        surf.blit(spec, (cx - r, cy - r))
-        # blunt-cut bottom edge highlight
-        pygame.draw.line(surf, (*spec_col, 120), (cx - r, cy + 32), (cx + r, cy + 32), 2)
+        # specular block on top (solid block, no AA arc)
+        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 2, int(r * 0.8), 4))
+        # blunt-cut bottom edge highlight (solid line, no AA)
+        pygame.draw.line(surf, spec_col, (cx - r, cy + 32), (cx + r, cy + 32), 2)
         for dx in (-r + 2, r - 4):
-            s = pygame.Surface((3, 36), pygame.SRCALPHA)
-            pygame.draw.line(s, (*shade(color, 0.85), 70), (1, 0), (1, 36), 2)
-            surf.blit(s, (cx + dx, cy - 4))
+            pygame.draw.rect(surf, shade(color, 0.85), (cx + dx, cy - 4, 3, 36))
         pygame.draw.circle(surf, outline, (cx, cy - 4), r + 2, 3)
         pygame.draw.rect(surf, outline, (cx - r - 2, cy - 6, 2 * r + 4, 40), 3, border_radius=20)
     elif style == "curly":
@@ -607,11 +588,12 @@ def draw_hair(surf, cx, cy, r, color, outline, style, highlight=None):
                            (-r + 14, -r - 4, 12), (r - 14, -r - 2, 13),
                            (0, -r - 6, 13)):
             pygame.draw.circle(surf, color, (cx + bx, cy + by), br)
-        cap = radial_grad_surf(2 * r, 2 * r, highlight, dark_col,
-                               center=(r - 14, r - 14), radius=r + 6)
+        # cap shading — 2-tone dithered fill clipped to the cap circle (no AA)
+        cap = px_dither_surf(2 * r, 2 * r, highlight, dark_col)
         clip_to_circle(cap, (r, r), r)
         surf.blit(cap, (cx - r, cy - 4))
-        pygame.draw.arc(surf, (*spec_col, 140), (cx - r, cy - r - 4, 2 * r, int(r * 0.6)), 0.4, 2.0, 4)
+        # specular block on top (solid block, no AA arc)
+        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r, int(r * 0.8), 4))
         pygame.draw.circle(surf, outline, (cx, cy - 4), r + 2, 3)
     elif style == "mohawk":
         # shaved sides + central spiky ridge
@@ -622,39 +604,43 @@ def draw_hair(surf, cx, cy, r, color, outline, style, highlight=None):
             pts.append((x, cy - r - 4 if i % 2 == 0 else cy - 8))
         pts.append((cx + 12, cy - 4))
         pygame.draw.polygon(surf, color, pts)
-        # lighter band down the center of the ridge
+        # lighter band down the center of the ridge (solid polygon, no AA)
         pygame.draw.polygon(surf, shade(color, 1.25), [(p[0], p[1] + 1) for p in pts])
+        # specular streaks (solid lines, no AA)
         for i in range(7):
             x = cx - 12 + i * 4
             if i % 2 == 0:
-                pygame.draw.line(surf, (*spec_col, 170), (x, cy - r - 4), (x, cy - 6), 1)
+                pygame.draw.line(surf, spec_col, (x, cy - r - 4), (x, cy - 6), 1)
         pygame.draw.polygon(surf, outline, pts, 2)
         pygame.draw.circle(surf, outline, (cx, cy - 2), r - 6, 2)
     elif style == "braided":
         # base cap + two braids hanging on the sides
         pygame.draw.circle(surf, color, (cx, cy - 6), r)
-        cap = radial_grad_surf(2 * r, 2 * r, highlight, dark_col,
-                               center=(r - 14, r - 14), radius=r + 5)
+        # cap shading — 2-tone dithered fill clipped to the cap circle (no AA)
+        cap = px_dither_surf(2 * r, 2 * r, highlight, dark_col)
         clip_to_circle(cap, (r, r), r)
         surf.blit(cap, (cx - r, cy - 6))
-        pygame.draw.arc(surf, (*spec_col, 150), (cx - r, cy - r - 4, 2 * r, int(r * 0.6)), 0.4, 2.0, 4)
+        # specular block on top (solid block, no AA arc)
+        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r, int(r * 0.8), 4))
         pygame.draw.circle(surf, outline, (cx, cy - 6), r, 3)
-        # two side braids: a stack of rounded segments
+        # two side braids: a stack of rounded segments (solid discs, no AA)
         for sx in (-1, 1):
             bx = cx + sx * (r - 2)
             for seg in range(4):
                 by = cy - 2 + seg * 12
                 pygame.draw.circle(surf, color, (bx, by), 8)
                 pygame.draw.line(surf, shade(color, 0.6), (bx - 7, by), (bx + 7, by), 2)
-            # tail tie + tip
+            # tail tie + tip (solid discs, no AA)
             pygame.draw.circle(surf, shadow_col, (bx, cy - 4), 6)
             pygame.draw.circle(surf, highlight, (bx - 2, cy - 6), 3)
             pygame.draw.circle(surf, outline, (bx, cy - 4), 6, 2)
 
 def draw_eyes(surf, cx, cy, color, outline, element, expression="neutral", eye_shape="round"):
-    # Premium anime eyes with upper eyelid shadow, bottom lid, catchlights + lashes.
-    # eye_shape varies the eye geometry (round/sharp/wide/half) so heroes of the
-    # same element no longer share identical eyes; expression drives eyebrows + mouth.
+    # Pixel-art anime eyes: 2-tone dithered sclera + iris, solid lid blocks,
+    # catchlights + lashes. eye_shape varies the eye geometry
+    # (round/sharp/wide/half) so heroes of the same element no longer share
+    # identical eyes; expression drives eyebrows + mouth. No smooth gradients,
+    # no anti-aliased arcs.
     _, light_el, _ = ELEMENT_COLORS[element]
     if eye_shape == "sharp":
         sw, sh, iw, ih, pw, ph, lid_off = 14, 18, 12, 14, 7, 9, -2
@@ -665,280 +651,278 @@ def draw_eyes(surf, cx, cy, color, outline, element, expression="neutral", eye_s
     else:  # round (default)
         sw, sh, iw, ih, pw, ph, lid_off = 18, 20, 14, 16, 8, 10, 0
     for sx in (-14, 14):
-        # white sclera with soft shading
-        scl = radial_grad_surf(sw, sh, (252, 252, 255), (218, 222, 235),
-                               center=(sw // 2 - 2, sh // 2 - 3), radius=max(8, sw // 2))
+        # white sclera — 2-tone dithered fill clipped to the eye ellipse (no AA)
+        scl = px_dither_surf(sw, sh, (252, 252, 255), (218, 222, 235))
         m = pygame.Surface((sw, sh), pygame.SRCALPHA)
         pygame.draw.ellipse(m, (255, 255, 255, 255), m.get_rect())
         scl.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(scl, (cx + sx - sw // 2, cy - sh // 2))
-        # upper eyelid shadow (dark gradient at top of eye)
-        lid_shadow = pygame.Surface((sw, 8), pygame.SRCALPHA)
-        for yy in range(8):
-            a = int(80 * (1 - yy / 8))
-            pygame.draw.line(lid_shadow, (0, 0, 0, a), (0, yy), (sw, yy))
-        surf.blit(lid_shadow, (cx + sx - sw // 2, cy - sh // 2))
+        # upper eyelid shadow (solid dark block at the top of the eye, no AA)
+        pygame.draw.rect(surf, (0, 0, 0), (cx + sx - sw // 2, cy - sh // 2, sw, 4))
         # iris: the hero's personal eye color drives the bright center; the
-        # element shows only as a faint outer rim (was: element-tinted center).
-        iris = radial_grad_surf(iw, ih, shade(color, 1.25), shade(color, 0.4),
-                                center=(iw // 2 - 1, ih // 2 - 2), radius=max(6, iw // 2))
+        # element shows only as a faint outer rim. 2-tone dithered fill clipped
+        # to the iris ellipse (no AA radial gradient).
+        iris = px_dither_surf(iw, ih, shade(color, 1.25), shade(color, 0.4))
         m2 = pygame.Surface((iw, ih), pygame.SRCALPHA)
         pygame.draw.ellipse(m2, (255, 255, 255, 255), m2.get_rect())
         iris.blit(m2, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(iris, (cx + sx - iw // 2, cy - ih // 2 + lid_off))
-        # faint element-tinted outer ring (keeps the elemental theme)
+        # faint element-tinted outer ring (solid ellipse outline, no AA)
         pygame.draw.ellipse(surf, shade(light_el, 0.9),
                             (cx + sx - iw // 2 - 1, cy - ih // 2 + lid_off - 1, iw + 2, ih + 2), 1)
-        # iris texture rings (subtle concentric arcs, kept within the iris)
+        # iris texture rings (solid concentric ellipse outlines, no AA arcs)
         for ir in (3, 5):
             if ir * 2 + 2 <= iw:
                 pygame.draw.ellipse(surf, shade(color, 0.35),
                                     (cx + sx - ir, cy - 2 - ir // 2 + lid_off, ir * 2, ir * 2 + 2), 1)
-        # pupil (dark)
-        pygame.draw.ellipse(surf, (10, 8, 18),
-                            (cx + sx - pw // 2, cy - ph // 2 + lid_off, pw, ph))
-        # bottom eyelid line
-        pygame.draw.arc(surf, shade(outline, 0.7),
-                        (cx + sx - sw // 2 - 1, cy - 4 + lid_off, sw + 2, 12), 0.6, 2.5, 1)
-        # upper eyelid thick line + lashes
-        pygame.draw.arc(surf, outline,
-                        (cx + sx - sw // 2, cy - 9 + lid_off, sw, 8), 3.1, 5.9, 3)
-        # eyelash strokes on outer corner
+        # pupil (dark solid block, no AA)
+        pygame.draw.rect(surf, (10, 8, 18),
+                         (cx + sx - pw // 2, cy - ph // 2 + lid_off, pw, ph))
+        # bottom eyelid line (solid line, no AA arc)
+        pygame.draw.line(surf, shade(outline, 0.7),
+                         (cx + sx - sw // 2, cy + 4 + lid_off),
+                         (cx + sx + sw // 2, cy + 4 + lid_off), 1)
+        # upper eyelid thick line + lashes (solid line, no AA arc)
+        pygame.draw.line(surf, outline,
+                         (cx + sx - sw // 2, cy - 4 + lid_off),
+                         (cx + sx + sw // 2, cy - 4 + lid_off), 3)
+        # eyelash strokes on outer corner (solid lines, no AA)
         for la in (0.3, 0.5, 0.7):
             lx = cx + sx + 7 + la * 4
             ly = cy - 7 - la * 6 + lid_off
             pygame.draw.line(surf, outline, (int(lx), int(ly)), (int(lx - 4), int(ly + 4)), 1)
-        # catchlights vary by eye_shape (breaks the identical-glare look)
+        # catchlights vary by eye_shape (solid blocks, no AA)
         if eye_shape == "sharp":
-            pygame.draw.circle(surf, (255, 255, 255), (cx + sx - 4, cy - 5 + lid_off), 3)
+            pygame.draw.rect(surf, (255, 255, 255), (cx + sx - 6, cy - 7 + lid_off, 5, 5))
         elif eye_shape == "wide":
-            pygame.draw.circle(surf, (255, 255, 255), (cx + sx - 4, cy - 5 + lid_off), 5)
-            pygame.draw.circle(surf, (255, 255, 255), (cx + sx + 3, cy + 2 + lid_off), 3)
+            pygame.draw.rect(surf, (255, 255, 255), (cx + sx - 8, cy - 9 + lid_off, 9, 9))
+            pygame.draw.rect(surf, (255, 255, 255), (cx + sx + 2, cy + 1 + lid_off, 5, 5))
         else:
-            pygame.draw.circle(surf, (255, 255, 255), (cx + sx - 4, cy - 5 + lid_off), 4)
-            pygame.draw.circle(surf, (255, 255, 255), (cx + sx + 3, cy + 2 + lid_off), 2)
-            pygame.draw.circle(surf, (255, 255, 255), (cx + sx + 1, cy - 3 + lid_off), 1)
-    # eyebrows + mouth vary by expression (the most memorable part of a face)
+            pygame.draw.rect(surf, (255, 255, 255), (cx + sx - 8, cy - 8 + lid_off, 7, 7))
+            pygame.draw.rect(surf, (255, 255, 255), (cx + sx + 2, cy + 1 + lid_off, 3, 3))
+            pygame.draw.rect(surf, (255, 255, 255), (cx + sx, cy - 4 + lid_off, 2, 2))
+    # eyebrows + mouth vary by expression (solid lines + blocks, no AA arcs)
     if expression == "fierce":
-        # angled up-outward eyebrows + slightly open mouth
+        # angled up-outward eyebrows + slightly open mouth (solid blocks, no AA)
         pygame.draw.line(surf, outline, (cx - 20, cy - 16), (cx - 7, cy - 12), 3)
         pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 16), (cx - 9, cy - 12), 1)
         pygame.draw.line(surf, outline, (cx + 7, cy - 12), (cx + 20, cy - 16), 3)
         pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 12), (cx + 18, cy - 16), 1)
-        pygame.draw.arc(surf, (175, 65, 75), (cx - 8, cy + 15, 16, 10), 3.0, 6.2, 2)
-        pygame.draw.arc(surf, (255, 180, 180), (cx - 6, cy + 16, 12, 4), 3.2, 5.6, 1)
+        # open mouth (solid block, no AA arc)
+        pygame.draw.rect(surf, (175, 65, 75), (cx - 8, cy + 15, 16, 8))
+        pygame.draw.rect(surf, (255, 180, 180), (cx - 6, cy + 16, 12, 3))
     elif expression == "gentle":
-        # flat eyebrows + small smile
+        # flat eyebrows + small smile (solid lines + block, no AA)
         pygame.draw.line(surf, outline, (cx - 20, cy - 14), (cx - 7, cy - 14), 3)
         pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 14), (cx - 9, cy - 14), 1)
         pygame.draw.line(surf, outline, (cx + 7, cy - 14), (cx + 20, cy - 14), 3)
         pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 14), (cx + 18, cy - 14), 1)
-        pygame.draw.arc(surf, (175, 65, 75), (cx - 6, cy + 16, 12, 8), 3.6, 5.9, 2)
-        pygame.draw.arc(surf, (255, 180, 180), (cx - 4, cy + 17, 8, 4), 3.7, 5.5, 1)
+        # smile (a solid block, no AA arc)
+        pygame.draw.rect(surf, (175, 65, 75), (cx - 6, cy + 16, 12, 6))
+        pygame.draw.rect(surf, (255, 180, 180), (cx - 4, cy + 17, 8, 3))
     elif expression == "stoic":
-        # straight horizontal eyebrows + tiny straight mouth line
+        # straight horizontal eyebrows + tiny straight mouth line (solid, no AA)
         pygame.draw.line(surf, outline, (cx - 20, cy - 14), (cx - 7, cy - 14), 3)
         pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 14), (cx - 9, cy - 14), 1)
         pygame.draw.line(surf, outline, (cx + 7, cy - 14), (cx + 20, cy - 14), 3)
         pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 14), (cx + 18, cy - 14), 1)
         pygame.draw.line(surf, (175, 65, 75), (cx - 4, cy + 18), (cx + 4, cy + 18), 2)
     elif expression == "sad":
-        # downward eyebrows + downturned mouth
+        # downward eyebrows + downturned mouth (solid, no AA)
         pygame.draw.line(surf, outline, (cx - 20, cy - 12), (cx - 7, cy - 16), 3)
         pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 12), (cx - 9, cy - 16), 1)
         pygame.draw.line(surf, outline, (cx + 7, cy - 16), (cx + 20, cy - 12), 3)
         pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 16), (cx + 18, cy - 12), 1)
-        pygame.draw.arc(surf, (175, 65, 75), (cx - 7, cy + 16, 14, 9), 4.6, 6.0, 2)
+        # downturned mouth (a solid block, no AA arc)
+        pygame.draw.rect(surf, (175, 65, 75), (cx - 7, cy + 18, 14, 5))
     else:  # neutral (current behavior, backward compatible)
         pygame.draw.line(surf, outline, (cx - 20, cy - 13), (cx - 7, cy - 15), 3)
         pygame.draw.line(surf, shade(outline, 0.6), (cx - 18, cy - 13), (cx - 9, cy - 15), 1)
         pygame.draw.line(surf, outline, (cx + 7, cy - 15), (cx + 20, cy - 13), 3)
         pygame.draw.line(surf, shade(outline, 0.6), (cx + 9, cy - 15), (cx + 18, cy - 13), 1)
-        pygame.draw.arc(surf, (175, 65, 75), (cx - 7, cy + 16, 14, 9), 3.4, 6.0, 2)
-        pygame.draw.arc(surf, (255, 180, 180), (cx - 5, cy + 17, 10, 4), 3.5, 5.5, 1)
+        # neutral mouth (a solid block, no AA arc)
+        pygame.draw.rect(surf, (175, 65, 75), (cx - 7, cy + 16, 14, 6))
+        pygame.draw.rect(surf, (255, 180, 180), (cx - 5, cy + 17, 10, 3))
 
 def draw_weapon(surf, cx, cy, weapon, accent, outline, element):
+    """Pixel-art weapons: 2-tone dithered fills + solid blocks, no smooth
+    gradients, no anti-aliased arcs. All 6 weapons (sword/staff/bow/dagger/
+    shield/orb) preserved so per-hero variety stays intact."""
     _, light_el, _ = ELEMENT_COLORS[element]
     if weapon == "sword":
-        # sword in right hand — premium metal with reflection bands + edge + fuller
+        # sword in right hand — 2-tone dithered metal + solid reflection bands
         bx, by = cx + 50, 120
         bw, bh = 12, 82
-        # metal base: alternating light/dark bands for realistic reflection
-        blade = hgrad_surf(bw, bh, (225, 228, 240), (140, 145, 165))
+        # metal base — 2-tone dithered fill clipped to the blade rect (no AA)
+        blade = px_dither_surf(bw, bh, (225, 228, 240), (140, 145, 165))
         clip_to_rect(blade, pygame.Rect(0, 0, bw, bh))
         surf.blit(blade, (bx - 1, by - 72))
-        # reflection bands (horizontal, simulating environment reflection)
-        for ry, ra in ((8, 120), (28, 80), (48, 140), (62, 90)):
-            rband = pygame.Surface((bw - 2, 4), pygame.SRCALPHA)
-            rband.fill((255, 255, 255, ra))
-            surf.blit(rband, (bx, by - 72 + ry))
-        # dark band for contrast at base
+        # reflection bands (solid horizontal blocks, no AA)
+        for ry in (8, 28, 48, 62):
+            pygame.draw.rect(surf, (255, 255, 255), (bx, by - 72 + ry, bw - 2, 4))
+        # dark band for contrast at base (solid block, no AA)
         pygame.draw.rect(surf, (90, 95, 115), (bx, by - 72 + 74, bw, 6))
-        # bright edge (left, the sharpened side)
+        # bright edge (left, the sharpened side, solid block, no AA)
         pygame.draw.rect(surf, (250, 252, 255), (bx - 1, by - 72, 3, bh))
-        # fuller (center groove line)
+        # fuller (center groove line, solid line, no AA)
         pygame.draw.line(surf, (180, 185, 200), (bx + bw // 2, by - 72), (bx + bw // 2, by + 6), 1)
         pygame.draw.rect(surf, outline, (bx - 1, by - 72, bw, bh), 2)
-        # crossguard (shaded metal)
-        cg = vgrad_surf(24, 8, shade(accent, 1.3), shade(accent, 0.65))
+        # crossguard — 2-tone dithered fill clipped to the guard rect (no AA)
+        cg = px_dither_surf(24, 8, shade(accent, 1.3), shade(accent, 0.65))
         clip_to_rect(cg, pygame.Rect(0, 0, 24, 8))
         surf.blit(cg, (bx - 7, by + 8))
-        # crossguard specular
+        # crossguard specular (solid block, no AA)
         pygame.draw.rect(surf, (255, 255, 255), (bx - 7, by + 8, 22, 2))
         pygame.draw.rect(surf, outline, (bx - 7, by + 8, 24, 8), 2)
-        # grip (leather-wrapped, with cross-wrap lines)
+        # grip (leather-wrapped, solid block + cross-wrap lines, no AA)
         pygame.draw.rect(surf, (130, 85, 50), (bx + 2, by + 16, 8, 20))
         for gy in (20, 24, 28, 32):
             pygame.draw.line(surf, (100, 65, 35), (bx + 2, by + gy), (bx + 10, by + gy), 1)
         pygame.draw.rect(surf, outline, (bx + 2, by + 16, 8, 20), 1)
-        # pommel (radial gem)
-        pommel = radial_grad_surf(10, 10, shade(accent, 1.3), shade(accent, 0.5), center=(4, 3), radius=5)
+        # pommel — 2-tone dithered fill clipped to a circle (no AA radial gem)
+        pommel = px_dither_surf(10, 10, shade(accent, 1.3), shade(accent, 0.5))
         clip_to_circle(pommel, (5, 5), 4)
         surf.blit(pommel, (bx + 1, by + 34))
-        pygame.draw.circle(surf, (255, 255, 255), (bx + 4, by + 36), 2)
+        pygame.draw.rect(surf, (255, 255, 255), (bx + 3, by + 35, 3, 3))
         pygame.draw.circle(surf, outline, (bx + 5, by + 38), 4, 2)
     elif weapon == "staff":
         bx, by = cx + 52, 110
-        # staff shaft with wood grain texture
-        shaft = vgrad_surf(8, 120, (150, 105, 60), (85, 55, 30))
+        # staff shaft — 2-tone dithered fill clipped to the shaft rect (no AA)
+        shaft = px_dither_surf(8, 120, (150, 105, 60), (85, 55, 30))
         clip_to_rect(shaft, pygame.Rect(0, 0, 8, 120))
         surf.blit(shaft, (bx, by - 60))
-        # wood grain lines
+        # wood grain lines (solid lines, no AA)
         for gx in (2, 5):
             pygame.draw.line(surf, (120, 80, 40), (bx + gx, by - 58), (bx + gx, by + 58), 1)
         pygame.draw.rect(surf, outline, (bx, by - 60, 8, 120), 2)
-        # metal ferrule at top
+        # metal ferrule at top (solid block, no AA)
         pygame.draw.rect(surf, (200, 200, 215), (bx - 2, by - 62, 12, 6))
         pygame.draw.rect(surf, outline, (bx - 2, by - 62, 12, 6), 1)
-        # glowing crystal head (three-layer: outer halo + mid glow + core)
-        glow = soft_glow(66, 66, light_el, 120, radius=30, falloff=1.3)
-        surf.blit(glow, (bx - 27, by - 96))
-        glow2 = soft_glow(42, 42, (255, 255, 255), 80, radius=20, falloff=1.5)
-        surf.blit(glow2, (bx - 15, by - 84))
-        # faceted crystal (pointy hexagon shape)
+        # glowing crystal head — chunky block halo (no AA soft-glow)
+        pygame.draw.circle(surf, light_el, (bx, by - 66), 30)
+        pygame.draw.circle(surf, (255, 255, 255), (bx, by - 66), 20)
+        # faceted crystal — 2-tone dithered fill clipped to the crystal polygon (no AA)
         crystal_pts = [(bx + 4, by - 82), (bx + 18, by - 62), (bx + 10, by - 52), (bx - 2, by - 52), (bx - 14, by - 62)]
-        cg = radial_grad_surf(36, 34, shade(light_el, 1.2), shade(accent, 0.45), center=(12, 8), radius=18)
+        cg = px_dither_surf(36, 34, shade(light_el, 1.2), shade(accent, 0.45))
         m = pygame.Surface((36, 34), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - (bx - 14), p[1] - (by - 82)) for p in crystal_pts])
         cg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(cg, (bx - 14, by - 82))
-        # crystal facets (inner lines)
+        # crystal facets (inner lines, solid, no AA)
         pygame.draw.line(surf, shade(light_el, 0.6), (bx + 4, by - 82), (bx - 2, by - 56), 1)
         pygame.draw.line(surf, shade(light_el, 0.6), (bx + 4, by - 82), (bx + 8, by - 56), 1)
         pygame.draw.polygon(surf, outline, crystal_pts, 2)
-        # specular on top point
-        pygame.draw.circle(surf, (255, 255, 255), (bx + 2, by - 78), 3)
+        # specular on top point (solid block, no AA)
+        pygame.draw.rect(surf, (255, 255, 255), (bx, by - 80, 4, 4))
     elif weapon == "bow":
         bx, by = cx + 54, 150
-        # bow limbs with compound curve look (outer dark wood, inner light)
-        pygame.draw.arc(surf, shade(accent, 0.5), (bx - 14, by - 54, 48, 108), -1.2, 1.2, 8)
-        pygame.draw.arc(surf, shade(accent, 0.75), (bx - 12, by - 52, 44, 104), -1.2, 1.2, 5)
-        pygame.draw.arc(surf, accent, (bx - 10, by - 50, 40, 100), -1.2, 1.2, 3)
-        # inner highlight (the lit edge)
-        pygame.draw.arc(surf, shade(accent, 1.3), (bx - 9, by - 49, 38, 98), -1.15, 1.15, 1)
-        # grip section (wrapped leather)
+        # bow limbs — pixel-art: a solid block limb with dithered shading (no AA
+        # arcs). The old code drew 4 nested arcs for a compound-curve look; the
+        # pixel-art version is a thick solid block with 2-tone dithered shading
+        # and a brighter inner block for the lit edge.
+        # outer dark wood limb (solid block, no AA)
+        pygame.draw.rect(surf, shade(accent, 0.5), (bx - 14, by - 54, 8, 108))
+        # mid wood (solid block, no AA)
+        pygame.draw.rect(surf, shade(accent, 0.75), (bx - 12, by - 52, 6, 104))
+        # inner light wood (solid block, no AA)
+        pygame.draw.rect(surf, accent, (bx - 10, by - 50, 4, 100))
+        # inner highlight (the lit edge, solid block, no AA)
+        pygame.draw.rect(surf, shade(accent, 1.3), (bx - 9, by - 49, 2, 98))
+        # grip section (wrapped leather, solid block + wrap lines, no AA)
         pygame.draw.rect(surf, (90, 65, 40), (bx + 2, by - 6, 16, 12))
         for gw in (bx + 4, bx + 10):
             pygame.draw.line(surf, (70, 50, 30), (gw, by - 6), (gw, by + 5), 1)
         pygame.draw.rect(surf, outline, (bx + 2, by - 6, 16, 12), 1)
-        # string
+        # string (solid line, no AA)
         pygame.draw.line(surf, (235, 235, 245), (bx + 10, by - 48), (bx + 10, by + 48), 1)
-        # nocked arrow with fletching
+        # nocked arrow with fletching (solid lines + blocks, no AA)
         pygame.draw.line(surf, (210, 210, 220), (bx - 22, by), (bx + 12, by), 2)
-        # arrowhead
+        # arrowhead (solid polygon, no AA)
         pygame.draw.polygon(surf, (220, 220, 235), [(bx + 12, by), (bx + 20, by - 5), (bx + 20, by + 5)])
-        # fletching
+        # fletching (solid polygons, no AA)
         pygame.draw.polygon(surf, shade(light_el, 0.8), [(bx - 22, by), (bx - 28, by - 7), (bx - 24, by)])
         pygame.draw.polygon(surf, shade(light_el, 0.8), [(bx - 22, by), (bx - 28, by + 7), (bx - 24, by)])
         pygame.draw.polygon(surf, outline, [(bx + 12, by), (bx + 20, by - 5), (bx + 20, by + 5)])
     elif weapon == "dagger":
         bx, by = cx + 48, 150
-        # blade triangle with premium metal + reflection
+        # blade triangle — 2-tone dithered fill clipped to the blade polygon (no AA)
         bw2, bh2 = 10, 48
-        blade = hgrad_surf(bw2, bh2, (230, 232, 242), (140, 145, 165))
+        blade = px_dither_surf(bw2, bh2, (230, 232, 242), (140, 145, 165))
         m = pygame.Surface((bw2, bh2), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255), [(0, 0), (bw2, 0), (bw2 // 2, bh2 - 2)])
         blade.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(blade, (bx - 1, by - 42))
-        # reflection bands
-        for ry2, ra2 in ((6, 100), (20, 70), (34, 120)):
-            rb = pygame.Surface((8, 3), pygame.SRCALPHA)
-            rb.fill((255, 255, 255, ra2))
-            surf.blit(rb, (bx + 1, by - 42 + ry2))
+        # reflection bands (solid horizontal blocks, no AA)
+        for ry2 in (6, 20, 34):
+            pygame.draw.rect(surf, (255, 255, 255), (bx + 1, by - 42 + ry2, 8, 3))
         pygame.draw.rect(surf, (250, 252, 255), (bx - 1, by - 42, 2, bh2 - 2))
         pygame.draw.polygon(surf, outline, [(bx - 1, by - 42), (bx + bw2 - 1, by - 42), (bx + bw2 // 2 - 1, by + 4)], 2)
-        # crossguard (metal, curved)
-        cg = vgrad_surf(22, 6, shade(accent, 1.3), shade(accent, 0.65))
+        # crossguard — 2-tone dithered fill clipped to the guard rect (no AA)
+        cg = px_dither_surf(22, 6, shade(accent, 1.3), shade(accent, 0.65))
         clip_to_rect(cg, pygame.Rect(0, 0, 22, 6))
         surf.blit(cg, (bx - 5, by + 2))
         pygame.draw.rect(surf, (255, 255, 255), (bx - 5, by + 2, 20, 2))
         pygame.draw.rect(surf, outline, (bx - 5, by + 2, 22, 6), 2)
-        # grip wrap
+        # grip wrap (solid block + cross-wrap lines, no AA)
         pygame.draw.rect(surf, (110, 80, 50), (bx, by + 8, 6, 14))
         for gy2 in (10, 13, 16, 19):
             pygame.draw.line(surf, (85, 60, 35), (bx, by + gy2), (bx + 6, by + gy2), 1)
     elif weapon == "shield":
         bx, by = cx + 44, 170
         pts = [(bx - 6, by - 30), (bx + 22, by - 30), (bx + 22, by + 10), (bx + 8, by + 30), (bx - 6, by + 10)]
-        # shield body with metallic diagonal shading + rim highlight
-        shg = diag_grad_surf(30, 62, shade(accent, 1.25), shade(accent, 0.5))
+        # shield body — 2-tone dithered fill clipped to the shield polygon (no AA)
+        shg = px_dither_surf(30, 62, shade(accent, 1.25), shade(accent, 0.5))
         m = pygame.Surface((30, 62), pygame.SRCALPHA)
         pygame.draw.polygon(m, (255, 255, 255, 255),
                             [(p[0] - (bx - 6), p[1] - (by - 30)) for p in pts])
         shg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surf.blit(shg, (bx - 6, by - 30))
-        # left rim highlight
-        rim3 = pygame.Surface((4, 62), pygame.SRCALPHA)
-        pygame.draw.polygon(rim3, (255, 255, 255, 90),
-                            [(4, 0), (4, 60), (0, 50), (0, 8)])
-        surf.blit(rim3, (bx - 6, by - 30))
-        # metal rivets around the edge
+        # left rim highlight (solid block, no AA)
+        pygame.draw.rect(surf, (255, 255, 255), (bx - 6, by - 30, 4, 62))
+        # metal rivets around the edge (solid discs, no AA)
         for rv_y in (-26, -10, 6, 20):
             pygame.draw.circle(surf, shade(accent, 0.6), (bx - 2, by + rv_y), 2)
-            pygame.draw.circle(surf, (255, 255, 255), (bx - 3, by + rv_y - 1), 1)
+            pygame.draw.rect(surf, (255, 255, 255), (bx - 4, by + rv_y - 1, 2, 2))
         pygame.draw.polygon(surf, outline, pts, 3)
-        # central boss (raised metal dome with radial gradient)
-        boss_base = radial_grad_surf(24, 24, shade(accent, 1.4), shade(accent, 0.45), center=(8, 6), radius=12)
+        # central boss — 2-tone dithered fill clipped to a circle (no AA radial)
+        boss_base = px_dither_surf(24, 24, shade(accent, 1.4), shade(accent, 0.45))
         clip_to_circle(boss_base, (12, 12), 11)
         surf.blit(boss_base, (bx, by - 16))
-        # element gem inset
-        gem = radial_grad_surf(14, 14, light_el, shade(accent, 0.35), center=(5, 4), radius=7)
+        # element gem inset — 2-tone dithered fill clipped to a circle (no AA)
+        gem = px_dither_surf(14, 14, light_el, shade(accent, 0.35))
         clip_to_circle(gem, (7, 7), 6)
         surf.blit(gem, (bx + 3, by - 12))
-        pygame.draw.circle(surf, (255, 255, 255), (bx + 7, by - 9), 2)
+        pygame.draw.rect(surf, (255, 255, 255), (bx + 6, by - 11, 3, 3))
         pygame.draw.circle(surf, outline, (bx + 8, by - 6), 12, 2)
-        # bottom edge reinforcement bar
+        # bottom edge reinforcement bar (solid block, no AA)
         pygame.draw.rect(surf, shade(accent, 0.55), (bx - 2, by + 26, 24, 5), border_radius=2)
         pygame.draw.rect(surf, outline, (bx - 2, by + 26, 24, 5), 1, border_radius=2)
     elif weapon == "orb":
         bx, by = cx + 50, 160
-        # floating orb — three-layer glow + glassy orb + inner fire + orbiting motes
-        glow = soft_glow(64, 64, light_el, 100, radius=30, falloff=1.35)
-        surf.blit(glow, (bx - 32, by - 32))
-        glow2 = soft_glow(42, 42, (255, 255, 255), 70, radius=20, falloff=1.5)
-        surf.blit(glow2, (bx - 21, by - 21))
-        # glassy orb body (concentric: dark edge -> bright rim -> light center)
-        orb = radial_grad_surf(36, 36, shade(light_el, 1.4), shade(accent, 0.3), center=(14, 12), radius=18)
+        # floating orb — chunky block halo (no AA soft-glow)
+        pygame.draw.circle(surf, light_el, (bx, by), 30)
+        pygame.draw.circle(surf, (255, 255, 255), (bx, by), 20)
+        # glassy orb body — 2-tone dithered fill clipped to a circle (no AA)
+        orb = px_dither_surf(36, 36, shade(light_el, 1.4), shade(accent, 0.3))
         clip_to_circle(orb, (18, 18), 16)
         surf.blit(orb, (bx - 18, by - 18))
-        # inner core (brighter, smaller)
-        core = radial_grad_surf(20, 20, (255, 255, 255), light_el, center=(8, 6), radius=10)
+        # inner core — 2-tone dithered fill clipped to a circle (no AA)
+        core = px_dither_surf(20, 20, (255, 255, 255), light_el)
         clip_to_circle(core, (10, 10), 8)
         surf.blit(core, (bx - 10, by - 10))
-        # glass rim highlight
-        pygame.draw.circle(surf, (255, 255, 255), (bx - 7, by - 8), 4)
-        pygame.draw.circle(surf, (255, 255, 255), (bx - 3, by - 4), 2)
-        # secondary reflections on the bottom
-        pygame.draw.circle(surf, (255, 255, 255), (bx + 6, by + 8), 1)
+        # glass rim highlight (solid blocks, no AA)
+        pygame.draw.rect(surf, (255, 255, 255), (bx - 9, by - 10, 5, 5))
+        pygame.draw.rect(surf, (255, 255, 255), (bx - 5, by - 6, 3, 3))
+        # secondary reflections on the bottom (solid block, no AA)
+        pygame.draw.rect(surf, (255, 255, 255), (bx + 5, by + 7, 2, 2))
         pygame.draw.circle(surf, outline, (bx, by), 16, 2)
-        # orbiting motes (with glow trails)
+        # orbiting motes (solid blocks, no AA)
         for i in range(3):
             ang = -math.pi / 2 + (i - 1) * 0.5
             mx = int(bx + math.cos(ang) * 22)
             my = int(by + math.sin(ang) * 22)
-            mote_glow = soft_glow(10, 10, light_el, 100, radius=5, falloff=1.4)
-            surf.blit(mote_glow, (mx - 5, my - 5))
-            pygame.draw.circle(surf, (255, 255, 255), (mx, my), 3)
+            pygame.draw.circle(surf, light_el, (mx, my), 5)
+            pygame.draw.rect(surf, (255, 255, 255), (mx - 2, my - 2, 4, 4))
 
 # ---------------------------------------------------------------------------
 # Enemy sprites

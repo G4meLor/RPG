@@ -355,10 +355,25 @@ class Hero(Combatant):
     def _apply_perks(self):
         """Apply the unlocked constellation perks (C1..C_ascension) to the hero.
         Re-applied by _recompute so leveling/ascension changes take effect.
-        Perks layer on top of the tree/set bonuses already computed."""
+        Perks layer on top of the tree/set bonuses already computed.
+
+        Idempotent: every perk-derived field (including the passive val) is
+        reset to its un-perked base before re-applying, so repeated _recompute
+        calls (e.g. on every level-up / evo-node unlock) don't compound the
+        passive_boost multiplier. The base passive is re-derived from the hero
+        / the current evo-tree bonus each call, copied so the shared
+        PASSIVES_DB entry is never mutated."""
         # reset the perk-derived fields so re-application is idempotent
         self.ult_extra = {}
         self._perk_cd_reduction = 0.0
+        # re-derive the base passive from the hero / current evo-tree bonus so a
+        # previous passive_boost doesn't compound on an already-boosted val. A
+        # copy is made so the shared PASSIVES_DB entry is never mutated.
+        eb = self._evo_bonus
+        base_passive = D.hero_passive(self.id)
+        if eb.get("passive"):
+            base_passive = D.PASSIVES_DB.get(eb["passive"], base_passive)
+        self.passive = dict(base_passive) if base_passive else None
         # start from the tree/set crit_dmg and skill_cost_mult (already set by
         # the caller); perks add to crit_dmg_bonus and multiply skill_cost_mult
         perks = D.constellation_perks_for(self.def_dict, self.ascension)
@@ -384,14 +399,11 @@ class Hero(Combatant):
                 else:
                     self.ult_extra[tgt] = val
             elif eff == "passive_boost":
-                # amplify the existing passive val (does NOT change the passive
-                # id, so no duplication with EVO_TREE passives). A copy of the
-                # passive dict is made so the shared PASSIVES_DB entry is not
-                # mutated.
+                # amplify the base passive val (re-derived above, so this
+                # multiplies the un-boosted val — idempotent across recomputes).
+                # Does NOT change the passive id, so no duplication with
+                # EVO_TREE passives.
                 if self.passive and "val" in self.passive:
-                    if not getattr(self, "_perk_passive_copy", False):
-                        self.passive = dict(self.passive)
-                        self._perk_passive_copy = True
                     self.passive["val"] = self.passive.get("val", 0) * (1.0 + val)
 
     def set_name(self):

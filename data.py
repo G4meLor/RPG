@@ -637,7 +637,7 @@ _SKILL_TYPE_CATEGORY = {
     "attack": "Attack", "magic": "Magic",
     "aoe_attack": "AoE", "aoe_magic": "AoE",
     "heal": "Heal", "buff": "Buff", "debuff": "Debuff",
-    "ultimate": "Ultimate", "revive": "Heal",
+    "ultimate": "Ultimate", "revive": "Revive",
     "summon": "Summon", "beam": "Beam", "trap": "Trap", "innate": "Innate",
 }
 for _sid, _sk in SKILLS_DB.items():
@@ -1604,7 +1604,11 @@ def _build_hero_assets():
                 "id": sid,
                 "name": sk["name"],
                 "type": sk["type"],
-                "category": _SKILL_CATEGORY.get(sk["type"], sk["type"].title()),
+                # read the post-processed `category` field (single source — the
+                # _SKILL_TYPE_CATEGORY post-process at line ~643 sets it on every
+                # skill; don't re-derive from a second map, which disagreed on
+                # `revive`).
+                "category": sk.get("category") or _SKILL_CATEGORY.get(sk["type"], sk["type"].title()),
                 "cost": sk.get("cost", 0),
             }
             txt = _HERO_SKILL_TEXT.get((hid, sid))

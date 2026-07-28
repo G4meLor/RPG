@@ -1850,16 +1850,7 @@ class WorldScene:
                 self.particles.burst(wc.x, wc.y, (140, 240, 160),
                                      n=24, speed=200, size=6, life=0.6, grav=-60)
                 audio.play("heal", 0.5)
-        else:
-            # fallback: small burst
-            self.particles.burst(wc.x, wc.y, col, n=14, speed=200, size=5, life=0.4)
-            audio.play("skill", 0.4)
-        # new skill types (summon/beam/trap) — expand the taxonomy so skills read
-        # as diverse. summon spawns a temporary ally (NOT a party member), beam is
-        # a line hit-scan, trap is a delayed ground hazard. Each is balanced so it
-        # doesn't trivialize combat; the summon/trap are temporary entities that
-        # despawn on expiry (cleared on _load_map so they don't persist).
-        if kind == "summon":
+        elif kind == "summon":
             # spawn a temporary ally at the hero's side that auto-attacks nearby
             # enemies for `dur` seconds. A separate entity (SummonAlly) so the
             # 4-slot party is untouched. Water summon heals the party instead.
@@ -1906,7 +1897,9 @@ class WorldScene:
             audio.play("skill", 0.5)
         elif kind == "trap":
             # place a trap on the ground at the facing that triggers when an
-            # enemy steps within its radius — a delayed hazard.
+            # enemy steps within its radius — a delayed hazard. The trap stores
+            # the summoning hero (source) so a trap kill fires the death/reward
+            # path via the on_enemy_hit callback (no silent kills).
             tx = wc.x + wc.facing * 60
             ty = wc.y
             tr = Trap(tx, ty, skill["element"], col,
@@ -1914,6 +1907,10 @@ class WorldScene:
                       skill.get("dur", 8), wc)
             self._traps.append(tr)
             self.particles.burst(tx, ty, col, n=10, speed=120, size=4, life=0.4, grav=-30)
+            audio.play("skill", 0.4)
+        else:
+            # fallback: small burst
+            self.particles.burst(wc.x, wc.y, col, n=14, speed=200, size=5, life=0.4)
             audio.play("skill", 0.4)
         # variable hit-stop: heavier skills (higher cost tier) freeze the screen
         # longer than a basic attack so a cost-5 nuke lands with more weight than
@@ -2736,7 +2733,8 @@ class WorldScene:
                                          self._on_enemy_hit, self.party)]
         if self._traps:
             self._traps = [t for t in self._traps
-                           if t.update(sim_dt, self.enemies, self.particles)]
+                           if t.update(sim_dt, self.enemies, self.particles,
+                                       self._on_enemy_hit, self._element_mult)]
 
         # particles + floats
         self.particles.update(sim_dt)

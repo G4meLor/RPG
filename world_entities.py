@@ -1495,7 +1495,7 @@ class SummonAlly:
     separate entity so the 4-slot party is untouched. Water-summons heal the
     party instead of attacking (potency < 1.0 flags the heal role)."""
     __slots__ = ("x", "y", "element", "color", "atk", "dur", "potency",
-                 "source", "atk_cd", "r", "t")
+                 "source", "atk_cd", "r", "t", "dur_max")
 
     def __init__(self, x, y, element, color, atk, dur, potency, source):
         self.x = float(x); self.y = float(y)
@@ -1505,6 +1505,7 @@ class SummonAlly:
         self.atk_cd = 0.0
         self.r = 18
         self.t = 0.0
+        self.dur_max = max(1.0, dur)  # for the timer-ring fraction (avoids /6 hardcode)
 
     def update(self, dt, enemies, particles, on_enemy_hit, party):
         self.t += dt
@@ -1546,7 +1547,7 @@ class SummonAlly:
             pygame.draw.circle(surf, self.color, (x, y), self.r)
             pygame.draw.circle(surf, (20, 20, 30), (x, y), self.r, 2)
             # a fading timer ring so the player sees the summon's remaining dur
-            frac = max(0.0, self.dur / 6.0)
+            frac = max(0.0, min(1.0, self.dur / self.dur_max))
             if frac > 0:
                 pygame.draw.arc(surf, (255, 255, 255),
                                 (x - self.r - 4, y - self.r - 4,
@@ -1568,17 +1569,26 @@ class Trap:
         self.dur = dur; self.source = source
         self.t = 0.0; self.triggered = False
 
-    def update(self, dt, enemies, particles):
+    def update(self, dt, enemies, particles, on_enemy_hit, element_mult):
         self.t += dt
         self.dur -= dt
         if self.dur <= 0:
             return False
         for en in enemies:
             if en.alive and math.hypot(en.x - self.x, en.y - self.y) < self.radius + en.r:
-                # trigger: AoE damage to all enemies within the radius + a burst
+                # trigger: AoE damage to all enemies within the radius + a burst.
+                # Route each hit through on_enemy_hit (passing the summoning hero
+                # as source) so a trap kill fires the death/reward path (xp/gold/
+                # shards/combo), not a silent death. element_mult scales the trap
+                # to the enemy's element (a dark trap vs a water enemy, etc.).
+                combo_mul = 1.0  # traps don't ride the live combo counter
                 for en2 in enemies:
                     if en2.alive and math.hypot(en2.x - self.x, en2.y - self.y) < self.radius:
-                        en2.take_damage(self.power, self.x, self.y, on_attack=None)
+                        mult = element_mult(self.element, en2.element)
+                        dmg = max(1, int(self.power * mult * combo_mul))
+                        dealt = en2.take_damage(dmg, self.x, self.y, on_attack=None)
+                        if dealt > 0 and on_enemy_hit is not None:
+                            on_enemy_hit(en2, self.source, dealt, False)
                 particles.burst(self.x, self.y, self.color,
                                 n=24, speed=300, size=6, life=0.5)
                 particles.ring(self.x, self.y, self.color,

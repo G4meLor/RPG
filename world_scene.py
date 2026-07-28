@@ -1600,7 +1600,7 @@ class WorldScene:
     def _do_attack(self, wc, target=None):
         if wc.atk_cd > 0:
             return
-        wc.atk_cd = 0.32
+        wc.atk_cd = D.AA_CD
         wc.atk_anim = 0.2
         wc._last_combat_t = 0
         style = WEAPON_STYLE.get(WEAPON_STYLE_KEY(wc.hero.id), "melee")
@@ -2638,8 +2638,11 @@ class WorldScene:
                 d = math.hypot(wc.aa_target.x - wc.x, wc.aa_target.y - wc.y)
                 if d < D.AA_RANGE:
                     # in range: face the target + auto-fire at the AA cd (reuse
-                    # wc.atk_cd so the AA + the manual J attack share a cd).
+                    # wc.atk_cd so the AA + the manual J attack share a cd). Clear
+                    # any stale move_target so the hero stops + attacks (otherwise
+                    # wc.update keeps walking toward the enemy's last-frame pos).
                     wc.facing = 1 if wc.aa_target.x > wc.x else -1
+                    wc.move_target = None
                     if wc.atk_cd <= 0:
                         self._do_attack(wc, target=wc.aa_target)
                 else:
@@ -2809,10 +2812,11 @@ class WorldScene:
                     if hit_enemy is not None:
                         # RMB on an enemy -> AA target (the hero walks toward it
                         # when out of range, auto-attacks when in range; the
-                        # update loop drives the AA). Don't set move_target here
-                        # — the update loop sets it from the AA target so the
-                        # reticle doesn't fight the AA marker.
+                        # update loop drives the AA). Clear any stale move_target
+                        # so the hero doesn't keep walking to an old ground point
+                        # while attacking the enemy.
                         wc.aa_target = hit_enemy
+                        wc.move_target = None
                     else:
                         # RMB on ground -> click-to-move + clear the AA target
                         wc.aa_target = None

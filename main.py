@@ -666,6 +666,54 @@ class HeroDetailScene(Scene):
         # ascension pips
         asc = rec.get("ascension", 0)
         text(surf, f"Ascension {asc}/{D.MAX_ASCENSION}  (dupes: {rec['dupes']})", 16, (255, 180, 220), (240, 600), center=True)
+        # lore panel: bio + centered italic quote, below the portrait (space at y~620+)
+        lore = D.HERO_LORE.get(hid)
+        if lore:
+            # "italic" via a SysFont with italic=True, cached so we don't rebuild it each frame.
+            if not hasattr(self, "_lore_font"):
+                self._lore_font = pygame.font.SysFont("dejavusans,arial", 16, italic=True)
+            # bio, word-wrapped to the left panel width (x 40..440, ~400 px)
+            bio = lore["bio"]
+            words = bio.split(" ")
+            lines = []
+            cur = ""
+            for w in words:
+                trial = cur + " " + w if cur else w
+                if self._lore_font.size(trial)[0] <= 380:
+                    cur = trial
+                else:
+                    if cur:
+                        lines.append(cur)
+                    cur = w
+            if cur:
+                lines.append(cur)
+            by = 624
+            for ln in lines[:3]:
+                text(surf, ln, 14, DIM, (60, by))
+                by += 18
+            # centered italic quote (word-wrapped so long quotes don't overflow the panel)
+            qt = lore["quote"]
+            qwords = qt.split(" ")
+            qlines = []
+            qcur = ""
+            for w in qwords:
+                trial = qcur + " " + w if qcur else w
+                if self._lore_font.size(trial)[0] <= 380:
+                    qcur = trial
+                else:
+                    if qcur:
+                        qlines.append(qcur)
+                    qcur = w
+            if qcur:
+                qlines.append(qcur)
+            qy = by + 8
+            for ln in qlines:
+                t = self._lore_font.render(ln, True, (220, 200, 160))
+                r = t.get_rect(midtop=(240, qy))
+                sh = self._lore_font.render(ln, True, (0, 0, 0))
+                surf.blit(sh, (r.x + 2, r.y + 2))
+                surf.blit(t, r)
+                qy += 20
         # stats panel
         draw_panel(surf, (460, 110, 780, 360))
         # cache the hero instance per hero id so we don't rebuild it every frame
@@ -1925,12 +1973,19 @@ class CodexScene(Scene):
         # 25 frames every frame.
         if not hasattr(self, "_frame_cache"):
             self._frame_cache = {}
+        # find the hovered hero card so we can draw a bio tooltip on top of it.
+        mp = pygame.mouse.get_pos()
+        hovered_id = None
+        hovered_rect = None
         for i, hd in enumerate(all_heroes):
             col = i % cols
             row = i // cols
             x = start_x + col * (cw + gap)
             y = start_y + row * (ch + gap) - self.scroll
             r = pygame.Rect(x, y, cw, ch)
+            if r.collidepoint(mp):
+                hovered_id = hd["id"]
+                hovered_rect = r
             owned = hd["id"] in p.owned
             fr = self._frame_cache.get(hd["rarity"])
             if fr is None:
@@ -1950,6 +2005,38 @@ class CodexScene(Scene):
                 surf.blit(dim, (r.x + 10, r.y + 10))
                 text(surf, "???", 28, (120, 120, 140), (r.centerx, r.y + cw // 2), center=True)
                 text(surf, hd["name"], 14, (120, 120, 140), (r.centerx, r.y + cw + 4), center=True)
+        # bio tooltip on hover: a small panel under the hovered card with the bio.
+        # Only for owned heroes (silhouettes have no identity to reveal yet).
+        if hovered_id is not None and hovered_rect is not None and hovered_id in p.owned:
+            lore = D.HERO_LORE.get(hovered_id)
+            if lore:
+                bio = lore["bio"]
+                tt_w, tt_h = 360, 60
+                tx = hovered_rect.centerx - tt_w // 2
+                ty = hovered_rect.bottom + 6
+                # keep the tooltip on-screen
+                tx = max(8, min(tx, WIDTH - tt_w - 8))
+                ty = min(ty, HEIGHT - tt_h - 8)
+                draw_panel(surf, (tx, ty, tt_w, tt_h))
+                # word-wrap the bio inside the tooltip (max width ~ tt_w - 24)
+                font = get_font(13)
+                words = bio.split(" ")
+                lines = []
+                cur = ""
+                for w in words:
+                    trial = cur + " " + w if cur else w
+                    if font.size(trial)[0] <= tt_w - 24:
+                        cur = trial
+                    else:
+                        if cur:
+                            lines.append(cur)
+                        cur = w
+                if cur:
+                    lines.append(cur)
+                ly = ty + 8
+                for ln in lines[:3]:
+                    text(surf, ln, 13, WHITE, (tx + 12, ly))
+                    ly += 16
         self.back_btn.draw(surf)
 
 

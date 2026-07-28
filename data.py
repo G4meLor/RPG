@@ -119,6 +119,12 @@ BASE_CRIT_CHANCE = 0.08      # base chance any hit can crit
 CRIT_MULT = 1.6              # crit damage multiplier
 COMBO_BONUS_PER = 0.04       # +4% damage per combo step
 COMBO_MAX = 10
+# combo climax milestones: at 5 the next skill is empowered (wider AoE / a 2nd
+# projectile); at 10 the next ult is empowered (a free debuff on every enemy
+# hit). The ult milestone (10) coincides with COMBO_MAX so reaching max combo
+# also arms the empowered ult.
+COMBO_MILESTONE_SKILL = 5
+COMBO_MILESTONE_ULT = 10
 DEFEND_MITIGATION = 0.45     # defending reduces incoming damage by this fraction
 
 # ---------------------------------------------------------------------------

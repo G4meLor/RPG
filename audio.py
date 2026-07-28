@@ -305,6 +305,46 @@ def synth_perfect(sr=22050, dur=0.18):
     return _make_sound(wave * 0.5, sr)
 
 
+def synth_combo_sting(tier, sr=22050):
+    """An ascending stinger for a combo milestone (tier 1 at combo 5, tier 2 at
+    combo 10). Tier 1 is a 2-note rise; tier 2 is a 4-note ascending arpeggio
+    (reuses synth_revive's arpeggio pattern at a shorter dur so it sits on top
+    of combat SFX without stepping on the hit sound)."""
+    if tier <= 1:
+        dur = 0.28
+        n = int(sr * dur)
+        t = np.linspace(0, dur, n)
+        wave = np.zeros(n)
+        for i, f in enumerate([523, 784]):
+            start = int(i * n / 2)
+            seg = np.sin(2 * math.pi * f * (t - t[start])) * np.exp(-(t - t[start]) * 5)
+            wave += np.where(np.arange(n) >= start, seg, 0)
+        return _make_sound(wave / 2 * 0.6, sr)
+    # tier 2: 4-note ascending arpeggio (same shape as synth_revive, shorter)
+    dur = 0.42
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    wave = np.zeros(n)
+    for i, f in enumerate([523, 659, 784, 1047]):
+        start = int(i * n / 4)
+        seg = np.sin(2 * math.pi * f * (t - t[start])) * np.exp(-(t - t[start]) * 4)
+        wave += np.where(np.arange(n) >= start, seg, 0)
+    return _make_sound(wave / 4 * 0.65, sr)
+
+
+def synth_combo_max(sr=22050, dur=0.7):
+    """A short triumphant chord for hitting the max combo (10) — a bright
+    major triad that rings once and decays, distinct from the ascending
+    stingers so the climax reads as a finisher, not another tier step."""
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    # C major triad (523/659/784) + a high shimmer (1047) for sparkle
+    wave = (np.sin(2 * math.pi * 523 * t) + np.sin(2 * math.pi * 659 * t)
+            + np.sin(2 * math.pi * 784 * t) + 0.5 * np.sin(2 * math.pi * 1047 * t)) / 3.5
+    wave *= np.linspace(0.4, 1, n) * np.exp(-t * 3)
+    return _make_sound(wave * 0.7, sr)
+
+
 def init():
     global INIT_OK, SOUNDS, ENABLED
     if INIT_OK:
@@ -351,6 +391,12 @@ def init():
             "ambience": synth_ambience(biome="plains"),
             "heartbeat": synth_heartbeat(),
             "perfect": synth_perfect(),
+            # combo-climax stingers: one per milestone tier (1 at combo 5,
+            # 2 at combo 10) + the max-combo chord. Cached so the pitch-tier
+            # block's audio.play is a dict lookup, not a re-synth per frame.
+            "combo_1": synth_combo_sting(1),
+            "combo_2": synth_combo_sting(2),
+            "combo_max": synth_combo_max(),
         }
         INIT_OK = True
     except Exception as e:

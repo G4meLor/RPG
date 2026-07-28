@@ -910,6 +910,16 @@ class WorldScene:
         # the last combo milestone we pitched the hit sound up for (so we only
         # bump the pitch every 5 combo, not every hit)
         self._combo_pitch_tier = 0
+        # combo climax: at milestone counts the next skill/ult is empowered
+        # (a bonus effect — wider AoE + a 2nd ring / 2nd projectile for skills,
+        # a free debuff on every enemy hit for ults). The flag is consumed on
+        # use and cleared on a party swap so it can't be banked across heroes.
+        self._skill_empowered = False
+        self._ult_empowered = False
+        # one-shot max-combo celebration guard: a chord + brief hit-stop fires
+        # the first time the streak hits COMBO_MAX, then resets when the combo
+        # window expires so the next max streak celebrates again.
+        self._combo_max_celebrated = False
 
         # discover neighbors of the current cell so the map shows reachable ones
         # _discover_neighbors is now run inside _load_map on every map enter
@@ -1374,6 +1384,13 @@ class WorldScene:
         kind = skill["type"]
         a = wc.hero
         atk = wc.effective_atk()
+        # combo climax: if the skill is empowered (armed at combo milestone 5),
+        # widen the effect — AoE skills get a bigger radius + a second ring;
+        # single-target skills get a second piercing projectile. Consumed on
+        # use so the empowerment is a one-shot finisher, not a persistent buff.
+        empowered = self._skill_empowered
+        if empowered:
+            self._skill_empowered = False
         # most skills: a burst around the hero or a projectile
         if kind in ("attack", "magic") or (kind == "aoe_attack" and "arrow" in sk) or (kind == "magic" and "bolt" in sk):
             # single-target projectile or melee nuke
@@ -1402,12 +1419,27 @@ class WorldScene:
                                1.6, 12, col, skill["element"], wc,
                                atk * skill["power"], is_crit=False, kind="hero")
                 self.projectiles.append(p)
+                # empowered single-target: a second piercing projectile offset
+                # perpendicular to the aim line so it hits a different arc of
+                # the enemy cluster (a free second shot, not a damage multiplier).
+                if empowered:
+                    # perpendicular offset for the 2nd projectile's start
+                    px = -dy / d * 24
+                    py = dx / d * 24
+                    p2 = Projectile(wc.x + wc.facing * 20 + px, wc.y + py,
+                                    dx / d * sp, dy / d * sp,
+                                    1.6, 12, col, skill["element"], wc,
+                                    atk * skill["power"], is_crit=False, kind="hero")
+                    self.projectiles.append(p2)
             else:
                 # big melee arc
                 arc_x = wc.x + wc.facing * 50
+                # empowered melee: widen the arc radius so the nuke reaches a
+                # wider cluster (a radius bump, not a damage multiplier).
+                arc_r = 130 if empowered else 90
                 combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
                 for en in self.enemies:
-                    if en.alive and math.hypot(en.x - arc_x, en.y - wc.y) < 90:
+                    if en.alive and math.hypot(en.x - arc_x, en.y - wc.y) < arc_r:
                         mult = self._element_mult(skill["element"], en.element)
                         dmg = int(atk * skill["power"] * mult * 1.3 * combo_mul)
                         dealt = en.take_damage(dmg, wc.x, wc.y,
@@ -1415,15 +1447,25 @@ class WorldScene:
                         if dealt:
                             self._on_enemy_hit(en, wc, dealt, False)
                 self.particles.burst(arc_x, wc.y, col, n=16, speed=240, size=6, life=0.4)
+                # empowered melee: a second shockwave ring so the wider nuke
+                # reads visually as a bigger impact.
+                if empowered:
+                    self.particles.ring(arc_x, wc.y, col, n=20, speed=360, size=6, life=0.45)
                 self.camera.add_shake(5, self._shake_mul)
             audio.play("skill", 0.4)
         elif kind in ("aoe_attack", "aoe_magic"):
             # burst around the hero + an expanding shockwave ring
             self.particles.burst(wc.x, wc.y, col, n=30, speed=320, size=7, life=0.6, grav=0)
             self.particles.ring(wc.x, wc.y, col, n=28, speed=420, size=6, life=0.5)
+            # empowered AoE: widen the radius (200 -> 260) + a second ring so
+            # the burst covers a bigger cluster and reads as a bigger impact.
+            aoe_r = 260 if empowered else 200
+            if empowered:
+                self.particles.ring(wc.x, wc.y, (255, 255, 255),
+                                    n=24, speed=380, size=6, life=0.45)
             combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
             for en in self.enemies:
-                if en.alive and math.hypot(en.x - wc.x, en.y - wc.y) < 200:
+                if en.alive and math.hypot(en.x - wc.x, en.y - wc.y) < aoe_r:
                     mult = self._element_mult(skill["element"], en.element)
                     dmg = int(atk * skill["power"] * mult * combo_mul)
                     dealt = en.take_damage(dmg, wc.x, wc.y,
@@ -1547,6 +1589,13 @@ class WorldScene:
         a = wc.hero
         atk = wc.effective_atk()
         kind = skill["type"]
+        # combo climax: if the ult is empowered (armed at combo milestone 10,
+        # which coincides with COMBO_MAX), apply a free debuff to every enemy
+        # hit by the ult — a status, not raw damage, so it doesn't double-dip
+        # with the combo multiplier. Consumed on use; cleared on a party swap.
+        empowered = self._ult_empowered
+        if empowered:
+            self._ult_empowered = False
         self.flash = 0.5
         if self._reduce_motion:
             self.flash *= 0.4
@@ -1607,6 +1656,22 @@ class WorldScene:
         # --- B5: per-hero ultimate variant — a secondary effect on top of the
         # base ultimate. Read the variant (if any) and apply its extra. Only the
         # one-liner effects are wired (burn/freeze deferred until the DoT engine).
+        # --- C5: empowered-ult free debuff — apply a short atk_down to every
+        # enemy the ult actually hit (collected in _ult_hit_targets above) so
+        # the climax is a status payoff, not a second damage roll. Skipped for
+        # heal ults (they hit no enemies).
+        if empowered:
+            for en in self.enemies:
+                if not en.alive:
+                    continue
+                # only enemies within the ult's effect radius (320 for AoE, 300
+                # for the forward beam) — matches the damage loops above.
+                if math.hypot(en.x - wc.x, en.y - wc.y) < 320:
+                    en.enemy.add_effect("atk_down", 4, 0.3)
+                    self.particles.burst(en.x, en.y, (255, 120, 180),
+                                         n=10, speed=160, size=5, life=0.5)
+            self.floats.append(FloatText(wc.x, wc.y - 50, "EMPOWERED!",
+                                         (255, 180, 240), size=22))
         var = D.ULTIMATE_VARIANTS.get(wc.hero.id)
         if var:
             eff = var["extra_effect"]
@@ -1676,6 +1741,30 @@ class WorldScene:
         # hit of a streak gets 0% bonus and the ramp builds from there.
         self._combo_count = min(D.COMBO_MAX, self._combo_count + 1)
         self._combo_t = self._combo_window
+        # combo climax milestones: arm the next skill/ult with a bonus effect.
+        # The skill milestone (5) arms _skill_empowered; the ult milestone (10)
+        # coincides with COMBO_MAX and arms _ult_empowered. Re-hitting the
+        # milestone while already empowered is a no-op (the flag is set, not
+        # toggled) so the player keeps the empowerment until they spend it.
+        if self._combo_count == D.COMBO_MILESTONE_SKILL:
+            self._skill_empowered = True
+        if self._combo_count == D.COMBO_MILESTONE_ULT:
+            self._ult_empowered = True
+        # max-combo one-shot celebration: the first time the streak hits
+        # COMBO_MAX in this window, fire a chord + a brief hit-stop. Gated by
+        # _combo_max_celebrated so it only fires once per window (reset on
+        # window expiry below). The hit-stop uses max() so it doesn't stack
+        # with a crit's freeze on the same frame.
+        if self._combo_count >= D.COMBO_MAX and not self._combo_max_celebrated:
+            self._combo_max_celebrated = True
+            audio.play("combo_max", 0.5)
+            _hs = 0.18
+            if self._reduce_motion:
+                _hs *= 0.5
+            self.hit_stop = max(self.hit_stop, _hs)
+            self.camera.add_shake(8, self._shake_mul)
+            self.particles.ring(wc.x, wc.y, (255, 220, 120),
+                                n=32, speed=420, size=7, life=0.6)
         # per-enemy weakness: a hero whose element matches the enemy's listed
         # weakness deals +50% (the Genshin-style break). Surfaced as a "WEAK!"
         # tag on the float so the player sees the counter-element pay off.
@@ -1748,10 +1837,16 @@ class WorldScene:
         else:
             self.hit_stop = max(self.hit_stop, 0.05)
             self.camera.add_shake(2, self._shake_mul)
-            # pitch the hit sound up every 5 combo so a streak feels escalating
+            # pitch the hit sound up every 5 combo so a streak feels escalating.
+            # On a tier increase also fire the combo stinger (an ascending
+            # arpeggio cached as combo_1/combo_2) so the milestone is heard,
+            # not just the pitched hit. The stinger only plays on a tier
+            # increase (not every hit at that tier) so it doesn't spam.
             tier = self._combo_count // 5
             if tier > self._combo_pitch_tier:
                 self._combo_pitch_tier = tier
+                if tier in (1, 2):
+                    audio.play("combo_1" if tier == 1 else "combo_2", 0.3)
                 audio.play("crit", 0.18)
             else:
                 audio.play("hit", 0.2)
@@ -1967,6 +2062,12 @@ class WorldScene:
         # a party swap is a combat action (elemental-reaction setup + i-frames),
         # not a menu click — give it the skill whoosh instead of the click tick
         audio.play("skill", 0.3)
+        # combo climax: clear the empowered flags on a swap so a player can't
+        # bank a milestone bonus on one hero and spend it on another. The combo
+        # counter itself stays (the streak is a party-wide resource), but the
+        # finisher must be spent by the hero who earned it.
+        self._skill_empowered = False
+        self._ult_empowered = False
         # recompute elemental resonances — the active buffs track the live party,
         # so swapping in a 2nd hero of an element enables its resonance live.
         self._compute_resonances()
@@ -2247,6 +2348,12 @@ class WorldScene:
             if self._combo_t <= 0:
                 self._combo_count = 0
                 self._combo_pitch_tier = 0
+                # combo climax: reset the max-combo celebration guard so the
+                # next streak to hit COMBO_MAX celebrates again, and drop any
+                # unspent empowered flags (the window that earned them expired).
+                self._combo_max_celebrated = False
+                self._skill_empowered = False
+                self._ult_empowered = False
 
         # low-HP heartbeat: tick the procedural heartbeat while the active hero
         # is below 30% HP so the player feels the danger (silenced above 35%)
@@ -2983,6 +3090,15 @@ class WorldScene:
             pygame.draw.rect(surf, (30, 30, 40), (bx, by, bw, 6), border_radius=3)
             if frac > 0:
                 pygame.draw.rect(surf, col, (bx, by, int(bw * frac), 6), border_radius=3)
+            # combo climax: an "EMPOWERED" tag under the combo counter when a
+            # milestone flag is active, so the player sees the finisher is armed
+            # and knows to spend it before the window expires. Pulses so it
+            # reads as an active buff, not a static label.
+            if self._skill_empowered or self._ult_empowered:
+                pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.01)
+                ecol = (int(180 * pulse + 75), int(120 * pulse + 60), int(200 * pulse + 40))
+                etag = "EMPOWERED SKILL!" if self._skill_empowered else "EMPOWERED ULT!"
+                text(surf, etag, 16, ecol, (cx, by + 14), center=True)
 
         # boss HP bar at top center if a boss is alive — a dramatic framed bar
         boss = next((e for e in self.enemies if e.is_boss and e.alive), None)

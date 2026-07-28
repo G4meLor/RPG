@@ -548,6 +548,13 @@ class WorldCharacter:
                 and self.hero.hp < self.hero.max_hp):
             self.hero.hp = min(self.hero.max_hp,
                                self.hero.hp + self.hero.max_hp * self.hero.passive.get("val", 0.02) * dt)
+        # passive energy regen: recover energy over time so a hero with low
+        # energy can use skills again without landing a hit (the "skills don't
+        # recover / mana doesn't increase" fix). Slower in combat.
+        if self.alive and self.hero.energy < self.hero.max_energy:
+            rate = D.ENERGY_REGEN_PCT * (0.5 if self._last_combat_t < 1.5 else 1.0)
+            self.hero.energy = min(self.hero.max_energy,
+                                   self.hero.energy + self.hero.max_energy * rate * dt)
 
         # walk anim + idle breathing + squash/stretch
         if self.moving:

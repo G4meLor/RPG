@@ -1021,6 +1021,12 @@ class WorldScene:
             self.camera.x = max(0, min(WD.MAP_W - self.camera.vw, ep[0] - self.camera.vw / 2))
             self.camera.y = max(0, min(WD.MAP_H - self.camera.vh, ep[1] - self.camera.vh / 2))
             self.map_enter_t = 0.45
+            # ensure the active hero starts a map with usable energy (the
+            # "skills don't recover" fix: a hero loaded from save with stale low
+            # energy should top up to ENERGY_START on map enter)
+            a = self.party[self.active]
+            if a and a.hero.energy < D.ENERGY_START:
+                a.hero.energy = min(D.ENERGY_START, a.hero.max_energy)
         # pre-render the new map's surface on a background thread so the first
         # visit doesn't stall the frame (the render is ~10ms but a fresh map's
         # ground-base build can spike). We render synchronously here but the

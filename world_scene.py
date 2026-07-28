@@ -1020,13 +1020,10 @@ class WorldScene:
         self._flash_surf = pygame.Surface((1280, 720), pygame.SRCALPHA)
         # reusable HUD panel surface
         self._hud_panel = pygame.Surface((300, 90), pygame.SRCALPHA)
-        # fog motes: a few big soft circles that drift + parallax slowly. Fixed
-        # positions (seeded once); the soft sprite is cached per fog color so a
-        # mote is one blit, not ~15 concentric circle draws + a full-screen fill.
-        rng = random.Random(1234)
-        self._fog_motes = [(rng.uniform(0, 1280), rng.uniform(0, 720),
-                            rng.randint(60, 120), rng.uniform(0.2, 0.5))
-                           for _ in range(7)]
+        # (the fog motes — 7 big soft drifting circles, additive blend — were
+        # removed in Task C1: they read as unexplained "stray white circles" on
+        # screen. The fog weather darkening (_fog_overlay, a flat low-alpha
+        # darkening) stays; the rain overlay + storm strikes stay.)
         # cached per-biome atmosphere overlays (base = vignette + sky gradient,
         # fog = soft mote sprite), keyed in _light_cache and built lazily
         self._light_cache = {}
@@ -3663,16 +3660,8 @@ class WorldScene:
                 ty = int(wc.y - oy - th // 2)
                 surf.blit(torch_sp, (tx, ty),
                           special_flags=pygame.BLEND_RGBA_ADD)
-        # drifting fog motes — a few big soft circles (pre-rendered sprite, one
-        # blit each) that parallax slowly with the camera for a sense of depth
-        fog = pal.get("fog", (120, 120, 140))
-        mote = self._fog_sprite(fog)
-        mw, mh = mote.get_size()
-        t = pygame.time.get_ticks() * 0.0002
-        for (bx, by, rr, spd) in self._fog_motes:
-            x = int((bx - ox * 0.15 + t * 40 * spd) % (1280 + rr * 2) - rr)
-            y = int((by - oy * 0.10 + t * 20 * spd) % (720 + rr * 2) - rr)
-            surf.blit(mote, (x, y), special_flags=pygame.BLEND_RGBA_ADD)
+        # (the drifting fog motes were removed in Task C1 — they read as stray
+        # white circles. The fog weather darkening below stays.)
 
         # weather overlays — rain (diagonal alpha streaks) + fog (a flat
         # darkening). Both are cached in _light_cache and blitted as a single
@@ -3760,22 +3749,6 @@ class WorldScene:
                                  (i, i, 1280 - 2 * i, 720 - 2 * i), 6)
             self._light_cache[key] = ov
         return ov
-
-    def _fog_sprite(self, fog):
-        """A cached soft radial-gradient mote sprite for a fog color. Built once
-        per fog color: ~15 concentric circles on a small surface, reused as one
-        blit per mote instead of rebuilding them every frame per mote."""
-        key = ("fog", fog)
-        sp = self._light_cache.get(key)
-        if sp is None:
-            # the largest mote radius is ~120; size the sprite to fit it
-            R = 120
-            sp = pygame.Surface((R * 2, R * 2), pygame.SRCALPHA)
-            for k in range(R, 0, -8):
-                a = int(10 * (1 - k / R))
-                pygame.draw.circle(sp, (*fog, a), (R, R), k)
-            self._light_cache[key] = sp
-        return sp
 
     def _rain_overlay(self):
         """A cached full-screen rain overlay — a field of diagonal alpha streaks

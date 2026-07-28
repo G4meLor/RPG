@@ -2214,19 +2214,17 @@ class WorldScene:
             tx, ty = wc.move_target
             sx, sy = int(tx - ox), int(ty - oy)
             if -60 < sx < 1340 and -60 < sy < 780:
-                pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.01)
-                pygame.draw.circle(surf, (255, 255, 255),
-                                   (sx, sy), 8, 2)
-                pygame.draw.circle(surf, (255, 255, 255),
-                                   (sx, sy), 2)
-                # fade the ring as the hero approaches the target
-                d = math.hypot(tx - wc.x, ty - wc.y)
-                if d < 40:
-                    a = int(120 * pulse * (d / 40))
+                # element-tinted (not pure white) + fading over 0.5s so the
+                # reticle reads as a soft target marker, not a stray circle
+                el_col = D.ELEMENT_COLORS.get(wc.element, ((200, 200, 220),))[0]
+                fade = max(0.0, 1.0 - wc.move_target_t / 0.5)
+                if fade > 0:
+                    pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.01)
+                    a_ring = int(180 * pulse * fade)
                     ring = scratch(24, 24)
-                    pygame.draw.circle(ring, (255, 255, 255, a),
-                                       (12, 12), 10, 2)
+                    pygame.draw.circle(ring, (*el_col, a_ring), (12, 12), 8, 2)
                     surf.blit(ring, (sx - 12, sy - 12))
+                    pygame.draw.circle(surf, el_col, (sx, sy), 2)
 
         # treasure chests — a glowing crate with a soft pulse; dimmed once opened
         for ch in self.chests:

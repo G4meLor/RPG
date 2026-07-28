@@ -308,6 +308,9 @@ class WorldCharacter:
         # toward this point. Cleared on WASD input, reaching the target, or a
         # combat action. None = no auto-move target.
         self.move_target = None        # (x, y) or None
+        self.move_target_t = 0.0       # age of the current move_target (for reticle fade)
+        self._last_mt_dist = 0.0       # last distance to target (stall detection)
+        self._mt_stall_t = 0.0         # time the auto-walk has stalled
 
         # animation
         self.walk_t = 0.0
@@ -463,16 +466,28 @@ class WorldCharacter:
             dx = tx - self.x
             dy = ty - self.y
             d = math.hypot(dx, dy)
+            self.move_target_t += dt
             if d < 8:
                 # reached the target — stop auto-moving
                 self.move_target = None
             else:
-                # synthesize a normalized input toward the target so the existing
-                # accel/friction movement handles it (no special-case path)
-                input_dir = (dx / d, dy / d)
-                # face the direction we're walking
-                self.facing = 1 if dx > 0 else -1
-                self.moving = True
+                # stall detection: if the hero isn't getting closer (blocked by a
+                # wall), clear the target after 0.3s so the reticle doesn't hang
+                # on a wall forever (the "stray white circle" fix)
+                if d >= self._last_mt_dist - 1:
+                    self._mt_stall_t += dt
+                    if self._mt_stall_t > 0.3:
+                        self.move_target = None
+                else:
+                    self._mt_stall_t = 0
+                self._last_mt_dist = d
+                if self.move_target is not None:
+                    # synthesize a normalized input toward the target so the
+                    # existing accel/friction movement handles it (no special-case path)
+                    input_dir = (dx / d, dy / d)
+                    # face the direction we're walking
+                    self.facing = 1 if dx > 0 else -1
+                    self.moving = True
 
         # dash
         if want_dash and self.dash_cd <= 0 and (input_dir[0] or input_dir[1]):

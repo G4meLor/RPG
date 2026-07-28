@@ -953,6 +953,10 @@ class GachaScene(Scene):
             self.anim_t += dt
             if not self._rolled_sound and self.anim_t > 0.1:
                 audio.play("gacha_roll", 0.5)
+                # start the 1.6s rising tension drone on its dedicated channel
+                # so it crescendos toward the reveal and can be stopped cleanly
+                # at the reveal (or the skip branch) without leaking.
+                audio.play_gacha_tension(0.5)
                 self._rolled_sound = True
             self.spark_t += dt
             if self.spark_t > 0.05:
@@ -969,18 +973,17 @@ class GachaScene(Scene):
             self.particles = [p for p in self.particles if p[4] > 0]
             if self.anim_t > 1.6:
                 self.state = "reveal"; self.reveal_idx = 0; self.reveal_t = 0
-                # opening reveal sound scaled to the BEST rarity in the batch
+                # stop the tension drone the moment the reveal fires (the
+                # crescendo peaks at exactly 1.6s to match this gate) so the
+                # drone resolves into the fanfare instead of overlapping it.
+                audio.stop_gacha_tension()
+                # opening reveal fanfare scaled to the BEST rarity in the batch
                 # (not the first card) so an SSR buried later still triggers the
-                # strong cue. Reuse 'victory' as the SSR fanfare.
+                # strong cue. Replaces the generic gacha_reveal+victory reuse
+                # with a dedicated rarity-scaled fanfare cue.
                 _rank = {"SSR": 3, "SR": 2, "R": 1}
                 best = max(self.results, key=lambda r: _rank.get(r[1], 1))[1] if self.results else "R"
-                if best == "SSR":
-                    audio.play("gacha_reveal", 0.9)
-                    audio.play("victory", 0.6)
-                elif best == "SR":
-                    audio.play("gacha_reveal", 0.6)
-                else:
-                    audio.play("gacha_reveal", 0.4)
+                audio.play("gacha_fanfare_" + best.lower(), 0.8)
                 # seed a rarity-scaled radial burst for the first card shown
                 if self.results:
                     self._seed_reveal_burst(self.results[0][1])
@@ -998,11 +1001,11 @@ class GachaScene(Scene):
                         self.reveal_idx += 1; self.reveal_t = 0
                         nrar = self.results[self.reveal_idx][1]
                         if nrar == "SSR":
-                            audio.play("gacha_reveal", 0.8)
+                            audio.play("gacha_fanfare_ssr", 0.8)
                         elif nrar == "SR":
-                            audio.play("gacha_reveal", 0.5)
+                            audio.play("gacha_fanfare_sr", 0.5)
                         else:
-                            audio.play("menu_click", 0.3)
+                            audio.play("gacha_fanfare_r", 0.3)
                         self._seed_reveal_burst(nrar)
                     else:
                         self.state = "idle"; self.results = []
@@ -1010,6 +1013,10 @@ class GachaScene(Scene):
                 # Esc / right-click skips the whole reveal (summary is retained)
                 if (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE) or \
                    (e.type == pygame.MOUSEBUTTONDOWN and e.button == 3):
+                    # stop the tension drone so the drone doesn't leak past the
+                    # skip (the reveal branch already stops it, but the skip
+                    # branch bypasses the reveal so it must stop here too).
+                    audio.stop_gacha_tension()
                     self.state = "idle"; self.results = []
                     return
             # auto-advance with a rarity-scaled dwell so SSR breathes and R

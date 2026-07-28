@@ -523,6 +523,76 @@ def synth_leitmotif(element, sr=22050):
     return _make_sound(wave * 0.5, sr)
 
 
+def synth_gacha_tension(sr=22050, dur=1.6):
+    """A rising tension drone for the gacha roll — a low sine sweeping up in
+    frequency + a growing filtered-noise bed, crescendoing toward the reveal.
+    The crescendo peaks at exactly `dur` (1.6s) to match the anim_t>1.6 gate
+    so the tension resolves right as the reveal fanfare fires. Played on a
+    dedicated channel (4) so it can be stopped cleanly at the reveal/skip."""
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    # a low sine sweeping up from 60 to 200 Hz (the rising drone) + a second
+    # detuned sine for a beating shimmer so the drone isn't a flat tone.
+    freq = 60 + 140 * (t / dur)
+    drone = np.sin(2 * math.pi * freq * t) + 0.6 * np.sin(2 * math.pi * freq * 1.01 * t)
+    # growing filtered noise: a low band-passed hiss whose amplitude rises
+    # across the duration so the tension builds, not just the pitch.
+    noise = _bandpass_noise(n, sr, 80, 400) * np.linspace(0, 1, n)
+    # crescendo: overall amplitude grows from ~0.3 to ~1.0 across the duration
+    # so the drone swells toward the reveal.
+    cres = np.linspace(0.3, 1.0, n)
+    # small fade-in at the very start so the loop onset doesn't pop
+    f = max(1, int(n * 0.03))
+    env = np.ones(n)
+    env[:f] = np.linspace(0, 1, f)
+    wave = (0.6 * drone + 0.4 * noise) * cres * env
+    return _make_sound(wave * 0.55, sr)
+
+
+def synth_gacha_fanfare(rarity, sr=22050):
+    """A rarity-scaled reveal fanfare for the gacha roll:
+      SSR = a full 4-note ascending arpeggio + a choir-like pad (stacked
+            detuned sines) so the rarest pull reads as a big moment.
+      SR  = a 2-note chord (a brighter, shorter cue than R but not the full
+            SSR fanfare).
+      R   = a soft single chime (a gentle decaying sine so a common pull
+            doesn't over-celebrate).
+    Unknown rarities fall back to the R chime (defensive; the 3 rarities are
+    the only callers)."""
+    if rarity == "SSR":
+        dur = 1.0
+        n = int(sr * dur)
+        t = np.linspace(0, dur, n)
+        # 4-note ascending arpeggio (C5, E5, G5, C6)
+        wave = np.zeros(n)
+        for i, f in enumerate([523, 659, 784, 1047]):
+            start = int(i * n / 4)
+            st = t - t[start]
+            seg = np.sin(2 * math.pi * f * st) * np.exp(-st * 2)
+            wave += np.where(np.arange(n) >= start, seg, 0)
+        # choir-like pad: stacked detuned sines (a chorus effect) sustained
+        # under the arpeggio so the SSR reads as a big, warm moment.
+        pad_freqs = [523, 525, 527]  # C5 slightly detuned for a chorus
+        pad = sum(np.sin(2 * math.pi * f * t) for f in pad_freqs) / len(pad_freqs)
+        pad *= np.exp(-t * 1.5) * np.linspace(0.4, 1, n)
+        wave = 0.6 * wave / 4 + 0.4 * pad
+        return _make_sound(wave * 0.8, sr)
+    if rarity == "SR":
+        dur = 0.6
+        n = int(sr * dur)
+        t = np.linspace(0, dur, n)
+        # 2-note chord (C5 + E5) with a medium decay
+        wave = (np.sin(2 * math.pi * 523 * t) + np.sin(2 * math.pi * 659 * t)) / 2
+        wave *= np.exp(-t * 3) * np.linspace(0.5, 1, n)
+        return _make_sound(wave * 0.7, sr)
+    # R (and unknown): a soft single chime
+    dur = 0.4
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    wave = np.sin(2 * math.pi * 660 * t) * np.exp(-t * 5)
+    return _make_sound(wave * 0.5, sr)
+
+
 def init():
     global INIT_OK, SOUNDS, ENABLED
     if INIT_OK:
@@ -596,6 +666,15 @@ def init():
             "leit_wind": synth_leitmotif("wind"),
             "leit_light": synth_leitmotif("light"),
             "leit_dark": synth_leitmotif("dark"),
+            # gacha roll tension + rarity-scaled reveal fanfare. The tension
+            # is a 1.6s rising drone (played on a dedicated channel so it can
+            # be stopped cleanly at the reveal/skip); the fanfare is one cached
+            # cue per rarity (SSR arpeggio+pad, SR chord, R chime) so the
+            # reveal reads as rarity-scaled, not a generic reveal reuse.
+            "gacha_tension": synth_gacha_tension(),
+            "gacha_fanfare_ssr": synth_gacha_fanfare("SSR"),
+            "gacha_fanfare_sr": synth_gacha_fanfare("SR"),
+            "gacha_fanfare_r": synth_gacha_fanfare("R"),
         }
         INIT_OK = True
     except Exception as e:
@@ -624,6 +703,10 @@ _AMBIENCE_WEATHER = None
 # and stopped independently of the biome ambience. Reserved on first use.
 _RAIN_CHANNEL = None
 _RAIN_VOLUME = 0.30
+# A dedicated channel for the gacha roll tension drone so it can be started at
+# the roll and stopped cleanly at the reveal (or the skip branch) without
+# leaking past the reveal fanfare. Reserved on first use.
+_GACHA_CHANNEL = None
 # The biomes we have cached ambience beds for (matches the SOUNDS keys).
 _AMBIENCE_BIOMES = ("plains", "forest", "cave", "castle", "void")
 _HEARTBEAT_T = 0.0   # time until the next heartbeat tick (low-HP warning)
@@ -768,6 +851,7 @@ def set_enabled(on):
     if not on:
         set_ambience(False)
         _stop_rain_bed()
+        stop_gacha_tension()
 
 
 def set_master_volume(v):
@@ -780,3 +864,35 @@ def set_master_volume(v):
         s = SOUNDS.get("ambience_" + (_AMBIENCE_BIOME or "plains"))
         if s:
             s.set_volume(max(0.0, min(1.0, _AMBIENCE_VOLUME * MASTER_VOLUME)))
+
+
+def play_gacha_tension(volume=0.5):
+    """Start the 1.6s gacha roll tension drone on its dedicated channel. The
+    channel is reserved on first use and stopped at the reveal/skip via
+    stop_gacha_tension() so the drone never leaks past the reveal fanfare."""
+    global _GACHA_CHANNEL
+    if not INIT_OK:
+        return
+    s = SOUNDS.get("gacha_tension")
+    if s is None:
+        return
+    vol = max(0.0, min(1.0, float(volume) * MASTER_VOLUME)) if ENABLED else 0.0
+    s.set_volume(vol)
+    try:
+        if _GACHA_CHANNEL is None:
+            _GACHA_CHANNEL = pygame.mixer.Channel(4)
+        _GACHA_CHANNEL.play(s)
+    except Exception:
+        _GACHA_CHANNEL = None
+
+
+def stop_gacha_tension():
+    """Stop the gacha tension drone (called at the reveal or the skip branch).
+    The stop path bypasses the ENABLED gate — stopping is always safe, and a
+    user toggling sound off mid-roll must still silence the drone."""
+    global _GACHA_CHANNEL
+    try:
+        if _GACHA_CHANNEL is not None:
+            _GACHA_CHANNEL.stop()
+    except Exception:
+        pass

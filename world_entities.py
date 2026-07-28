@@ -323,10 +323,19 @@ def _sig_low_hp_frenzy_spd(wc, s):
     return s
 
 def _sig_stacking_atk_update(wc, dt):
-    """stacking_atk decay: the kill stack decays by 1 every 3s out of combat so
-    a stale streak doesn't persist forever. _last_combat_t is reset on every
-    combat action, so 'out of combat' = _last_combat_t growing past 3.0."""
-    if wc._last_combat_t > 3.0 and wc._kill_stack > 0:
+    """stacking_atk: out-of-combat decay — lose one stack every 3s idle so a
+    stale streak doesn't persist forever. _kill_stack_t accumulates dt; when it
+    crosses 3s, drop one stack and reset the timer. _last_combat_t is reset on
+    every combat action, so 'out of combat' = _last_combat_t >= 3.0; while in
+    combat the timer is reset so no decay happens mid-fight."""
+    if wc._kill_stack <= 0:
+        return
+    # only decay when out of combat (the _last_combat_t gate)
+    if wc._last_combat_t < 3.0:
+        wc._kill_stack_t = 0.0
+        return
+    wc._kill_stack_t += dt
+    if wc._kill_stack_t >= 3.0:
         wc._kill_stack = max(0, wc._kill_stack - 1)
         wc._kill_stack_t = 0.0
 

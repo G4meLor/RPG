@@ -1924,6 +1924,9 @@ class WorldScene:
                 if wc and wc.alive:
                     ox, oy = self.camera.offset()
                     wc.move_target = (e.pos[0] + ox, e.pos[1] + oy)
+                    wc.move_target_t = 0.0
+                    wc._last_mt_dist = 0.0
+                    wc._mt_stall_t = 0.0
 
         # enemies
         for en in self.enemies:

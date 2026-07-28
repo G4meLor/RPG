@@ -1519,6 +1519,14 @@ class WorldScene:
             # fallback: small burst
             self.particles.burst(wc.x, wc.y, col, n=14, speed=200, size=5, life=0.4)
             audio.play("skill", 0.4)
+        # variable hit-stop: heavier skills (higher cost tier) freeze the screen
+        # longer than a basic attack so a cost-5 nuke lands with more weight than
+        # a cost-2 poke. Capped at 0.4s; halved under reduce_motion. Uses max()
+        # so multi-hit AoE doesn't stack the freeze.
+        _hs = min(0.4, 0.06 + skill.get("cost", 2) * 0.03)
+        if self._reduce_motion:
+            _hs *= 0.5
+        self.hit_stop = max(self.hit_stop, _hs)
         # energy gain for using a skill (small); flow-state passive + light
         # elemental resonance boost it. Routed through wc.add_energy so the
         # resonance (energy_regen) and the passive (energy_gen) add rather than
@@ -1543,8 +1551,13 @@ class WorldScene:
         if self._reduce_motion:
             self.flash *= 0.4
         self.camera.add_shake(16, self._shake_mul)
-        # ultimates are the heaviest hit — a longer hit-stop so they land with weight
-        self.hit_stop = max(self.hit_stop, 0.22)
+        # ultimates are the heaviest hit — a long hit-stop that scales with the
+        # ult's cost tier (an ult with cost 8-9 -> 0.30-0.33s, capped at 0.4).
+        # Halved under reduce_motion; uses max() so AoE doesn't stack the freeze.
+        _hs = min(0.4, 0.06 + skill.get("cost", 8) * 0.03)
+        if self._reduce_motion:
+            _hs *= 0.5
+        self.hit_stop = max(self.hit_stop, _hs)
         combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
         # total damage dealt by the ultimate — used by the per-hero variant's
         # self_heal effect (a fraction of damage dealt). Heal ults deal 0 damage
@@ -1723,7 +1736,13 @@ class WorldScene:
             # crits get a sharper white spark + a small ring + bigger hit-stop
             self.particles.ring(en.x, en.y, (255, 240, 180), n=14, speed=300, size=4, life=0.28)
             self.particles.spark(en.x, en.y, (255, 255, 255), n=6, speed=260, size=4, life=0.22)
-            self.hit_stop = max(self.hit_stop, 0.11)
+            # crit hit-stop: base 0.11 + a small extra for combo tier >=2 so a
+            # streak of crits feels heavier. Halved under reduce_motion; uses
+            # max() so multi-hit AoE doesn't stack.
+            _hs = 0.11 + (0.03 if self._combo_count >= 2 else 0.0)
+            if self._reduce_motion:
+                _hs *= 0.5
+            self.hit_stop = max(self.hit_stop, _hs)
             self.camera.add_shake(5, self._shake_mul)
             audio.play("crit", 0.4)
         else:

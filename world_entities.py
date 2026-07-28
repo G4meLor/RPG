@@ -783,6 +783,12 @@ class WorldEnemy:
         # reaction stun: while > 0 the enemy skips its AI (frozen by a Freeze
         # reaction); decays each update
         self._react_stun = 0.0
+        # HSR-style toughness break: a 2s recovery window after the toughness
+        # bar shatters, after which recover_toughness() resets the bar (see
+        # update). _broke_flag is set on the break hit so the scene can fire a
+        # bonus-damage window + particle burst (see _on_enemy_event).
+        self._broke_flag = False
+        self._broken_recover_t = 0.0
         # boss phase state: which phase the boss is in (1..3) + the pattern it's
         # currently telegraphing (None | "charge" | "slam") + a telegraph timer
         # + the saved target position for the charge. See data.BOSS_PATTERNS.
@@ -816,10 +822,18 @@ class WorldEnemy:
     def element(self):
         return self.enemy.element
 
-    def take_damage(self, amount, src_x=0, src_y=0, is_crit=False):
+    def take_damage(self, amount, src_x=0, src_y=0, is_crit=False, on_attack=None):
         if self.invuln_t > 0 or not self.alive:
             return 0
         # element weakness handled by caller; here pure amount
+        # HSR-style toughness break: a broken target takes +50% damage from all
+        # sources while its bar is down (TOUGHNESS_BREAK_MULT). Applied to the
+        # raw amount before clamping so weakness/reaction bonuses (already
+        # folded in by the caller) stack multiplicatively with the break
+        # multiplier — they don't compound absurdly because each is a flat
+        # factor on the pre-broken base, not a chain of +50%s.
+        if self.enemy.broken:
+            amount = int(amount * D.TOUGHNESS_BREAK_MULT)
         dmg = max(1, int(amount))
         self.enemy.hp -= dmg
         self.hit_flash = 0.2
@@ -834,6 +848,21 @@ class WorldEnemy:
             if broke:
                 self._react_stun = max(self._react_stun, 1.2)
                 self._broke_flag = True
+                # break burst: a one-time chunk of max_hp damage so shattering
+                # the bar is a real tactical milestone (TOUGHNESS_BREAK_DAMAGE).
+                # Gated to bosses only — non-boss toughness enemies are too
+                # squishy to absorb a 15%-max-hp nuke without being one-shot.
+                if self.is_boss:
+                    burst = int(self.enemy.max_hp * D.TOUGHNESS_BREAK_DAMAGE)
+                    if burst > 0:
+                        self.enemy.hp -= burst
+                        if on_attack:
+                            on_attack("boss_break", self)
+                    # start the recovery window: after 2s the toughness bar
+                    # refills (HSR-accurate — the break is consumed, then the
+                    # bar comes back full). Timed so the +50% window + the
+                    # stun overlap a meaningful damage window.
+                    self._broken_recover_t = 2.0
         dx = self.x - src_x
         dy = self.y - src_y
         d = math.hypot(dx, dy) or 1
@@ -863,6 +892,15 @@ class WorldEnemy:
         # skips the enemy's AI while it lasts
         self._element_hit_t = max(0, self._element_hit_t - dt)
         self._react_stun = max(0, self._react_stun - dt)
+        # HSR toughness break recovery: count down the 2s window set on break;
+        # when it elapses + the bar is still broken, refill it so the fight
+        # reopens (the +50% break window ends). Mirrors recover_toughness()
+        # end-of-round semantics but in real time (see take_damage).
+        if self._broken_recover_t > 0:
+            self._broken_recover_t = max(0, self._broken_recover_t - dt)
+            if self._broken_recover_t == 0 and self.enemy.broken:
+                self.enemy.recover_toughness()
+                self._broke_flag = False
 
         # boss ultimate below 50%
         if self.is_boss and not self.ult_used and self.enemy.hp < self.enemy.max_hp * 0.5:

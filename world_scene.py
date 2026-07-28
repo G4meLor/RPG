@@ -1316,7 +1316,8 @@ class WorldScene:
                     combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
                     dmg = int(atk * (1.0 + random.uniform(-0.1, 0.2)) * mult
                               * (crit_mul if is_crit else 1.0) * combo_mul)
-                    dealt = en.take_damage(dmg, wc.x, wc.y, is_crit)
+                    dealt = en.take_damage(dmg, wc.x, wc.y, is_crit,
+                                            on_attack=self._on_enemy_event)
                     if dealt > 0:
                         self._on_enemy_hit(en, wc, dealt, is_crit)
                         total_dmg += dealt
@@ -1401,7 +1402,8 @@ class WorldScene:
                     if en.alive and math.hypot(en.x - arc_x, en.y - wc.y) < 90:
                         mult = self._element_mult(skill["element"], en.element)
                         dmg = int(atk * skill["power"] * mult * 1.3 * combo_mul)
-                        dealt = en.take_damage(dmg, wc.x, wc.y)
+                        dealt = en.take_damage(dmg, wc.x, wc.y,
+                                                on_attack=self._on_enemy_event)
                         if dealt:
                             self._on_enemy_hit(en, wc, dealt, False)
                 self.particles.burst(arc_x, wc.y, col, n=16, speed=240, size=6, life=0.4)
@@ -1416,7 +1418,8 @@ class WorldScene:
                 if en.alive and math.hypot(en.x - wc.x, en.y - wc.y) < 200:
                     mult = self._element_mult(skill["element"], en.element)
                     dmg = int(atk * skill["power"] * mult * combo_mul)
-                    dealt = en.take_damage(dmg, wc.x, wc.y)
+                    dealt = en.take_damage(dmg, wc.x, wc.y,
+                                            on_attack=self._on_enemy_event)
                     if dealt:
                         self._on_enemy_hit(en, wc, dealt, False)
             self.camera.add_shake(8, self._shake_mul)
@@ -1559,7 +1562,8 @@ class WorldScene:
                 if en.alive and math.hypot(en.x - wc.x, en.y - wc.y) < 320:
                     mult = self._element_mult(skill["element"], en.element)
                     dmg = int(atk * skill["power"] * mult * 1.4 * combo_mul)
-                    dealt = en.take_damage(dmg, wc.x, wc.y)
+                    dealt = en.take_damage(dmg, wc.x, wc.y,
+                                            on_attack=self._on_enemy_event)
                     if dealt:
                         total_dmg += dealt
                         self._on_enemy_hit(en, wc, dealt, True)
@@ -1574,7 +1578,8 @@ class WorldScene:
                 if en.alive and (en.x - wc.x) * wc.facing > 0 and math.hypot(en.x - wc.x, en.y - wc.y) < 300:
                     mult = self._element_mult(skill["element"], en.element)
                     dmg = int(atk * skill["power"] * mult * 1.5 * combo_mul)
-                    dealt = en.take_damage(dmg, wc.x, wc.y)
+                    dealt = en.take_damage(dmg, wc.x, wc.y,
+                                            on_attack=self._on_enemy_event)
                     if dealt:
                         total_dmg += dealt
                         self._on_enemy_hit(en, wc, dealt, True)
@@ -2123,7 +2128,8 @@ class WorldScene:
                             mult = self._element_mult(p.element, en.element)
                             is_crit = random.random() < p.source.hero.crit_chance
                             dmg = int(p.power * mult * (1.6 if is_crit else 1.0))
-                            dealt = en.take_damage(dmg, p.x, p.y, is_crit)
+                            dealt = en.take_damage(dmg, p.x, p.y, is_crit,
+                                                    on_attack=self._on_enemy_event)
                             if dealt:
                                 self._on_enemy_hit(en, p.source, dealt, is_crit)
                                 # ranged basic-attack energy: the melee branch grants
@@ -2340,6 +2346,24 @@ class WorldScene:
             self.flash = 0.25
             if self._reduce_motion:
                 self.flash *= 0.4
+        elif name == "boss_break":
+            # the boss's toughness bar shattered: a big ring + a "BROKEN!"
+            # float + a longer hit-stop so the player feels the break land and
+            # gets a clear window to pour damage in (the +50% multiplier is
+            # applied inside WorldEnemy.take_damage while enemy.broken is true).
+            col = D.ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
+            # a white-tinged ring so the break reads distinctly from the
+            # element-colored boss_ult/slam bursts
+            self.particles.ring(en.x, en.y, (255, 240, 200), n=44, speed=520, size=8, life=0.7)
+            self.particles.burst(en.x, en.y, col, n=36, speed=380, size=7, life=0.7, grav=0)
+            self.floats.append(FloatText(en.x, en.y - 50, "BROKEN!",
+                                         (255, 200, 120), size=28))
+            self.hit_stop = max(self.hit_stop, 0.15)
+            self.camera.add_shake(10, self._shake_mul)
+            self.flash = 0.3
+            if self._reduce_motion:
+                self.flash *= 0.4
+            audio.play("boss_intro", 0.6)
 
     def _draw_tick(self, dt):
         # keep particles/camera updating under overlays so the world looks alive

@@ -691,6 +691,25 @@ class HeroDetailScene(Scene):
         # ascension pips
         asc = rec.get("ascension", 0)
         text(surf, f"Ascension {asc}/{D.MAX_ASCENSION}  (dupes: {rec['dupes']})", 16, (255, 180, 220), (240, 600), center=True)
+        # constellation nodes (C1-C6) — 6 pips in a row, lit for each unlocked
+        # star, with the NEXT perk's description under the Ascend button so the
+        # player sees what the next star will do before spending a dupe.
+        perks = D.hero_constellation_perks(hd)
+        cx0 = 240 - 90   # center 6 pips of width ~30 each
+        for i in range(6):
+            cx = cx0 + i * 30
+            unlocked = i < asc
+            col = (255, 120, 200) if unlocked else (70, 60, 80)
+            pygame.draw.circle(surf, col, (cx, 622), 7)
+            if unlocked:
+                pygame.draw.circle(surf, (255, 220, 240), (cx, 622), 7, 2)
+        # next perk description (the one the next Ascend click will unlock)
+        if asc < 6:
+            np = perks[asc]
+            text(surf, f"Next (C{asc+1}): {np['name']} - {np['desc']}", 12,
+                 (200, 180, 220), (240, 640), center=True)
+        else:
+            text(surf, "Constellation MAX", 12, (255, 220, 240), (240, 640), center=True)
         # lore panel: bio + centered italic quote, below the portrait (space at y~620+)
         lore = D.HERO_LORE.get(hid)
         if lore:

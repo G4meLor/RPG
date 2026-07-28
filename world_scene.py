@@ -1351,6 +1351,13 @@ class WorldScene:
         col = D.ELEMENT_COLORS.get(skill["element"], ((200, 200, 200),))[0]
         wc.spend_skill(idx)
         wc._last_combat_t = 0
+        # constellation cd_reduction perk: shave the skill's cooldown by the hero's
+        # accumulated perk fraction (applied after spend_skill sets the cd). The
+        # perk is stored on the Hero as _perk_cd_reduction (a fraction 0..1).
+        perk_cd = getattr(wc.hero, "_perk_cd_reduction", 0.0)
+        if perk_cd > 0:
+            wc.skill_cd[idx] = max(0.0, wc.skill_cd[idx] * (1.0 - perk_cd))
+            wc.skill_cd_max[idx] = wc.skill_cd[idx]
         kind = skill["type"]
         a = wc.hero
         atk = wc.effective_atk()
@@ -1549,6 +1556,29 @@ class WorldScene:
                     dealt = en.take_damage(dmg, wc.x, wc.y)
                     if dealt:
                         self._on_enemy_hit(en, wc, dealt, True)
+        # constellation ult_extra perks — applied after the ult's main effect so
+        # the perk layer adds on top of the base ult. Variants shipped now:
+        #   self_heal  - heal the active hero for val * max_hp
+        #   party_buff - a temporary atk_up on each party member (3s, val potency)
+        #   atk_buff   - a temporary atk_up on the active hero (3s, val potency)
+        # Burn/freeze DoT variants are deferred to the Batch C DoT-engine task
+        # (tick_effects is not driven in the real-time world loop yet).
+        ux = getattr(a, "ult_extra", {}) or {}
+        if ux:
+            if ux.get("self_heal"):
+                heal_amt = int(a.max_hp * ux["self_heal"])
+                wc.heal(heal_amt)
+                if self.game.player.settings.get("damage_numbers", True):
+                    self.floats.append(FloatText(wc.x, wc.y - 30, f"+{heal_amt}",
+                                                 (140, 240, 160), size=22))
+            if ux.get("party_buff"):
+                pot = ux["party_buff"]
+                for other in self.party:
+                    if other and other.alive:
+                        other.hero.add_effect("atk_up", 3, pot)
+            if ux.get("atk_buff"):
+                pot = ux["atk_buff"]
+                wc.hero.add_effect("atk_up", 3, pot)
         audio.play("ultimate", 0.6)
 
     def _on_enemy_hit(self, en, wc, dmg, is_crit):

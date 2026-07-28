@@ -341,6 +341,58 @@ class Hero(Combatant):
             self.passive = D.PASSIVES_DB.get(eb["passive"], base_passive)
         else:
             self.passive = base_passive
+        # constellation perks (C1-C6) — layered on top of the flat ascension
+        # bonus so old saves don't regress. The flat ASCENSION_BONUS already
+        # applied above; here we add the gameplay-changing perks per star.
+        # _apply_perks reads the hero's ascension + role/id and folds the effects
+        # into skill_cost_mult / crit_dmg_bonus / a new ult_extra dict, and
+        # boosts the passive val (passive_boost amplifies the existing passive,
+        # it does NOT grant a new passive id — so no duplication with EVO_TREE).
+        self.ult_extra = {}
+        self._perk_cd_reduction = 0.0
+        self._apply_perks()
+
+    def _apply_perks(self):
+        """Apply the unlocked constellation perks (C1..C_ascension) to the hero.
+        Re-applied by _recompute so leveling/ascension changes take effect.
+        Perks layer on top of the tree/set bonuses already computed."""
+        # reset the perk-derived fields so re-application is idempotent
+        self.ult_extra = {}
+        self._perk_cd_reduction = 0.0
+        # start from the tree/set crit_dmg and skill_cost_mult (already set by
+        # the caller); perks add to crit_dmg_bonus and multiply skill_cost_mult
+        perks = D.constellation_perks_for(self.def_dict, self.ascension)
+        for p in perks:
+            eff = p.get("effect")
+            val = p.get("val", 0)
+            if eff == "cd_reduction":
+                # reduce skill cooldown timers (applied in _do_skill via the
+                # WorldCharacter's per-skill cd). Store as a fraction to subtract.
+                self._perk_cd_reduction += val
+            elif eff == "energy_cost_cut":
+                # reduce skill energy cost (multiplicative on skill_cost_mult)
+                self.skill_cost_mult *= (1.0 - val)
+            elif eff == "crit_dmg_up":
+                # add to crit damage bonus (additive on the bonus term)
+                self.crit_dmg_bonus += val
+            elif eff == "ult_extra":
+                # stash for the world scene to apply in _do_ultimate
+                tgt = p.get("target")
+                # accumulate per-target so multiple ult_extra perks stack
+                if tgt in self.ult_extra:
+                    self.ult_extra[tgt] += val
+                else:
+                    self.ult_extra[tgt] = val
+            elif eff == "passive_boost":
+                # amplify the existing passive val (does NOT change the passive
+                # id, so no duplication with EVO_TREE passives). A copy of the
+                # passive dict is made so the shared PASSIVES_DB entry is not
+                # mutated.
+                if self.passive and "val" in self.passive:
+                    if not getattr(self, "_perk_passive_copy", False):
+                        self.passive = dict(self.passive)
+                        self._perk_passive_copy = True
+                    self.passive["val"] = self.passive.get("val", 0) * (1.0 + val)
 
     def set_name(self):
         return self._set_name
@@ -397,6 +449,9 @@ class Hero(Combatant):
             self.crit_chance += 0.04
         self.crit_dmg_bonus = eb.get("crit_dmg", 0) + sb.get("crit_dmg", 0)
         self.skill_cost_mult = eb.get("skill_cost_mult", 1.0) * sb.get("skill_cost_mult", 1.0)
+        # re-apply constellation perks so leveling/ascension changes take effect
+        # (resets ult_extra / _perk_cd_reduction, then re-adds per effect kind)
+        self._apply_perks()
 
     def power(self):
         # Note: max_mp and spd are not currently wired into combat (mp does not

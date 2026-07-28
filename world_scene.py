@@ -2098,7 +2098,7 @@ class WorldScene:
                 self.particles.burst(en.x, en.y, rcol, n=30, speed=340, size=7, life=0.6)
                 self.particles.ring(en.x, en.y, rcol, n=20, speed=380, size=6, life=0.5)
             self.camera.add_shake(6, self._shake_mul)
-            audio.play("explosion", 0.4)
+            audio.play("react_" + name.lower(), 0.45)
         # record this hit's element + refresh the reaction window for the next hit
         en._last_element_hit = wc.element
         # wet extends the reaction window (+50%) so the next element swap has a

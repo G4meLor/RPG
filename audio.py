@@ -384,6 +384,65 @@ def synth_thunder(sr=22050, dur=1.4):
     return _make_sound(wave * _envelope(n, 0.005, 0.7), sr)
 
 
+def synth_r_steam(sr=22050, dur=0.45):
+    """Steam reaction (fire+water): a filtered noise hiss + a high chime.
+    The hiss is a bright band-passed noise bed that decays quickly; the
+    chime is a high sine that rings over the top so the proc reads clearly."""
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    hiss = _bandpass_noise(n, sr, 2000, 6000) * np.exp(-t * 6)
+    chime = np.sin(2 * math.pi * 1568 * t) * np.exp(-t * 9)
+    chime += 0.4 * np.sin(2 * math.pi * 2093 * t) * np.exp(-t * 12)
+    wave = 0.5 * hiss + 0.5 * chime
+    return _make_sound(wave * 0.6 * _envelope(n, 0.01, 0.5), sr)
+
+
+def synth_r_spread(sr=22050, dur=0.5):
+    """Spread reaction (fire+wind): a warm low woosh + a crackle tail.
+    The woosh is a low rising sweep; the crackle is short sparse noise
+    bursts layered on top so it sounds like embers scattering."""
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    woosh = np.sin(2 * math.pi * (180 + 220 * t / dur) * t) * np.exp(-t * 5)
+    crackle = (np.random.rand(n) - 0.5) * 2 * np.exp(-t * 10)
+    # sparse crackle: gate the noise so only occasional samples pass
+    gate = (np.random.rand(n) < 0.08).astype(float)
+    crackle *= gate
+    wave = 0.6 * woosh + 0.4 * crackle
+    return _make_sound(wave * 0.6 * _envelope(n, 0.02, 0.5), sr)
+
+
+def synth_r_freeze(sr=22050, dur=0.4):
+    """Freeze reaction (water+wind): a crystalline sine ping + a glassy
+    harmonic. Reuses synth_perfect's shimmer approach (a high sine + a
+    brighter harmonic) but pitched and shaped so it reads as ice, not a
+    dodge — longer decay, a second glassy harmonic, a tiny noise tick at
+    the start for the 'crack' of ice forming."""
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    ping = np.sin(2 * math.pi * 1400 * t) * np.exp(-t * 10)
+    # glassy harmonics so it shimmers like cracking ice
+    ping += 0.4 * np.sin(2 * math.pi * 2100 * t) * np.exp(-t * 14)
+    ping += 0.2 * np.sin(2 * math.pi * 2800 * t) * np.exp(-t * 18)
+    # a tiny noise tick at the very start for the 'crack'
+    tick = (np.random.rand(n) - 0.5) * 2 * np.exp(-t * 60)
+    wave = 0.7 * ping + 0.2 * tick
+    return _make_sound(wave * 0.55 * _envelope(n, 0.005, 0.6), sr)
+
+
+def synth_r_rupture(sr=22050, dur=0.55):
+    """Rupture reaction (light+dark): a low dissonant two-note stab + a
+    noise burst. The two close low notes beat against each other (the
+    dissonance) and the noise gives it a tearing edge."""
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    low = np.sin(2 * math.pi * 110 * t) * np.exp(-t * 6)
+    low += np.sin(2 * math.pi * 117 * t) * np.exp(-t * 6)  # ~7 Hz beat
+    noise = (np.random.rand(n) - 0.5) * 2 * np.exp(-t * 14)
+    wave = 0.6 * low + 0.4 * noise
+    return _make_sound(wave * 0.65 * _envelope(n, 0.005, 0.5), sr)
+
+
 def init():
     global INIT_OK, SOUNDS, ENABLED
     if INIT_OK:
@@ -441,6 +500,13 @@ def init():
             "combo_1": synth_combo_sting(1),
             "combo_2": synth_combo_sting(2),
             "combo_max": synth_combo_max(),
+            # 4 distinct element-flavored reaction stings (Steam/Spread/Freeze/
+            # Rupture) so each reaction sounds different instead of the generic
+            # explosion. Routed by name at the reaction call site.
+            "react_steam": synth_r_steam(),
+            "react_spread": synth_r_spread(),
+            "react_freeze": synth_r_freeze(),
+            "react_rupture": synth_r_rupture(),
         }
         INIT_OK = True
     except Exception as e:

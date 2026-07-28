@@ -3504,6 +3504,41 @@ class WorldScene:
             self._skill_icons[key] = ic
         return ic
 
+    def _nearest_objective(self):
+        """Return (tc, tr, label, color) for the nearest un-cleared boss cell,
+        or the nearest undiscovered cell if all bosses are cleared. O(50) per
+        frame (scans the 5 boss cells in the right-most column + up to 50 cells
+        for undiscovered ones). Returns None when every boss is cleared and
+        every cell is discovered, so the compass hides in the endgame."""
+        p = self.game.player
+        cleared = set(p.ow_bosses_cleared)
+        discovered = set(p.ow_discovered)
+        best = None
+        best_d2 = None
+        # 1. nearest un-cleared boss cell (right-most column, all rows) — gold
+        bc = WD.GRID_W - 1
+        for r in range(WD.GRID_H):
+            cid = WD.cell_id(bc, r)
+            if cid in cleared:
+                continue
+            d2 = (bc - self.c) ** 2 + (r - self.r) ** 2
+            if best_d2 is None or d2 < best_d2:
+                best_d2 = d2
+                best = (bc, r, "Boss", (255, 200, 80))
+        if best is not None:
+            return best
+        # 2. all bosses cleared — fall back to nearest undiscovered cell — cyan
+        for r in range(WD.GRID_H):
+            for c in range(WD.GRID_W):
+                cid = WD.cell_id(c, r)
+                if cid in discovered:
+                    continue
+                d2 = (c - self.c) ** 2 + (r - self.r) ** 2
+                if best_d2 is None or d2 < best_d2:
+                    best_d2 = d2
+                    best = (c, r, "Unexplored", (120, 220, 255))
+        return best
+
     def _draw_hud(self, surf):
         p = self.game.player
         wc = self.party[self.active]
@@ -3742,6 +3777,101 @@ class WorldScene:
 
         # skill bar (bottom-center): Q/W/E + R(ult) with icons + cooldown sweeps
         self._draw_skill_bar(surf)
+
+        # quest tracker (top-right, under the resource counters — y~110, x>900
+        # so it clears the boss HP bar at top-center x=320..960). Shows the top
+        # daily quest's name + a progress bar + N/goal so the player always sees
+        # their active objective. Skipped when no quests are loaded yet (the
+        # quest tab calls reset_quests_if_needed; the world scene reads the
+        # in-memory dict, which may be empty on a fresh load before the quest
+        # tab is opened — guard with .get).
+        try:
+            p.reset_quests_if_needed()
+        except Exception:
+            pass
+        first_qid = next(iter(D.DAILY_QUESTS), None)
+        if first_qid is not None:
+            qd = D.DAILY_QUESTS[first_qid]
+            st = p.quests.get(first_qid)
+            if st is None:
+                st = dict(progress=0, claimed=False, goal=qd["goal"])
+            prog = st.get("progress", 0)
+            goal = st.get("goal", qd["goal"])
+            claimed = st.get("claimed", False)
+            qx = 1276
+            qy = 110
+            # panel: right-aligned, ~220 wide so it fits under the resources
+            qpanel_w = 220
+            qpanel_h = 56
+            qpanel = pygame.Rect(qx - qpanel_w, qy, qpanel_w, qpanel_h)
+            qp = scratch(qpanel_w, qpanel_h)
+            pygame.draw.rect(qp, (20, 20, 36, 200), qp.get_rect(), border_radius=8)
+            qcol = (140, 200, 250) if not claimed else (120, 180, 140)
+            pygame.draw.rect(qp, qcol, qp.get_rect(), 2, border_radius=8)
+            surf.blit(qp, qpanel.topleft)
+            text(surf, "QUEST", 10, (160, 160, 200), (qpanel.x + 8, qpanel.y + 4))
+            name_col = (200, 220, 180) if claimed else (255, 240, 220)
+            text(surf, qd["name"], 13, name_col, (qpanel.x + 8, qpanel.y + 18))
+            # progress bar + N/goal
+            bar_rect = (qpanel.x + 8, qpanel.y + 36, qpanel_w - 60, 10)
+            frac = prog / max(1, goal)
+            draw_bar(surf, bar_rect, frac, qcol)
+            ng_txt = f"{prog}/{goal}"
+            text(surf, ng_txt, 12, (240, 240, 255),
+                 (qpanel.x + qpanel_w - 50, qpanel.y + 33), center=False)
+
+        # compass to the nearest objective — a screen-edge arrow pointing toward
+        # the nearest un-cleared boss cell (gold) or undiscovered cell (cyan).
+        # Reuses _draw_chevron (the same double-chevron the edge hints use).
+        # Handles the on-screen case (target in the viewport -> a marker at the
+        # target, not an edge arrow) and the all-cleared case (no objective ->
+        # hide the compass).
+        obj = self._nearest_objective()
+        if obj is not None:
+            tc, tr, olabel, ocol = obj
+            # target world coords = cell center (c*MAP_W + MAP_W/2, r*MAP_H + MAP_H/2)
+            tx = tc * WD.MAP_W + WD.MAP_W // 2
+            ty = tr * WD.MAP_H + WD.MAP_H // 2
+            ox, oy = self.camera.offset()
+            sx = tx - ox
+            sy = ty - oy
+            vw, vh = 1280, 720
+            on_screen = (0 <= sx < vw) and (0 <= sy < vh)
+            pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.005)
+            if on_screen:
+                # target is in the viewport: a pulsing marker ring at the target
+                # (not an edge arrow) so the player sees exactly where it is.
+                ring = scratch(44, 44)
+                a_ring = int(180 * pulse)
+                pygame.draw.circle(ring, (*ocol, a_ring), (22, 22), 18, 3)
+                surf.blit(ring, (sx - 22, sy - 22))
+                pygame.draw.circle(surf, ocol, (int(sx), int(sy)), 4)
+            else:
+                # target off-screen: a screen-edge arrow pointing toward it.
+                # Compute the direction from the screen center to the target's
+                # screen pos, then clamp the arrow to the nearest edge.
+                cx = vw / 2
+                cy = vh / 2
+                dx = sx - cx
+                dy = sy - cy
+                # pick the dominant axis (the edge the arrow sits on) + the
+                # chevron direction (left/right/top/bottom) the arrow points.
+                margin = 36
+                if abs(dx) >= abs(dy):
+                    # left or right edge
+                    ex = margin if dx < 0 else vw - margin
+                    ey = int(cy + dy * (margin / max(1, abs(dx))))
+                    ey = max(margin, min(vh - margin, ey))
+                    d = "left" if dx < 0 else "right"
+                else:
+                    # top or bottom edge
+                    ey = margin if dy < 0 else vh - margin
+                    ex = int(cx + dx * (margin / max(1, abs(dy))))
+                    ex = max(margin, min(vw - margin, ex))
+                    d = "top" if dy < 0 else "bottom"
+                self._draw_chevron(surf, int(ex), int(ey), d, ocol, pulse)
+                # a small label under the arrow so the player knows what it points to
+                text(surf, olabel, 12, ocol, (int(ex), int(ey) + 22), center=True)
 
         # minimap (bottom-right) - show current grid position
         self._draw_minimap(surf)

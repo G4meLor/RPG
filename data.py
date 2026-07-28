@@ -151,6 +151,12 @@ COMBO_MAX = 10
 COMBO_MILESTONE_SKILL = 5
 COMBO_MILESTONE_ULT = 10
 DEFEND_MITIGATION = 0.45     # defending reduces incoming damage by this fraction
+# LoL-style auto-attack (Task B3): RMB on an enemy sets the AA target; the hero
+# auto-attacks at the AA cooldown while in range, or walks toward it when out.
+# AA_CD is the documented cd (matches the 0.32s atk_cd set in _do_attack); the
+# actual cd timer reuses wc.atk_cd so the AA + the manual J attack share a cd.
+AA_RANGE = 120                # max world px between hero and AA target (in range)
+AA_CD = 0.32                  # auto-attack cooldown (seconds)
 
 # ---------------------------------------------------------------------------
 # Aetheric Cycle (NG+) — per-cycle enemy level bonus applied on top of the

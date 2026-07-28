@@ -442,6 +442,11 @@ class WorldCharacter:
         self.move_target_t = 0.0       # age of the current move_target (for reticle fade)
         self._last_mt_dist = 0.0       # last distance to target (stall detection)
         self._mt_stall_t = 0.0         # time the auto-walk has stalled
+        # auto-attack target (LoL-style RMB-on-enemy, Task B3): when set, the hero
+        # continuously auto-attacks this enemy at the AA cd while in range, or
+        # walks toward it when out of range. Cleared on RMB-ground, skill cast,
+        # party swap, or a map transition. None = no AA target. A WorldEnemy ref.
+        self.aa_target = None
 
         # animation
         self.walk_t = 0.0

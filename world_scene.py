@@ -1224,6 +1224,12 @@ class WorldScene:
         self._aim_skill = None
         self._aim_held_key = None
         self._aim_t = 0.0
+        # clear AA targets on map enter (Task B3) so a stale AA target from the
+        # previous cell's enemies doesn't carry across the transition (the
+        # target enemy belongs to the old map — a ref to it would be invalid).
+        for p in self.party:
+            if p is not None:
+                p.aa_target = None
         # dynamic weather: re-evaluate the per-cell weather state from the current
         # day phase on every map enter. Stored on the scene (NOT in gen_map — the
         # MapRenderer cache is keyed on (c,r) only, and weather is a live overlay
@@ -1591,7 +1597,7 @@ class WorldScene:
     def _element_mult(self, atk_el, def_el):
         return D.element_mult(atk_el, def_el)
 
-    def _do_attack(self, wc):
+    def _do_attack(self, wc, target=None):
         if wc.atk_cd > 0:
             return
         wc.atk_cd = 0.32
@@ -1613,21 +1619,26 @@ class WorldScene:
         if style == "ranged":
             # projectile toward the nearest enemy in the facing direction, or a
             # straight shot in the facing dir if no target — so ranged heroes
-            # actually hit enemies that aren't at exactly the same y.
-            tx, ty = wc.x + wc.facing * 400, wc.y
-            best_d = 1e9
-            for en in self.enemies:
-                if not en.alive:
-                    continue
-                dx = en.x - wc.x
-                # only aim at enemies roughly in the facing half-plane
-                if wc.facing > 0 and dx < -40:
-                    continue
-                if wc.facing < 0 and dx > 40:
-                    continue
-                dd = math.hypot(dx, en.y - wc.y)
-                if dd < best_d:
-                    best_d = dd; tx, ty = en.x, en.y
+            # actually hit enemies that aren't at exactly the same y. If an AA
+            # target (Task B3) is provided, aim directly at it instead of the
+            # nearest-enemy search (the AA target is the player's intent).
+            if target is not None:
+                tx, ty = target.x, target.y
+            else:
+                tx, ty = wc.x + wc.facing * 400, wc.y
+                best_d = 1e9
+                for en in self.enemies:
+                    if not en.alive:
+                        continue
+                    dx = en.x - wc.x
+                    # only aim at enemies roughly in the facing half-plane
+                    if wc.facing > 0 and dx < -40:
+                        continue
+                    if wc.facing < 0 and dx > 40:
+                        continue
+                    dd = math.hypot(dx, en.y - wc.y)
+                    if dd < best_d:
+                        best_d = dd; tx, ty = en.x, en.y
             dx, dy = tx - wc.x, ty - wc.y
             d = math.hypot(dx, dy) or 1
             sp = 560
@@ -1638,9 +1649,16 @@ class WorldScene:
             self.particles.spark(wc.x + wc.facing * 24, wc.y, col, n=5, speed=200, size=4, life=0.18)
             audio.play("hit", 0.2)
         else:
-            # melee arc - hit enemies in front
-            arc_x = wc.x + wc.facing * 40
-            arc_y = wc.y
+            # melee arc - hit enemies in front. If an AA target (Task B3) is
+            # provided, center the arc on the target so the melee swing actually
+            # hits it (the default facing arc could miss a target slightly
+            # above/below the hero). Falls back to the facing arc if no target.
+            if target is not None:
+                arc_x = target.x
+                arc_y = target.y
+            else:
+                arc_x = wc.x + wc.facing * 40
+                arc_y = wc.y
             ar = 60
             hit_any = False
             total_dmg = 0
@@ -1712,6 +1730,9 @@ class WorldScene:
                 self._break_breakable(b)
 
     def _do_skill(self, wc, idx, target=None):
+        # Task B3: casting a skill interrupts the AA (the skill's targeting
+        # shouldn't fight the AA target). Clear the AA target on a skill cast.
+        wc.aa_target = None
         if not wc.can_skill(idx):
             # soft denied buzz on a rejected skill (on cooldown / no energy) so
             # the player gets audible feedback that the input was rejected
@@ -2003,6 +2024,8 @@ class WorldScene:
         wc.add_energy(gain)
 
     def _do_ultimate(self, wc):
+        # Task B3: casting an ult interrupts the AA (same as a skill cast).
+        wc.aa_target = None
         if not wc.can_ultimate():
             # soft denied buzz so a rejected ult isn't silent
             audio.play("weak", 0.15)
@@ -2545,6 +2568,11 @@ class WorldScene:
         self._aim_skill = None
         self._aim_held_key = None
         self._aim_t = 0.0
+        # clear AA targets on a swap (Task B3): the outgoing hero's AA target
+        # belongs to it (the new hero didn't pick it), and the incoming hero's
+        # stale aa_target (if any) shouldn't fire on entry.
+        old.aa_target = None
+        new.aa_target = None
         # recompute elemental resonances — the active buffs track the live party,
         # so swapping in a 2nd hero of an element enables its resonance live.
         self._compute_resonances()
@@ -2598,6 +2626,29 @@ class WorldScene:
         want_dash = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
 
         wc = self.party[self.active]
+        # LoL-style auto-attack (Task B3): if an AA target is set, drive the AA
+        # BEFORE the wc.update so the synthesized move-toward-target input + the
+        # auto-fire run in the same frame. If the target is dead/None, clear it.
+        # This runs before wc.update so the AA-driven move_target / facing is
+        # picked up by the movement code in the same frame (no 1-frame lag).
+        if wc and wc.alive and wc.aa_target is not None:
+            if not wc.aa_target.alive:
+                wc.aa_target = None
+            else:
+                d = math.hypot(wc.aa_target.x - wc.x, wc.aa_target.y - wc.y)
+                if d < D.AA_RANGE:
+                    # in range: face the target + auto-fire at the AA cd (reuse
+                    # wc.atk_cd so the AA + the manual J attack share a cd).
+                    wc.facing = 1 if wc.aa_target.x > wc.x else -1
+                    if wc.atk_cd <= 0:
+                        self._do_attack(wc, target=wc.aa_target)
+                else:
+                    # out of range: walk toward the target (the existing
+                    # move_target auto-walk in wc.update handles the pathing).
+                    wc.move_target = (wc.aa_target.x, wc.aa_target.y)
+                    wc.move_target_t = 0.0
+                    wc._last_mt_dist = 0.0
+                    wc._mt_stall_t = 0.0
         if wc and wc.alive:
             wc.update(sim_dt, self.input_dir, self._map_data["obstacles"], want_dash)
 
@@ -2738,19 +2789,37 @@ class WorldScene:
                 # is intentionally disabled to match the LoL control scheme.
                 pass
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 3:
-                # RMB: LoL-style click-to-move — set the auto-walk target to the
-                # world point under the cursor. The hero walks there until the
-                # target is reached or WASD overrides it. Use the event's own
+                # RMB: LoL-style — if the click lands on an enemy, set it as the
+                # auto-attack target (the hero AA's it continuously until it dies
+                # or a new command is given); otherwise (ground) set the
+                # click-to-move target + clear any AA target. Use the event's own
                 # pos (not pygame.mouse.get_pos) so the target is the click
                 # location, not wherever the cursor drifted to by next frame.
                 # Aim mode does not block RMB (the player can reposition while
                 # aiming a ground-targeted skill).
                 if wc and wc.alive:
                     ox, oy = self.camera.offset()
-                    wc.move_target = (e.pos[0] + ox, e.pos[1] + oy)
-                    wc.move_target_t = 0.0
-                    wc._last_mt_dist = 0.0
-                    wc._mt_stall_t = 0.0
+                    wx, wy = e.pos[0] + ox, e.pos[1] + oy
+                    # hit-test enemies at the click world pos (Task B3)
+                    hit_enemy = None
+                    for en in self.enemies:
+                        if en.alive and math.hypot(en.x - wx, en.y - wy) < en.r + 12:
+                            hit_enemy = en
+                            break
+                    if hit_enemy is not None:
+                        # RMB on an enemy -> AA target (the hero walks toward it
+                        # when out of range, auto-attacks when in range; the
+                        # update loop drives the AA). Don't set move_target here
+                        # — the update loop sets it from the AA target so the
+                        # reticle doesn't fight the AA marker.
+                        wc.aa_target = hit_enemy
+                    else:
+                        # RMB on ground -> click-to-move + clear the AA target
+                        wc.aa_target = None
+                        wc.move_target = (wx, wy)
+                        wc.move_target_t = 0.0
+                        wc._last_mt_dist = 0.0
+                        wc._mt_stall_t = 0.0
 
         # hold-to-aim timer (Task B2): while a skill key is held, accumulate the
         # hold time so the KEYUP handler can distinguish a tap from a hold. The
@@ -4149,7 +4218,7 @@ class WorldScene:
 
         # controls hint (bottom)
         if self.game.player.settings.get("show_hints", True):
-            hint = "WASD move | RMB click-to-move | J attack | Q/W/E skills | U/Space ult | 1-4 switch | R potion | M map | G evolve | Esc menu"
+            hint = "WASD move | RMB enemy=auto-attack / ground=move | J attack | Q/W/E skills | U/Space ult | 1-4 switch | R potion | M map | G evolve | Esc menu"
             text(surf, hint, 12, (200, 200, 220), (640, 704), center=True)
 
         # skill bar (bottom-center): Q/W/E + R(ult) with icons + cooldown sweeps

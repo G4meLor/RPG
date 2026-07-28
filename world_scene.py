@@ -64,9 +64,9 @@ AIM_HOLD_THRESHOLD = 0.12
 # preview + the cast clamp the target to this radius so a player can't AoE a
 # target off-screen across the map.
 AIM_MAX_RANGE = 300.0
-# Default AoE preview radius (world px) — matches the AoE skill's aoe_r (~200)
-# so the preview circle reads as the actual burst area.
-AIM_AOE_RADIUS = 100
+# Default AoE preview radius (world px) — matches the AoE skill's aoe_r (200,
+# 260 empowered) so the preview circle reads as the actual burst area.
+AIM_AOE_RADIUS = 200
 
 # ---------------------------------------------------------------------------
 # Signature passive handlers (C6) — dict-lookup dispatch, NOT if/elif chains.
@@ -2707,22 +2707,26 @@ class WorldScene:
                 # fire — a quick tap (< threshold) fires at the facing (legacy),
                 # a hold fires at the mouse world pos (ground-targeted AoE). Only
                 # fires if the released key matches the one we started the hold
-                # with (so a stray KEYUP of another key doesn't misfire).
+                # with (so a stray KEYUP of another key doesn't misfire). Clear
+                # the aim state whenever the held key is released — even if the
+                # hero died mid-hold (otherwise the timer keeps accumulating +
+                # the preview keeps drawing on a dead hero until the next
+                # swap/map-load/KEYDOWN).
                 if (self._aim_held_key is not None
-                        and e.key == self._aim_held_key
-                        and wc and wc.alive):
-                    idx = self._aim_skill
-                    if idx is not None and 0 <= idx < 3:
-                        if self._aim_t > AIM_HOLD_THRESHOLD:
-                            # held long enough → fire at the mouse world pos
-                            # (clamped to AIM_MAX_RANGE in _do_skill).
-                            ox, oy = self.camera.offset()
-                            mp = pygame.mouse.get_pos()
-                            target = (mp[0] + ox, mp[1] + oy)
-                            self._do_skill(wc, idx, target=target)
-                        else:
-                            # quick tap → fire instantly at the facing (legacy)
-                            self._do_skill(wc, idx)
+                        and e.key == self._aim_held_key):
+                    if wc and wc.alive:
+                        idx = self._aim_skill
+                        if idx is not None and 0 <= idx < 3:
+                            if self._aim_t > AIM_HOLD_THRESHOLD:
+                                # held long enough → fire at the mouse world pos
+                                # (clamped to AIM_MAX_RANGE in _do_skill).
+                                ox, oy = self.camera.offset()
+                                mp = pygame.mouse.get_pos()
+                                target = (mp[0] + ox, mp[1] + oy)
+                                self._do_skill(wc, idx, target=target)
+                            else:
+                                # quick tap → fire instantly at the facing (legacy)
+                                self._do_skill(wc, idx)
                     # clear the aim state regardless (the hold is over)
                     self._aim_skill = None
                     self._aim_held_key = None
@@ -3417,8 +3421,6 @@ class WorldScene:
                 arc_r = 90
                 # a thick arc (drawn as a filled wedge outline) — use pygame.draw
                 # arc with a bounding rect; element-tinted, pulsing alpha.
-                rect = pygame.Rect(arc_cx - arc_r, arc_cy - arc_r,
-                                   arc_r * 2, arc_r * 2)
                 arc_surf = scratch(arc_r * 2 + 4, arc_r * 2 + 4)
                 ar_rect = pygame.Rect(2, 2, arc_r * 2, arc_r * 2)
                 # draw a thick arc (the facing half) — pygame.draw.arc draws an

@@ -131,8 +131,11 @@ def weather_for(c, r, world_time):
     weights = WEATHER_BY_BIOME.get(biome, WEATHER_BY_BIOME["plains"]).get(phase,
                                                                            WEATHER_BY_BIOME["plains"]["day"])
     # deterministic RNG: same cell + same phase -> same weather (the world is
-    # stable across reloads of the same save at the same time of day).
-    rng = random.Random(cell_seed(c, r) + hash(phase) % 1000)
+    # stable across reloads of the same save at the same time of day). Use a
+    # salt-free str hash (sum of ords) — Python's hash(str) is PYTHONHASHSEED-
+    # salted per process, which would re-roll the weather (and the wet combat
+    # modifier) on every session. Mirrors generate_assets.py's salt-free hash.
+    rng = random.Random(cell_seed(c, r) + sum(ord(ch) for ch in phase) % 1000)
     total = sum(weights[1::2])
     if total <= 0:
         return "clear"

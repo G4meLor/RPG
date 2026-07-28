@@ -139,8 +139,10 @@ class MapRenderer:
             for tx in range(0, WD.MAP_W, tile * 2):
                 surf.blit(pat, (tx, ty))
         # subtle shared speckles (deterministic by biome, not per-cell) so the
-        # floor isn't a flat checkerboard
-        rng = random.Random(abs(hash(biome)) & 0xffff)
+        # floor isn't a flat checkerboard. Salt-free str hash (sum of ords) so
+        # the speckle layout is stable across reloads (Python's hash(str) is
+        # PYTHONHASHSEED-salted per process — mirrors generate_assets.py).
+        rng = random.Random(sum(ord(ch) for ch in biome) & 0xffff)
         speck = (max(0, g1[0] - 18), max(0, g1[1] - 18), max(0, g1[2] - 18))
         for _ in range(160):
             sx = rng.randint(0, WD.MAP_W - 4)

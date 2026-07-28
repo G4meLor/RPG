@@ -4175,7 +4175,8 @@ class WorldScene:
         """Hover tooltip for one skill slot (Task B1). Reads the skill's
         name/category/element/cost/cd/description/how_to_use from the HERO_ASSETS
         manifest (the single source — Task A2). Cached per (hero_id, idx,
-        affordable) so the panel isn't re-rendered every frame while hovered.
+        affordable, cd_bucket) so the panel isn't re-rendered every frame while
+        hovered (the cd line changes each second, so bucket the cd to 0.5s).
         Grows upward from the skill bar so it never overlaps the boss HP bar."""
         if not sid:
             return
@@ -4192,16 +4193,27 @@ class WorldScene:
             entry = {"id": sid, "name": sk.get("name", sid),
                      "category": sk.get("category", sk.get("type", "").title()),
                      "type": sk.get("type", ""), "cost": sk.get("cost", 0),
+                     "element": sk.get("element", wc.hero.element),
                      "description": sk.get("desc", ""), "how_to_use": ""}
-        # cache key: (hero_id, idx, affordable) — re-render only when the
-        # affordability flips (the cost line color changes). Cap the cache so a
-        # long session doesn't grow it unbounded.
-        ck = (wc.hero.id, idx, bool(ready))
+        else:
+            # the manifest entry doesn't carry element/cd (they're hero-level /
+            # runtime) — add them so the tooltip can show element + cooldown.
+            entry = dict(entry)
+            entry.setdefault("element", wc.hero.element)
+        # the runtime cooldown for this slot (Q/W/E = skill_cd, R = ult_cd)
+        is_ult = (idx == 3)
+        cd = wc.ult_cd if is_ult else wc.skill_cd[idx]
+        entry["cd"] = cd
+        # cache key: (hero_id, idx, affordable, cd_bucket) — re-render only when
+        # the affordability flips OR the cd crosses a 0.5s bucket (the cd line
+        # text changes each 0.5s, not every frame). Cap the cache so a long
+        # session doesn't grow it unbounded.
+        ck = (wc.hero.id, idx, bool(ready), int(cd * 2))
         cached = self._tooltip_cache.get(ck)
         if cached is None:
             panel = self._build_skill_tooltip_surf(entry, ready)
             self._tooltip_cache[ck] = panel
-            if len(self._tooltip_cache) > 64:
+            if len(self._tooltip_cache) > 128:
                 self._tooltip_cache.clear()
             cached = panel
         pw, ph = cached.get_size()
@@ -4213,18 +4225,22 @@ class WorldScene:
     def _build_skill_tooltip_surf(self, entry, ready):
         """Build (once per cache key) the tooltip surface for one skill."""
         pw, pad = 230, 10
-        # measure the content height: name(20) + category/cost line(14) +
-        # description (word-wrapped, 12) + how_to_use (12) + spacing
+        # measure the content height: name(20) + cat/element/cost line(14) +
+        # cd line(14) + description (word-wrapped, 12) + how_to_use (12) + spacing
         name = entry.get("name", "")
         cat = entry.get("category", "")
         desc = entry.get("description", "")
         how = entry.get("how_to_use", "")
         cost = entry.get("cost", 0)
+        element = entry.get("element", "")
+        cd = entry.get("cd", None)
         # word-wrap the description at ~30 chars (the panel inner width)
         desc_lines = _wrap(desc, 30) if desc else []
         how_lines = _wrap(how, 30) if how else []
-        # height: header(24) + cat/cost(18) + desc lines(16 each) + how lines(16) + pads
-        ph = pad * 2 + 24 + 18 + max(1, len(desc_lines)) * 16 + max(1, len(how_lines)) * 16 + 8
+        # height: header(24) + cat/element/cost(18) + cd(18) + desc + how + pads
+        ph = (pad * 2 + 24 + 18 + 18
+              + max(1, len(desc_lines)) * 16
+              + max(1, len(how_lines)) * 16 + 8)
         s = pygame.Surface((pw, ph), pygame.SRCALPHA)
         pygame.draw.rect(s, (16, 14, 28, 225), s.get_rect(), border_radius=10)
         border = (255, 220, 120) if ready else (140, 160, 200)
@@ -4232,13 +4248,26 @@ class WorldScene:
         y = pad
         text(s, name, 18, (245, 240, 220), (pad, y))
         y += 24
-        # category badge + cost on one line
+        # category badge (left) + cost (right-aligned) on one line
         cat_col = (180, 200, 255)
         text(s, f"[{cat}]", 13, cat_col, (pad, y))
         cost_col = (160, 220, 255) if ready else (220, 160, 160)
-        text(s, f"cost {cost}", 13, cost_col, (pw - pad, y), center=False)
-        # right-align the cost: re-render at the right edge
-        # (text() left-aligns; approximate right-align by measuring)
+        cost_txt = f"cost {cost}"
+        cost_w = _font(13).size(cost_txt)[0]
+        text(s, cost_txt, 13, cost_col, (pw - pad - cost_w, y))
+        y += 18
+        # element (left) + cooldown (right-aligned) on one line
+        el_col = D.ELEMENT_COLORS.get(element, ((200, 200, 220),))[0] if element else (160, 160, 180)
+        text(s, element.title() if element else "-", 13, el_col, (pad, y))
+        if cd is not None and cd > 0:
+            cd_txt = f"cd {cd:.1f}s"
+            cd_w = _font(13).size(cd_txt)[0]
+            text(s, cd_txt, 13, (220, 200, 180), (pw - pad - cd_w, y))
+        else:
+            ready_txt = "ready" if ready else "charging"
+            rw = _font(13).size(ready_txt)[0]
+            text(s, ready_txt, 13, (180, 220, 200) if ready else (200, 180, 160),
+                 (pw - pad - rw, y))
         y += 18
         for line in desc_lines or [""]:
             text(s, line, 12, (210, 210, 230), (pad, y))

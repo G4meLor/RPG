@@ -53,6 +53,21 @@ def _wrap(s, width):
         lines.append(cur)
     return lines
 
+
+# Hold-to-aim threshold (Task B2): a skill key held longer than this enters aim
+# mode (the preview draws + the release fires at the mouse). A quick tap (< this)
+# fires instantly at the facing (legacy behavior). 0.12s is below a typical human
+# tap duration (~0.15s) so a deliberate tap still fires instantly, while a
+# deliberate hold enters aim mode.
+AIM_HOLD_THRESHOLD = 0.12
+# Max range (world px) a ground-targeted AoE can be placed from the hero. The
+# preview + the cast clamp the target to this radius so a player can't AoE a
+# target off-screen across the map.
+AIM_MAX_RANGE = 300.0
+# Default AoE preview radius (world px) — matches the AoE skill's aoe_r (~200)
+# so the preview circle reads as the actual burst area.
+AIM_AOE_RADIUS = 100
+
 # ---------------------------------------------------------------------------
 # Signature passive handlers (C6) — dict-lookup dispatch, NOT if/elif chains.
 # These run in the world scene (where they need scene state: the enemy list,
@@ -977,6 +992,16 @@ class WorldScene:
         # input state
         self.input_dir = (0, 0)
         self.want_dash = False
+        # hold-to-aim (Task B2): while a skill key (Q/W/E) is held, _aim_held_key
+        # tracks the pygame key constant + _aim_t accumulates the hold time. Once
+        # _aim_t > AIM_HOLD_THRESHOLD the scene is in aim mode (_aim_skill = idx)
+        # and the draw loop renders a category-specific preview at the mouse. On
+        # KEYUP, a quick tap (< threshold) fires instantly at the facing (legacy);
+        # a hold fires at the mouse world pos (ground-targeted AoE). Cleared on
+        # map enter / party swap so a stale aim doesn't carry across transitions.
+        self._aim_skill = None       # idx of the skill currently being aimed, or None
+        self._aim_t = 0.0            # seconds the current skill key has been held
+        self._aim_held_key = None     # the pygame key constant currently held, or None
 
         # overlays
         self.teleport = None
@@ -1193,6 +1218,12 @@ class WorldScene:
         # cell doesn't follow the player (Task A3).
         self._summons = []
         self._traps = []
+        # clear hold-to-aim state on map enter (Task B2) so a stale aim from the
+        # previous cell doesn't carry across the transition (the held key is
+        # released by the player, but the state is defensive-cleared anyway).
+        self._aim_skill = None
+        self._aim_held_key = None
+        self._aim_t = 0.0
         # dynamic weather: re-evaluate the per-cell weather state from the current
         # day phase on every map enter. Stored on the scene (NOT in gen_map — the
         # MapRenderer cache is keyed on (c,r) only, and weather is a live overlay
@@ -1680,7 +1711,7 @@ class WorldScene:
             if math.hypot(b["x"] - br_x, b["y"] - br_y) < br_r + 20:
                 self._break_breakable(b)
 
-    def _do_skill(self, wc, idx):
+    def _do_skill(self, wc, idx, target=None):
         if not wc.can_skill(idx):
             # soft denied buzz on a rejected skill (on cooldown / no energy) so
             # the player gets audible feedback that the input was rejected
@@ -1710,6 +1741,21 @@ class WorldScene:
         empowered = self._skill_empowered
         if empowered:
             self._skill_empowered = False
+        # ground-targeted AoE (Task B2): if `target` (a world-space (x,y)) is
+        # provided for an aoe_attack/aoe_magic skill, center the burst on the
+        # clamped target instead of the hero. Clamp to AIM_MAX_RANGE so a player
+        # can't AoE a target off-screen across the map. Other skill types ignore
+        # `target` (melee/beam use the facing; ranged auto-targets the nearest
+        # enemy; summon/trap place at the hero's side).
+        aoe_cx, aoe_cy = wc.x, wc.y
+        if target is not None and kind in ("aoe_attack", "aoe_magic"):
+            tx, ty = target
+            d = math.hypot(tx - wc.x, ty - wc.y)
+            if d > AIM_MAX_RANGE:
+                # clamp to the max range along the aim line
+                tx = wc.x + (tx - wc.x) * (AIM_MAX_RANGE / d)
+                ty = wc.y + (ty - wc.y) * (AIM_MAX_RANGE / d)
+            aoe_cx, aoe_cy = tx, ty
         # most skills: a burst around the hero or a projectile
         if kind in ("attack", "magic") or (kind == "aoe_attack" and "arrow" in sk) or (kind == "magic" and "bolt" in sk):
             # single-target projectile or melee nuke
@@ -1773,21 +1819,23 @@ class WorldScene:
                 self.camera.add_shake(5, self._shake_mul)
             audio.play("skill", 0.4)
         elif kind in ("aoe_attack", "aoe_magic"):
-            # burst around the hero + an expanding shockwave ring
-            self.particles.burst(wc.x, wc.y, col, n=30, speed=320, size=7, life=0.6, grav=0)
-            self.particles.ring(wc.x, wc.y, col, n=28, speed=420, size=6, life=0.5)
+            # burst around the hero (or the clamped ground target — Task B2) + an
+            # expanding shockwave ring. aoe_cx/aoe_cy default to the hero; a held
+            # aim shifts the center to the mouse world pos (clamped to max range).
+            self.particles.burst(aoe_cx, aoe_cy, col, n=30, speed=320, size=7, life=0.6, grav=0)
+            self.particles.ring(aoe_cx, aoe_cy, col, n=28, speed=420, size=6, life=0.5)
             # empowered AoE: widen the radius (200 -> 260) + a second ring so
             # the burst covers a bigger cluster and reads as a bigger impact.
             aoe_r = 260 if empowered else 200
             if empowered:
-                self.particles.ring(wc.x, wc.y, (255, 255, 255),
+                self.particles.ring(aoe_cx, aoe_cy, (255, 255, 255),
                                     n=24, speed=380, size=6, life=0.45)
             combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
             for en in self.enemies:
-                if en.alive and math.hypot(en.x - wc.x, en.y - wc.y) < aoe_r:
+                if en.alive and math.hypot(en.x - aoe_cx, en.y - aoe_cy) < aoe_r:
                     mult = self._element_mult(skill["element"], en.element)
                     dmg = int(atk * skill["power"] * mult * combo_mul)
-                    dealt = en.take_damage(dmg, wc.x, wc.y,
+                    dealt = en.take_damage(dmg, aoe_cx, aoe_cy,
                                             on_attack=self._on_enemy_event)
                     if dealt:
                         self._on_enemy_hit(en, wc, dealt, False)
@@ -2491,6 +2539,12 @@ class WorldScene:
         # finisher must be spent by the hero who earned it.
         self._skill_empowered = False
         self._ult_empowered = False
+        # clear hold-to-aim state on a swap (Task B2) so an aim started on the
+        # outgoing hero doesn't carry to the incoming hero (the new hero's skill
+        # idx may map to a different skill/category).
+        self._aim_skill = None
+        self._aim_held_key = None
+        self._aim_t = 0.0
         # recompute elemental resonances — the active buffs track the live party,
         # so swapping in a 2nd hero of an element enables its resonance live.
         self._compute_resonances()
@@ -2577,18 +2631,36 @@ class WorldScene:
                     break
 
         # events: attacks, skills, ult, switch, menus
+        # Q/W/E use a hold-to-aim model (Task B2): KEYDOWN starts the hold timer
+        # (no immediate cast); KEYUP fires — a quick tap (< AIM_HOLD_THRESHOLD)
+        # fires instantly at the facing (legacy), a hold fires at the mouse world
+        # pos for ground-targeted AoE. J (basic attack), U/Space (ult), 1-4
+        # (swap), R/M/G/Esc stay instant (unchanged). Aim mode does not block
+        # movement (RMB still moves) — the hold timer runs in parallel with the
+        # normal input_dir update above.
         for e in events:
             if e.type == pygame.KEYDOWN:
                 if e.key in (pygame.K_j,):
                     if wc and wc.alive: self._do_attack(wc)
                 elif e.key == pygame.K_q:
-                    if wc and wc.alive: self._do_skill(wc, 0)
+                    # hold-to-aim: start the hold timer (don't fire yet). The
+                    # KEYUP handler below fires on release.
+                    if wc and wc.alive:
+                        self._aim_held_key = e.key
+                        self._aim_skill = 0
+                        self._aim_t = 0.0
                 elif e.key == pygame.K_w:
-                    if wc and wc.alive: self._do_skill(wc, 1)
+                    if wc and wc.alive:
+                        self._aim_held_key = e.key
+                        self._aim_skill = 1
+                        self._aim_t = 0.0
                 elif e.key == pygame.K_e:
                     # E is the third ability (LoL-style). Evolve is on a different
                     # key (G) so E stays a combat key in the world.
-                    if wc and wc.alive: self._do_skill(wc, 2)
+                    if wc and wc.alive:
+                        self._aim_held_key = e.key
+                        self._aim_skill = 2
+                        self._aim_t = 0.0
                 elif e.key in (pygame.K_u, pygame.K_SPACE):
                     if wc and wc.alive: self._do_ultimate(wc)
                 elif e.key == pygame.K_1:
@@ -2630,6 +2702,31 @@ class WorldScene:
                     self.evolve = EvolveOverlay(self.game)
                 elif e.key == pygame.K_ESCAPE:
                     self.pause = PauseHub(self.game)
+            elif e.type == pygame.KEYUP:
+                # hold-to-aim release (Task B2): on KEYUP of the held skill key,
+                # fire — a quick tap (< threshold) fires at the facing (legacy),
+                # a hold fires at the mouse world pos (ground-targeted AoE). Only
+                # fires if the released key matches the one we started the hold
+                # with (so a stray KEYUP of another key doesn't misfire).
+                if (self._aim_held_key is not None
+                        and e.key == self._aim_held_key
+                        and wc and wc.alive):
+                    idx = self._aim_skill
+                    if idx is not None and 0 <= idx < 3:
+                        if self._aim_t > AIM_HOLD_THRESHOLD:
+                            # held long enough → fire at the mouse world pos
+                            # (clamped to AIM_MAX_RANGE in _do_skill).
+                            ox, oy = self.camera.offset()
+                            mp = pygame.mouse.get_pos()
+                            target = (mp[0] + ox, mp[1] + oy)
+                            self._do_skill(wc, idx, target=target)
+                        else:
+                            # quick tap → fire instantly at the facing (legacy)
+                            self._do_skill(wc, idx)
+                    # clear the aim state regardless (the hold is over)
+                    self._aim_skill = None
+                    self._aim_held_key = None
+                    self._aim_t = 0.0
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 # LMB: LoL-style — no-op on its own (the player uses WASD +
                 # abilities). Kept as a no-op so a stray click doesn't fire a
@@ -2642,12 +2739,20 @@ class WorldScene:
                 # target is reached or WASD overrides it. Use the event's own
                 # pos (not pygame.mouse.get_pos) so the target is the click
                 # location, not wherever the cursor drifted to by next frame.
+                # Aim mode does not block RMB (the player can reposition while
+                # aiming a ground-targeted skill).
                 if wc and wc.alive:
                     ox, oy = self.camera.offset()
                     wc.move_target = (e.pos[0] + ox, e.pos[1] + oy)
                     wc.move_target_t = 0.0
                     wc._last_mt_dist = 0.0
                     wc._mt_stall_t = 0.0
+
+        # hold-to-aim timer (Task B2): while a skill key is held, accumulate the
+        # hold time so the KEYUP handler can distinguish a tap from a hold. The
+        # preview draws once _aim_t > AIM_HOLD_THRESHOLD (see _draw_aim_preview).
+        if self._aim_held_key is not None:
+            self._aim_t += dt
 
         # enemies
         for en in self.enemies:
@@ -3084,6 +3189,15 @@ class WorldScene:
         for p in self.projectiles:
             p.draw(surf, ox, oy)
 
+        # hold-to-aim preview (Task B2): while a skill key is held past the
+        # threshold, draw a category-specific aim preview at the mouse (clamped
+        # to AIM_MAX_RANGE from the hero). AoE = a circle (the burst radius),
+        # beam = a line, ranged = a trajectory line, melee = an arc in the
+        # facing, summon/trap = a marker at the spawn point. Element-tinted;
+        # the pulse is gated on reduce_motion (static reticle under RM).
+        if wc and self._aim_skill is not None and self._aim_t > AIM_HOLD_THRESHOLD:
+            self._draw_aim_preview(surf, wc, ox, oy)
+
         # RMB click-to-move ground marker — a pulsing reticle at the auto-walk
         # target so the player sees where the click registered and where the
         # hero is heading (was invisible: the hero just started walking).
@@ -3214,6 +3328,125 @@ class WorldScene:
             self.evolve.draw(surf, self.font_big, self.font, self.font_sm)
         if self.pause:
             self.pause.draw(surf, self.font_big)
+
+    def _draw_aim_preview(self, surf, wc, ox, oy):
+        """Draw the hold-to-aim preview (Task B2) for the currently-aimed skill.
+        Called from draw() only when `_aim_skill is not None and _aim_t >
+        AIM_HOLD_THRESHOLD`. Draws by skill category: AoE = a circle at the
+        clamped mouse (the burst radius), beam = a line from hero to the clamped
+        mouse, ranged (attack/magic with a projectile) = a trajectory line,
+        melee (attack without a projectile) = an arc in the facing, summon/trap
+        = a marker at the spawn/place point. Element-tinted; the pulse is gated
+        on reduce_motion (static reticle, no pulse)."""
+        idx = self._aim_skill
+        if idx is None or idx < 0 or idx >= 3:
+            return
+        sk_list = wc.skill_list()
+        if idx >= len(sk_list):
+            return
+        sk_id = sk_list[idx]
+        if sk_id is None:
+            return
+        skill = D.SKILLS_DB.get(sk_id)
+        if not skill:
+            return
+        kind = skill["type"]
+        col = D.ELEMENT_COLORS.get(skill["element"], ((200, 200, 200),))[0]
+        # mouse → world space, clamped to AIM_MAX_RANGE from the hero
+        mp = pygame.mouse.get_pos()
+        mx, my = mp[0] + ox, mp[1] + oy
+        d = math.hypot(mx - wc.x, my - wc.y)
+        if d > AIM_MAX_RANGE:
+            # clamp along the aim line so the preview stays in range
+            mx = wc.x + (mx - wc.x) * (AIM_MAX_RANGE / d)
+            my = wc.y + (my - wc.y) * (AIM_MAX_RANGE / d)
+        # screen-space coords for drawing
+        hx, hy = int(wc.x - ox), int(wc.y - oy)
+        tx, ty = int(mx - ox), int(my - oy)
+        # pulse (gated on reduce_motion — static reticle under RM)
+        if self._reduce_motion:
+            pulse = 1.0
+        else:
+            pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.012)
+        # category-specific preview
+        if kind in ("aoe_attack", "aoe_magic"):
+            # AoE: a circle at the clamped target (the burst radius). Element-
+            # tinted, pulsing alpha (unless reduce_motion). A dashed outer ring
+            # + a solid inner fill so the area reads clearly.
+            r = AIM_AOE_RADIUS
+            ring = scratch(r * 2 + 8, r * 2 + 8)
+            cx, cy = r + 4, r + 4
+            a_fill = int(40 + 30 * pulse)
+            pygame.draw.circle(ring, (*col, a_fill), (cx, cy), r)
+            pygame.draw.circle(ring, (*col, int(160 + 60 * pulse)), (cx, cy), r, 2)
+            # crosshair ticks at the center so the target point is readable
+            pygame.draw.line(ring, (*col, 220), (cx - 6, cy), (cx + 6, cy), 1)
+            pygame.draw.line(ring, (*col, 220), (cx, cy - 6), (cx, cy + 6), 1)
+            surf.blit(ring, (tx - cx, ty - cy))
+        elif kind == "beam":
+            # beam: a line from hero to the clamped target, element-tinted. A
+            # bright core + a soft halo so the beam reads as a directed shot.
+            halo = scratch(max(abs(tx - hx) + 16, 8), max(abs(ty - hy) + 16, 8))
+            # draw the halo relative to the hero endpoint
+            x0, y0 = min(hx, tx) - 8, min(hy, ty) - 8
+            pygame.draw.line(halo, (*col, int(80 * pulse)),
+                             (hx - x0, hy - y0), (tx - x0, ty - y0), 6)
+            pygame.draw.line(halo, (*col, 240),
+                             (hx - x0, hy - y0), (tx - x0, ty - y0), 2)
+            surf.blit(halo, (x0, y0))
+            # endpoint marker so the beam's terminus is readable
+            pygame.draw.circle(surf, col, (tx, ty), 4)
+        elif kind in ("attack", "magic"):
+            # ranged vs melee: a ranged hero (bow/staff/orb) gets a trajectory
+            # line to the clamped target; a melee hero (sword/dagger/shield)
+            # gets an arc in the facing (melee doesn't aim at the mouse — the
+            # swing is in the facing direction, so the preview shows the arc).
+            style = WEAPON_STYLE.get(WEAPON_STYLE_KEY(wc.hero.id), "melee")
+            if style == "ranged":
+                # trajectory: a thin line + a reticle at the target
+                pygame.draw.line(surf, (*col, 180), (hx, hy), (tx, ty), 2)
+                pygame.draw.circle(surf, col, (tx, ty), 5, 2)
+                pygame.draw.circle(surf, col, (tx, ty), 2)
+            else:
+                # melee arc in the facing: an arc at the hero's facing (not the
+                # mouse — melee doesn't aim). The arc radius matches the melee
+                # nuke's arc_r (~90). Drawn as a thick arc + a reticle at the
+                # arc center so the swing area is readable.
+                arc_cx = hx + wc.facing * 50
+                arc_cy = hy
+                arc_r = 90
+                # a thick arc (drawn as a filled wedge outline) — use pygame.draw
+                # arc with a bounding rect; element-tinted, pulsing alpha.
+                rect = pygame.Rect(arc_cx - arc_r, arc_cy - arc_r,
+                                   arc_r * 2, arc_r * 2)
+                arc_surf = scratch(arc_r * 2 + 4, arc_r * 2 + 4)
+                ar_rect = pygame.Rect(2, 2, arc_r * 2, arc_r * 2)
+                # draw a thick arc (the facing half) — pygame.draw.arc draws an
+                # outline; use width=3 for a readable swing arc.
+                pygame.draw.arc(arc_surf, (*col, int(160 + 60 * pulse)),
+                                ar_rect, 0, math.pi, 3)
+                # flip the arc to the facing direction (facing>0 = right side)
+                if wc.facing < 0:
+                    arc_surf = pygame.transform.flip(arc_surf, True, False)
+                surf.blit(arc_surf, (arc_cx - arc_r - 2, arc_cy - arc_r - 2))
+                # reticle at the arc center so the target point is readable
+                pygame.draw.circle(surf, col, (arc_cx, arc_cy), 3)
+        elif kind in ("summon", "trap"):
+            # summon/trap: a marker at the spawn/place point (the hero's side /
+            # facing, not the mouse — these skills place at the hero). A small
+            # ring + a crosshair so the placement point is readable.
+            sx = hx + wc.facing * 40 if kind == "summon" else hx + wc.facing * 60
+            sy = hy
+            r = 18 if kind == "summon" else 24
+            ring = scratch(r * 2 + 6, r * 2 + 6)
+            cx, cy = r + 3, r + 3
+            pygame.draw.circle(ring, (*col, int(120 + 60 * pulse)), (cx, cy), r, 2)
+            pygame.draw.line(ring, (*col, 200), (cx - 5, cy), (cx + 5, cy), 1)
+            pygame.draw.line(ring, (*col, 200), (cx, cy - 5), (cx, cy + 5), 1)
+            surf.blit(ring, (sx - cx, sy - cy))
+        # for heal/buff/debuff/ultimate/revive, no preview (these are self/
+        # facing-targeted; the aim doesn't change the effect). The aim mode
+        # still runs (the hold timer + KEYUP), but the preview is empty.
 
     def _draw_breakable(self, surf, b, ox, oy):
         """Draw a breakable prop (pot/crate/barrel) — a simple procedural shape

@@ -1053,8 +1053,17 @@ class GachaScene(Scene):
         frame = load_ui(f"frame_{rar}")
         frame = pygame.transform.smoothscale(frame, (cw, ch))
         surf.blit(frame, rect.topleft)
-        p = load_portrait(hid, int(cw * 0.9))
-        p2 = pygame.transform.smoothscale(p, (int(cw * 0.9), int(cw * 0.9)))
+        # the character sprite (bright chibi on transparent bg) over a bright
+        # element-tinted card — the portrait is too dark for the reveal (the
+        # "face too dark" fix). The portrait stays for the codex headshot.
+        el_main = D.ELEMENT_COLORS.get(hd["element"], ((200, 200, 220),))[0]
+        card_size = int(cw * 0.9)
+        card = _scratch(card_size, card_size)
+        pygame.draw.rect(card, (*el_main, 60), card.get_rect(), border_radius=24)
+        pygame.draw.rect(card, (255, 255, 255, 40), card.get_rect(), 3, border_radius=24)
+        surf.blit(card, (rect.centerx - card_size // 2, rect.y + 16))
+        p = load_char_sprite(hid, card_size)
+        p2 = pygame.transform.smoothscale(p, (card_size, card_size))
         surf.blit(p2, (rect.centerx - p2.get_width() // 2, rect.y + 16))
         # rotating rays scaled by rarity (SSR denser + counter-rotating set)
         if rar == "SSR":

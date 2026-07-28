@@ -350,9 +350,9 @@ def draw_chibi(surf, element, body_color, hair_color, accent,
                         center=(head_r + 8, head_r), radius=head_r - 6, falloff=1.8)
     clip_to_circle(subsurf, (head_r, head_r), head_r)
     surf.blit(subsurf, (cx - head_r, 110 - head_r))
-    # face core shadow (right side, cool ambient)
+    # face core shadow (lighter — was 55, now 30 so the face isn't darkened)
     fshade = pygame.Surface((head_r * 2, head_r * 2), pygame.SRCALPHA)
-    pygame.draw.circle(fshade, (30, 40, 60, 55), (head_r, head_r), head_r)
+    pygame.draw.circle(fshade, (30, 40, 60, 30), (head_r, head_r), head_r)
     pygame.draw.circle(fshade, (0, 0, 0, 0), (head_r - 16, head_r), head_r - 4)
     surf.blit(fshade, (cx - head_r, 110 - head_r))
     # warm nose/cheek tint
@@ -2281,8 +2281,9 @@ def make_portrait(element, body, hair, accent, hair_style, weapon, path,
                   eye=(40, 40, 60), expression="neutral", eye_shape="round", skin=None):
     s = pygame.Surface((512, 512), pygame.SRCALPHA)
     main, light, dark = ELEMENT_COLORS[element]
-    # bg: rich diagonal gradient (deep dark top-left -> element-tinted bottom-right)
-    bg = diag_grad_surf(512, 512, lerp_color(dark, (0, 0, 0), 0.45),
+    # bg: lighter diagonal gradient (was dark top-left -> element-tinted; now
+    # element-tinted -> only slightly darkened, so the face reads at card size)
+    bg = diag_grad_surf(512, 512, lerp_color(main, (0, 0, 0), 0.25),
                         lerp_color(main, (0, 0, 0), 0.55))
     s.blit(bg, (0, 0))
     # large soft radial glow behind the character (element-tinted)
@@ -2315,9 +2316,9 @@ def make_portrait(element, body, hair, accent, hair_style, weapon, path,
     gground = soft_glow(360, 60, light, 70, center=(180, 30), radius=180, falloff=1.5)
     s.blit(gground, (76, 430))
     s.blit(big, (21, 50))
-    # vignette (dark edges) for focus
-    vig = radial_grad_surf(512, 512, (0, 0, 0, 0), (0, 0, 0, 150),
-                           center=(256, 256), radius=320, falloff=1.8)
+    # vignette (lighter — was 150, now 90 so the face isn't lost at card size)
+    vig = radial_grad_surf(512, 512, (0, 0, 0, 0), (0, 0, 0, 90),
+                           center=(256, 256), radius=340, falloff=1.8)
     s.blit(vig, (0, 0))
     # frame: dark border + element-colored ring + thin inner highlight
     pygame.draw.rect(s, (18, 16, 28), s.get_rect(), 12, border_radius=30)

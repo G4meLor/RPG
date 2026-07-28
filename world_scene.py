@@ -901,6 +901,18 @@ class WorldScene:
         self._world_time = float(p.ow_time or 0.0)
         self._day_cycle = 240.0   # seconds for a full 0..1 cycle (4 minutes)
 
+        # dynamic weather: a deterministic per-cell state (clear/rain/fog/storm)
+        # re-evaluated on each _load_map from WD.weather_for so the same cell can
+        # read different weather across a long session as the day phase advances.
+        # Declared BEFORE _load_map (the same init-order trap as _world_time /
+        # the boss intro timer — fields used in _load_map must be declared in
+        # __init__ first so the first _load_map call doesn't AttributeError).
+        self._weather = "clear"
+        # storm strike timer: counts down; when it elapses, a telegraphed strike
+        # spawns at a near-hero tile (see the per-frame update). Reset on each
+        # _load_map so a fresh map's storm cadence is independent of the last.
+        self._storm_strike_t = 0.0
+
         # load map content
         self.enemies = []
         self.drops = []          # list of {x,y,kind,value}
@@ -1114,6 +1126,13 @@ class WorldScene:
         self._map_data = m
         self.enemies = []
         self.drops = []
+        # dynamic weather: re-evaluate the per-cell weather state from the current
+        # day phase on every map enter. Stored on the scene (NOT in gen_map — the
+        # MapRenderer cache is keyed on (c,r) only, and weather is a live overlay
+        # + combat modifier, not a baked map property). Reset the storm strike
+        # timer so a fresh map's storm cadence is independent of the last.
+        self._weather = WD.weather_for(self.c, self.r, self._world_time)
+        self._storm_strike_t = 6.0   # first storm strike ~6s after entering a storm map
         # reset any stale boss intro/defeat banner timers on a non-boss map so a
         # cinematic from a previous boss arena doesn't bleed onto the wrong map
         if not m["is_boss"]:
@@ -1216,8 +1235,15 @@ class WorldScene:
             self.game.player.save()
         # start the looping biome ambience on map enter (a quiet bed so the
         # world isn't silent between hits). Respects the master sound toggle.
+        # When the weather is rain/storm, switch the ambience bed to the rain
+        # loop so the world sounds wet; thunder one-shots fire from the per-frame
+        # storm-strike path (see update).
         if self.game.player.settings.get("sound", True):
-            audio.set_ambience(True, volume=0.22, biome=WD.cell_biome(self.c, self.r))
+            biome = WD.cell_biome(self.c, self.r)
+            if self._weather == "rain" or self._weather == "storm":
+                audio.set_ambience(True, volume=0.30, biome=biome, weather="rain")
+            else:
+                audio.set_ambience(True, volume=0.22, biome=biome)
 
     def _discover_neighbors(self):
         for (nc, nr) in WD.neighbors(self.c, self.r):
@@ -1905,6 +1931,13 @@ class WorldScene:
                                             (255, 180, 80), size=16))
         el_col = D.ELEMENT_COLORS.get(wc.element, ((200, 200, 200),))[0]
         self.particles.burst(en.x, en.y, el_col, n=8, speed=200, size=4, life=0.3)
+        # wet effect: when the current map's weather is rain (or storm), the
+        # wet multiplier (D.WET_EFFECT) extends the reaction window (+50%) and
+        # scales the reaction bonus (water x1.2, fire x0.8). Gated to the
+        # reaction window ONLY — the wet effect extends the reaction window,
+        # not the Freeze stun duration (en._react_stun stays at its base 1.5s,
+        # not 1.5 * 1.5, so the wet effect doesn't stack with the Freeze stun).
+        wet = self._weather in ("rain", "storm")
         # elemental reaction: if this hit's element differs from the last one
         # that hit this enemy within the reaction window, trigger a reaction
         # (bonus damage + a named float + a distinct particle). This rewards
@@ -1912,6 +1945,13 @@ class WorldScene:
         rxn = D.reaction_for(en._last_element_hit, wc.element) if en._last_element_hit else None
         if rxn and en._element_hit_t > 0:
             name, bonus_frac, effect, rcol = rxn
+            # wet scales the reaction bonus: water +20%, fire -20% (the wet
+            # effect amplifies water reactions and dampens fire ones)
+            if wet:
+                if wc.element == "water":
+                    bonus_frac *= D.WET_EFFECT["water"]
+                elif wc.element == "fire":
+                    bonus_frac *= D.WET_EFFECT["fire"]
             bonus = int(dmg * bonus_frac)
             if bonus > 0:
                 en.enemy.hp -= bonus
@@ -1935,7 +1975,8 @@ class WorldScene:
                 self.particles.burst(en.x, en.y, rcol, n=28, speed=260, size=7, life=0.6)
                 self.particles.ring(en.x, en.y, rcol, n=22, speed=320, size=6, life=0.5)
             elif effect == "stun":
-                # freeze: a brief stun + an ice shard burst
+                # freeze: a brief stun + an ice shard burst. The wet effect
+                # does NOT extend the stun duration (only the reaction window).
                 en._react_stun = 1.5
                 self.particles.burst(en.x, en.y, rcol, n=24, speed=180, size=6, life=0.7, grav=-40)
             else:  # burst
@@ -1945,7 +1986,9 @@ class WorldScene:
             audio.play("explosion", 0.4)
         # record this hit's element + refresh the reaction window for the next hit
         en._last_element_hit = wc.element
-        en._element_hit_t = D.REACTION_WINDOW
+        # wet extends the reaction window (+50%) so the next element swap has a
+        # longer window to trigger a reaction in the rain (the wet effect).
+        en._element_hit_t = D.REACTION_WINDOW * (D.WET_EFFECT["reaction_window"] if wet else 1.0)
         if is_crit:
             # crits get a sharper white spark + a small ring + bigger hit-stop
             self.particles.ring(en.x, en.y, (255, 240, 180), n=14, speed=300, size=4, life=0.28)
@@ -2509,6 +2552,47 @@ class WorldScene:
             low_hp = wc.hero.hp / max(1, wc.hero.max_hp) < 0.3
             audio.heartbeat_tick(dt, low_hp=low_hp)
 
+        # storm strikes: every ~6s a storm map spawns a telegraphed lightning
+        # strike at a random near-hero tile. Reuses the boss_slam telegraph
+        # pattern (an expanding ring + a damage check at the strike point) so the
+        # storm is a real hazard, not just a visual. Skipped under reduce_motion
+        # (the strike still deals damage but the telegraph flash is dropped).
+        if self._weather == "storm" and wc and wc.alive:
+            self._storm_strike_t -= dt
+            if self._storm_strike_t <= 0:
+                self._storm_strike_t = 6.0
+                # pick a strike point near the hero (within ~160px) so the strike
+                # is a real threat the player must react to, not a distant flash
+                ang = random.random() * math.tau
+                dist = random.uniform(40, 160)
+                sx = int(max(WD.TILE, min(WD.MAP_W - WD.TILE, wc.x + math.cos(ang) * dist)))
+                sy = int(max(WD.TILE, min(WD.MAP_H - WD.TILE, wc.y + math.sin(ang) * dist)))
+                # telegraph: an expanding ring + a brief flash so the player sees
+                # the strike coming (reuses the boss_slam telegraph shape)
+                self.particles.ring(sx, sy, (255, 240, 200), n=28, speed=360, size=6, life=0.5)
+                self.particles.burst(sx, sy, (255, 240, 180), n=20, speed=300, size=6, life=0.5, grav=0)
+                # damage check: hit the active hero if they're inside the strike
+                # radius (the player should dash out during the telegraph)
+                strike_r = 90
+                if math.hypot(wc.x - sx, wc.y - sy) < strike_r:
+                    dmg = int(40 + self.r * 8)  # scales with row depth
+                    res = wc.take_damage(dmg, sx, sy, is_melee=False)
+                    if res == "perfect_dodge":
+                        self._on_perfect_dodge(wc)
+                    elif res == "revive":
+                        self._on_hero_revive(wc)
+                        self._hero_damaged(wc, dmg)
+                    else:
+                        dealt, reflected = res
+                        if dealt:
+                            self._hero_damaged(wc, dealt)
+                # thunder one-shot on each strike so the storm reads audibly
+                if self.game.player.settings.get("sound", True):
+                    audio.play_thunder(0.5)
+                self.camera.add_shake(6, self._shake_mul)
+                if not self._reduce_motion:
+                    self.flash = max(self.flash, 0.18)
+
         # auto-save position periodically
         if wc:
             self.game.player.ow_pos = [int(wc.x), int(wc.y)]
@@ -2968,6 +3052,20 @@ class WorldScene:
             y = int((by - oy * 0.10 + t * 20 * spd) % (720 + rr * 2) - rr)
             surf.blit(mote, (x, y), special_flags=pygame.BLEND_RGBA_ADD)
 
+        # weather overlays — rain (diagonal alpha streaks) + fog (a flat
+        # darkening). Both are cached in _light_cache and blitted as a single
+        # image so the per-frame cost is one blit, not a full-screen fill.
+        # Skipped under reduce_motion (the wet multiplier + storm strikes still
+        # apply; only the visual overlay is dropped so the accessibility mode
+        # isn't overwhelmed by a moving rain layer).
+        if not self._reduce_motion:
+            if self._weather in ("rain", "storm"):
+                rain_ov = self._rain_overlay()
+                surf.blit(rain_ov, (0, 0))
+            elif self._weather == "fog":
+                fog_ov = self._fog_overlay()
+                surf.blit(fog_ov, (0, 0))
+
         # full-screen flashes (reuse one persistent overlay surface)
         if self.map_enter_t > 0 or self.swap_flash > 0 or self.flash > 0:
             ov = self._flash_surf
@@ -3047,6 +3145,44 @@ class WorldScene:
                 pygame.draw.circle(sp, (*fog, a), (R, R), k)
             self._light_cache[key] = sp
         return sp
+
+    def _rain_overlay(self):
+        """A cached full-screen rain overlay — a field of diagonal alpha streaks
+        drawn once into a 1280x720 surface and blitted as a single image per
+        frame. The streaks are static (the rain 'moves' via the streak offsets
+        baked into the sprite) so the overlay is one blit, not a per-frame
+        redraw of ~80 lines. Cached in _light_cache so the 3.5MB surface is
+        built once per scene, not per frame."""
+        key = ("weather_rain",)
+        ov = self._light_cache.get(key)
+        if ov is None:
+            ov = pygame.Surface((1280, 720), pygame.SRCALPHA)
+            rng = random.Random(4242)   # deterministic streak field
+            # ~80 diagonal streaks across the screen; each is a short line with
+            # a low alpha so the overlay reads as rain, not a solid sheet
+            for _ in range(80):
+                x = rng.randint(0, 1280)
+                y = rng.randint(0, 720)
+                length = rng.randint(14, 26)
+                a = rng.randint(60, 110)
+                # diagonal down-right (the wind-driven slant)
+                pygame.draw.line(ov, (200, 220, 255, a),
+                                 (x, y), (x + length // 2, y + length), 2)
+            self._light_cache[key] = ov
+        return ov
+
+    def _fog_overlay(self):
+        """A cached full-screen fog overlay — a flat low-alpha grey-blue
+        darkening so the world reads as hazy (a heavier version of the night
+        overlay, tinted cool so it reads as fog, not night). One blit per
+        frame; cached in _light_cache so the surface is built once."""
+        key = ("weather_fog",)
+        ov = self._light_cache.get(key)
+        if ov is None:
+            ov = pygame.Surface((1280, 720), pygame.SRCALPHA)
+            ov.fill((180, 200, 220, 60))
+            self._light_cache[key] = ov
+        return ov
 
     def _sky_for_phase(self, base_sky, _qphase=None):
         """Shift a biome's base sky color by the day/night phase (0..1).

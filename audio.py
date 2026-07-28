@@ -345,6 +345,45 @@ def synth_combo_max(sr=22050, dur=0.7):
     return _make_sound(wave * 0.7, sr)
 
 
+def synth_rain(sr=22050, dur=3.0):
+    """A looping rain bed — filtered noise shaped so it reads as rain: a
+    mid-frequency hiss (the falling water) + a low rumble (the wet air).
+    Band-passed noise with a slow amplitude wobble so the loop isn't a flat
+    static hiss. Meant to loop on a dedicated channel under the SFX."""
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    # mid hiss: band-passed noise in the 1-6 kHz range (the splashy part)
+    hiss = _bandpass_noise(n, sr, 1000, 6000) * 0.5
+    # low rumble: band-passed noise in the 80-300 Hz range (the wet air)
+    rumble = _bandpass_noise(n, sr, 80, 300) * 0.3
+    # slow amplitude wobble so the rain intensity varies naturally over the loop
+    wobble = 0.85 + 0.15 * np.sin(2 * math.pi * 0.3 * t)
+    wave = (hiss + rumble) * wobble
+    # gentle fade in/out at the loop ends so the loop point is seamless
+    env = np.ones(n)
+    f = int(n * 0.1)
+    env[:f] = np.linspace(0, 1, f)
+    env[-f:] = np.linspace(1, 0, f)
+    return _make_sound(wave * env * 0.55, sr)
+
+
+def synth_thunder(sr=22050, dur=1.4):
+    """A one-shot thunder crack — a low noise burst with a sharp attack and a
+    long rumbling tail. The noise is band-passed low so it reads as thunder,
+    not a hit/explosion (a deeper, longer rumble than synth_explosion)."""
+    n = int(sr * dur)
+    t = np.linspace(0, dur, n)
+    # low rumble: band-passed noise in the 40-200 Hz range
+    rumble = _bandpass_noise(n, sr, 40, 200)
+    # a sharp attack at the start (the crack) + a long decay (the rolling tail)
+    attack = np.exp(-t * 6)
+    tail = np.exp(-t * 1.5)
+    # the crack is a brief wide-band noise burst; the tail is the low rumble
+    crack = (np.random.rand(n) - 0.5) * 2 * attack
+    wave = 0.7 * rumble * tail + 0.3 * crack
+    return _make_sound(wave * _envelope(n, 0.005, 0.7), sr)
+
+
 def init():
     global INIT_OK, SOUNDS, ENABLED
     if INIT_OK:
@@ -387,6 +426,11 @@ def init():
             "ambience_cave": synth_ambience(biome="cave"),
             "ambience_castle": synth_ambience(biome="castle"),
             "ambience_void": synth_ambience(biome="void"),
+            # weather beds: a looping rain loop (layered on a 2nd channel when
+            # the current map's weather is rain/storm) + a one-shot thunder
+            # crack (fired by the per-frame storm-strike path).
+            "rain": synth_rain(),
+            "thunder": synth_thunder(),
             # generic alias so older callers (audio.play("ambience")) still work
             "ambience": synth_ambience(biome="plains"),
             "heartbeat": synth_heartbeat(),
@@ -417,6 +461,14 @@ _AMBIENCE_VOLUME = 0.25
 # The biome currently playing on the ambience channel (set when a bed starts),
 # so re-entry into the same biome updates volume without restarting the loop.
 _AMBIENCE_BIOME = None
+# The weather currently layered on the ambience channel ("rain" or None). When
+# rain/storm, the rain bed plays on a 2nd reserved channel so the wet loop
+# layers on top of the biome drone (a 2-channel bed, not a swap).
+_AMBIENCE_WEATHER = None
+# A dedicated channel for the layered rain loop so it can be started, swapped,
+# and stopped independently of the biome ambience. Reserved on first use.
+_RAIN_CHANNEL = None
+_RAIN_VOLUME = 0.30
 # The biomes we have cached ambience beds for (matches the SOUNDS keys).
 _AMBIENCE_BIOMES = ("plains", "forest", "cave", "castle", "void")
 _HEARTBEAT_T = 0.0   # time until the next heartbeat tick (low-HP warning)
@@ -431,12 +483,17 @@ def play(name, volume=0.6):
         s.play()
 
 
-def set_ambience(on, volume=0.25, biome=None):
+def set_ambience(on, volume=0.25, biome=None, weather=None):
     """Start/stop the looping biome ambience on its dedicated channel. When
     starting, the biome selects which cached bed plays so each of the 5 biomes
     sounds distinct. Re-entry with the same biome only updates the live volume
-    (it does not restart the loop), so map transitions don't cause a pop/tick."""
-    global _AMBIENCE_CHANNEL, _AMBIENCE_VOLUME, _AMBIENCE_BIOME
+    (it does not restart the loop), so map transitions don't cause a pop/tick.
+
+    When `weather` is "rain" (rain or storm), the rain bed is layered on a 2nd
+    reserved channel so the world sounds wet — a filtered-noise loop on top of
+    the biome drone (a 2-channel bed, not a swap). Clear weather stops the rain
+    bed so leaving a storm map silences the wet loop."""
+    global _AMBIENCE_CHANNEL, _AMBIENCE_VOLUME, _AMBIENCE_BIOME, _AMBIENCE_WEATHER
     if not INIT_OK:
         return
     # the stop path bypasses the ENABLED gate — stopping is always safe, and
@@ -450,7 +507,9 @@ def set_ambience(on, volume=0.25, biome=None):
                 _AMBIENCE_CHANNEL._ambience_key = None
         except Exception:
             pass
+        _stop_rain_bed()
         _AMBIENCE_BIOME = None
+        _AMBIENCE_WEATHER = None
         return
     if not ENABLED:
         return
@@ -461,6 +520,7 @@ def set_ambience(on, volume=0.25, biome=None):
         return
     _AMBIENCE_VOLUME = max(0.0, min(1.0, float(volume)))
     _AMBIENCE_BIOME = biome if biome in _AMBIENCE_BIOMES else "plains"
+    _AMBIENCE_WEATHER = weather
     try:
         if _AMBIENCE_CHANNEL is None:
             # reserve a channel for the ambience loop
@@ -474,6 +534,55 @@ def set_ambience(on, volume=0.25, biome=None):
             _AMBIENCE_CHANNEL._ambience_key = key
     except Exception:
         _AMBIENCE_CHANNEL = None
+    # rain bed: layer a filtered-noise loop on a 2nd channel when the weather is
+    # rain/storm; stop it when the weather is clear/fog so the wet loop only
+    # plays on wet maps (not silent-then-pop on the next dry map).
+    if weather == "rain":
+        _start_rain_bed(volume=0.30)
+    else:
+        _stop_rain_bed()
+
+
+def _start_rain_bed(volume=0.30):
+    """Layer the cached rain loop on a 2nd reserved channel so it sits on top of
+    the biome ambience. Re-entry while the rain bed is already playing only
+    updates the live volume (no restart, no pop)."""
+    global _RAIN_CHANNEL, _RAIN_VOLUME
+    if not INIT_OK or not ENABLED:
+        return
+    s = SOUNDS.get("rain")
+    if s is None:
+        return
+    _RAIN_VOLUME = max(0.0, min(1.0, float(volume)))
+    try:
+        if _RAIN_CHANNEL is None:
+            _RAIN_CHANNEL = pygame.mixer.Channel(1)
+        s.set_volume(max(0.0, min(1.0, _RAIN_VOLUME * MASTER_VOLUME)))
+        current = getattr(_RAIN_CHANNEL, "_rain_key", None)
+        if not _RAIN_CHANNEL.get_busy() or current != "rain":
+            _RAIN_CHANNEL.play(s, loops=-1)
+            _RAIN_CHANNEL._rain_key = "rain"
+    except Exception:
+        _RAIN_CHANNEL = None
+
+
+def _stop_rain_bed():
+    """Stop the layered rain loop (called on a transition to clear/fog weather
+    or when the ambience is stopped entirely)."""
+    global _RAIN_CHANNEL
+    try:
+        if _RAIN_CHANNEL is not None:
+            _RAIN_CHANNEL.stop()
+            _RAIN_CHANNEL._rain_key = None
+    except Exception:
+        pass
+
+
+def play_thunder(volume=0.6):
+    """Play a one-shot thunder crack on top of the ambience (called by the
+    world scene's per-frame storm-strike path). A distinct low noise burst so
+    it reads as thunder, not a hit."""
+    play("thunder", volume)
 
 
 def heartbeat_tick(dt, low_hp=False, volume=0.4, hp_frac=1.0):
@@ -503,6 +612,7 @@ def set_enabled(on):
     ENABLED = on
     if not on:
         set_ambience(False)
+        _stop_rain_bed()
 
 
 def set_master_volume(v):

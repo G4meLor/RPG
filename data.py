@@ -51,6 +51,12 @@ REACTIONS = {
 }
 REACTION_WINDOW = 3.0   # seconds after a hit during which a different element triggers
 
+# Wet effect: when the current map's weather is rain, the reaction window is
+# extended (x1.5) and water hits are amplified (x1.2) / fire hits are dampened
+# (x0.8). Gated to the reaction window ONLY — the wet effect extends the
+# window, not the Freeze stun duration (see world_scene._on_enemy_hit).
+WET_EFFECT = {"water": 1.2, "fire": 0.8, "reaction_window": 1.5}
+
 def reaction_for(el_a, el_b):
     """Return the reaction dict for two elements, or None if no reaction."""
     if el_a == el_b:

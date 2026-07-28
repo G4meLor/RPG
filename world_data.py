@@ -63,6 +63,90 @@ def cell_seed(c, r):
     return WORLD_SEED + r * 1000 + c * 7
 
 
+# ---------------------------------------------------------------------------
+# Dynamic weather — a deterministic per-cell state (clear/rain/fog/storm) that
+# varies with the day phase and the biome. This is a LIVE overlay + combat
+# modifier in world_scene (rain -> WET, storm -> telegraphed strikes, fog ->
+# reduced aggro); it is NEVER baked into gen_map (the MapRenderer cache is
+# keyed on (c,r) only, and weather is re-evaluated on each _load_map so the
+# same cell can read different weather across a long session as the day phase
+# advances).
+# ---------------------------------------------------------------------------
+# Per-biome weather weights per day-phase bucket (dawn/day/dusk/night). Storm
+# weight rises at night so the world feels more dangerous after dark; caves
+# skew to fog (a perpetual haze), plains to rain (open sky), void to storm
+# (the chaos realm). The weights are picked deterministically from cell_seed
+# so the same cell at the same phase always yields the same weather.
+WEATHER_STATES = ("clear", "rain", "fog", "storm")
+
+WEATHER_BY_BIOME = {
+    "plains":  {"dawn":  ("clear", 50, "rain", 30, "fog", 12, "storm", 8),
+                "day":   ("clear", 60, "rain", 25, "fog", 10, "storm", 5),
+                "dusk":  ("clear", 45, "rain", 30, "fog", 15, "storm", 10),
+                "night": ("clear", 30, "rain", 30, "fog", 15, "storm", 25)},
+    "forest":  {"dawn":  ("clear", 45, "rain", 25, "fog", 22, "storm", 8),
+                "day":   ("clear", 55, "rain", 20, "fog", 18, "storm", 7),
+                "dusk":  ("clear", 40, "rain", 25, "fog", 25, "storm", 10),
+                "night": ("clear", 25, "rain", 25, "fog", 30, "storm", 20)},
+    "cave":    {"dawn":  ("clear", 20, "rain", 0,  "fog", 70, "storm", 10),
+                "day":   ("clear", 20, "rain", 0,  "fog", 72, "storm", 8),
+                "dusk":  ("clear", 18, "rain", 0,  "fog", 72, "storm", 10),
+                "night": ("clear", 15, "rain", 0,  "fog", 70, "storm", 15)},
+    "castle":  {"dawn":  ("clear", 50, "rain", 20, "fog", 22, "storm", 8),
+                "day":   ("clear", 60, "rain", 15, "fog", 18, "storm", 7),
+                "dusk":  ("clear", 45, "rain", 20, "fog", 25, "storm", 10),
+                "night": ("clear", 30, "rain", 20, "fog", 25, "storm", 25)},
+    "void":    {"dawn":  ("clear", 35, "rain", 10, "fog", 20, "storm", 35),
+                "day":   ("clear", 45, "rain", 10, "fog", 18, "storm", 27),
+                "dusk":  ("clear", 30, "rain", 12, "fog", 23, "storm", 35),
+                "night": ("clear", 20, "rain", 12, "fog", 23, "storm", 45)},
+}
+
+
+def _weather_phase(world_time):
+    """Quantize the day cycle (0..1) to 4 buckets — dawn/day/dusk/night —
+    matching the _sky_for_phase model (0=dawn bright, 0.25=midday, 0.5=dusk,
+    0.75=night). The boundaries align with the night-bonus window used by
+    _load_map (0.4..0.95) so 'night' weather and the night level-bonus agree."""
+    p = float(world_time) % 1.0
+    if p < 0.125 or p >= 0.875:
+        return "dawn"
+    if p < 0.375:
+        return "day"
+    if p < 0.625:
+        return "dusk"
+    return "night"
+
+
+def weather_for(c, r, world_time):
+    """Deterministic weather state for cell (c, r) at the given day phase.
+
+    Quantizes the cycle to 4 buckets (dawn/day/dusk/night), then picks a state
+    from the biome's weight table using a deterministic RNG seeded from
+    cell_seed(c, r) + the phase bucket. Storm weight rises at night. Returns
+    one of WEATHER_STATES ('clear' / 'rain' / 'fog' / 'storm')."""
+    biome = cell_biome(c, r)
+    phase = _weather_phase(world_time)
+    # weighted tuple for this biome+phase: (state, weight, state, weight, ...)
+    weights = WEATHER_BY_BIOME.get(biome, WEATHER_BY_BIOME["plains"]).get(phase,
+                                                                           WEATHER_BY_BIOME["plains"]["day"])
+    # deterministic RNG: same cell + same phase -> same weather (the world is
+    # stable across reloads of the same save at the same time of day).
+    rng = random.Random(cell_seed(c, r) + hash(phase) % 1000)
+    total = sum(weights[1::2])
+    if total <= 0:
+        return "clear"
+    pick = rng.randint(1, total)
+    acc = 0
+    for i in range(0, len(weights), 2):
+        state = weights[i]
+        w = weights[i + 1]
+        acc += w
+        if pick <= acc:
+            return state
+    return "clear"
+
+
 def cell_biome(c, r):
     return ROW_BIOME[r]
 

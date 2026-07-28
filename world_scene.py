@@ -30,6 +30,29 @@ def _seg_hit(x1, y1, x2, y2, px, py, r):
     cx, cy = x1 + t * dx, y1 + t * dy
     return math.hypot(px - cx, py - cy) < r
 
+
+def _wrap(s, width):
+    """Word-wrap a string into a list of lines, each <= `width` chars. Splits
+    on spaces; a word longer than `width` is hard-split. Used by the skill
+    tooltip (Task B1) so the description/how_to_use don't overflow the panel."""
+    if not s:
+        return []
+    words = s.split()
+    lines, cur = [], ""
+    for w in words:
+        if len(cur) + len(w) + (1 if cur else 0) <= width:
+            cur = (cur + " " + w) if cur else w
+        else:
+            if cur:
+                lines.append(cur)
+            # hard-split an over-long word
+            while len(w) > width:
+                lines.append(w[:width]); w = w[width:]
+            cur = w
+    if cur:
+        lines.append(cur)
+    return lines
+
 # ---------------------------------------------------------------------------
 # Signature passive handlers (C6) — dict-lookup dispatch, NOT if/elif chains.
 # These run in the world scene (where they need scene state: the enemy list,
@@ -993,6 +1016,9 @@ class WorldScene:
         self._hud_portraits = {}
         # skill-icon cache for the skill bar (one load per (skill,size) per scene)
         self._skill_icons = {}
+        # skill-tooltip cache (Task B1): keyed by (hero_id, slot_idx, affordable)
+        # so the hover tooltip doesn't re-render text every frame while hovered.
+        self._tooltip_cache = {}
 
         # fonts (cached globally via _font(); keep refs for convenience)
         self.font = _font(18)
@@ -4118,6 +4144,15 @@ class WorldScene:
                 pygame.draw.rect(glow, (255, 220, 120, int(60 * pulse)),
                                  glow.get_rect(), border_radius=12)
                 surf.blit(glow, (r.x - 8, r.y - 8))
+            # hover tooltip (Task B1): when the mouse is over a skill slot, draw a
+            # tooltip panel above the slot with the skill's name/category/cost/cd/
+            # description/how_to_use — read from the HERO_ASSETS manifest. Cached
+            # per (hero_id, idx, affordable) so the panel isn't re-rendered every
+            # frame while hovered. Grows upward from the skill bar (bottom) so it
+            # never overlaps the boss HP bar at top-center. Display only — does
+            # not block clicks. Instant under reduce_motion (no fade).
+            if r.collidepoint(pygame.mouse.get_pos()):
+                self._draw_skill_tooltip(surf, wc, i, sid, r, ready)
         # passive indicator (a small labeled chip to the left of the bar)
         pv = wc.hero.passive
         if pv:
@@ -4135,6 +4170,84 @@ class WorldScene:
             text(surf, desc[:24], 9, (170, 190, 170), (cr.x + 6, cr.y + 33))
             if len(desc) > 24:
                 text(surf, desc[24:48], 9, (170, 190, 170), (cr.x + 6, cr.y + 44))
+
+    def _draw_skill_tooltip(self, surf, wc, idx, sid, slot_rect, ready):
+        """Hover tooltip for one skill slot (Task B1). Reads the skill's
+        name/category/element/cost/cd/description/how_to_use from the HERO_ASSETS
+        manifest (the single source — Task A2). Cached per (hero_id, idx,
+        affordable) so the panel isn't re-rendered every frame while hovered.
+        Grows upward from the skill bar so it never overlaps the boss HP bar."""
+        if not sid:
+            return
+        # resolve the skill's presentation from the manifest (fallback to
+        # SKILLS_DB if the hero isn't in HERO_ASSETS — graceful, no crash)
+        ha = D.HERO_ASSETS.get(wc.hero.id)
+        entry = None
+        if ha:
+            for s in ha["skills"]:
+                if s["id"] == sid:
+                    entry = s; break
+        if entry is None:
+            sk = D.SKILLS_DB.get(sid, {})
+            entry = {"id": sid, "name": sk.get("name", sid),
+                     "category": sk.get("category", sk.get("type", "").title()),
+                     "type": sk.get("type", ""), "cost": sk.get("cost", 0),
+                     "description": sk.get("desc", ""), "how_to_use": ""}
+        # cache key: (hero_id, idx, affordable) — re-render only when the
+        # affordability flips (the cost line color changes). Cap the cache so a
+        # long session doesn't grow it unbounded.
+        ck = (wc.hero.id, idx, bool(ready))
+        cached = self._tooltip_cache.get(ck)
+        if cached is None:
+            panel = self._build_skill_tooltip_surf(entry, ready)
+            self._tooltip_cache[ck] = panel
+            if len(self._tooltip_cache) > 64:
+                self._tooltip_cache.clear()
+            cached = panel
+        pw, ph = cached.get_size()
+        # place above the slot, centered on the slot's x, clamped to the screen
+        px = max(8, min(1280 - pw - 8, slot_rect.centerx - pw // 2))
+        py = max(8, slot_rect.y - ph - 8)
+        surf.blit(cached, (px, py))
+
+    def _build_skill_tooltip_surf(self, entry, ready):
+        """Build (once per cache key) the tooltip surface for one skill."""
+        pw, pad = 230, 10
+        # measure the content height: name(20) + category/cost line(14) +
+        # description (word-wrapped, 12) + how_to_use (12) + spacing
+        name = entry.get("name", "")
+        cat = entry.get("category", "")
+        desc = entry.get("description", "")
+        how = entry.get("how_to_use", "")
+        cost = entry.get("cost", 0)
+        # word-wrap the description at ~30 chars (the panel inner width)
+        desc_lines = _wrap(desc, 30) if desc else []
+        how_lines = _wrap(how, 30) if how else []
+        # height: header(24) + cat/cost(18) + desc lines(16 each) + how lines(16) + pads
+        ph = pad * 2 + 24 + 18 + max(1, len(desc_lines)) * 16 + max(1, len(how_lines)) * 16 + 8
+        s = pygame.Surface((pw, ph), pygame.SRCALPHA)
+        pygame.draw.rect(s, (16, 14, 28, 225), s.get_rect(), border_radius=10)
+        border = (255, 220, 120) if ready else (140, 160, 200)
+        pygame.draw.rect(s, border, s.get_rect(), 2, border_radius=10)
+        y = pad
+        text(s, name, 18, (245, 240, 220), (pad, y))
+        y += 24
+        # category badge + cost on one line
+        cat_col = (180, 200, 255)
+        text(s, f"[{cat}]", 13, cat_col, (pad, y))
+        cost_col = (160, 220, 255) if ready else (220, 160, 160)
+        text(s, f"cost {cost}", 13, cost_col, (pw - pad, y), center=False)
+        # right-align the cost: re-render at the right edge
+        # (text() left-aligns; approximate right-align by measuring)
+        y += 18
+        for line in desc_lines or [""]:
+            text(s, line, 12, (210, 210, 230), (pad, y))
+            y += 16
+        y += 4
+        for line in how_lines or [""]:
+            text(s, line, 12, (180, 220, 200), (pad, y))
+            y += 16
+        return s
 
 
 # ---------------------------------------------------------------------------

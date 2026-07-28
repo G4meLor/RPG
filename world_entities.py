@@ -28,6 +28,11 @@ def scratch(w, h):
     s.fill((0, 0, 0, 0))
     return s
 
+# Cached "BROKEN" tag surface for WorldEnemy.draw — rendered once and reused
+# so a broken enemy doesn't re-render the string every frame (font.render is a
+# top profile cost). Lazily filled on first broken draw.
+_BROKEN_TAG_SURF = None
+
 
 # ---------------------------------------------------------------------------
 # Camera
@@ -1289,3 +1294,25 @@ class WorldEnemy:
             if frac > 0:
                 col = (220, 70, 80) if frac > 0.5 else ((255, 200, 80) if frac > 0.25 else (255, 120, 60))
                 pygame.draw.rect(surf, col, (bx, by, int(bw * frac), 5), border_radius=2)
+            # HSR-style toughness bar: a thin 4px white bar under the HP bar,
+            # shown only after first hit (toughness < max) so an untouched enemy
+            # doesn't carry visual clutter. When broken, the bar empties and a
+            # flashing "BROKEN" tag tells the player the +50% window is open.
+            if self.enemy.has_toughness() and self.enemy.toughness < self.enemy.max_toughness:
+                tby = by + 6
+                tf = max(0, self.enemy.toughness / max(1, self.enemy.max_toughness))
+                pygame.draw.rect(surf, (20, 20, 30), (bx, tby, bw, 4), border_radius=2)
+                if tf > 0 and not self.enemy.broken:
+                    pygame.draw.rect(surf, (235, 235, 245),
+                                     (bx, tby, int(bw * tf), 4), border_radius=2)
+                if self.enemy.broken:
+                    # cache the BROKEN text surface (rendered once, reused) so the
+                    # per-frame font.render on every broken enemy is a dict lookup
+                    global _BROKEN_TAG_SURF
+                    if _BROKEN_TAG_SURF is None:
+                        _BROKEN_TAG_SURF = font.render("BROKEN", True, (255, 200, 120))
+                    tag = _BROKEN_TAG_SURF
+                    # flash: blink ~6Hz so the tag reads as an active state, not a
+                    # static label (skip every other ~83ms frame)
+                    if (pygame.time.get_ticks() % 160) < 120:
+                        surf.blit(tag, (x - tag.get_width() // 2, tby - 14))

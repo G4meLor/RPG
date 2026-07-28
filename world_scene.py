@@ -751,6 +751,10 @@ def _font(size):
 # dynamic strings (HP numbers, cooldown timers) don't balloon memory.
 _TEXT_CACHE = {}
 _TEXT_CACHE_CAP = 300
+# Cached "BROKEN — +50% DMG" label for the boss bar — rendered once and reused
+# so a broken boss doesn't re-render the string every frame (font.render is a
+# top profile cost). Lazily filled on first broken-boss draw.
+_BOKEN_DMG_LABEL_SURF = None
 def text(surf, txt, size, color, pos, center=False, shadow=True):
     key = (str(txt), size, color)
     cached = _TEXT_CACHE.get(key)
@@ -812,6 +816,10 @@ class WorldScene:
         # re-reading the settings dict in every hot path
         self._shake_mul = 1.0
         self._reduce_motion = False
+        # boss phase-transition flash timer: set to 0.5 on a "boss_phase" event,
+        # decays in the update tick; the boss bar draws a white alpha overlay
+        # while >0 (skipped under reduce_motion — see _on_enemy_event).
+        self._boss_phase_flash_t = 0.0
 
         # build the party of WorldCharacters
         self.party = []          # list of WorldCharacter (4 slots)
@@ -2211,6 +2219,9 @@ class WorldScene:
             self._boss_defeat_t = max(0, self._boss_defeat_t - dt)
         if self._ascend_banner_t > 0:
             self._ascend_banner_t = max(0, self._ascend_banner_t - dt)
+        # boss phase-transition flash decays over 0.5s (set on boss_phase event)
+        if self._boss_phase_flash_t > 0:
+            self._boss_phase_flash_t = max(0, self._boss_phase_flash_t - dt)
         # combo window: count down; reset the streak when it expires
         if self._combo_t > 0:
             self._combo_t -= dt
@@ -2284,6 +2295,12 @@ class WorldScene:
             self.flash = 0.3
             if self._reduce_motion:
                 self.flash *= 0.4
+            # phase-transition flash on the boss bar: a 0.5s white alpha overlay
+            # that fades out, drawn over the boss HP bar (see the boss bar draw).
+            # Skipped under reduce_motion (the tick marks still show the phase
+            # boundaries; only the flashy overlay is skipped).
+            if not self._reduce_motion:
+                self._boss_phase_flash_t = 0.5
             self.camera.add_shake(6, self._shake_mul)
             audio.play("boss_intro", 0.5)
             self.set_message(f"{en.enemy.name} — Phase {en._boss_phase}!", 1.5)
@@ -2967,6 +2984,23 @@ class WorldScene:
                 gloss = scratch(fw, 6)
                 gloss.fill((255, 255, 255, 50))
                 surf.blit(gloss, (bx, by))
+            # phase threshold tick marks at 66% and 33% — the same thresholds the
+            # WorldEnemy.update phase progression uses (0.66 / 0.33). Drawn as
+            # 2px vertical lines in a dim color so the player can read where the
+            # next phase transition lands. Drawn over the HP fill so they stay
+            # visible at any HP level.
+            for t_frac in (0.66, 0.33):
+                tx = bx + int(bw * t_frac)
+                pygame.draw.line(surf, (40, 40, 50),
+                                 (tx, by + 1), (tx, by + 17), 2)
+            # phase-transition flash: a white alpha overlay over the boss bar that
+            # fades over 0.5s, set in _on_enemy_event on "boss_phase". Gated on
+            # reduce_motion (skip the flash, keep the tick marks above).
+            if self._boss_phase_flash_t > 0:
+                fa = int(140 * (self._boss_phase_flash_t / 0.5))
+                fov = scratch(bw, 18)
+                fov.fill((255, 255, 255, fa))
+                surf.blit(fov, (bx, by))
             # boss name + level, centered over the bar
             text(surf, f"{boss.enemy.name}  Lv {boss.enemy.level}", 18, (255, 230, 230),
                  (640, by + 1), center=True)
@@ -2978,6 +3012,26 @@ class WorldScene:
                  center=False)
             text(surf, f"{int(boss.enemy.hp)}/{boss.enemy.max_hp} ({int(frac*100)}%)",
                  12, (255, 230, 230), (640, by + 22), center=True)
+            # boss toughness bar: a thin 4px white bar under the boss HP frame,
+            # shown only after first hit (toughness < max) so an untouched boss
+            # doesn't carry visual clutter. When broken, the bar empties and a
+            # "BROKEN — +50% DMG" label tells the player the bonus window is open.
+            if boss.enemy.has_toughness() and boss.enemy.toughness < boss.enemy.max_toughness:
+                tby = by + 24
+                tf = max(0, boss.enemy.toughness / max(1, boss.enemy.max_toughness))
+                pygame.draw.rect(surf, (20, 20, 30), (bx, tby, bw, 4), border_radius=2)
+                if tf > 0 and not boss.enemy.broken:
+                    pygame.draw.rect(surf, (235, 235, 245),
+                                     (bx, tby, int(bw * tf), 4), border_radius=2)
+                if boss.enemy.broken:
+                    # cache the label surface (rendered once, reused) so the
+                    # per-frame font.render on a broken boss is a dict lookup
+                    global _BOKEN_DMG_LABEL_SURF
+                    if _BOKEN_DMG_LABEL_SURF is None:
+                        _BOKEN_DMG_LABEL_SURF = _font(12).render(
+                            "BROKEN — +50% DMG", True, (255, 200, 120))
+                    lbl = _BOKEN_DMG_LABEL_SURF
+                    surf.blit(lbl, (640 - lbl.get_width() // 2, tby + 6))
             # enraged tag — centered UNDER the boss name so it doesn't collide
             # with the right-aligned resources line (was at bx+bw+14 = 974)
             if getattr(boss, "ult_used", False):

@@ -411,7 +411,11 @@ class WorldCharacter:
         # passive runtime state (e.g. shield-when-low cooldown)
         self._shield_cd = 0.0
         self._shield_hp = 0.0
-        self._last_combat_t = 0.0    # time since last combat action (for regen)
+        self._last_combat_t = 9.0    # time since last combat action (for regen);
+        # start "out of combat" (>= 1.5s) so a fresh hero regens at the full
+        # rate immediately on map enter, not the 0.5x in-combat rate for the
+        # first 1.5s (the "mana doesn't increase" feel — the v1 0.0 start made
+        # the first 1.5s feel stalled even with no enemies).
         # signature passive runtime state (C6). _revive_used is reset in
         # WorldScene._build_party per combat (NOT here) to avoid the init-order
         # trap — _build_party runs after the wc is fully constructed so the

@@ -180,10 +180,13 @@ ENERGY_START = 90
 ENERGY_COST_MULT = 6         # skill["cost"] * this = energy cost (non-ult)
 ENERGY_GAIN_BASIC = 25       # using a basic attack
 ENERGY_GAIN_DEAL = 8         # dealing damage with a skill
-ENERGY_REGEN_PCT = 0.04   # passive energy regen: 4% of max per second out of
-                          # combat (~4.8/s at max 120 -> full bar in ~25s out of
-                          # combat, ~2.4/s in combat). Skills recover + mana
-                          # increases without needing to land a hit.
+ENERGY_REGEN_PCT = 0.08   # passive energy regen: 8% of max per second out of
+                          # combat (~9.6/s at max 120 -> full bar in ~12s out of
+                          # combat, ~4.8/s in combat). Skills recover + mana
+                          # increases without needing to land a hit. Tuned up
+                          # from 0.04 (v1) so the regen is felt (the user
+                          # reported "mana doesn't increase" even with the v1
+                          # 4%/s rate; 8%/s is visibly recovering).
 
 def skill_energy_cost(skill):
     """Energy cost of a skill: ultimates cost the full bar, else cost*mult."""

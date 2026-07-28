@@ -1519,6 +1519,10 @@ class WorldScene:
         # ultimates are the heaviest hit — a longer hit-stop so they land with weight
         self.hit_stop = max(self.hit_stop, 0.22)
         combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
+        # total damage dealt by the ultimate — used by the per-hero variant's
+        # self_heal effect (a fraction of damage dealt). Heal ults deal 0 damage
+        # so their variants never pick self_heal (see ULTIMATE_VARIANTS).
+        total_dmg = 0
         # heal ults (e.g. light_hymn) — the skill dict may carry heal=True even
         # though its type is "ultimate"; route to the heal branch so it actually
         # heals the party instead of falling through to the forward-beam else.
@@ -1541,6 +1545,7 @@ class WorldScene:
                     dmg = int(atk * skill["power"] * mult * 1.4 * combo_mul)
                     dealt = en.take_damage(dmg, wc.x, wc.y)
                     if dealt:
+                        total_dmg += dealt
                         self._on_enemy_hit(en, wc, dealt, True)
         else:
             # big forward beam — a streaking column of particles in the facing dir
@@ -1555,7 +1560,46 @@ class WorldScene:
                     dmg = int(atk * skill["power"] * mult * 1.5 * combo_mul)
                     dealt = en.take_damage(dmg, wc.x, wc.y)
                     if dealt:
+                        total_dmg += dealt
                         self._on_enemy_hit(en, wc, dealt, True)
+        # --- B5: per-hero ultimate variant — a secondary effect on top of the
+        # base ultimate. Read the variant (if any) and apply its extra. Only the
+        # one-liner effects are wired (burn/freeze deferred until the DoT engine).
+        var = D.ULTIMATE_VARIANTS.get(wc.hero.id)
+        if var:
+            eff = var["extra_effect"]
+            pot = var.get("potency", 0)
+            if eff == "self_heal" and total_dmg > 0:
+                # heal the caster a modest fraction of the damage dealt
+                wc.heal(int(total_dmg * pot))
+                self.particles.burst(wc.x, wc.y, (140, 240, 160),
+                                     n=14, speed=160, size=5, life=0.5, grav=-60)
+            elif eff == "party_shield":
+                # shield each alive party member (potency = shield strength)
+                for other in self.party:
+                    if other and other.alive:
+                        other.hero.add_effect("shield", 3, pot)
+                self.particles.ring(wc.x, wc.y, (180, 220, 255),
+                                    n=24, speed=260, size=5, life=0.5)
+            elif eff == "knockback":
+                # push enemies back away from the hero (potency = push speed)
+                for en in self.enemies:
+                    if not en.alive:
+                        continue
+                    if math.hypot(en.x - wc.x, en.y - wc.y) < 360:
+                        dx = en.x - wc.x
+                        dy = en.y - wc.y
+                        d = math.hypot(dx, dy) or 1
+                        en.kb_x = dx / d * pot
+                        en.kb_y = dy / d * pot
+            elif eff == "energy_refund":
+                # refund a modest fraction of the active hero's max energy
+                wc.add_energy(int(wc.hero.max_energy * pot))
+            elif eff == "atk_buff_self":
+                # buff the active hero's ATK for a few seconds
+                wc.hero.add_effect("atk_up", 4, pot)
+                self.particles.burst(wc.x, wc.y, (255, 200, 120),
+                                     n=16, speed=180, size=5, life=0.5, grav=-40)
         # constellation ult_extra perks — applied after the ult's main effect so
         # the perk layer adds on top of the base ult. Variants shipped now:
         #   self_heal  - heal the active hero for val * max_hp

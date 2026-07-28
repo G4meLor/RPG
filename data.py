@@ -707,6 +707,73 @@ HEROES_DB = [
 HERO_BY_ID = {h["id"]: h for h in HEROES_DB}
 
 # ---------------------------------------------------------------------------
+# Per-hero ultimate variants (B5)
+#   Each of the 25 heroes gets a unique ultimate name + one secondary effect
+#   applied on top of the base ultimate. Only the one-liner effects are wired
+#   here (self_heal / party_shield / knockback / energy_refund / atk_buff_self).
+#   burn / freeze are DEFERRED until the DoT engine lands (Batch C task C1) —
+#   they are intentionally absent so the dict stays shippable today.
+#   Potency is kept modest so the base ultimate power stays comparable:
+#     self_heal      -> heal the caster int(total_dmg * potency)  (0.10-0.20)
+#     party_shield  -> shield each party member for `potency` (dur 3) (0.15-0.30)
+#     knockback     -> push enemies back (potency = push speed) (200-320)
+#     energy_refund -> wc.add_energy(int(max_energy * potency))  (0.20-0.30)
+#     atk_buff_self -> wc.hero.add_effect("atk_up", 4, potency)  (0.20-0.30)
+# ---------------------------------------------------------------------------
+ULTIMATE_VARIANTS = {
+    "aria":    dict(name="Dawnbreak Hymn",          extra_effect="party_shield",  potency=0.15,
+                    desc="Heal all allies and shield them for 3s."),
+    "kael":    dict(name="Cinderfall Meteor",       extra_effect="self_heal",     potency=0.12,
+                    desc="Rain meteors; heal self for 12% of damage dealt."),
+    "mira":    dict(name="Tidal Devastation",       extra_effect="knockback",     potency=260,
+                    desc="A tsunami scourge that hurls enemies back."),
+    "zephyr":  dict(name="Skyfire Barrage",         extra_effect="atk_buff_self", potency=0.25,
+                    desc="A tempest barrage; +25% ATK for 4s."),
+    "luna":    dict(name="Eclipse Collapse",        extra_effect="self_heal",     potency=0.12,
+                    desc="Void nova; heal self for 12% of damage dealt."),
+    "pyra":    dict(name="Crimson Cataclysm",       extra_effect="knockback",     potency=240,
+                    desc="A crimson meteor that blasts enemies away."),
+    "lyra":    dict(name="Moonlit Aria",           extra_effect="energy_refund", potency=0.25,
+                    desc="A solar hymn; refund 25% of max energy."),
+    "thorne":  dict(name="Stoneguard's Wrath",     extra_effect="party_shield",  potency=0.20,
+                    desc="Tempest roar; shield the party for 3s."),
+    "sera":    dict(name="Cleric's Dawn",          extra_effect="party_shield",  potency=0.15,
+                    desc="A holy hymn; shield all allies for 3s."),
+    "rune":    dict(name="Arcane Abyss",           extra_effect="atk_buff_self", potency=0.25,
+                    desc="Void nova; +25% ATK for 4s."),
+    "blaze":   dict(name="Berserker's Inferno",     extra_effect="self_heal",     potency=0.15,
+                    desc="Meteor inferno; heal self for 15% of damage dealt."),
+    "nami":    dict(name="Sea's Benediction",      extra_effect="party_shield",  potency=0.20,
+                    desc="A tsunami blessing; shield the party for 3s."),
+    "gale":    dict(name="Gale Cataclysm",         extra_effect="knockback",     potency=260,
+                    desc="A cyclone tempest that flings enemies back."),
+    "vex":     dict(name="Shade's End",            extra_effect="atk_buff_self", potency=0.20,
+                    desc="Void nova; +20% ATK for 4s."),
+    "ember":   dict(name="Ashen Revenant",         extra_effect="self_heal",     potency=0.15,
+                    desc="Meteor strike; heal self for 15% of damage dealt."),
+    "tide":    dict(name="Glacier's Ward",         extra_effect="party_shield",  potency=0.25,
+                    desc="A tsunami ward; shield the party for 3s."),
+    "zephyra": dict(name="Storm Herald's Wrath",   extra_effect="atk_buff_self", potency=0.25,
+                    desc="Tempest fury; +25% ATK for 4s."),
+    "selene":  dict(name="Dawnbringer's Smite",    extra_effect="self_heal",     potency=0.12,
+                    desc="Divine wrath; heal self for 12% of damage dealt."),
+    "nox":     dict(name="Eclipse Lord's Drain",   extra_effect="self_heal",     potency=0.20,
+                    desc="Death coil; heal self for 20% of damage dealt."),
+    "cinder":  dict(name="Cinder Knight's Fall",    extra_effect="knockback",     potency=240,
+                    desc="A meteor fall that scatters enemies."),
+    "mist":    dict(name="Veil Dancer's Storm",     extra_effect="energy_refund", potency=0.25,
+                    desc="A tempest veil; refund 25% of max energy."),
+    "sol":     dict(name="Sun Priest's Blessing",   extra_effect="energy_refund", potency=0.30,
+                    desc="A solar hymn; refund 30% of max energy."),
+    "gaia":    dict(name="Earthwarden's Fury",     extra_effect="party_shield",  potency=0.30,
+                    desc="A tempest roar; shield the party for 3s."),
+    "echo":    dict(name="Mirror Sage's Tide",     extra_effect="energy_refund", potency=0.25,
+                    desc="A tsunami echo; refund 25% of max energy."),
+    "raven":   dict(name="Blood Reaper's Harvest", extra_effect="self_heal",     potency=0.20,
+                    desc="Death coil; heal self for 20% of damage dealt."),
+}
+
+# ---------------------------------------------------------------------------
 # Hero lore: bio (<=120 chars), quote (<=80 chars), personality (one word).
 # Pure data shown in the codex tooltip + hero-detail screen.
 # ---------------------------------------------------------------------------

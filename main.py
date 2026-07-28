@@ -786,19 +786,29 @@ class HeroDetailScene(Scene):
         text(surf, f"XP {rec['xp']}/{xp_need}", 13, DIM, (660, 386))
         # ultimate / passive / skills / evo — moved up inside the panel (which
         # ends at y=470) so they are no longer overlapped by the inventory list.
-        ult_name = D.SKILLS_DB[hd["ultimate"]]["name"] if hd.get("ultimate") else "None"
+        # B5: show the per-hero variant name + desc when one is defined, falling
+        # back to the generic SKILLS_DB name otherwise.
+        ult_var = D.ULTIMATE_VARIANTS.get(hd["id"]) if hd.get("ultimate") else None
+        if ult_var:
+            ult_name = ult_var["name"]
+            ult_desc = ult_var.get("desc", "")
+        else:
+            ult_name = D.SKILLS_DB[hd["ultimate"]]["name"] if hd.get("ultimate") else "None"
+            ult_desc = ""
         text(surf, f"Ultimate: {ult_name}", 18, (255, 180, 120), (470, 412))
+        if ult_desc:
+            text(surf, ult_desc, 12, (200, 180, 150), (470, 430))
         pv = h_inst.passive
         if pv:
-            text(surf, f"Passive: {pv['name']}", 14, (160, 220, 180), (470, 432))
+            text(surf, f"Passive: {pv['name']}", 14, (160, 220, 180), (470, 448))
         ab = D.hero_abilities(hd)
         ab_names = [D.SKILLS_DB[s]["name"] if s and s in D.SKILLS_DB else "-" for s in ab]
         text(surf, f"Q {ab_names[0]}  W {ab_names[1]}  E {ab_names[2]}",
-             13, (200, 220, 255), (470, 450))
+             13, (200, 220, 255), (470, 466))
         # evolution tree progress
         nn = len(rec.get("evo_nodes", []))
         text(surf, f"Evo {nn}/5  Tier {h_inst.evolve_title()}",
-             13, (220, 180, 255), (470, 466))
+             13, (220, 180, 255), (470, 482))
         # equipment slots
         text(surf, "Equipment", 22, GOLD, (680, 168))
         self._item_rects = []

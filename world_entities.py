@@ -184,6 +184,27 @@ class Particles:
         for p in self.list:
             p.draw(surf, ox, oy)
 
+    def beam(self, x1, y1, x2, y2, color):
+        """A bright beam line + a sparkle at the endpoint — for the beam skill.
+        Adds a few streaky sparks along the line so the beam reads as an energy
+        lance, not a flat line. (Pixel-art: a thick line, no AA.)"""
+        n = self._qn(14)
+        for _ in range(n):
+            t = random.random()
+            cx = x1 + (x2 - x1) * t
+            cy = y1 + (y2 - y1) * t
+            ang = random.random() * math.tau
+            sp = 120 * (0.5 + random.random())
+            self.list.append(Particle(cx, cy, math.cos(ang) * sp, math.sin(ang) * sp,
+                                      0.3, color, 4, 40))
+        # a couple of bright sparks at the endpoint
+        for _ in range(self._qn(8)):
+            ang = random.random() * math.tau
+            sp = 200 * (0.5 + random.random())
+            self.list.append(Particle(x2, y2, math.cos(ang) * sp, math.sin(ang) * sp,
+                                      0.35, color, 5, 50))
+        self._trim()
+
 
 # ---------------------------------------------------------------------------
 # Projectiles
@@ -1463,3 +1484,115 @@ class WorldEnemy:
                     # static label (skip every other ~83ms frame)
                     if (pygame.time.get_ticks() % 160) < 120:
                         surf.blit(tag, (x - tag.get_width() // 2, tby - 14))
+
+
+# ---------------------------------------------------------------------------
+# Summon ally + Trap (the new summon/beam/trap skill types — Task A3)
+# ---------------------------------------------------------------------------
+class SummonAlly:
+    """A temporary ally spawned by a `summon` skill. Auto-attacks nearby enemies
+    at a fixed cooldown for `dur` seconds, then despawns. NOT a party member — a
+    separate entity so the 4-slot party is untouched. Water-summons heal the
+    party instead of attacking (potency < 1.0 flags the heal role)."""
+    __slots__ = ("x", "y", "element", "color", "atk", "dur", "potency",
+                 "source", "atk_cd", "r", "t")
+
+    def __init__(self, x, y, element, color, atk, dur, potency, source):
+        self.x = float(x); self.y = float(y)
+        self.element = element; self.color = color
+        self.atk = atk; self.dur = dur; self.potency = potency
+        self.source = source  # the WorldCharacter that summoned it
+        self.atk_cd = 0.0
+        self.r = 18
+        self.t = 0.0
+
+    def update(self, dt, enemies, particles, on_enemy_hit, party):
+        self.t += dt
+        self.dur -= dt
+        self.atk_cd = max(0.0, self.atk_cd - dt)
+        # water summon: heal the party over time instead of attacking
+        if self.element == "water" and self.potency < 1.0:
+            if self.atk_cd <= 0:
+                self.atk_cd = 1.2
+                for wc in party:
+                    if wc and wc.alive:
+                        wc.heal(int(self.atk * 0.4))
+                particles.burst(self.x, self.y, (140, 240, 200),
+                                n=8, speed=120, size=4, life=0.4, grav=-60)
+            return self.dur > 0
+        # fire/other summon: auto-attack the nearest enemy in range
+        if self.atk_cd <= 0:
+            best = None; best_d = 220
+            for en in enemies:
+                if not en.alive:
+                    continue
+                dd = math.hypot(en.x - self.x, en.y - self.y)
+                if dd < best_d:
+                    best_d = dd; best = en
+            if best is not None:
+                self.atk_cd = 0.5
+                dmg = max(1, int(self.atk * 0.6))
+                dealt = best.take_damage(dmg, self.x, self.y,
+                                         on_attack=None)
+                if dealt > 0 and on_enemy_hit is not None:
+                    on_enemy_hit(best, self.source, dealt, False)
+                particles.spark(self.x, self.y, self.color, n=6, speed=200, size=4, life=0.25)
+        return self.dur > 0
+
+    def draw(self, surf, ox, oy):
+        x = int(self.x - ox); y = int(self.y - oy)
+        if -40 < x < 1320 and -40 < y < 760:
+            # a small element-tinted construct (pixel-art: solid fills, no AA)
+            pygame.draw.circle(surf, self.color, (x, y), self.r)
+            pygame.draw.circle(surf, (20, 20, 30), (x, y), self.r, 2)
+            # a fading timer ring so the player sees the summon's remaining dur
+            frac = max(0.0, self.dur / 6.0)
+            if frac > 0:
+                pygame.draw.arc(surf, (255, 255, 255),
+                                (x - self.r - 4, y - self.r - 4,
+                                 (self.r + 4) * 2, (self.r + 4) * 2),
+                                0, frac * math.tau, 2)
+
+
+class Trap:
+    """A delayed ground hazard placed by a `trap` skill. Triggers (AoE damage +
+    a particle burst) when an enemy steps within `radius`, then despawns. Also
+    despawns after `dur` seconds if nothing triggers it."""
+    __slots__ = ("x", "y", "element", "color", "power", "radius", "dur",
+                 "source", "t", "triggered")
+
+    def __init__(self, x, y, element, color, power, radius, dur, source):
+        self.x = float(x); self.y = float(y)
+        self.element = element; self.color = color
+        self.power = power; self.radius = radius
+        self.dur = dur; self.source = source
+        self.t = 0.0; self.triggered = False
+
+    def update(self, dt, enemies, particles):
+        self.t += dt
+        self.dur -= dt
+        if self.dur <= 0:
+            return False
+        for en in enemies:
+            if en.alive and math.hypot(en.x - self.x, en.y - self.y) < self.radius + en.r:
+                # trigger: AoE damage to all enemies within the radius + a burst
+                for en2 in enemies:
+                    if en2.alive and math.hypot(en2.x - self.x, en2.y - self.y) < self.radius:
+                        en2.take_damage(self.power, self.x, self.y, on_attack=None)
+                particles.burst(self.x, self.y, self.color,
+                                n=24, speed=300, size=6, life=0.5)
+                particles.ring(self.x, self.y, self.color,
+                               n=20, speed=360, size=5, life=0.45)
+                self.triggered = True
+                return False
+        return True
+
+    def draw(self, surf, ox, oy):
+        x = int(self.x - ox); y = int(self.y - oy)
+        if -40 < x < 1320 and -40 < y < 760:
+            # a pulsing element-tinted hazard ring on the ground (pixel-art)
+            pulse = 0.5 + 0.5 * math.sin(self.t * 6)
+            r = int(self.radius * (0.9 + 0.1 * pulse))
+            pygame.draw.circle(surf, (*self.color, 80) if len(self.color) == 3 else self.color,
+                               (x, y), r, 2)
+            pygame.draw.circle(surf, self.color, (x, y), 4)

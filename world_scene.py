@@ -15,7 +15,20 @@ import audio
 import generate_assets as GA
 import world_data as WD
 from world_entities import (Camera, Particles, Particle, Projectile, FloatText,
-                            WorldCharacter, WorldEnemy, WEAPON_STYLE, scratch)
+                            WorldCharacter, WorldEnemy, WEAPON_STYLE, scratch,
+                            SummonAlly, Trap)
+
+
+def _seg_hit(x1, y1, x2, y2, px, py, r):
+    """Point-to-segment distance < r — the beam skill's line hit-scan test.
+    Returns True if the point (px, py) is within r of the segment (x1,y1)-(x2,y2)."""
+    dx, dy = x2 - x1, y2 - y1
+    seg2 = dx * dx + dy * dy
+    if seg2 <= 0:
+        return math.hypot(px - x1, py - y1) < r
+    t = max(0.0, min(1.0, ((px - x1) * dx + (py - y1) * dy) / seg2))
+    cx, cy = x1 + t * dx, y1 + t * dy
+    return math.hypot(px - cx, py - cy) < r
 
 # ---------------------------------------------------------------------------
 # Signature passive handlers (C6) — dict-lookup dispatch, NOT if/elif chains.
@@ -932,6 +945,10 @@ class WorldScene:
         # load map content
         self.enemies = []
         self.drops = []          # list of {x,y,kind,value}
+        # summon/trap entities (Task A3): temporary, cleared on _load_map so they
+        # don't persist across maps. Declared before _load_map (init-order).
+        self._summons = []
+        self._traps = []
         self._load_map(enter_edge=None)
 
         # input state
@@ -1146,6 +1163,10 @@ class WorldScene:
         self._map_data = m
         self.enemies = []
         self.drops = []
+        # clear summon/trap entities on map enter so a stale summon from the last
+        # cell doesn't follow the player (Task A3).
+        self._summons = []
+        self._traps = []
         # dynamic weather: re-evaluate the per-cell weather state from the current
         # day phase on every map enter. Stored on the scene (NOT in gen_map — the
         # MapRenderer cache is keyed on (c,r) only, and weather is a live overlay
@@ -1832,6 +1853,67 @@ class WorldScene:
         else:
             # fallback: small burst
             self.particles.burst(wc.x, wc.y, col, n=14, speed=200, size=5, life=0.4)
+            audio.play("skill", 0.4)
+        # new skill types (summon/beam/trap) — expand the taxonomy so skills read
+        # as diverse. summon spawns a temporary ally (NOT a party member), beam is
+        # a line hit-scan, trap is a delayed ground hazard. Each is balanced so it
+        # doesn't trivialize combat; the summon/trap are temporary entities that
+        # despawn on expiry (cleared on _load_map so they don't persist).
+        if kind == "summon":
+            # spawn a temporary ally at the hero's side that auto-attacks nearby
+            # enemies for `dur` seconds. A separate entity (SummonAlly) so the
+            # 4-slot party is untouched. Water summon heals the party instead.
+            sx = wc.x + wc.facing * 40
+            sy = wc.y + 20
+            ally = SummonAlly(sx, sy, skill["element"], col,
+                              int(atk * skill["power"]), skill.get("dur", 6),
+                              skill.get("potency", 1.0), wc)
+            self._summons.append(ally)
+            self.particles.burst(sx, sy, col, n=16, speed=180, size=6, life=0.5, grav=-60)
+            audio.play("skill", 0.5)
+        elif kind == "beam":
+            # line hit-scan from hero toward the facing/aim — damage all enemies
+            # along the line within `range`. Aim at the nearest enemy in the
+            # facing half-plane (like the ranged attack) so the beam actually
+            # hits a target, not a straight horizontal miss.
+            bx = wc.x + wc.facing * 20
+            by = wc.y
+            ex = bx + wc.facing * skill.get("range", 420)
+            ey = by
+            best_d = 1e9
+            for en in self.enemies:
+                if not en.alive:
+                    continue
+                if (en.x - wc.x) * wc.facing < -40:
+                    continue
+                dd = math.hypot(en.x - wc.x, en.y - wc.y)
+                if dd < best_d:
+                    best_d = dd; ex, ey = en.x + wc.facing * 60, en.y
+            combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
+            for en in self.enemies:
+                if not en.alive:
+                    continue
+                if _seg_hit(bx, by, ex, ey, en.x, en.y, en.r + 22):
+                    mult = self._element_mult(skill["element"], en.element)
+                    dmg = int(atk * skill["power"] * mult * combo_mul)
+                    dealt = en.take_damage(dmg, wc.x, wc.y,
+                                            on_attack=self._on_enemy_event)
+                    if dealt:
+                        self._on_enemy_hit(en, wc, dealt, False)
+            # beam visual: a bright line + a sparkle at the endpoint
+            self.particles.beam(bx, by, ex, ey, col)
+            self.camera.add_shake(4, self._shake_mul)
+            audio.play("skill", 0.5)
+        elif kind == "trap":
+            # place a trap on the ground at the facing that triggers when an
+            # enemy steps within its radius — a delayed hazard.
+            tx = wc.x + wc.facing * 60
+            ty = wc.y
+            tr = Trap(tx, ty, skill["element"], col,
+                      int(atk * skill["power"]), skill.get("radius", 70),
+                      skill.get("dur", 8), wc)
+            self._traps.append(tr)
+            self.particles.burst(tx, ty, col, n=10, speed=120, size=4, life=0.4, grav=-30)
             audio.play("skill", 0.4)
         # variable hit-stop: heavier skills (higher cost tier) freeze the screen
         # longer than a basic attack so a cost-5 nuke lands with more weight than
@@ -2644,6 +2726,18 @@ class WorldScene:
                     new_proj.append(p)
         self.projectiles = new_proj
 
+        # summon + trap entities (Task A3): drive the temporary allies + ground
+        # hazards. Summons auto-attack (or heal, for water) + despawn on expiry;
+        # traps trigger on contact + despawn. Filtered in place so expired ones
+        # drop out (the same pattern as projectiles/floats).
+        if self._summons:
+            self._summons = [s for s in self._summons
+                             if s.update(sim_dt, self.enemies, self.particles,
+                                         self._on_enemy_hit, self.party)]
+        if self._traps:
+            self._traps = [t for t in self._traps
+                           if t.update(sim_dt, self.enemies, self.particles)]
+
         # particles + floats
         self.particles.update(sim_dt)
         self.floats = [f for f in self.floats if f.update(sim_dt)]
@@ -2943,6 +3037,13 @@ class WorldScene:
         for b in self.breakables:
             if not b["broken"]:
                 drawables.append((b["y"], "breakable", b))
+        # summon allies (Task A3) — sorted with the rest so they occlude correctly
+        for s in self._summons:
+            drawables.append((s.y, "summon", s))
+        # traps (Task A3) — drawn under the entities (ground hazards, low y-sort
+        # weight so they sit beneath the hero/enemies)
+        for t in self._traps:
+            drawables.append((t.y - 1, "trap", t))
         wc = self.party[self.active]
         if wc:
             drawables.append((wc.y, "hero", wc))
@@ -2950,6 +3051,8 @@ class WorldScene:
         for _, kind, obj in drawables:
             if kind == "breakable":
                 self._draw_breakable(surf, obj, ox, oy)
+            elif kind in ("summon", "trap"):
+                obj.draw(surf, ox, oy)
             else:
                 obj.draw(surf, ox, oy, self.font_sm)
 

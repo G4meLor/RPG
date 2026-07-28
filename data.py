@@ -613,7 +613,36 @@ SKILLS_DB = {
                         desc="The Frost Titan's cataclysm freezes all."),
     "storm_of_embers": dict(name="Storm of Embers", element="fire", type="aoe_magic", power=2.0, cost=0,
                         desc="The Ember Tyrant rains fire."),
+    # New skill types (summon/beam/trap) — expand the taxonomy so skills read as
+    # diverse (the user's "skills kiểu summon, curse, buff, fire" request). These
+    # are real combat skills: summon spawns a temporary ally, beam is a line
+    # hit-scan, trap is a delayed ground hazard. `innate` is a display-only tag
+    # for signature passives (no SKILLS_DB entry — the category map handles it).
+    "fire_summon":  dict(name="Ember Construct",  element="fire",  type="summon", power=1.2, cost=5,
+                        desc="Summon a fire construct that fights for you.", dur=6, potency=1.2),
+    "water_summon": dict(name="Tide Spirit",      element="water", type="summon", power=1.0, cost=5,
+                        desc="Summon a water spirit that heals the party.", dur=8, potency=0.8),
+    "light_beam":   dict(name="Radiant Lance",    element="light", type="beam",   power=1.5, cost=4,
+                        desc="A beam of light piercing all enemies in a line.", range=420),
+    "dark_trap":    dict(name="Shadow Snare",     element="dark",  type="trap",   power=2.0, cost=3,
+                        desc="Place a dark trap that triggers on the first enemy to step on it.",
+                        dur=8, potency=2.0, radius=70),
 }
+
+# Assign a `category` field (the UI grouping label) to every skill based on its
+# `type`. This is the single source for the skill-tooltip category badge (Task
+# B1) + the HERO_ASSETS manifest (Task A2 reads `sk["category"]`). The map
+# covers all existing types + the new summon/beam/trap/innate types.
+_SKILL_TYPE_CATEGORY = {
+    "attack": "Attack", "magic": "Magic",
+    "aoe_attack": "AoE", "aoe_magic": "AoE",
+    "heal": "Heal", "buff": "Buff", "debuff": "Debuff",
+    "ultimate": "Ultimate", "revive": "Heal",
+    "summon": "Summon", "beam": "Beam", "trap": "Trap", "innate": "Innate",
+}
+for _sid, _sk in SKILLS_DB.items():
+    _sk.setdefault("category", _SKILL_TYPE_CATEGORY.get(_sk["type"], _sk["type"].title()))
+del _sid, _sk
 
 # Boss enemies (the big arena fights in the open world). Maps a boss id to the
 # ultimate skill it unleashes below 50% HP. Also the canonical set of boss ids.
@@ -686,11 +715,11 @@ def role_mult(role, key):
 HEROES_DB = [
     dict(id="aria",   name="Aria",   title="Knight of Dawn",  element="light", rarity="SSR", role="destruction",
          stats={"hp": 120, "atk": 24, "defn": 18, "spd": 14, "mp": 30},
-         skills=["light_slash", "light_heal", "blessing", "basic_attack"],
+         skills=["light_slash", "light_beam", "blessing", "basic_attack"],
          ultimate="light_hymn"),
     dict(id="kael",   name="Kael",   title="Ember Warrior",    element="fire", rarity="SSR", role="destruction",
          stats={"hp": 130, "atk": 26, "defn": 16, "spd": 13, "mp": 28},
-         skills=["fire_slash", "inferno", "fire_bolt", "basic_attack"],
+         skills=["fire_slash", "inferno", "fire_summon", "basic_attack"],
          ultimate="meteor"),
     dict(id="mira",   name="Mira",   title="Tide Caller",      element="water", rarity="SSR", role="erudition",
          stats={"hp": 110, "atk": 22, "defn": 15, "spd": 15, "mp": 36},
@@ -702,7 +731,7 @@ HEROES_DB = [
          ultimate="tempest"),
     dict(id="luna",   name="Luna",   title="Nightshade",       element="dark", rarity="SSR", role="nihility",
          stats={"hp": 112, "atk": 27, "defn": 14, "spd": 16, "mp": 30},
-         skills=["dark_bolt", "dark_curse", "dark_aoe", "basic_attack"],
+         skills=["dark_bolt", "dark_curse", "dark_trap", "basic_attack"],
          ultimate="void_nova"),
     dict(id="pyra",   name="Pyra",   title="Crimson Empress",  element="fire", rarity="SSR", role="nihility",
          stats={"hp": 122, "atk": 27, "defn": 15, "spd": 16, "mp": 32},
@@ -1278,6 +1307,7 @@ _SKILL_CATEGORY = {
     "aoe_attack": "AoE", "aoe_magic": "AoE",
     "heal": "Heal", "buff": "Buff", "debuff": "Debuff",
     "ultimate": "Ultimate", "revive": "Revive",
+    "summon": "Summon", "beam": "Beam", "trap": "Trap", "innate": "Innate",
 }
 
 # Per-hero, per-skill description + how-to-use. Keyed by (hero_id, skill_id).
@@ -1289,8 +1319,8 @@ _HERO_SKILL_TEXT = {
     # --- aria (light, destruction, Knight of Dawn) ---
     ("aria", "light_slash"):   dict(description="A radiant slash of dawn's light. Hits one foe in front.",
                                     how_to_use="Q — tap to slash in facing; hold to aim the arc."),
-    ("aria", "light_heal"):    dict(description="Mending light restores an ally's wounds.",
-                                    how_to_use="W — tap to heal the nearest ally."),
+    ("aria", "light_beam"):    dict(description="A lance of dawn piercing all foes in a line.",
+                                    how_to_use="W — tap to fire in facing; hold to aim the line."),
     ("aria", "blessing"):      dict(description="A blessing raising all allies' DEF.",
                                     how_to_use="E — tap to bless the whole party."),
     ("aria", "light_hymn"):    dict(description="A solar hymn healing all allies and shielding them.",
@@ -1302,8 +1332,8 @@ _HERO_SKILL_TEXT = {
                                     how_to_use="Q — tap to slash in facing; hold to aim the arc."),
     ("kael", "inferno"):      dict(description="Scorch all enemies with the fire that burned his city.",
                                     how_to_use="W — tap to cast (AoE all enemies); hold to aim the radius."),
-    ("kael", "fire_bolt"):     dict(description="Hurl a bolt of the ember wars. Ranged single-target.",
-                                    how_to_use="E — tap to cast at nearest foe; hold to aim the trajectory."),
+    ("kael", "fire_summon"):   dict(description="Raise an ember construct to fight at your side.",
+                                    how_to_use="E — tap to summon (lasts 6s)."),
     ("kael", "meteor"):        dict(description="Call a meteor to obliterate all enemies. Burns.",
                                     how_to_use="U/Space — full energy; strikes all enemies on screen."),
     ("kael", "basic_attack"):  dict(description="An ember warrior's strike.",
@@ -1335,8 +1365,8 @@ _HERO_SKILL_TEXT = {
                                     how_to_use="Q — tap to cast at nearest foe; hold to aim the trajectory."),
     ("luna", "dark_curse"):    dict(description="Curse an enemy: poison + ATK down.",
                                     how_to_use="W — tap to curse the nearest foe."),
-    ("luna", "dark_aoe"):      dict(description="A void storm hits all enemies in the night court.",
-                                    how_to_use="E — tap to cast (AoE all enemies); hold to aim the radius."),
+    ("luna", "dark_trap"):     dict(description="Lay a shadow snare that bursts on the first foe to tread it.",
+                                    how_to_use="E — tap to place at facing (triggers on contact)."),
     ("luna", "void_nova"):     dict(description="Unleash the void. Massive dark damage to all.",
                                     how_to_use="U/Space — full energy; hits all enemies on screen."),
     ("luna", "basic_attack"):  dict(description="An assassin's silent strike.",

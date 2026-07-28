@@ -851,6 +851,7 @@ class WorldScene:
         self.projectiles = []
         self.floats = []
         self.chests = []            # [{x,y,kind,opened}] per current map
+        self.breakables = []        # [{x,y,kind,loot,broken}] per current map
         self.camera = Camera(1280, 720)
         self.shake = 0
         self.flash = 0
@@ -1128,6 +1129,11 @@ class WorldScene:
         opened_idx = set(self.game.player.ow_chests_opened.get(cid, []))
         self.chests = [dict(x=x, y=y, kind=kind, opened=(i in opened_idx))
                        for i, (x, y, kind) in enumerate(m.get("chests", []))]
+        # breakable props on this map (shatter on attack/dash, drop loot). They
+        # are not persisted — a fresh map regenerates them, so a player can
+        # re-break them on revisit (the loot is small, so this is fine).
+        self.breakables = [dict(x=x, y=y, kind=kind, loot=loot, broken=False)
+                           for (x, y, kind, loot) in m.get("breakables", [])]
         level = WD.cell_level(self.c, self.r, ng_cycle=self.game.player.ng_cycle)
         # the active hero entry point (offset slightly inward from the edge so
         # the hero slides into the new map instead of snapping)
@@ -1314,6 +1320,36 @@ class WorldScene:
         if p.settings.get("auto_save", True):
             p.save()
 
+    def _break_breakable(self, b):
+        """Shatter a breakable prop: mark broken, drop its loot + a shatter
+        particle burst. Loot is small (a few gold, a potion, or 1 shard) so
+        breakables are a nice-to-find, not a farm target."""
+        b["broken"] = True
+        p = self.game.player
+        bx, by = b["x"], b["y"]
+        kind = b["kind"]
+        loot = b["loot"]
+        level = WD.cell_level(self.c, self.r, ng_cycle=p.ng_cycle)
+        if loot == "gold":
+            amt = 8 + level * 2
+            p.gold += amt
+            p.stats["gold_earned"] = p.stats.get("gold_earned", 0) + amt
+            label, col = f"+{amt}g", (255, 220, 120)
+        elif loot == "hp_potion":
+            p.add_item("hp_potion", 1)
+            label, col = "+Potion", (140, 240, 160)
+        else:  # shard
+            p.shards += 1
+            label, col = "+1 shard", (200, 160, 255)
+        self.floats.append(FloatText(bx, by - 18, label, col, size=16))
+        # a shatter burst: the prop's body color + a few white shards so it
+        # reads as the prop breaking (not a generic hit spark)
+        body_col = {"pot": (180, 120, 80), "crate": (140, 90, 50),
+                    "barrel": (120, 70, 40)}.get(kind, (150, 100, 60))
+        self.particles.burst(bx, by, body_col, n=14, speed=200, size=5, life=0.4, grav=120)
+        self.particles.spark(bx, by, (255, 255, 255), n=6, speed=240, size=4, life=0.22)
+        audio.play("hit", 0.18)
+
     # -----------------------------------------------------------------
     # Messaging
     # -----------------------------------------------------------------
@@ -1428,6 +1464,27 @@ class WorldScene:
                 _sig(self, wc, primary_x, primary_y, atk)
             # melee swing arc (a brighter slash streak)
             self.particles.spark(arc_x, arc_y, col, n=8, speed=180, size=4, life=0.22)
+        # breakables: a melee arc or a dash both shatter any breakable props in
+        # range. The arc covers the same hit area as the melee swing; the dash
+        # covers the hero's current position (the dash passes *through* props,
+        # so the endpoint check is enough). Each breakable drops its loot once.
+        # Use the hero's facing arc for melee; for a ranged attack, fall back
+        # to the hero's position so a ranged shot still shatters a prop the
+        # hero dashes into (the projectile itself doesn't carry the shatter).
+        if style == "ranged":
+            br_x, br_y, br_r = wc.x, wc.y, 48
+        else:
+            br_x, br_y, br_r = arc_x, arc_y, ar
+        if wc.dash_t > 0:
+            # a dash widens the reach a bit so a dash-through reliably shatters
+            # props the hero passes through (the dash moves fast; a tight arc
+            # could miss between frames).
+            br_x, br_y, br_r = wc.x, wc.y, 56
+        for b in self.breakables:
+            if b["broken"]:
+                continue
+            if math.hypot(b["x"] - br_x, b["y"] - br_y) < br_r + 20:
+                self._break_breakable(b)
 
     def _do_skill(self, wc, idx):
         if not wc.can_skill(idx):
@@ -2643,12 +2700,20 @@ class WorldScene:
         for en in self.enemies:
             if en.alive:
                 drawables.append((en.y, "enemy", en))
+        # breakable props — sorted with the rest so they occlude correctly
+        # against the hero/enemies (a pot behind the hero is drawn first).
+        for b in self.breakables:
+            if not b["broken"]:
+                drawables.append((b["y"], "breakable", b))
         wc = self.party[self.active]
         if wc:
             drawables.append((wc.y, "hero", wc))
         drawables.sort(key=lambda d: d[0])
         for _, kind, obj in drawables:
-            obj.draw(surf, ox, oy, self.font_sm)
+            if kind == "breakable":
+                self._draw_breakable(surf, obj, ox, oy)
+            else:
+                obj.draw(surf, ox, oy, self.font_sm)
 
         # projectiles
         for p in self.projectiles:
@@ -2700,6 +2765,20 @@ class WorldScene:
                     # a little sparkle on top so it reads as loot
                     sp = int(pulse * 3)
                     pygame.draw.circle(surf, (255, 240, 180), (cx, cy - 14), 2 + sp)
+
+        # broken breakables: a small dark shard pile so the broken prop leaves a
+        # visible mark (not just vanishing). Drawn after the drawables loop so
+        # it sits under the hero/enemies but above the chest layer.
+        for b in self.breakables:
+            if not b["broken"]:
+                continue
+            bx = int(b["x"] - ox)
+            by = int(b["y"] - oy)
+            if -30 < bx < 1310 and -30 < by < 750:
+                body_col = {"pot": (110, 75, 50), "crate": (90, 60, 35),
+                            "barrel": (80, 50, 30)}.get(b["kind"], (90, 60, 40))
+                pygame.draw.ellipse(surf, body_col, (bx - 14, by + 4, 28, 10))
+                pygame.draw.ellipse(surf, (40, 25, 15), (bx - 14, by + 4, 28, 10), 2)
 
         # particles + floats
         self.particles.draw(surf, ox, oy)
@@ -2757,6 +2836,41 @@ class WorldScene:
             self.evolve.draw(surf, self.font_big, self.font, self.font_sm)
         if self.pause:
             self.pause.draw(surf, self.font_big)
+
+    def _draw_breakable(self, surf, b, ox, oy):
+        """Draw a breakable prop (pot/crate/barrel) — a simple procedural shape
+        inline (like the chest at ~line 2734), cued by the kind. Small (~24px)
+        so it reads as a ground prop, not an obstacle."""
+        bx = int(b["x"] - ox)
+        by = int(b["y"] - oy)
+        if -30 < bx < 1310 and -30 < by < 750:
+            kind = b["kind"]
+            if kind == "pot":
+                # a small clay pot: rounded body + a rim + a tiny mouth
+                pygame.draw.ellipse(surf, (150, 100, 70), (bx - 12, by - 14, 24, 24))
+                pygame.draw.ellipse(surf, (90, 60, 40), (bx - 12, by - 14, 24, 24), 2)
+                pygame.draw.rect(surf, (110, 75, 50), (bx - 7, by - 18, 14, 6), border_radius=2)
+                pygame.draw.rect(surf, (60, 40, 25), (bx - 7, by - 18, 14, 6), 2, border_radius=2)
+            elif kind == "crate":
+                # a wooden crate: a square with plank lines + iron corners
+                pygame.draw.rect(surf, (140, 95, 55), (bx - 13, by - 13, 26, 26), border_radius=2)
+                pygame.draw.rect(surf, (180, 130, 80), (bx - 13, by - 13, 26, 6), border_radius=2)
+                pygame.draw.line(surf, (90, 60, 35), (bx - 13, by - 13), (bx + 13, by + 13), 2)
+                pygame.draw.line(surf, (90, 60, 35), (bx + 13, by - 13), (bx - 13, by + 13), 2)
+                pygame.draw.rect(surf, (60, 40, 20), (bx - 13, by - 13, 26, 26), 2, border_radius=2)
+                # iron corner studs
+                for cx2, cy2 in ((bx - 10, by - 10), (bx + 8, by - 10),
+                                 (bx - 10, by + 8), (bx + 8, by + 8)):
+                    pygame.draw.circle(surf, (70, 70, 80), (cx2, cy2), 2)
+            else:  # barrel
+                # a wooden barrel: a wider body + iron bands + top ellipse
+                pygame.draw.ellipse(surf, (120, 80, 45), (bx - 14, by - 14, 28, 28))
+                pygame.draw.ellipse(surf, (80, 55, 30), (bx - 14, by - 14, 28, 28), 2)
+                # iron bands
+                pygame.draw.rect(surf, (70, 70, 80), (bx - 14, by - 6, 28, 3))
+                pygame.draw.rect(surf, (70, 70, 80), (bx - 14, by + 4, 28, 3))
+                # top opening
+                pygame.draw.ellipse(surf, (60, 40, 25), (bx - 10, by - 16, 20, 8))
 
     def _draw_boss_banner(self, surf, name, t, intro):
         """A full-width cinematic banner for the boss intro / defeat. Fades in

@@ -2256,6 +2256,31 @@ def draw_star(surf, cx, cy, r, points, color, inner_color):
     pygame.draw.polygon(surf, color, pts)
     pygame.draw.polygon(surf, (40, 30, 20), pts, 2)
 
+def draw_pot(surf, cx, cy):
+    """A small clay pot — rounded body + a rim + a tiny mouth. ~24px tall."""
+    pygame.draw.ellipse(surf, (150, 100, 70), (cx - 12, cy - 14, 24, 24))
+    pygame.draw.ellipse(surf, (90, 60, 40), (cx - 12, cy - 14, 24, 24), 2)
+    pygame.draw.rect(surf, (110, 75, 50), (cx - 7, cy - 18, 14, 6), border_radius=2)
+    pygame.draw.rect(surf, (60, 40, 25), (cx - 7, cy - 18, 14, 6), 2, border_radius=2)
+
+def draw_crate(surf, cx, cy):
+    """A wooden crate — a square with plank cross + iron corner studs. ~26px."""
+    pygame.draw.rect(surf, (140, 95, 55), (cx - 13, cy - 13, 26, 26), border_radius=2)
+    pygame.draw.rect(surf, (180, 130, 80), (cx - 13, cy - 13, 26, 6), border_radius=2)
+    pygame.draw.line(surf, (90, 60, 35), (cx - 13, cy - 13), (cx + 13, cy + 13), 2)
+    pygame.draw.line(surf, (90, 60, 35), (cx + 13, cy - 13), (cx - 13, cy + 13), 2)
+    pygame.draw.rect(surf, (60, 40, 20), (cx - 13, cy - 13, 26, 26), 2, border_radius=2)
+    for dx, dy in ((-10, -10), (8, -10), (-10, 8), (8, 8)):
+        pygame.draw.circle(surf, (70, 70, 80), (cx + dx, cy + dy), 2)
+
+def draw_barrel(surf, cx, cy):
+    """A wooden barrel — a wider body + two iron bands + a top opening. ~28px."""
+    pygame.draw.ellipse(surf, (120, 80, 45), (cx - 14, cy - 14, 28, 28))
+    pygame.draw.ellipse(surf, (80, 55, 30), (cx - 14, cy - 14, 28, 28), 2)
+    pygame.draw.rect(surf, (70, 70, 80), (cx - 14, cy - 6, 28, 3))
+    pygame.draw.rect(surf, (70, 70, 80), (cx - 14, cy + 4, 28, 3))
+    pygame.draw.ellipse(surf, (60, 40, 25), (cx - 10, cy - 16, 20, 8))
+
 def draw_element_glyph(surf, cx, cy, element, color):
     if element == "fire":
         pygame.draw.polygon(surf, color, [(cx, cy - 14), (cx + 8, cy), (cx + 4, cy + 2), (cx + 12, cy + 12), (cx, cy + 6), (cx - 4, cy + 10), (cx - 8, cy), (cx - 4, cy - 4)])

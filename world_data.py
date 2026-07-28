@@ -419,8 +419,41 @@ def gen_map(c, r):
                     chests.append((x, y, rng.choice(kinds)))
                     break
 
+    # breakable props — 4-8 per non-boss map, placed on free tiles away from the
+    # center corridor (same gate as chests so they don't block the edge-portal
+    # gaps). Kind by biome (plains=pot, castle=crate, cave=barrel; forest/void
+    # fall back to pot/crate respectively). Loot is weighted: gold 60%,
+    # hp_potion 20%, 1 shard 20%. A breakable shatters on attack/dash and drops
+    # its loot — a small reward for exploring + a combat-feedback surface.
+    breakables = []
+    if not is_boss:
+        n_break = rng.randint(4, 8)
+        kind_by_biome = {"plains": "pot", "forest": "pot",
+                         "cave":   "barrel", "castle": "crate",
+                         "void":   "crate"}.get(biome, "pot")
+        loot_weights = [("gold", 60), ("hp_potion", 20), ("shard", 20)]
+        for _ in range(n_break):
+            for _try in range(30):
+                tx = rng.randint(3, MAP_TW - 4)
+                ty = rng.randint(3, MAP_TH - 4)
+                x, y = tx * TILE, ty * TILE
+                if _free_grid(x, y, grid) and _dist(x, y, cx_mid, cy_mid) > TILE * 3:
+                    # weighted loot pick (gold 60% / hp_potion 20% / shard 20%)
+                    total_w = sum(w for _, w in loot_weights)
+                    pick = rng.randint(1, total_w)
+                    acc = 0
+                    loot = "gold"
+                    for lk, lw in loot_weights:
+                        acc += lw
+                        if pick <= acc:
+                            loot = lk
+                            break
+                    breakables.append((x, y, kind_by_biome, loot))
+                    break
+
     return dict(obstacles=obstacles, deco=deco, spawns=spawns, boss=boss,
-                is_boss=is_boss, biome=biome, pal=pal, chests=chests)
+                is_boss=is_boss, biome=biome, pal=pal, chests=chests,
+                breakables=breakables)
 
 
 def pygame_rect(x, y, w, h):

@@ -12,6 +12,7 @@ import pygame
 import data as D
 from entities import Hero, load_char_sprite, load_enemy_sprite, load_skill_icon
 import audio
+import generate_assets as GA
 import world_data as WD
 from world_entities import (Camera, Particles, Particle, Projectile, FloatText,
                             WorldCharacter, WorldEnemy, WEAPON_STYLE, scratch)
@@ -852,6 +853,19 @@ class WorldScene:
         self.floats = []
         self.chests = []            # [{x,y,kind,opened}] per current map
         self.breakables = []        # [{x,y,kind,loot,broken}] per current map
+        # hidden rift mini-dungeon state for the current map. _rift_active is
+        # True while the player is sealed inside a triggered rift (the exits are
+        # suppressed + the wave is alive); _rift_done is True once the wave has
+        # been cleared this visit so the rift doesn't re-trigger. _rift_enemies
+        # holds the ids of the rift-spawned WorldEnemies so we can detect the
+        # wave-clear (all dead) and fire the reward. _rift_secret is the
+        # (x, y, wave_level, wave_size) tuple from gen_map (or None).
+        # Declared BEFORE _load_map (the same init-order trap as _world_time /
+        # the boss intro timer — _load_map reads these on the first call).
+        self._rift_active = False
+        self._rift_done = False
+        self._rift_enemies = []     # list of WorldEnemy the rift spawned
+        self._rift_secret = None    # (x, y, wave_level, wave_size) or None
         self.camera = Camera(1280, 720)
         self.shake = 0
         self.flash = 0
@@ -1153,6 +1167,20 @@ class WorldScene:
         # re-break them on revisit (the loot is small, so this is fine).
         self.breakables = [dict(x=x, y=y, kind=kind, loot=loot, broken=False)
                            for (x, y, kind, loot) in m.get("breakables", [])]
+        # hidden rift mini-dungeon: read the per-cell secret from gen_map. A
+        # cleared rift stays cleared (persisted in ow_secrets_done) so the
+        # player can't re-trigger the wave for infinite SR/SSR chests. Reset
+        # the active seal + wave state on every map enter so a stale seal from
+        # a previous map doesn't bleed onto the new one (the wipe-respawn
+        # teleport_to(0,0) hits this path too, so the seal breaks on a wipe).
+        self._rift_secret = m.get("secret")
+        cid = WD.cell_id(self.c, self.r)
+        if self._rift_secret is not None and cid in self.game.player.ow_secrets_done:
+            self._rift_done = True     # already cleared this visit
+        else:
+            self._rift_done = False
+        self._rift_active = False
+        self._rift_enemies = []
         level = WD.cell_level(self.c, self.r, ng_cycle=self.game.player.ng_cycle)
         # the active hero entry point (offset slightly inward from the edge so
         # the hero slides into the new map instead of snapping)
@@ -1375,6 +1403,93 @@ class WorldScene:
         self.particles.burst(bx, by, body_col, n=14, speed=200, size=5, life=0.4, grav=120)
         self.particles.spark(bx, by, (255, 255, 255), n=6, speed=240, size=4, life=0.22)
         audio.play("hit", 0.18)
+
+    # -----------------------------------------------------------------
+    # Hidden rift mini-dungeon
+    #   Walking into the rift seals the exits (suppress _transition while
+    #   _rift_active) + spawns a wave of WorldEnemies from the row pool at
+    #   level + wave_level. Clearing the wave (all rift enemies dead) breaks
+    #   the seal, drops a guaranteed SR/SSR chest + a lore float, and marks
+    #   the cell's secret done in ow_secrets_done so it can't re-trigger.
+    #   The party-wipe respawn (teleport_to(0,0)) goes through _load_map,
+    #   which resets _rift_active=False on the new map — so a wipe breaks the
+    #   seal (the player respawns at the hub with no active rift).
+    # -----------------------------------------------------------------
+    def _enter_rift(self):
+        """Seal the exits + spawn the rift wave. Called from the walk-over
+        check in update() when the active hero steps onto the rift tile."""
+        rx, ry, wave_level, wave_size = self._rift_secret
+        self._rift_active = True
+        self._rift_enemies = []
+        # spawn the wave: wave_size enemies from the row's enemy pool at the
+        # cell's level + the rift's wave_level bump. Spread around the rift
+        # tile so the wave reads as an ambush ring, not a stack on one point.
+        pool, _ = WD.ROW_ENEMIES[self.r]
+        level = WD.cell_level(self.c, self.r, ng_cycle=self.game.player.ng_cycle)
+        rng = random.Random(WD.cell_seed(self.c, self.r) + 99)
+        for i in range(wave_size):
+            ang = 2 * math.pi * i / max(1, wave_size) + rng.uniform(0, 1.0)
+            dist = rng.randint(60, 120)
+            sx = int(rx + math.cos(ang) * dist)
+            sy = int(ry + math.sin(ang) * dist)
+            # clamp inside the map (away from the walls so they don't spawn
+            # on top of a border tile)
+            sx = max(WD.TILE * 2, min(WD.MAP_W - WD.TILE * 2, sx))
+            sy = max(WD.TILE * 2, min(WD.MAP_H - WD.TILE * 2, sy))
+            eid = random.choice(pool)
+            en = WorldEnemy(eid, sx, sy, level + wave_level, is_boss=False)
+            self.enemies.append(en)
+            self._rift_enemies.append(en)
+        # a sealing burst at the rift tile so the trigger reads as a real event
+        self.particles.burst(rx, ry, (180, 80, 220), n=30, speed=300, size=7, life=0.7)
+        self.particles.ring(rx, ry, (200, 120, 240), n=24, speed=360, size=6, life=0.6)
+        self.camera.add_shake(6, self._shake_mul)
+        audio.play("boss_intro", 0.5)
+        self.set_message("A rift opens! Clear the wave to escape.", 2.5)
+
+    def _clear_rift(self):
+        """Wave cleared: break the seal, drop a guaranteed SR/SSR chest + a
+        lore float, and mark the cell's secret done so it can't re-trigger."""
+        rx, ry, _, _ = self._rift_secret
+        self._rift_active = False
+        self._rift_done = True
+        # persist the cleared secret so a revisit doesn't re-trigger the wave
+        cid = WD.cell_id(self.c, self.r)
+        if cid not in self.game.player.ow_secrets_done:
+            self.game.player.ow_secrets_done.append(cid)
+        # guaranteed SR/SSR equipment drop (reuse the chest equipment pool).
+        # Weight toward SSR on deeper rows so the rift reward scales with the
+        # row's difficulty (a row-4 rift should pay better than a row-0 rift).
+        p = self.game.player
+        rar = "SSR" if (self.r >= 3 and random.random() < 0.5) else "SR"
+        pool = [k for k, v in D.EQUIPMENT_DB.items() if v["rarity"] == rar]
+        if pool:
+            eid = random.choice(pool)
+            p.add_equipment(eid)
+            label = f"+{D.EQUIPMENT_DB[eid]['name']}!"
+            col = (255, 200, 120)
+        else:
+            # fallback: a gem bonus if the equipment pool is somehow empty
+            amt = 50 + WD.cell_level(self.c, self.r) * 5
+            p.gems += amt
+            p.stats["gems_earned"] = p.stats.get("gems_earned", 0) + amt
+            label, col = f"+{amt} gems", (120, 200, 255)
+        self.floats.append(FloatText(rx, ry - 30, label, col, size=24))
+        # a lore fragment float so the rift reads as a story beat, not just a
+        # loot pinata. Pick deterministically from the cell so the same rift
+        # always drops the same fragment (a stable piece of worldbuilding).
+        if D.LORE_FRAGMENTS:
+            frag_rng = random.Random(WD.cell_seed(self.c, self.r) + 4242)
+            frag = frag_rng.choice(D.LORE_FRAGMENTS)
+            self.floats.append(FloatText(rx, ry - 56, frag, (200, 200, 255), size=18))
+        # a victory burst + ring at the rift tile so the clear feels rewarding
+        self.particles.burst(rx, ry, (255, 220, 120), n=40, speed=320, size=8, life=0.8, grav=0)
+        self.particles.ring(rx, ry, (255, 240, 160), n=28, speed=440, size=7, life=0.7)
+        self.camera.add_shake(8, self._shake_mul)
+        audio.play("gacha_reveal", 0.6)
+        self.set_message("Rift cleared! The way is open.", 2.5)
+        if p.settings.get("auto_save", True):
+            p.save()
 
     # -----------------------------------------------------------------
     # Messaging
@@ -2312,8 +2427,9 @@ class WorldScene:
         if wc and wc.alive:
             wc.update(sim_dt, self.input_dir, self._map_data["obstacles"], want_dash)
 
-        # edge transition check
-        if wc:
+        # edge transition check — suppressed while a rift is active (the exits
+        # are sealed: the player must clear the wave before they can leave).
+        if wc and not self._rift_active:
             if wc.x < 8:
                 self._transition("left"); return
             elif wc.x > WD.MAP_W - 8:
@@ -2322,6 +2438,14 @@ class WorldScene:
                 self._transition("top"); return
             elif wc.y > WD.MAP_H - 8:
                 self._transition("bottom"); return
+
+        # hidden rift: walking into the rift tile seals the exits + spawns the
+        # wave (only the first time this visit — _rift_done blocks a re-trigger
+        # after the wave is cleared). The rift is the secret tuple from gen_map.
+        if wc and self._rift_secret is not None and not self._rift_done and not self._rift_active:
+            rx, ry, r_lvl, r_size = self._rift_secret
+            if math.hypot(wc.x - rx, wc.y - ry) < wc.r + 24:
+                self._enter_rift()
 
         # treasure chest pickup: the active hero opens a chest by walking over it
         if wc:
@@ -2508,6 +2632,15 @@ class WorldScene:
         # particles + floats
         self.particles.update(sim_dt)
         self.floats = [f for f in self.floats if f.update(sim_dt)]
+
+        # rift wave-clear check: if the rift is active and all the rift-spawned
+        # enemies are dead, the wave is cleared -> break the seal, spawn a
+        # guaranteed SR/SSR chest + a lore float, and mark the cell's secret
+        # done so it can't re-trigger (persisted in ow_secrets_done). The
+        # check is gated on _rift_active so it only fires once per trigger.
+        if self._rift_active and self._rift_enemies:
+            if all(not en.alive for en in self._rift_enemies):
+                self._clear_rift()
 
         # camera
         if wc:
@@ -2869,6 +3002,19 @@ class WorldScene:
                             "barrel": (80, 50, 30)}.get(b["kind"], (90, 60, 40))
                 pygame.draw.ellipse(surf, body_col, (bx - 14, by + 4, 28, 10))
                 pygame.draw.ellipse(surf, (40, 25, 15), (bx - 14, by + 4, 28, 10), 2)
+
+        # hidden rift portal — a pulsing violet vortex at the rift tile so the
+        # player can see where the rift is (and, once triggered, where the wave
+        # is coming from). Drawn inline (the same pattern as the chest/breakable
+        # draws) using the draw_rift_portal helper from generate_assets. Skipped
+        # once the rift is cleared (_rift_done) so a cleared rift doesn't keep
+        # glowing on the map (it's gone — the player solved it).
+        if self._rift_secret is not None and not self._rift_done:
+            rx, ry, _, _ = self._rift_secret
+            sx = int(rx - ox)
+            sy = int(ry - oy)
+            if -60 < sx < 1340 and -60 < sy < 780:
+                GA.draw_rift_portal(surf, sx, sy, float(pygame.time.get_ticks()))
 
         # particles + floats
         self.particles.draw(surf, ox, oy)

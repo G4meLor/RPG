@@ -73,6 +73,10 @@ class Player:
         # adds NG_PLUS_LEVEL_BONUS to every enemy's level so a replayed world
         # stays challenging while heroes/equipment carry over. 0 = first play.
         self.ng_cycle = 0
+        # hidden rift mini-dungeons the player has cleared (a set of cell ids).
+        # A cleared rift stays cleared across revisits + reloads so the player
+        # can't re-trigger the wave for infinite SR/SSR chests.
+        self.ow_secrets_done = []
         # init owned heroes
         for hid in D.STARTING_OWNED:
             self.owned[hid] = dict(level=1, xp=0, dupes=0, ascension=0,
@@ -399,6 +403,9 @@ class Player:
         self.ow_pos = [0, 0]
         self.ow_chests_opened = {}
         self.ow_bosses_cleared = []
+        # re-enable the hidden rifts on a new cycle so the player can re-clear
+        # them for the SR/SSR chest + lore drop on the next play-through.
+        self.ow_secrets_done = []
         self.ng_cycle = self.ng_cycle + 1
 
     # --- save / load ---
@@ -426,7 +433,8 @@ class Player:
             "ow_chests_opened": self.ow_chests_opened,
             "ow_bosses_cleared": self.ow_bosses_cleared,
             "ng_cycle": self.ng_cycle,
-            "version": 6,
+            "ow_secrets_done": self.ow_secrets_done,
+            "version": 7,
         }
         with open(SAVE_FILE, "w") as f:
             json.dump(data, f, indent=2)
@@ -496,6 +504,11 @@ class Player:
             # Aetheric Cycle (NG+) — added in save version 6. Older saves
             # default to cycle 0 (first play) so they load cleanly.
             p.ng_cycle = d.get("ng_cycle", 0)
+            # hidden rift clears — added in save version 7. Older saves default
+            # to an empty list so a cleared rift on an old save stays cleared
+            # (no re-trigger). Stored as a list (not a set) so json can serialize
+            # it; the scene treats it as a set via `in` checks.
+            p.ow_secrets_done = d.get("ow_secrets_done", [])
             return p
         except Exception:
             return cls()

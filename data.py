@@ -1428,3 +1428,23 @@ DAILY_QUESTS = {
     "open_chests":    dict(name="Treasure Hunter", desc="Open 3 treasure chests today.",
                           goal=3, reward_gems=50),
 }
+
+# ---------------------------------------------------------------------------
+# Lore fragments — dropped by hidden rift mini-dungeons (task D4) on wave
+# clear. A few atmospheric one-liners so the rift reads as a story beat, not
+# just a loot pinata. Picked deterministically per-cell (seeded from
+# cell_seed + 4242 in world_scene._clear_rift) so the same rift always drops
+# the same fragment — a stable piece of worldbuilding the player can collect.
+# ---------------------------------------------------------------------------
+LORE_FRAGMENTS = [
+    "The rift hums with a forgotten song.",
+    "A shard of the old world slips through the crack.",
+    "Something watched from the other side, then was gone.",
+    "The void remembers a name it will not speak.",
+    "Light bends here, as if afraid to land.",
+    "A whisper: 'They walked here before the dark.'",
+    "The seal thins. The deep stirs.",
+    "Time pools around the rift like water in a sinkhole.",
+    "A page of the world's first map, torn and glowing.",
+    "The rift closes behind a breath you did not take.",
+]

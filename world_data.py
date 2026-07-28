@@ -535,9 +535,45 @@ def gen_map(c, r):
                     breakables.append((x, y, kind_by_biome, loot))
                     break
 
+    # hidden rift mini-dungeon — ~15% of non-boss maps hide a glowing rift. A
+    # deterministic 15% chance (rng from cell_seed at line 59) so the same cell
+    # always has/doesn't have a rift across reloads. Placed on a free tile via
+    # _free_grid + the center-distance check (so it doesn't block the corridor /
+    # edge-portal gaps). Returns a `secret` tuple (x, y, wave_level, wave_size)
+    # or None — wave_level is the enemy-level bump for the rift wave, wave_size
+    # is the number of enemies, capped by row so early rows don't ambush a fresh
+    # player (row 0: 2-3, row 4: 4-5). Walking into a rift in world_scene seals
+    # the map exits + spawns the wave; clearing it drops a guaranteed SR/SSR
+    # chest + a lore fragment (a cleared rift stays cleared via ow_secrets_done).
+    secret = None
+    if not is_boss:
+        # a separate RNG stream derived from cell_seed so the rift roll is
+        # independent of the obstacle/chest/breakable rolls above (otherwise the
+        # 15% gate would shift the chest/breakable counts). The +1234 offset
+        # decorrelates the stream from the main rng without changing the
+        # per-cell determinism (same cell -> same rift across reloads).
+        rift_rng = random.Random(cell_seed(c, r) + 1234)
+        if rift_rng.random() < 0.15:
+            # wave_size cap by row: row 0 -> 2-3, row 1 -> 2-4, row 2 -> 3-4,
+            # row 3 -> 4-5, row 4 -> 4-5. A fresh player in row 0 sees a small
+            # wave; a row-4 player sees a bigger one (the cap rises with the
+            # row's enemy level so the rift stays a real threat, not a stomp).
+            wave_size = rift_rng.randint(2 + r // 3, 3 + r // 2)
+            # wave_level: a small level bump over the cell's base level so the
+            # rift wave reads as a tougher ambush (capped at +3 so it doesn't
+            # overshoot the boss arena's +6).
+            wave_level = 1 + r // 2
+            for _try in range(40):
+                tx = rift_rng.randint(3, MAP_TW - 4)
+                ty = rift_rng.randint(3, MAP_TH - 4)
+                x, y = tx * TILE, ty * TILE
+                if _free_grid(x, y, grid) and _dist(x, y, cx_mid, cy_mid) > TILE * 3:
+                    secret = (x, y, wave_level, wave_size)
+                    break
+
     return dict(obstacles=obstacles, deco=deco, spawns=spawns, boss=boss,
                 is_boss=is_boss, biome=biome, pal=pal, chests=chests,
-                breakables=breakables)
+                breakables=breakables, secret=secret)
 
 
 def pygame_rect(x, y, w, h):

@@ -67,6 +67,23 @@ ELEMENT_COLORS = {
     "light": ( (245,210, 90),  (255,245,200), (140,110, 30) ),
     "dark":  ( (150, 90,200),  (210,170,240), ( 56, 28, 84) ),
 }
+# Colorblind-friendly element palette (deuteranopia-safe). Single RGB triples
+# (main color only) chosen to stay distinct from each other AND from HP_RED
+# (220,70,80), GOLD/crit-yellow (255,210,90), and HP_GREEN/heal-green
+# (90,210,110). Separation relies on hue + brightness, not red/green alone:
+#   fire  = bright orange   (warm, low blue; distinct from pinkish HP_RED)
+#   water = sky blue        (high blue; no clash)
+#   wind  = chartreuse      (yellow-green; distinct from GOLD and HP_GREEN)
+#   light = pale cream      (very high brightness; distinct from GOLD)
+#   dark  = purple         (high blue + red; no clash)
+# REACTIONS keep their own fixed rcol tuples and are NOT routed through this.
+COLORBLIND_PALETTES = {
+    "fire":  (235,  90,  30),
+    "water": ( 40, 140, 220),
+    "wind":  (200, 230,  60),
+    "light": (255, 235, 150),
+    "dark":  (140,  50, 190),
+}
 
 RARITY_COLORS = {
     "R":   (140, 150, 165),

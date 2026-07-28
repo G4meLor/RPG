@@ -301,7 +301,20 @@ class Slider:
         pygame.draw.circle(surf, (60, 60, 90), (kx, r.centery), 9, 2)
 
 def element_color(el):
-    return D.ELEMENT_COLORS[el][0] if el in D.ELEMENT_COLORS else (200, 200, 200)
+    # Branch on the colorblind_mode setting to swap the element palette for a
+    # deuteranopia-safe set. The function reads the active Game's player
+    # settings; if no Game has been instantiated yet (e.g. early import-time
+    # probes), fall back to the default palette. REACTIONS are NOT routed here.
+    if el not in D.ELEMENT_COLORS:
+        return (200, 200, 200)
+    try:
+        cb = Game._active.player.settings.get("colorblind_mode", False) \
+            if Game._active is not None else False
+    except Exception:
+        cb = False
+    if cb:
+        return D.COLORBLIND_PALETTES[el]
+    return D.ELEMENT_COLORS[el][0]
 
 def rarity_color(rar):
     return D.RARITY_COLORS.get(rar, (200, 200, 200))
@@ -1639,6 +1652,12 @@ class SettingsScene(Scene):
                         on_change=lambda v: self._set("high_contrast", v))
             self._widgets["high_contrast"] = t2
             self._labels.append(("Brighter text and panel borders", x + 80, wy + 6))
+            y += row_h
+            wy = label("Colorblind Mode")
+            t3 = Toggle(x, wy, value=s.get("colorblind_mode", False),
+                        on_change=lambda v: self._set("colorblind_mode", v))
+            self._widgets["colorblind_mode"] = t3
+            self._labels.append(("Use deuteranopia-safe element colors", x + 80, wy + 6))
 
         elif self.tab == "Data":
             wy = self.py + 40
@@ -2044,6 +2063,8 @@ class CodexScene(Scene):
 # Game controller
 # ---------------------------------------------------------------------------
 class Game:
+    _active = None  # class-level ref to the most-recently-constructed Game so
+                    # module-level helpers (element_color) can read player.settings
     def __init__(self):
         pygame.init()
         audio.init()
@@ -2056,6 +2077,7 @@ class Game:
         self.clock = pygame.time.Clock()
         init_fonts()
         self.player = Player.load()
+        Game._active = self  # register this instance for element_color() lookups
         # apply persisted settings to the live audio + display on boot
         audio.set_enabled(self.player.settings.get("sound", True))
         audio.set_master_volume(self.player.settings.get("sfx_volume", 0.7))

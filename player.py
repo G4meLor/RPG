@@ -52,6 +52,7 @@ class Player:
             show_hints=True,       # controls hint bar
             particle_quality=1.0,  # 0.4..1.0 particle density multiplier
             auto_save=True,        # auto-save on map changes
+            colorblind_mode=False, # deuteranopia-safe element palette swap
         )
         # --- open-world state ---
         self.shards = 0                  # soul shards for evolve/ascend
@@ -452,7 +453,7 @@ class Player:
                 sound=True, sfx_volume=0.7, music_volume=0.5, text_speed=1.0,
                 fullscreen=False, show_fps=False, fps_cap=60, screen_shake=1.0,
                 damage_numbers=True, reduce_motion=False, show_hints=True,
-                particle_quality=1.0, auto_save=True,
+                particle_quality=1.0, auto_save=True, colorblind_mode=False,
             )
             for k, v in _defaults.items():
                 p.settings.setdefault(k, v)

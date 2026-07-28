@@ -10,7 +10,7 @@ import time
 import pygame
 
 import data as D
-from entities import Hero, load_char_sprite, load_enemy_sprite, load_skill_icon
+from entities import Hero, load_char_sprite, load_enemy_sprite, load_skill_icon, load_drop
 import audio
 import generate_assets as GA
 import world_data as WD
@@ -1462,9 +1462,11 @@ class WorldScene:
             p.save()
 
     def _break_breakable(self, b):
-        """Shatter a breakable prop: mark broken, drop its loot + a shatter
-        particle burst. Loot is small (a few gold, a potion, or 1 shard) so
-        breakables are a nice-to-find, not a farm target."""
+        """Shatter a breakable prop: mark broken, drop its loot as a visible
+        ground drop (Task C2) + a shatter particle burst. Loot is small (a few
+        gold, a potion, or 1 shard) so breakables are a nice-to-find, not a
+        farm target. The loot spawns as a drop at the breakable's pos so the
+        player walks over to collect it (the shatter VFX still fires here)."""
         b["broken"] = True
         p = self.game.player
         bx, by = b["x"], b["y"]
@@ -1473,14 +1475,15 @@ class WorldScene:
         level = WD.cell_level(self.c, self.r, ng_cycle=p.ng_cycle)
         if loot == "gold":
             amt = 8 + level * 2
-            p.gold += amt
-            p.stats["gold_earned"] = p.stats.get("gold_earned", 0) + amt
+            self._spawn_drop(bx, by, "gold", amt)
+            # gold_earned tallied at pickup (in _pickup_drop), not here — the
+            # stat tracks gold actually collected, not gold spawned on the ground.
             label, col = f"+{amt}g", (255, 220, 120)
         elif loot == "hp_potion":
-            p.add_item("hp_potion", 1)
+            self._spawn_drop(bx, by, "hp_potion", 1)
             label, col = "+Potion", (140, 240, 160)
         else:  # shard
-            p.shards += 1
+            self._spawn_drop(bx, by, "shard", 1)
             label, col = "+1 shard", (200, 160, 255)
         self.floats.append(FloatText(bx, by - 18, label, col, size=16))
         # a shatter burst: the prop's body color + a few white shards so it
@@ -2316,10 +2319,14 @@ class WorldScene:
             self._on_enemy_death(en, wc)
 
     def _on_enemy_death(self, en, wc):
-        # drops: xp, gold, chance of potion/shard/equipment
+        # drops: xp (instant party-wide), gold/shards/potion/equipment (visible
+        # ground drops the player walks over — Task C2). XP stays instant because
+        # it's party-wide and shouldn't require walking over a sprite. The
+        # gold/shard/potion/equipment rewards spawn as drop entities on the
+        # ground at the enemy's pos; the pickup/magnet/expire logic is in update.
         p = self.game.player
         hero = wc.hero
-        # xp to whole party (with level-up pop)
+        # xp to whole party (with level-up pop) — stays instant (not a drop)
         xp = en.enemy.xp
         for other in self.party:
             if other and other.alive:
@@ -2327,39 +2334,39 @@ class WorldScene:
                 other.hero.gain_xp(xp)
                 if other.hero.level > before:
                     self._on_hero_levelup(other)
-        # gold
+        # gold — spawn as a ground drop (visible loot). Bosses drop more (the
+        # enemy.gold is already level-scaled in entities.py). The gold_earned
+        # stat is tallied at pickup (in _pickup_drop), not here — the stat
+        # tracks gold actually collected, not gold spawned on the ground.
         gold = en.enemy.gold
-        p.gold += gold
-        p.stats["gold_earned"] = p.stats.get("gold_earned", 0) + gold
-        # float
-        self.floats.append(FloatText(en.x, en.y - 40, f"+{gold}g", (255, 220, 120), size=18))
+        if gold > 0:
+            self._spawn_drop(en.x, en.y, "gold", gold)
         # shards from bosses / elites — bosses scale by row so deeper bosses
         # are worth more (row0=3 ... row4=19); elites rarely drop 1. Non-boss
         # shard drop rate is 15% (was 8%, near-zero sustained shard income).
+        # Spawned as a ground drop (visible loot) instead of straight to inventory.
         shards = 0
         if en.is_boss:
             shards = 3 + self.r * 4
         elif random.random() < 0.15:
             shards = 1
         if shards:
-            p.shards += shards
-            self.floats.append(FloatText(en.x, en.y - 60, f"+{shards} shard", (200, 160, 255), size=18))
-        # potion drop
+            self._spawn_drop(en.x, en.y, "shard", shards)
+        # potion drop — 12% chance, spawned as a ground drop (visible loot).
         if random.random() < 0.12:
-            p.add_item("hp_potion", 1)
-            self.floats.append(FloatText(en.x, en.y + 10, "+Potion", (140, 240, 160), size=16))
+            self._spawn_drop(en.x, en.y, "hp_potion", 1)
         # equipment drop from bosses — only on the first clear of the cell (gated
         # by ow_bosses_cleared) so the drop can't be farm-grounded; weight the
-        # rarity by row so deeper bosses drop better gear.
+        # rarity by row so deeper bosses drop better gear. Spawned as a ground
+        # drop (visible loot) so the player walks over to pick it up.
         cid = WD.cell_id(self.c, self.r)
         first_clear = en.is_boss and cid not in set(p.ow_bosses_cleared)
         if first_clear and random.random() < 0.6:
             rar = "SSR" if (self.r >= 3 and random.random() < 0.5) else "SR"
             pool = [k for k, v in D.EQUIPMENT_DB.items() if v["rarity"] == rar]
             if pool:
-                p.add_equipment(random.choice(pool))
-                self.floats.append(FloatText(en.x, en.y + 30, "+Equipment!",
-                                            (255, 200, 120), size=18))
+                eid = random.choice(pool)
+                self._spawn_drop(en.x, en.y, "equipment", eid)
         # boss cleared -> mark + row-scaled bonus gems (only the first clear per
         # cell pays out, so bosses can't be farm-grounded for infinite gems).
         if en.is_boss:
@@ -2425,6 +2432,63 @@ class WorldScene:
         _sig = _SIG_ON_KILL.get(wc._signature_kind)
         if _sig:
             _sig(self, wc)
+
+    def _spawn_drop(self, x, y, kind, value, count=1):
+        """Spawn one (or `count`) ground loot drop(s) at (x, y). Each drop is a
+        visible sprite the player walks over to collect (Task C2). A small random
+        offset per drop so a multi-drop doesn't stack on one pixel (reads as a
+        scatter of loot, not a single sprite). Kinds: gold / hp_potion / shard /
+        equipment — each rendered by load_drop(kind) (Task A4). `value` is the
+        amount (gold count, shard count, 1 for potion, the equipment id for
+        equipment). Capped at a sane per-call count so a huge gold value doesn't
+        spawn hundreds of sprites — gold aggregates into one drop with the total
+        value, the other kinds are 1-drop-per-call."""
+        if kind == "gold":
+            # gold aggregates into one drop carrying the total value (a 200g
+            # drop is one coin sprite worth 200, not 200 coin sprites).
+            self.drops.append({"x": float(x), "y": float(y),
+                               "kind": "gold", "value": int(value),
+                               "t": 0.0, "sprite_id": "gold"})
+            return
+        n = max(1, min(int(count), 4))  # cap so a stray high count doesn't flood
+        for _ in range(n):
+            ox = x + random.uniform(-10, 10)
+            oy = y + random.uniform(-10, 10)
+            self.drops.append({"x": float(ox), "y": float(oy),
+                               "kind": kind, "value": value,
+                               "t": 0.0, "sprite_id": kind})
+
+    def _pickup_drop(self, drop, wc):
+        """Collect a ground loot drop: add its value to the player's inventory
+        by kind, a gold sparkle burst, and remove it from self.drops. Called
+        from the walk-over check in update when the active hero is within the
+        pickup radius. gold -> player.gold; hp_potion -> inventory; shard ->
+        player.shards; equipment -> equipment_inv (via add_equipment)."""
+        p = self.game.player
+        kind = drop["kind"]
+        value = drop["value"]
+        if kind == "gold":
+            p.gold += value
+            p.stats["gold_earned"] = p.stats.get("gold_earned", 0) + value
+            col = (255, 220, 120)
+        elif kind == "hp_potion":
+            p.add_item("hp_potion", 1)
+            col = (140, 240, 160)
+        elif kind == "shard":
+            p.shards += value
+            col = (200, 160, 255)
+        elif kind == "equipment":
+            p.add_equipment(value)
+            col = (255, 200, 120)
+        else:
+            return  # unknown kind — don't collect (defensive)
+        # a gold sparkle burst so the pickup reads as loot collected, not a
+        # silent vanish. Reuses the chest-open burst shape (a burst + a ring).
+        self.particles.burst(drop["x"], drop["y"], col, n=8, speed=180, size=5, life=0.4)
+        self.floats.append(FloatText(drop["x"], drop["y"] - 18,
+                                     f"+{value}{'g' if kind == 'gold' else ''}",
+                                     col, size=16))
+        audio.play("menu_click", 0.2)
 
     def _on_hero_levelup(self, wc):
         """Celebrate a level-up with a burst + a banner float."""
@@ -2680,6 +2744,33 @@ class WorldScene:
                 if math.hypot(wc.x - ch["x"], wc.y - ch["y"]) < wc.r + 22:
                     self._open_chest(ch, wc)
                     break
+
+        # ground loot drops (Task C2): magnet + pickup. The active hero pulls
+        # nearby drops toward them within the magnet radius (80px) and collects
+        # them within the pickup radius (40px). Collecting adds the drop's value
+        # to the inventory by kind (gold/hp_potion/shard/equipment) + a gold
+        # sparkle burst (see _pickup_drop). Iterate over a copy so we can mutate
+        # self.drops in place on pickup (the list comp filters the collected
+        # ones out at the end so we don't skip a drop after a mid-loop removal).
+        if wc and self.drops:
+            picked = []
+            for d in self.drops:
+                dx = wc.x - d["x"]
+                dy = wc.y - d["y"]
+                dist = math.hypot(dx, dy)
+                if dist < 40:
+                    # within pickup radius — collect (add to inventory + sparkle)
+                    self._pickup_drop(d, wc)
+                    picked.append(d)
+                elif dist < 80:
+                    # within magnet radius — pull toward the hero (not collect).
+                    # The pull is a fraction of the distance per frame so the
+                    # drop accelerates as it gets closer (reads as a magnet).
+                    pull = min(1.0, sim_dt * 8)
+                    d["x"] += dx * pull
+                    d["y"] += dy * pull
+            if picked:
+                self.drops = [d for d in self.drops if d not in picked]
 
         # events: attacks, skills, ult, switch, menus
         # Q/W/E use a hold-to-aim model (Task B2): KEYDOWN starts the hold timer
@@ -2940,6 +3031,17 @@ class WorldScene:
             self._traps = [t for t in self._traps
                            if t.update(sim_dt, self.enemies, self.particles,
                                        self._on_enemy_hit, self._element_mult)]
+
+        # ground loot drops (Task C2): expire old drops so the list doesn't
+        # pile up. Drops older than 30s are removed (the player had plenty of
+        # time to collect them; a stale drop shouldn't linger forever). The
+        # magnet + pickup are driven in the walk-over check above; here we just
+        # age + expire, after the pickup so a drop picked up this frame isn't
+        # aged (it's already gone).
+        if self.drops:
+            for d in self.drops:
+                d["t"] += sim_dt
+            self.drops = [d for d in self.drops if d["t"] < 30.0]
 
         # particles + floats
         self.particles.update(sim_dt)
@@ -3247,6 +3349,13 @@ class WorldScene:
         # weight so they sit beneath the hero/enemies)
         for t in self._traps:
             drawables.append((t.y - 1, "trap", t))
+        # ground loot drops (Task C2) — sorted with the rest so they occlude
+        # correctly against the hero/enemies (a drop behind the hero is drawn
+        # first). y-sort weight is the drop's y so they sit on the ground at
+        # their actual position (a drop at the hero's feet is drawn before the
+        # hero, a drop behind the hero is drawn first — same rule as breakables).
+        for d in self.drops:
+            drawables.append((d["y"], "drop", d))
         wc = self.party[self.active]
         if wc:
             drawables.append((wc.y, "hero", wc))
@@ -3254,6 +3363,8 @@ class WorldScene:
         for _, kind, obj in drawables:
             if kind == "breakable":
                 self._draw_breakable(surf, obj, ox, oy)
+            elif kind == "drop":
+                self._draw_drop(surf, obj, ox, oy)
             elif kind in ("summon", "trap"):
                 obj.draw(surf, ox, oy)
             else:
@@ -3554,6 +3665,43 @@ class WorldScene:
                 pygame.draw.rect(surf, (70, 70, 80), (bx - 14, by + 4, 28, 3))
                 # top opening
                 pygame.draw.ellipse(surf, (60, 40, 25), (bx - 10, by - 16, 20, 8))
+
+    def _draw_drop(self, surf, drop, ox, oy):
+        """Draw a ground loot drop (Task C2) — a pixel-art sprite (load_drop
+        from Task A4) at the drop's screen pos, scaled to ~24px, with a small
+        bob so it reads as loot (not a static tile). The bob is a vertical
+        sinusoid (amplitude 2px, ~2s period) gated on reduce_motion (static
+        under RM). The sprite is cached by load_drop so this is a single blit
+        per drop per frame. A soft glow under the drop so it reads as loot
+        against the ground (reused scratch surface, the same pattern as the
+        chest glow)."""
+        dx = int(drop["x"] - ox)
+        dy = int(drop["y"] - oy)
+        if -40 < dx < 1320 and -40 < dy < 760:
+            kind = drop["kind"]
+            # bob: a vertical sinusoid so the drop reads as loot, not a static
+            # tile. Gated on reduce_motion (static under RM).
+            if not self._reduce_motion:
+                bob = int(2 * math.sin(pygame.time.get_ticks() * 0.005 + drop["x"] * 0.1))
+            else:
+                bob = 0
+            # soft glow under the drop so it reads as loot against the ground
+            # (the same pattern as the chest glow — a reused scratch surface).
+            gw = 28
+            g = scratch(gw, gw)
+            ec = {"gold": (255, 220, 120), "hp_potion": (140, 240, 160),
+                  "shard": (200, 160, 255),
+                  "equipment": (255, 200, 120)}.get(kind, (255, 220, 120))
+            pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.005)
+            for rr in range(14, 6, -2):
+                a = int(36 * pulse * (1 - (rr - 6) / 8))
+                pygame.draw.circle(g, (*ec, a), (gw // 2, gw // 2), rr)
+            surf.blit(g, (dx - gw // 2, dy - gw // 2 + 8))
+            # the drop sprite — load_drop returns a cached 16x16 surface scaled
+            # to 24x24 (the size that reads as loot, not a tiny speck).
+            sprite = load_drop(kind, (24, 24))
+            sw, sh = sprite.get_size()
+            surf.blit(sprite, (dx - sw // 2, dy - sh // 2 + bob))
 
     def _draw_boss_banner(self, surf, name, t, intro):
         """A full-width cinematic banner for the boss intro / defeat. Fades in

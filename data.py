@@ -603,13 +603,15 @@ del _sid, _sk
 
 # Boss enemies (the big arena fights in the open world). Maps a boss id to the
 # ultimate skill it unleashes below 50% HP. Also the canonical set of boss ids.
+# LoL-ified: the open-world bosses are LoL villains, each mapped to one of the
+# 4 boss-ult skill ids (hellfire/abyssal_wave/frost_cataclysm/storm_of_embers).
 BOSS_ULT = {
-    "dragon":      "hellfire",
-    "demonking":   "abyssal_wave",
-    "frosttitan":  "frost_cataclysm",
-    "embertyrant": "storm_of_embers",
-    "hydra":       "frost_cataclysm",
-    "golem":       "abyssal_wave",
+    "Sylas":         "abyssal_wave",
+    "Swain":         "abyssal_wave",
+    "Lissandra":     "frost_cataclysm",
+    "Mordekaiser":   "storm_of_embers",
+    "Baron":         "hellfire",
+    "Viego":         "abyssal_wave",
 }
 BOSS_IDS = set(BOSS_ULT.keys())
 
@@ -620,12 +622,12 @@ BOSS_IDS = set(BOSS_ULT.keys())
 # Keyed per boss id so each boss fights differently; bosses without an entry
 # fall back to the default pattern set for their phase.
 BOSS_PATTERNS = {
-    "dragon":      {2: ["charge"],            3: ["charge", "slam"]},
-    "demonking":   {2: ["charge", "slam"],    3: ["charge", "slam"]},
-    "frosttitan":  {2: ["slam"],              3: ["charge", "slam"]},
-    "embertyrant": {2: ["charge"],            3: ["charge", "slam"]},
-    "hydra":       {2: ["slam"],              3: ["charge", "slam"]},
-    "golem":       {2: ["charge"],            3: ["charge", "slam"]},
+    "Sylas":       {2: ["charge"],            3: ["charge", "slam"]},
+    "Swain":       {2: ["charge", "slam"],    3: ["charge", "slam"]},
+    "Lissandra":   {2: ["slam"],              3: ["charge", "slam"]},
+    "Mordekaiser": {2: ["charge"],            3: ["charge", "slam"]},
+    "Baron":       {2: ["charge", "slam"],    3: ["charge", "slam"]},
+    "Viego":       {2: ["slam"],              3: ["charge", "slam"]},
 }
 # default patterns for a boss id without a specific entry
 BOSS_PATTERNS_DEFAULT = {2: ["charge"], 3: ["charge", "slam"]}
@@ -940,41 +942,40 @@ HERO_LORE = {
 # Enemy definitions
 # ---------------------------------------------------------------------------
 ENEMIES_DB = {
-    "slime":    dict(name="Slime",     element="wind",   hp=60,  atk=14, defn=6,  spd=8,  xp=20, gold=15,
-                    skills=["basic_attack"], weakness="fire", toughness=40),
-    "goblin":   dict(name="Goblin",    element="fire",   hp=80,  atk=18, defn=8,  spd=11, xp=28, gold=22,
-                    skills=["basic_attack", "fire_bolt"], weakness="water", toughness=50),
-    "bat":      dict(name="Cave Bat",  element="dark",   hp=55,  atk=16, defn=5,  spd=16, xp=24, gold=18,
-                    skills=["basic_attack", "dark_bolt"], weakness="light", toughness=35),
-    "skeleton": dict(name="Skeleton", element="light",  hp=90,  atk=20, defn=10, spd=9,  xp=32, gold=26,
-                    skills=["basic_attack", "light_slash"], weakness="dark", toughness=55),
-    "wolf":     dict(name="Dire Wolf", element="wind",   hp=100, atk=22, defn=9,  spd=15, xp=36, gold=30,
-                    skills=["basic_attack", "wind_arrow"], weakness="fire", toughness=60),
-    "orc":      dict(name="Orc Brute", element="fire",   hp=140, atk=26, defn=14, spd=8,  xp=48, gold=40,
-                    skills=["basic_attack", "fire_slash"], weakness="water", toughness=80),
-    "golem":    dict(name="Stone Golem", element="wind", hp=180, atk=24, defn=22, spd=6,  xp=60, gold=50,
-                    skills=["basic_attack", "wind_aoe"], weakness="fire", toughness=100),
-    "wraith":   dict(name="Wraith",    element="dark",   hp=120, atk=28, defn=12, spd=14, xp=55, gold=45,
-                    skills=["basic_attack", "dark_bolt", "dark_curse"], weakness="light", toughness=70),
-    "dragon":   dict(name="Flame Dragon", element="fire", hp=340, atk=34, defn=20, spd=12, xp=120, gold=120,
-                    skills=["basic_attack", "fire_bolt", "inferno"], weakness="water", toughness=160),
-    "demonking":dict(name="Demon King", element="dark",  hp=520, atk=38, defn=24, spd=13, xp=300, gold=300,
-                    skills=["basic_attack", "dark_bolt", "dark_aoe", "dark_curse"], weakness="light", toughness=220),
-    # --- new enemies (Phase B) ---
-    "imp":      dict(name="Imp",         element="fire",   hp=70,  atk=20, defn=6,  spd=14, xp=30, gold=24,
-                    skills=["basic_attack", "fire_bolt"], weakness="water", toughness=45),
-    "harpy":    dict(name="Harpy",       element="wind",   hp=85,  atk=22, defn=7,  spd=18, xp=34, gold=28,
-                    skills=["basic_attack", "wind_arrow"], weakness="fire", toughness=50),
-    "ghoul":    dict(name="Ghoul",       element="dark",   hp=110, atk=24, defn=10, spd=12, xp=40, gold=32,
-                    skills=["basic_attack", "dark_bolt"], weakness="light", toughness=65),
-    "paladin":  dict(name="Fallen Paladin", element="light", hp=160, atk=26, defn=18, spd=10, xp=60, gold=48,
-                    skills=["basic_attack", "light_slash"], weakness="dark", toughness=90),
-    "hydra":    dict(name="Hydra",       element="water",  hp=200, atk=26, defn=16, spd=11, xp=80, gold=60,
-                    skills=["basic_attack", "water_bolt", "tidal_wave"], weakness="wind", toughness=110),
-    "frosttitan": dict(name="Frost Titan", element="water", hp=440, atk=36, defn=26, spd=10, xp=260, gold=260,
-                      skills=["basic_attack", "water_bolt", "frost_nova"], weakness="fire", toughness=200),
-    "embertyrant": dict(name="Ember Tyrant", element="fire", hp=620, atk=42, defn=26, spd=14, xp=360, gold=360,
-                      skills=["basic_attack", "fire_bolt", "inferno", "fire_slash"], weakness="water", toughness=260),
+    # --- LoL jungle mobs (open-world trash) ---
+    "Razorbeaks":  dict(name="Razorbeak",    element="wind",   hp=60,  atk=14, defn=6,  spd=8,  xp=20, gold=15,
+                        skills=["basic_attack"], weakness="fire", toughness=40),
+    "Krugs":       dict(name="Krugs",        element="fire",   hp=80,  atk=18, defn=8,  spd=11, xp=28, gold=22,
+                        skills=["basic_attack", "fire_bolt"], weakness="water", toughness=50),
+    "MurkWolves":  dict(name="Murk Wolf",    element="wind",   hp=100, atk=22, defn=9,  spd=15, xp=36, gold=30,
+                        skills=["basic_attack", "wind_arrow"], weakness="fire", toughness=60),
+    "Raptors":     dict(name="Raptor",       element="fire",   hp=70,  atk=20, defn=6,  spd=14, xp=30, gold=24,
+                        skills=["basic_attack", "fire_bolt"], weakness="water", toughness=45),
+    "Gromp":       dict(name="Gromp",        element="water",  hp=90,  atk=20, defn=10, spd=9,  xp=32, gold=26,
+                        skills=["basic_attack", "water_bolt"], weakness="wind", toughness=55),
+    "Voidlings":   dict(name="Voidling",     element="dark",   hp=55,  atk=16, defn=5,  spd=16, xp=24, gold=18,
+                        skills=["basic_attack", "dark_bolt"], weakness="light", toughness=35),
+    "Wraiths":     dict(name="Wraith",       element="dark",   hp=120, atk=28, defn=12, spd=14, xp=55, gold=45,
+                        skills=["basic_attack", "dark_bolt", "dark_curse"], weakness="light", toughness=70),
+    "CrimsonRaptor": dict(name="Crimson Raptor", element="fire", hp=140, atk=26, defn=14, spd=8,  xp=48, gold=40,
+                        skills=["basic_attack", "fire_slash"], weakness="water", toughness=80),
+    "VoidHound":   dict(name="Void Hound",   element="dark",   hp=110, atk=24, defn=10, spd=12, xp=40, gold=32,
+                        skills=["basic_attack", "dark_bolt"], weakness="light", toughness=65),
+    "FallenKnight":dict(name="Fallen Knight",element="light",  hp=160, atk=26, defn=18, spd=10, xp=60, gold=48,
+                        skills=["basic_attack", "light_slash"], weakness="dark", toughness=90),
+    # --- LoL villain bosses (the open-world arena fights) ---
+    "Sylas":       dict(name="Sylas",        element="dark",   hp=340, atk=34, defn=20, spd=12, xp=120, gold=120,
+                        skills=["basic_attack", "dark_bolt", "dark_aoe"], weakness="light", toughness=160),
+    "Swain":       dict(name="Swain",        element="fire",   hp=380, atk=36, defn=22, spd=11, xp=160, gold=160,
+                        skills=["basic_attack", "fire_bolt", "inferno"], weakness="water", toughness=180),
+    "Lissandra":   dict(name="Lissandra",    element="water",  hp=440, atk=36, defn=26, spd=10, xp=260, gold=260,
+                        skills=["basic_attack", "water_bolt", "frost_nova"], weakness="fire", toughness=200),
+    "Mordekaiser": dict(name="Mordekaiser",  element="dark",   hp=520, atk=38, defn=24, spd=13, xp=300, gold=300,
+                        skills=["basic_attack", "dark_bolt", "dark_aoe", "dark_curse"], weakness="light", toughness=220),
+    "Viego":       dict(name="Viego",        element="dark",   hp=460, atk=40, defn=22, spd=15, xp=280, gold=280,
+                        skills=["basic_attack", "dark_bolt", "dark_aoe"], weakness="light", toughness=210),
+    "Baron":       dict(name="Baron Nashor", element="dark",   hp=620, atk=42, defn=26, spd=14, xp=360, gold=360,
+                        skills=["basic_attack", "fire_bolt", "inferno", "fire_slash"], weakness="light", toughness=260),
 }
 
 # ---------------------------------------------------------------------------

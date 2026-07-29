@@ -2773,7 +2773,7 @@ class WorldScene:
             # NPC gives both the void_boss quest + the demon_king quest, since
             # the void row's boss IS the Demon King).
             is_final = (self.r == WD.GRID_H - 1
-                        and getattr(en, "id", None) == "demonking")
+                        and getattr(en, "id", None) == "Baron")
             if (fqid is not None and fqid in D.STORY_QUEST_BY_ID
                     and p.story_progress.get(fqid) == "active"
                     and first_clear):
@@ -2835,15 +2835,15 @@ class WorldScene:
             audio.play("victory", 0.7)
             self._boss_defeat_name = en.enemy.name
             self._boss_defeat_t = 2.5
-            # Aetheric Cycle: when the FINAL boss (the Demon King at 9,4) is
+            # Aetheric Cycle: when the FINAL boss (Baron Nashor at 9,4) is
             # defeated for the first time this cycle, show a "World Ascended!"
             # banner so the player knows they can now Ascend the World from
             # the title screen to start NG+. The cell is (9,4) and the boss id
-            # for row 4 is "demonking" — check both so a non-final boss on the
+            # for row 4 is "Baron" — check both so a non-final boss on the
             # same row (none currently, but defensive) can't trigger this.
             if (WD.is_boss_cell(self.c, self.r) and self.c == WD.GRID_W - 1
                     and self.r == WD.GRID_H - 1
-                    and getattr(en, "id", None) == "demonking"):
+                    and getattr(en, "id", None) == "Baron"):
                 self._ascend_banner_t = 3.0
                 self.set_message(
                     "World Ascended! Return to the title to start a new cycle.",

@@ -985,9 +985,11 @@ class WorldEnemy:
             self._sprite = None
         self._sprite_face = 1
 
-        # weapon style for ranged (goblin is a short-range kiter that throws
-        # fire_bolt — distinct from the plain melee chaser archetype)
-        self.ranged = self.id in ("bat", "imp", "harpy", "wraith", "hydra", "frosttitan", "goblin")
+        # weapon style for ranged (LoL mobs that cast at range — distinct from
+        # the plain melee chaser archetype). Ranged mobs kite + fire projectiles.
+        self.ranged = self.id in ("Razorbeaks", "Raptors", "Gromp", "Voidlings",
+                                  "Wraiths", "VoidHound", "Lissandra", "Swain",
+                                  "Viego", "Baron")
 
     @property
     def element(self):
@@ -1113,10 +1115,10 @@ class WorldEnemy:
                 self.state = "idle"
                 self.moving = False
                 return
-            # slime: a slow waddler that telegraphed hop-lunges instead of a flat
+            # Krugs: a slow waddler that telegraphed hop-lunges instead of a flat
             # chase+strike. It leaps in a predictable, dodgeable arc — the
             # textbook "kite the blob" starter enemy (distinct from a flat chaser).
-            if self.id == "slime":
+            if self.id == "Krugs":
                 self.hop_t = getattr(self, "hop_t", 0) - dt
                 if self.hop_t <= 0 and dist < 240:
                     self.hop_t = 1.6
@@ -1157,10 +1159,10 @@ class WorldEnemy:
                     on_attack("boss_warn", self)
                     self.moving = False
                     return
-            # wolf: a fast stalker that pounces — a short windup then a long
+            # MurkWolves: a fast stalker that pounces — a short windup then a long
             # lunge at atk*1.4 (a real predator archetype, distinct from the blob
             # and the skirmisher). Only when the basic attack is off cooldown.
-            if self.id == "wolf" and dist < 200 and self.atk_cd <= 0:
+            if self.id == "MurkWolves" and dist < 200 and self.atk_cd <= 0:
                 self.state = "telegraph"
                 self.telegraph_t = 0.22
                 self._pounce = True
@@ -1175,10 +1177,10 @@ class WorldEnemy:
                 dx = target.x - self.x
                 dy = target.y - self.y
                 d = math.hypot(dx, dy) or 1
-                # goblin kiter: back off when the hero closes in so it keeps its
-                # distance and throws fire_bolt from range (a skirmisher that
+                # VoidHound kiter: back off when the hero closes in so it keeps its
+                # distance and throws dark_bolt from range (a skirmisher that
                 # feels distinct from a plain melee chaser).
-                if self.id == "goblin" and dist < 150:
+                if self.id == "VoidHound" and dist < 150:
                     self.vx = -dx / d * self.speed
                     self.vy = -dy / d * self.speed
                 else:
@@ -1283,14 +1285,15 @@ class WorldEnemy:
             dx = target.x - self.x
             dy = target.y - self.y
             d = math.hypot(dx, dy) or 1
-            # per-enemy ranged params so a harpy shoots fast/short (a quick
-            # skirmisher) and a frosttitan shoots slow/long/heavy (a sniper),
-            # instead of every ranged enemy sharing identical projectile stats.
+            # per-enemy ranged params so a fast mob shoots fast/short (a quick
+            # skirmisher) and a boss shoots slow/long/heavy (a sniper), instead
+            # of every ranged enemy sharing identical projectile stats.
             ranged_cfg = {
-                "bat": (420, 1.6, 7, 260), "imp": (340, 1.8, 9, 300),
-                "harpy": (480, 1.4, 6, 320), "wraith": (300, 2.2, 11, 280),
-                "hydra": (260, 2.4, 12, 240), "frosttitan": (220, 2.8, 14, 200),
-                "goblin": (300, 1.4, 8, 320),
+                "Razorbeaks": (420, 1.6, 7, 260), "Raptors": (340, 1.8, 9, 300),
+                "Gromp": (480, 1.4, 6, 320), "Wraiths": (300, 2.2, 11, 280),
+                "Voidlings": (420, 1.6, 7, 260), "VoidHound": (300, 1.4, 8, 320),
+                "Lissandra": (220, 2.8, 14, 200), "Swain": (260, 2.4, 12, 240),
+                "Viego": (300, 2.0, 11, 280), "Baron": (220, 2.8, 14, 200),
             }
             sp, life, rad, _reach = ranged_cfg.get(self.id, (360, 2.0, 10, 360))
             p = Projectile(self.x, self.y, dx / d * sp, dy / d * sp,

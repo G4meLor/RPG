@@ -1284,6 +1284,26 @@ class WorldScene:
         # they are NOT appended (the hero walks through them).
         if self._water:
             m["obstacles"].extend(self._water)
+        # lore float on the first visit to this cell's landmark — fired in
+        # _load_map (not in _draw_landmark) so the player sees it on cell entry
+        # even if the landmark is off-screen on the first draw frame (the float
+        # is at the landmark's world pos; if fired in draw, an off-screen
+        # landmark would spawn an off-screen float that fades unseen + the
+        # ow_landmarks_seen gate would prevent a re-fire). Tracked per cell id
+        # in ow_landmarks_seen so revisiting a cell doesn't re-show the lore.
+        if self._landmark is not None:
+            cid = WD.cell_id(self.c, self.r)
+            if cid not in self.game.player.ow_landmarks_seen:
+                self.game.player.ow_landmarks_seen.append(cid)
+                biome = self._landmark.get("biome", WD.cell_biome(self.c, self.r))
+                lore = D.LANDMARK_LORE.get(biome, "")
+                if lore:
+                    pal = WD.BIOMES.get(biome, {})
+                    col = pal.get("accent", (230, 220, 180))
+                    self.floats.append(FloatText(self._landmark["x"],
+                                                self._landmark["y"] - 50,
+                                                lore, col, size=18, life=2.5))
+            m["obstacles"].extend(self._water)
         # hidden rift mini-dungeon: read the per-cell secret from gen_map. A
         # cleared rift stays cleared (persisted in ow_secrets_done) so the
         # player can't re-trigger the wave for infinite SR/SSR chests. Reset
@@ -3830,11 +3850,10 @@ class WorldScene:
 
     def _draw_landmark(self, surf, lm, ox, oy):
         """Draw a landmark (Task C3) — a pixel-art sprite (load_landmark from
-        Task A4) at the landmark's screen pos, with a lore float on the first
-        visit (tracked in ow_landmarks_seen per cell). Decorative (no collision).
-        The sprite is an 80x80 surface cached by load_landmark so this is a
-        single blit per landmark per frame. The lore float is a one-time
-        discovery beat (LANDMARK_LORE[biome] from data.py)."""
+        Task A4) at the landmark's screen pos. Decorative (no collision). The
+        lore float on first visit is fired in _load_map (not here) so the player
+        sees it on cell entry even if the landmark is off-screen on the first
+        draw frame."""
         lx = int(lm["x"] - ox)
         ly = int(lm["y"] - oy)
         if -80 < lx < 1360 and -80 < ly < 800:
@@ -3842,23 +3861,6 @@ class WorldScene:
             sprite = load_landmark(kind)
             sw, sh = sprite.get_size()
             surf.blit(sprite, (lx - sw // 2, ly - sh // 2))
-        # lore float on the first visit to this cell's landmark. Tracked in
-        # ow_landmarks_seen (a list of cell ids) so revisiting a cell doesn't
-        # re-show the lore (the lore is a one-time discovery beat, not a reward).
-        # The lore line is LANDMARK_LORE[biome] from data.py (one per biome).
-        cid = WD.cell_id(self.c, self.r)
-        if cid not in self.game.player.ow_landmarks_seen:
-            self.game.player.ow_landmarks_seen.append(cid)
-            biome = lm.get("biome", "plains")
-            lore = D.LANDMARK_LORE.get(biome, "")
-            if lore:
-                # a longer-lived float (2.5s) so the player has time to read the
-                # lore line. Sized 18 so it reads as a subtitle, not a damage
-                # number. Color is the biome accent so it reads as worldbuilding.
-                pal = WD.BIOMES.get(biome, {})
-                col = pal.get("accent", (230, 220, 180))
-                self.floats.append(FloatText(lm["x"], lm["y"] - 50, lore, col,
-                                            size=18, life=2.5))
 
     def _draw_village_building(self, surf, bx, by, kind, ox, oy):
         """Draw a village building (Task C3) — a pixel-art sprite (load_village

@@ -3698,8 +3698,12 @@ class WorldScene:
                 pygame.draw.circle(g, (*ec, a), (gw // 2, gw // 2), rr)
             surf.blit(g, (dx - gw // 2, dy - gw // 2 + 8))
             # the drop sprite — load_drop returns a cached 16x16 surface scaled
-            # to 24x24 (the size that reads as loot, not a tiny speck).
-            sprite = load_drop(kind, (24, 24))
+            # to 24x24 (the size that reads as loot, not a tiny speck). The
+            # hp_potion drop kind maps to the "potion" sprite (the asset is saved
+            # as drops/potion.png by generate_assets.py; the inventory item is
+            # "hp_potion" but the drop sprite id is "potion").
+            sprite_kind = "potion" if kind == "hp_potion" else kind
+            sprite = load_drop(sprite_kind, (24, 24))
             sw, sh = sprite.get_size()
             surf.blit(sprite, (dx - sw // 2, dy - sh // 2 + bob))
 

@@ -1063,7 +1063,8 @@ class WorldScene:
         # are dict hits but still redundant; cache the Surface once per scene so
         # the HUD hot path is 5 dict lookups on this local cache instead.
         self._hud_portraits = {}
-        # skill-icon cache for the skill bar (one load per (skill,size) per scene)
+        # skill-icon cache for the skill bar (one load per (hero,skill,size)
+        # per scene — per-hero art means the cache key includes the hero id)
         self._skill_icons = {}
         # skill-tooltip cache (Task B1): keyed by (hero_id, slot_idx, affordable)
         # so the hover tooltip doesn't re-render text every frame while hovered.
@@ -4752,13 +4753,15 @@ class WorldScene:
             self._hud_portraits[key] = p
         return p
 
-    def _skill_icon(self, sid, size):
-        """Cached skill icon — one load per (skill,size) per scene lifetime."""
-        key = (sid, size)
+    def _skill_icon(self, hero_id, sid, size):
+        """Cached skill icon — one load per (hero,skill,size) per scene
+        lifetime. Per-hero art means the cache key includes the hero id so
+        switching the active hero re-loads that hero's accent-tinted icons."""
+        key = (hero_id, sid, size)
         ic = self._skill_icons.get(key)
         if ic is None:
             try:
-                ic = load_skill_icon(sid, size)
+                ic = load_skill_icon(hero_id, sid, size)
             except Exception:
                 ic = None
             self._skill_icons[key] = ic
@@ -5276,7 +5279,7 @@ class WorldScene:
             pygame.draw.rect(surf, border, r, 2, border_radius=10)
             # icon (cached per-scene so the bar hot path is one dict lookup)
             if sid:
-                ic = self._skill_icon(sid, slot - 10)
+                ic = self._skill_icon(wc.hero.id, sid, slot - 10)
                 if ic is not None:
                     surf.blit(ic, (r.x + 5, r.y + 5))
                 else:

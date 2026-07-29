@@ -1461,10 +1461,33 @@ def draw_enemy(surf, kind, palette):
 # ---------------------------------------------------------------------------
 # Skill icons
 # ---------------------------------------------------------------------------
-def draw_skill_icon(surf, element, kind):
+def _skill_variant(skill_name):
+    """Deterministic variant index (0-3) from the skill name.
+
+    Uses sum(ord(c)) — NOT hash() (which is PYTHONHASHSEED-salted and so would
+    produce a different variant across regenerations). Stable across runs so
+    the per-skill art is reproducible."""
+    return sum(ord(c) for c in skill_name) % 4
+
+
+def draw_skill_icon(surf, skill_name, element, kind, hero_accent=None):
+    """Draw a skill icon with per-skill distinct art.
+
+    The `kind` (slash/bolt/arrow/heal/shield/orb/aoe/curse/buff/summon/beam/
+    trap) is the visual family; within each family, a deterministic variant
+    (derived from the skill name via sum(ord(c))%4) picks one of 3-4 distinct
+    drawings so fire_slash and light_slash no longer look the same shape.
+
+    If `hero_accent` is given, the glyph's light color is tinted toward it
+    (lerp 0.3) so each hero's copy of a shared skill is accent-colored."""
     cx, cy = 64, 64
     outline = (30, 26, 40)
     main, light, dark = ELEMENT_COLORS[element]
+    # per-hero accent tinting: shift the light color toward the hero's accent
+    if hero_accent is not None:
+        light = lerp_color(light, hero_accent, 0.3)
+    v = _skill_variant(skill_name)
+
     # base disc — 2-tone dithered fill clipped to a circle (pixel-art: no AA
     # radial gradient). Light upper-left, dark edge.
     disc = px_dither_surf(112, 112, shade(main, 1.15), shade(dark, 0.7))
@@ -1480,75 +1503,434 @@ def draw_skill_icon(surf, element, kind):
     surf.blit(inner, (16, 16))
 
     if kind == "slash":
-        # curved slash — solid palette fills, no AA
-        pygame.draw.polygon(surf, light, [(cx - 24, cy + 20), (cx + 24, cy - 20), (cx + 30, cy - 10), (cx - 18, cy + 30)])
-        pygame.draw.polygon(surf, (255, 255, 255), [(cx - 20, cy + 16), (cx + 20, cy - 16), (cx + 24, cy - 8), (cx - 14, cy + 26)])
-        pygame.draw.polygon(surf, outline, [(cx - 24, cy + 20), (cx + 24, cy - 20), (cx + 30, cy - 10), (cx - 18, cy + 30)], 3)
+        if v == 0:
+            # v0: single diagonal slash (the original)
+            pygame.draw.polygon(surf, light, [(cx - 24, cy + 20), (cx + 24, cy - 20), (cx + 30, cy - 10), (cx - 18, cy + 30)])
+            pygame.draw.polygon(surf, (255, 255, 255), [(cx - 20, cy + 16), (cx + 20, cy - 16), (cx + 24, cy - 8), (cx - 14, cy + 26)])
+            pygame.draw.polygon(surf, outline, [(cx - 24, cy + 20), (cx + 24, cy - 20), (cx + 30, cy - 10), (cx - 18, cy + 30)], 3)
+        elif v == 1:
+            # v1: cross (X) slash — two crossing blades
+            pygame.draw.line(surf, light, (cx - 24, cy + 24), (cx + 24, cy - 24), 8)
+            pygame.draw.line(surf, light, (cx + 24, cy + 24), (cx - 24, cy - 24), 8)
+            pygame.draw.line(surf, (255, 255, 255), (cx - 22, cy + 22), (cx + 22, cy - 22), 3)
+            pygame.draw.line(surf, (255, 255, 255), (cx + 22, cy + 22), (cx - 22, cy - 22), 3)
+            pygame.draw.line(surf, outline, (cx - 24, cy + 24), (cx + 24, cy - 24), 2)
+            pygame.draw.line(surf, outline, (cx + 24, cy + 24), (cx - 24, cy - 24), 2)
+            pygame.draw.circle(surf, outline, (cx, cy), 6, 2)
+        elif v == 2:
+            # v2: triple parallel slashes
+            for dy in (-16, 0, 16):
+                pygame.draw.polygon(surf, light,
+                    [(cx - 24, cy + dy + 8), (cx + 24, cy + dy - 8),
+                     (cx + 28, cy + dy - 4), (cx - 20, cy + dy + 12)])
+                pygame.draw.line(surf, outline,
+                    (cx - 24, cy + dy + 8), (cx + 28, cy + dy - 8), 2)
+        else:
+            # v3: crescent slash — an arc
+            pygame.draw.arc(surf, light, pygame.Rect(cx - 28, cy - 28, 56, 56), 0.4, 2.7, 8)
+            pygame.draw.arc(surf, (255, 255, 255), pygame.Rect(cx - 26, cy - 26, 52, 52), 0.4, 2.7, 3)
+            pygame.draw.arc(surf, outline, pygame.Rect(cx - 28, cy - 28, 56, 56), 0.4, 2.7, 2)
+
     elif kind == "bolt":
-        # lightning bolt — solid palette fills, no AA glow
-        bolt_pts = [(cx - 6, cy - 28), (cx + 14, cy - 6), (cx + 2, cy - 4), (cx + 12, cy + 28), (cx - 12, cy + 4), (cx + 2, cy + 2)]
-        pygame.draw.polygon(surf, light, bolt_pts)
-        pygame.draw.polygon(surf, (255, 255, 230),
-                            [(cx - 4, cy - 24), (cx + 10, cy - 6), (cx, cy - 4), (cx + 8, cy + 24), (cx - 8, cy + 4), (cx + 2, cy + 2)])
-        pygame.draw.polygon(surf, outline, bolt_pts, 2)
+        if v == 0:
+            # v0: lightning bolt (the original)
+            bolt_pts = [(cx - 6, cy - 28), (cx + 14, cy - 6), (cx + 2, cy - 4), (cx + 12, cy + 28), (cx - 12, cy + 4), (cx + 2, cy + 2)]
+            pygame.draw.polygon(surf, light, bolt_pts)
+            pygame.draw.polygon(surf, (255, 255, 230),
+                                [(cx - 4, cy - 24), (cx + 10, cy - 6), (cx, cy - 4), (cx + 8, cy + 24), (cx - 8, cy + 4), (cx + 2, cy + 2)])
+            pygame.draw.polygon(surf, outline, bolt_pts, 2)
+        elif v == 1:
+            # v1: forked lightning — 2 prongs
+            pygame.draw.polygon(surf, light,
+                [(cx - 8, cy - 28), (cx + 8, cy - 8), (cx, cy - 6), (cx + 6, cy + 6),
+                 (cx + 14, cy + 28), (cx + 2, cy + 4), (cx + 8, cy + 2), (cx - 4, cy - 6)])
+            pygame.draw.line(surf, light, (cx, cy - 4), (cx - 14, cy + 28), 5)
+            pygame.draw.line(surf, (255, 255, 230), (cx - 2, cy - 4), (cx - 12, cy + 26), 2)
+            pygame.draw.line(surf, outline, (cx - 8, cy - 28), (cx + 8, cy - 8), 2)
+            pygame.draw.line(surf, outline, (cx, cy - 4), (cx - 14, cy + 28), 2)
+            pygame.draw.line(surf, outline, (cx, cy - 4), (cx + 6, cy + 28), 2)
+        elif v == 2:
+            # v2: ball lightning — circle + radial sparks
+            pygame.draw.circle(surf, light, (cx, cy), 18)
+            pygame.draw.circle(surf, (255, 255, 230), (cx - 4, cy - 4), 12)
+            pygame.draw.circle(surf, outline, (cx, cy), 18, 3)
+            for ang in range(0, 360, 45):
+                rad = math.radians(ang)
+                x1 = cx + int(math.cos(rad) * 20)
+                y1 = cy + int(math.sin(rad) * 20)
+                x2 = cx + int(math.cos(rad) * 30)
+                y2 = cy + int(math.sin(rad) * 30)
+                pygame.draw.line(surf, light, (x1, y1), (x2, y2), 3)
+        else:
+            # v3: zigzag bolt
+            pts = [(cx - 20, cy - 24), (cx + 8, cy - 8), (cx - 8, cy + 4),
+                   (cx + 20, cy + 24)]
+            pygame.draw.lines(surf, light, False, pts, 6)
+            pygame.draw.lines(surf, (255, 255, 230), False, pts, 2)
+            pygame.draw.lines(surf, outline, False, pts, 2)
+            # end caps
+            pygame.draw.circle(surf, light, pts[0], 4)
+            pygame.draw.circle(surf, light, pts[-1], 4)
+
     elif kind == "arrow":
-        # arrow shaft + fletching — solid palette fills, no AA
-        pygame.draw.line(surf, light, (cx - 26, cy + 22), (cx + 22, cy - 22), 6)
-        pygame.draw.line(surf, (255, 255, 255), (cx - 26, cy + 22), (cx + 22, cy - 22), 2)
-        pygame.draw.polygon(surf, (255, 255, 255), [(cx + 22, cy - 22), (cx + 6, cy - 30), (cx + 30, cy - 6)])
-        # fletching (back fins)
-        pygame.draw.polygon(surf, shade(light, 0.7), [(cx - 26, cy + 22), (cx - 30, cy + 16), (cx - 22, cy + 18)])
-        pygame.draw.line(surf, outline, (cx - 26, cy + 22), (cx + 22, cy - 22), 2)
+        if v == 0:
+            # v0: single arrow (the original)
+            pygame.draw.line(surf, light, (cx - 26, cy + 22), (cx + 22, cy - 22), 6)
+            pygame.draw.line(surf, (255, 255, 255), (cx - 26, cy + 22), (cx + 22, cy - 22), 2)
+            pygame.draw.polygon(surf, (255, 255, 255), [(cx + 22, cy - 22), (cx + 6, cy - 30), (cx + 30, cy - 6)])
+            # fletching (back fins)
+            pygame.draw.polygon(surf, shade(light, 0.7), [(cx - 26, cy + 22), (cx - 30, cy + 16), (cx - 22, cy + 18)])
+            pygame.draw.line(surf, outline, (cx - 26, cy + 22), (cx + 22, cy - 22), 2)
+        elif v == 1:
+            # v1: triple arrow (3 arrows fan)
+            for ang in (-20, 0, 20):
+                rad = math.radians(ang - 45)
+                ex = cx + int(math.cos(rad) * 26)
+                ey = cy + int(math.sin(rad) * 26)
+                sx = cx - int(math.cos(rad) * 26)
+                sy = cy - int(math.sin(rad) * 26)
+                pygame.draw.line(surf, light, (sx, sy), (ex, ey), 4)
+                pygame.draw.line(surf, (255, 255, 255), (sx, sy), (ex, ey), 1)
+                # arrowhead
+                ax = ex - int(math.cos(rad) * 8)
+                ay = ey - int(math.sin(rad) * 8)
+                px = -int(math.sin(rad) * 5)
+                py = int(math.cos(rad) * 5)
+                pygame.draw.polygon(surf, (255, 255, 255), [(ex, ey), (ax + px, ay + py), (ax - px, ay - py)])
+                pygame.draw.line(surf, outline, (sx, sy), (ex, ey), 1)
+        elif v == 2:
+            # v2: piercing arrow — arrow + trail line
+            pygame.draw.line(surf, shade(light, 0.6), (cx - 30, cy + 26), (cx + 10, cy - 14), 3)
+            pygame.draw.line(surf, light, (cx + 10, cy - 14), (cx + 28, cy - 26), 6)
+            pygame.draw.polygon(surf, (255, 255, 255), [(cx + 28, cy - 26), (cx + 14, cy - 30), (cx + 30, cy - 14)])
+            pygame.draw.line(surf, outline, (cx - 30, cy + 26), (cx + 28, cy - 26), 2)
+        else:
+            # v3: barbed arrow — arrow with barbs
+            pygame.draw.line(surf, light, (cx - 26, cy + 22), (cx + 22, cy - 22), 6)
+            pygame.draw.line(surf, (255, 255, 255), (cx - 26, cy + 22), (cx + 22, cy - 22), 2)
+            pygame.draw.polygon(surf, (255, 255, 255), [(cx + 22, cy - 22), (cx + 6, cy - 30), (cx + 30, cy - 6)])
+            # barbs (back-pointing spikes)
+            pygame.draw.polygon(surf, shade(light, 0.7), [(cx - 10, cy + 6), (cx - 18, cy + 16), (cx - 4, cy + 14)])
+            pygame.draw.polygon(surf, shade(light, 0.7), [(cx + 4, cy - 10), (cx + 14, cy - 2), (cx - 2, cy - 4)])
+            pygame.draw.line(surf, outline, (cx - 26, cy + 22), (cx + 22, cy - 22), 2)
+
     elif kind == "heal":
-        # plus sign — solid blocks, no AA glow
-        pygame.draw.rect(surf, (255, 255, 255), (cx - 8, cy - 24, 16, 48), border_radius=4)
-        pygame.draw.rect(surf, (255, 255, 255), (cx - 24, cy - 8, 48, 16), border_radius=4)
-        pygame.draw.rect(surf, outline, (cx - 8, cy - 24, 16, 48), 2, border_radius=4)
-        pygame.draw.rect(surf, outline, (cx - 24, cy - 8, 48, 16), 2, border_radius=4)
+        if v == 0:
+            # v0: plus sign (the original)
+            pygame.draw.rect(surf, (255, 255, 255), (cx - 8, cy - 24, 16, 48), border_radius=4)
+            pygame.draw.rect(surf, (255, 255, 255), (cx - 24, cy - 8, 48, 16), border_radius=4)
+            pygame.draw.rect(surf, outline, (cx - 8, cy - 24, 16, 48), 2, border_radius=4)
+            pygame.draw.rect(surf, outline, (cx - 24, cy - 8, 48, 16), 2, border_radius=4)
+        elif v == 1:
+            # v1: cross (Christian) — longer vertical + shorter horizontal
+            pygame.draw.rect(surf, (255, 255, 255), (cx - 6, cy - 28, 12, 56), border_radius=3)
+            pygame.draw.rect(surf, (255, 255, 255), (cx - 18, cy - 4, 36, 12), border_radius=3)
+            pygame.draw.rect(surf, outline, (cx - 6, cy - 28, 12, 56), 2, border_radius=3)
+            pygame.draw.rect(surf, outline, (cx - 18, cy - 4, 36, 12), 2, border_radius=3)
+        elif v == 2:
+            # v2: heart
+            pygame.draw.circle(surf, (255, 255, 255), (cx - 10, cy - 6), 12)
+            pygame.draw.circle(surf, (255, 255, 255), (cx + 10, cy - 6), 12)
+            pygame.draw.polygon(surf, (255, 255, 255), [(cx - 22, cy - 4), (cx, cy + 24), (cx + 22, cy - 4)])
+            pygame.draw.polygon(surf, outline, [(cx - 22, cy - 4), (cx - 10, cy - 18), (cx + 10, cy - 18), (cx + 22, cy - 4), (cx, cy + 24)], 2)
+        else:
+            # v3: leaf
+            pygame.draw.polygon(surf, light, [(cx - 4, cy - 24), (cx + 24, cy + 4), (cx + 4, cy + 24), (cx - 24, cy + 4)])
+            pygame.draw.polygon(surf, (255, 255, 255), [(cx - 2, cy - 20), (cx + 20, cy + 2), (cx + 2, cy + 20), (cx - 20, cy + 2)])
+            pygame.draw.line(surf, outline, (cx - 4, cy - 24), (cx + 4, cy + 24), 2)
+            pygame.draw.polygon(surf, outline, [(cx - 4, cy - 24), (cx + 24, cy + 4), (cx + 4, cy + 24), (cx - 24, cy + 4)], 2)
+
     elif kind == "shield":
-        # shield — 2-tone dithered fill clipped to the shield polygon (no AA)
-        sh_pts = [(cx, cy - 26), (cx + 22, cy - 14), (cx + 22, cy + 10), (cx, cy + 28), (cx - 22, cy + 10), (cx - 22, cy - 14)]
-        shg = px_dither_surf(48, 56, (255, 255, 255), shade(light, 0.7))
-        m = pygame.Surface((48, 56), pygame.SRCALPHA)
-        pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - (cx - 24), p[1] - (cy - 26)) for p in sh_pts])
-        shg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-        surf.blit(shg, (cx - 24, cy - 26))
-        pygame.draw.polygon(surf, outline, sh_pts, 3)
-        pygame.draw.circle(surf, light, (cx, cy), 6)
-        pygame.draw.circle(surf, (255, 255, 255), (cx - 2, cy - 2), 3)
+        if v == 0:
+            # v0: round shield (the original)
+            sh_pts = [(cx, cy - 26), (cx + 22, cy - 14), (cx + 22, cy + 10), (cx, cy + 28), (cx - 22, cy + 10), (cx - 22, cy - 14)]
+            shg = px_dither_surf(48, 56, (255, 255, 255), shade(light, 0.7))
+            m = pygame.Surface((48, 56), pygame.SRCALPHA)
+            pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - (cx - 24), p[1] - (cy - 26)) for p in sh_pts])
+            shg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+            surf.blit(shg, (cx - 24, cy - 26))
+            pygame.draw.polygon(surf, outline, sh_pts, 3)
+            pygame.draw.circle(surf, light, (cx, cy), 6)
+            pygame.draw.circle(surf, (255, 255, 255), (cx - 2, cy - 2), 3)
+        elif v == 1:
+            # v1: kite shield — tall + pointed bottom
+            sh_pts = [(cx, cy - 30), (cx + 18, cy - 16), (cx + 14, cy + 8), (cx, cy + 30), (cx - 14, cy + 8), (cx - 18, cy - 16)]
+            shg = px_dither_surf(40, 64, (255, 255, 255), shade(light, 0.7))
+            m = pygame.Surface((40, 64), pygame.SRCALPHA)
+            pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - (cx - 20), p[1] - (cy - 30)) for p in sh_pts])
+            shg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+            surf.blit(shg, (cx - 20, cy - 30))
+            pygame.draw.polygon(surf, outline, sh_pts, 3)
+            pygame.draw.line(surf, light, (cx, cy - 20), (cx, cy + 20), 3)
+        elif v == 2:
+            # v2: tower shield — rectangular
+            sh_pts = [(cx - 20, cy - 28), (cx + 20, cy - 28), (cx + 20, cy + 20), (cx, cy + 28), (cx - 20, cy + 20)]
+            shg = px_dither_surf(44, 60, (255, 255, 255), shade(light, 0.7))
+            m = pygame.Surface((44, 60), pygame.SRCALPHA)
+            pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - (cx - 22), p[1] - (cy - 28)) for p in sh_pts])
+            shg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+            surf.blit(shg, (cx - 22, cy - 28))
+            pygame.draw.polygon(surf, outline, sh_pts, 3)
+            pygame.draw.line(surf, light, (cx, cy - 20), (cx, cy + 16), 3)
+        else:
+            # v3: buckler — small round
+            shg = px_dither_surf(36, 36, (255, 255, 255), shade(light, 0.7))
+            clip_to_circle(shg, (18, 18), 18)
+            surf.blit(shg, (cx - 18, cy - 18))
+            pygame.draw.circle(surf, outline, (cx, cy), 18, 3)
+            pygame.draw.circle(surf, light, (cx, cy), 10, 2)
+            pygame.draw.circle(surf, (255, 255, 255), (cx - 3, cy - 3), 4)
+
     elif kind == "orb":
-        # orb — 2-tone dithered fill clipped to a circle + specular shine (no AA)
-        orb = px_dither_surf(44, 44, light, shade(dark, 0.6))
-        clip_to_circle(orb, (22, 22), 22)
-        surf.blit(orb, (cx - 22, cy - 22))
-        pygame.draw.circle(surf, (255, 255, 255), (cx - 7, cy - 7), 7)
-        pygame.draw.circle(surf, (255, 255, 255), (cx - 3, cy - 3), 3)
-        pygame.draw.circle(surf, outline, (cx, cy), 22, 3)
+        if v == 0:
+            # v0: plain orb (the original)
+            orb = px_dither_surf(44, 44, light, shade(dark, 0.6))
+            clip_to_circle(orb, (22, 22), 22)
+            surf.blit(orb, (cx - 22, cy - 22))
+            pygame.draw.circle(surf, (255, 255, 255), (cx - 7, cy - 7), 7)
+            pygame.draw.circle(surf, (255, 255, 255), (cx - 3, cy - 3), 3)
+            pygame.draw.circle(surf, outline, (cx, cy), 22, 3)
+        elif v == 1:
+            # v1: crystal (faceted) — diamond shape
+            pts = [(cx, cy - 26), (cx + 20, cy - 6), (cx + 14, cy + 22), (cx - 14, cy + 22), (cx - 20, cy - 6)]
+            pygame.draw.polygon(surf, light, pts)
+            pygame.draw.polygon(surf, (255, 255, 255), [(cx, cy - 26), (cx + 20, cy - 6), (cx, cy - 6)])
+            pygame.draw.polygon(surf, shade(light, 0.6), [(cx, cy - 6), (cx + 20, cy - 6), (cx + 14, cy + 22)])
+            pygame.draw.polygon(surf, outline, pts, 3)
+        elif v == 2:
+            # v2: pearl — orb with strong shine
+            orb = px_dither_surf(44, 44, (255, 255, 255), shade(light, 0.5))
+            clip_to_circle(orb, (22, 22), 22)
+            surf.blit(orb, (cx - 22, cy - 22))
+            pygame.draw.circle(surf, (255, 255, 255), (cx - 8, cy - 8), 10)
+            pygame.draw.circle(surf, (255, 255, 255), (cx - 4, cy - 4), 5)
+            pygame.draw.circle(surf, outline, (cx, cy), 22, 3)
+        else:
+            # v3: runic orb — orb with rune marks
+            orb = px_dither_surf(44, 44, light, shade(dark, 0.6))
+            clip_to_circle(orb, (22, 22), 22)
+            surf.blit(orb, (cx - 22, cy - 22))
+            pygame.draw.circle(surf, (255, 255, 255), (cx - 7, cy - 7), 5)
+            # rune marks (3 small dots in a triangle)
+            for ry in (-8, 8):
+                for rx in (-8, 8):
+                    pygame.draw.circle(surf, outline, (cx + rx, cy + ry), 3, 1)
+            pygame.draw.circle(surf, outline, (cx, cy), 22, 3)
+
     elif kind == "aoe":
-        # concentric rings — solid palette fills, no AA glow
-        for r in (28, 20, 12):
-            pygame.draw.circle(surf, light, (cx, cy), r, 4)
-        pygame.draw.circle(surf, outline, (cx, cy), 28, 2)
+        if v == 0:
+            # v0: concentric rings (the original)
+            for r in (28, 20, 12):
+                pygame.draw.circle(surf, light, (cx, cy), r, 4)
+            pygame.draw.circle(surf, outline, (cx, cy), 28, 2)
+        elif v == 1:
+            # v1: spiral
+            pts = []
+            for i in range(0, 80, 3):
+                rad = i * 0.1
+                r = 4 + i * 0.3
+                if r > 30:
+                    break
+                pts.append((cx + int(math.cos(rad) * r), cy + int(math.sin(rad) * r)))
+            if len(pts) > 1:
+                pygame.draw.lines(surf, light, False, pts, 3)
+                pygame.draw.lines(surf, (255, 255, 255), False, pts, 1)
+            pygame.draw.circle(surf, outline, (cx, cy), 30, 2)
+        elif v == 2:
+            # v2: star burst — a small star + radial lines
+            for ang in range(0, 360, 30):
+                rad = math.radians(ang)
+                pygame.draw.line(surf, light,
+                    (cx + int(math.cos(rad) * 8), cy + int(math.sin(rad) * 8)),
+                    (cx + int(math.cos(rad) * 28), cy + int(math.sin(rad) * 28)), 3)
+            draw_star(surf, cx, cy, 10, 5, light, (255, 255, 255))
+        else:
+            # v3: explosion — radial lines from center
+            for ang in range(0, 360, 45):
+                rad = math.radians(ang)
+                x1 = cx + int(math.cos(rad) * 6)
+                y1 = cy + int(math.sin(rad) * 6)
+                x2 = cx + int(math.cos(rad) * 28)
+                y2 = cy + int(math.sin(rad) * 28)
+                pygame.draw.line(surf, light, (x1, y1), (x2, y2), 5)
+                pygame.draw.line(surf, (255, 255, 255), (x1, y1), (x2, y2), 2)
+            pygame.draw.circle(surf, light, (cx, cy), 8)
+            pygame.draw.circle(surf, (255, 255, 255), (cx, cy), 4)
+            pygame.draw.circle(surf, outline, (cx, cy), 30, 2)
+
     elif kind == "curse":
-        # dark curse sigil — solid palette fills, no AA
-        pygame.draw.circle(surf, (255, 255, 255), (cx, cy), 24)
-        pygame.draw.circle(surf, outline, (cx, cy), 24, 3)
-        # inner void — 2-tone dithered fill clipped to a circle (no AA)
-        void = px_dither_surf(26, 26, shade(dark, 1.2), dark)
-        clip_to_circle(void, (13, 13), 12)
-        surf.blit(void, (cx - 13, cy - 13))
-        pygame.draw.circle(surf, outline, (cx, cy), 12, 2)
+        if v == 0:
+            # v0: sigil — circle + void (the original)
+            pygame.draw.circle(surf, (255, 255, 255), (cx, cy), 24)
+            pygame.draw.circle(surf, outline, (cx, cy), 24, 3)
+            void = px_dither_surf(26, 26, shade(dark, 1.2), dark)
+            clip_to_circle(void, (13, 13), 12)
+            surf.blit(void, (cx - 13, cy - 13))
+            pygame.draw.circle(surf, outline, (cx, cy), 12, 2)
+        elif v == 1:
+            # v1: skull
+            pygame.draw.circle(surf, (255, 255, 255), (cx, cy - 4), 20)
+            pygame.draw.rect(surf, (255, 255, 255), (cx - 12, cy + 4, 24, 12), border_radius=4)
+            pygame.draw.circle(surf, outline, (cx - 8, cy - 4), 6, 2)
+            pygame.draw.circle(surf, outline, (cx + 8, cy - 4), 6, 2)
+            pygame.draw.rect(surf, outline, (cx - 2, cy + 8, 4, 8))
+            pygame.draw.circle(surf, outline, (cx, cy - 4), 20, 2)
+        elif v == 2:
+            # v2: hex — triangle + circle
+            pygame.draw.polygon(surf, (255, 255, 255), [(cx, cy - 24), (cx + 22, cy + 12), (cx - 22, cy + 12)])
+            pygame.draw.polygon(surf, outline, [(cx, cy - 24), (cx + 22, cy + 12), (cx - 22, cy + 12)], 3)
+            pygame.draw.circle(surf, shade(dark, 1.2), (cx, cy), 10)
+            pygame.draw.circle(surf, outline, (cx, cy), 10, 2)
+        else:
+            # v3: eye
+            pygame.draw.ellipse(surf, (255, 255, 255), (cx - 24, cy - 12, 48, 24))
+            pygame.draw.ellipse(surf, outline, (cx - 24, cy - 12, 48, 24), 3)
+            pygame.draw.circle(surf, shade(dark, 1.2), (cx, cy), 9)
+            pygame.draw.circle(surf, outline, (cx, cy), 9, 2)
+            pygame.draw.circle(surf, (255, 255, 255), (cx - 3, cy - 3), 3)
+
     elif kind == "buff":
-        # upward triangle (buff) — 2-tone dithered fill clipped to the triangle (no AA)
-        tri = [(cx, cy - 26), (cx + 22, cy + 18), (cx - 22, cy + 18)]
-        tg = px_dither_surf(48, 46, (255, 255, 255), shade(light, 0.7))
-        m = pygame.Surface((48, 46), pygame.SRCALPHA)
-        pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - (cx - 24), p[1] - (cy - 26)) for p in tri])
-        tg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-        surf.blit(tg, (cx - 24, cy - 26))
-        pygame.draw.polygon(surf, outline, tri, 3)
-        pygame.draw.line(surf, outline, (cx, cy - 14), (cx, cy + 8), 3)
-        pygame.draw.circle(surf, outline, (cx, cy + 14), 3)
+        if v == 0:
+            # v0: upward triangle (the original)
+            tri = [(cx, cy - 26), (cx + 22, cy + 18), (cx - 22, cy + 18)]
+            tg = px_dither_surf(48, 46, (255, 255, 255), shade(light, 0.7))
+            m = pygame.Surface((48, 46), pygame.SRCALPHA)
+            pygame.draw.polygon(m, (255, 255, 255, 255), [(p[0] - (cx - 24), p[1] - (cy - 26)) for p in tri])
+            tg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+            surf.blit(tg, (cx - 24, cy - 26))
+            pygame.draw.polygon(surf, outline, tri, 3)
+            pygame.draw.line(surf, outline, (cx, cy - 14), (cx, cy + 8), 3)
+            pygame.draw.circle(surf, outline, (cx, cy + 14), 3)
+        elif v == 1:
+            # v1: star
+            draw_star(surf, cx, cy, 26, 11, light, (255, 255, 255))
+            pygame.draw.rect(surf, (255, 255, 255), (cx - 4, cy - 16, 6, 6))
+        elif v == 2:
+            # v2: banner — flag shape
+            pygame.draw.rect(surf, light, (cx - 3, cy - 28, 6, 56))
+            pygame.draw.polygon(surf, (255, 255, 255), [(cx + 3, cy - 28), (cx + 24, cy - 18), (cx + 3, cy - 8)])
+            pygame.draw.polygon(surf, outline, [(cx + 3, cy - 28), (cx + 24, cy - 18), (cx + 3, cy - 8)], 2)
+            pygame.draw.line(surf, outline, (cx - 3, cy - 28), (cx - 3, cy + 28), 2)
+            pygame.draw.line(surf, outline, (cx + 3, cy - 28), (cx + 3, cy + 28), 2)
+        else:
+            # v3: chevron — upward V
+            pygame.draw.lines(surf, light, False, [(cx - 22, cy + 16), (cx, cy - 22), (cx + 22, cy + 16)], 6)
+            pygame.draw.lines(surf, (255, 255, 255), False, [(cx - 22, cy + 16), (cx, cy - 22), (cx + 22, cy + 16)], 2)
+            pygame.draw.lines(surf, outline, False, [(cx - 22, cy + 16), (cx, cy - 22), (cx + 22, cy + 16)], 2)
+
+    elif kind == "summon":
+        if v == 0:
+            # v0: portal — concentric rings + center glow
+            for r in (28, 20, 12):
+                pygame.draw.circle(surf, light, (cx, cy), r, 3)
+            pygame.draw.circle(surf, shade(dark, 1.3), (cx, cy), 8)
+            pygame.draw.circle(surf, light, (cx, cy), 4)
+            pygame.draw.circle(surf, outline, (cx, cy), 28, 2)
+        elif v == 1:
+            # v1: crystal cluster — multiple small crystals
+            for ox, oy, sz in [(-12, -8, 10), (10, -12, 8), (4, 12, 12)]:
+                pts = [(cx + ox, cy + oy - sz), (cx + ox + sz, cy + oy),
+                       (cx + ox, cy + oy + sz), (cx + ox - sz, cy + oy)]
+                pygame.draw.polygon(surf, light, pts)
+                pygame.draw.polygon(surf, (255, 255, 255),
+                    [(cx + ox, cy + oy - sz), (cx + ox + sz, cy + oy), (cx + ox, cy + oy)])
+                pygame.draw.polygon(surf, outline, pts, 2)
+        elif v == 2:
+            # v2: rune circle — circle with rune marks around
+            pygame.draw.circle(surf, light, (cx, cy), 22, 3)
+            for ang in range(0, 360, 60):
+                rad = math.radians(ang)
+                rx = cx + int(math.cos(rad) * 22)
+                ry = cy + int(math.sin(rad) * 22)
+                pygame.draw.circle(surf, (255, 255, 255), (rx, ry), 4)
+                pygame.draw.circle(surf, outline, (rx, ry), 4, 1)
+            pygame.draw.circle(surf, shade(dark, 1.3), (cx, cy), 8)
+            pygame.draw.circle(surf, outline, (cx, cy), 22, 2)
+        else:
+            # v3: spirit flame — wisp shape
+            pts = [(cx - 8, cy + 24), (cx - 14, cy + 4), (cx - 6, cy - 14),
+                   (cx, cy - 28), (cx + 6, cy - 14), (cx + 14, cy + 4), (cx + 8, cy + 24)]
+            pygame.draw.polygon(surf, light, pts)
+            pygame.draw.polygon(surf, (255, 255, 255),
+                [(cx - 4, cy + 20), (cx - 8, cy + 2), (cx, cy - 10), (cx + 8, cy + 2), (cx + 4, cy + 20)])
+            pygame.draw.polygon(surf, outline, pts, 2)
+
+    elif kind == "beam":
+        if v == 0:
+            # v0: horizontal beam — thick line + burst caps
+            pygame.draw.rect(surf, light, (cx - 28, cy - 6, 56, 12))
+            pygame.draw.rect(surf, (255, 255, 255), (cx - 26, cy - 3, 52, 6))
+            pygame.draw.circle(surf, light, (cx - 28, cy), 8)
+            pygame.draw.circle(surf, light, (cx + 28, cy), 8)
+            pygame.draw.rect(surf, outline, (cx - 28, cy - 6, 56, 12), 2)
+        elif v == 1:
+            # v1: vertical beam
+            pygame.draw.rect(surf, light, (cx - 6, cy - 28, 12, 56))
+            pygame.draw.rect(surf, (255, 255, 255), (cx - 3, cy - 26, 6, 52))
+            pygame.draw.circle(surf, light, (cx, cy - 28), 8)
+            pygame.draw.circle(surf, light, (cx, cy + 28), 8)
+            pygame.draw.rect(surf, outline, (cx - 6, cy - 28, 12, 56), 2)
+        elif v == 2:
+            # v2: diagonal beam
+            pygame.draw.line(surf, light, (cx - 24, cy + 24), (cx + 24, cy - 24), 12)
+            pygame.draw.line(surf, (255, 255, 255), (cx - 22, cy + 22), (cx + 22, cy - 22), 5)
+            pygame.draw.circle(surf, light, (cx - 24, cy + 24), 8)
+            pygame.draw.circle(surf, light, (cx + 24, cy - 24), 8)
+            pygame.draw.line(surf, outline, (cx - 24, cy + 24), (cx + 24, cy - 24), 2)
+        else:
+            # v3: converging beams — 3 beams meeting at center
+            for ang in (0, 120, 240):
+                rad = math.radians(ang)
+                sx = cx - int(math.cos(rad) * 28)
+                sy = cy - int(math.sin(rad) * 28)
+                pygame.draw.line(surf, light, (sx, sy), (cx, cy), 6)
+                pygame.draw.line(surf, (255, 255, 255), (sx, sy), (cx, cy), 2)
+                pygame.draw.circle(surf, light, (sx, sy), 6)
+            pygame.draw.circle(surf, (255, 255, 255), (cx, cy), 10)
+            pygame.draw.circle(surf, outline, (cx, cy), 10, 2)
+
+    elif kind == "trap":
+        if v == 0:
+            # v0: spiked trap — circle with spikes
+            pygame.draw.circle(surf, light, (cx, cy), 16)
+            pygame.draw.circle(surf, (255, 255, 255), (cx - 4, cy - 4), 8)
+            for ang in range(0, 360, 45):
+                rad = math.radians(ang)
+                x1 = cx + int(math.cos(rad) * 16)
+                y1 = cy + int(math.sin(rad) * 16)
+                x2 = cx + int(math.cos(rad) * 28)
+                y2 = cy + int(math.sin(rad) * 28)
+                pygame.draw.line(surf, light, (x1, y1), (x2, y2), 3)
+                pygame.draw.polygon(surf, outline, [(x1, y1), (x2, y2), (cx + int(math.cos(rad + 0.3) * 16), cy + int(math.sin(rad + 0.3) * 16))], 1)
+            pygame.draw.circle(surf, outline, (cx, cy), 16, 2)
+        elif v == 1:
+            # v1: web/net — radial lines + concentric
+            for ang in range(0, 360, 60):
+                rad = math.radians(ang)
+                pygame.draw.line(surf, light,
+                    (cx, cy),
+                    (cx + int(math.cos(rad) * 28), cy + int(math.sin(rad) * 28)), 2)
+            for r in (10, 20, 28):
+                pygame.draw.circle(surf, light, (cx, cy), r, 1)
+            pygame.draw.circle(surf, outline, (cx, cy), 28, 2)
+        elif v == 2:
+            # v2: rune trap — square with rune
+            pygame.draw.rect(surf, light, (cx - 22, cy - 22, 44, 44), 3)
+            pygame.draw.rect(surf, shade(dark, 1.3), (cx - 18, cy - 18, 36, 36))
+            # inner rune (X)
+            pygame.draw.line(surf, light, (cx - 12, cy - 12), (cx + 12, cy + 12), 2)
+            pygame.draw.line(surf, light, (cx + 12, cy - 12), (cx - 12, cy + 12), 2)
+            pygame.draw.circle(surf, light, (cx, cy), 6)
+        else:
+            # v3: spike pit — ground spikes
+            for ox in (-20, -6, 8, 20):
+                pygame.draw.polygon(surf, light,
+                    [(cx + ox - 4, cy + 22), (cx + ox, cy - 18), (cx + ox + 4, cy + 22)])
+                pygame.draw.polygon(surf, (255, 255, 255),
+                    [(cx + ox - 2, cy + 20), (cx + ox, cy - 14), (cx + ox + 2, cy + 20)])
+                pygame.draw.polygon(surf, outline,
+                    [(cx + ox - 4, cy + 22), (cx + ox, cy - 18), (cx + ox + 4, cy + 22)], 1)
+            pygame.draw.line(surf, outline, (cx - 24, cy + 22), (cx + 24, cy + 22), 2)
 
 
 # ---------------------------------------------------------------------------
@@ -2954,28 +3336,71 @@ SKILLS = [
     # --- new skills (Phase C) ---
     ("rupture", "dark", "curse"), ("taunt_skill", "light", "shield"),
     ("reflect_ward", "water", "shield"),
+    # --- new skill kinds (v2 A3: summon / beam / trap) — added here so the
+    # global assets/skills/{id}.png is generated for skills that appear in a
+    # hero's kit but were missing from the SKILLS list (the per-hero bundle
+    # loop uses SKILL_KIND below to look up the kind).
+    ("fire_summon", "fire", "summon"), ("water_summon", "water", "summon"),
+    ("light_beam", "light", "beam"), ("dark_trap", "dark", "trap"),
+    ("fire_curse", "fire", "curse"), ("tsunami", "water", "aoe"),
+    ("tempest", "wind", "aoe"),
     # boss ultimates
     ("hellfire", "fire", "aoe"), ("abyssal_wave", "dark", "aoe"),
     ("frost_cataclysm", "water", "aoe"), ("storm_of_embers", "fire", "aoe"),
 ]
 
+# SKILL_KIND — a {skill_id: kind} map for the per-hero bundle loop. The
+# SKILLS list is the canonical (id, element, kind) for the global icons; this
+# map lets the per-hero loop look up the visual kind for a skill id from
+# SKILLS_DB without a `kind` field. Fallback to "orb" for skills not listed.
+SKILL_KIND = {name: kind for name, el, kind in SKILLS}
+
 def main():
     print("Generating Aetheria assets...")
-    # characters
+    # per-character bundles: assets/characters/{hero_id}/ with sprite.png +
+    # portrait.png + skills/{skill_id}.png. Each skill icon is per-skill
+    # distinct (a variant derived from the skill name) + per-hero accent-tinted
+    # so the same skill on two heroes looks different.
+    import data as D
+    n_skills = 0
     for name, element, weapon, hair_style, hair, body, accent in HEROES:
         # per-hero facial variety (eye color / expression / eye shape / skin)
         eye = HERO_EYE_COLORS.get(name, (40, 40, 60))
         expr = HERO_EXPRESSIONS.get(name, "neutral")
         eshape = HERO_EYE_SHAPES.get(name, "round")
         skin = HERO_SKIN_TONES.get(name)
+        hero_dir = os.path.join(ASSET_DIR, "characters", name)
+        skills_dir = os.path.join(hero_dir, "skills")
+        os.makedirs(hero_dir, exist_ok=True)
+        os.makedirs(skills_dir, exist_ok=True)
+        # sprite
         s = pygame.Surface((256, 256), pygame.SRCALPHA)
         draw_chibi(s, element, body, hair, accent, weapon, hair_style,
                    eye, expr, eshape, skin)
-        pygame.image.save(s, os.path.join(ASSET_DIR, "characters", f"{name}.png"))
+        pygame.image.save(s, os.path.join(hero_dir, "sprite.png"))
+        # portrait
         make_portrait(element, body, hair, accent, hair_style, weapon,
-                      os.path.join(ASSET_DIR, "portraits", f"{name}.png"),
+                      os.path.join(hero_dir, "portrait.png"),
                       eye, expr, eshape, skin)
-    print(f"  {len(HEROES)} characters + portraits")
+        # per-hero skill icons (the hero's kit: 3 active + ult + basic_attack).
+        # Read the skill ids from data.py HEROES_DB (the source of truth) so the
+        # bundle matches what the game actually loads.
+        hdef = next((h for h in D.HEROES_DB if h["id"] == name), None)
+        if hdef is not None:
+            skill_ids = [sid for sid in hdef["skills"] if sid]
+            if hdef.get("ultimate"):
+                skill_ids.append(hdef["ultimate"])
+            for sid in skill_ids:
+                if sid not in D.SKILLS_DB:
+                    continue
+                sk = D.SKILLS_DB[sid]
+                el = sk["element"]
+                kind = SKILL_KIND.get(sid, "orb")
+                s = pygame.Surface((128, 128), pygame.SRCALPHA)
+                draw_skill_icon(s, sid, el, kind, hero_accent=accent)
+                pygame.image.save(s, os.path.join(skills_dir, f"{sid}.png"))
+                n_skills += 1
+    print(f"  {len(HEROES)} characters + portraits + {n_skills} per-hero skill icons")
 
     # enemies
     for name, el, pal in ENEMIES:
@@ -2984,10 +3409,13 @@ def main():
         pygame.image.save(s, os.path.join(ASSET_DIR, "enemies", f"{name}.png"))
     print(f"  {len(ENEMIES)} enemies")
 
-    # skills
+    # global skill icons (for boss ultimates + skills not in any hero's kit).
+    # The per-hero bundle loop above generates the per-hero-accent-tinted copies;
+    # these global copies are the fallback for bosses + any skill without a
+    # per-hero file (no hero_accent — the neutral version).
     for name, el, kind in SKILLS:
         s = pygame.Surface((128, 128), pygame.SRCALPHA)
-        draw_skill_icon(s, el, kind)
+        draw_skill_icon(s, name, el, kind)
         pygame.image.save(s, os.path.join(ASSET_DIR, "skills", f"{name}.png"))
     print(f"  {len(SKILLS)} skill icons")
 

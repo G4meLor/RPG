@@ -24,17 +24,47 @@ def load_image(rel_path, scale=None):
     _cache[key] = img
     return img
 
+def _load_first(paths, scale=None):
+    """Try each relative path in order; return the first that exists on disk
+    (via load_image so the cache + convert_alpha are reused). If none exist,
+    fall through to load_image on the last path so the caller gets the usual
+    FileNotFoundError for a truly missing asset."""
+    for rel in paths:
+        full = os.path.join(ASSET_DIR, rel)
+        if os.path.exists(full):
+            return load_image(rel, scale)
+    return load_image(paths[-1], scale)
+
 def load_char_sprite(hero_id, size=256):
-    return load_image(os.path.join("characters", hero_id + ".png"), (size, size))
+    # per-character bundle: characters/{hero_id}/sprite.png
+    # fall back to the old flat path characters/{hero_id}.png if the bundle
+    # isn't generated (a pre-restructure save or a missing bundle).
+    return _load_first([
+        os.path.join("characters", hero_id, "sprite.png"),
+        os.path.join("characters", hero_id + ".png"),
+    ], (size, size))
 
 def load_portrait(hero_id, size=440):
-    return load_image(os.path.join("portraits", hero_id + ".png"), (size, size))
+    # per-character bundle: characters/{hero_id}/portrait.png
+    # fall back to the old flat path portraits/{hero_id}.png
+    return _load_first([
+        os.path.join("characters", hero_id, "portrait.png"),
+        os.path.join("portraits", hero_id + ".png"),
+    ], (size, size))
 
 def load_enemy_sprite(enemy_id, size=256):
     return load_image(os.path.join("enemies", enemy_id + ".png"), (size, size))
 
-def load_skill_icon(skill_id, size=64):
-    return load_image(os.path.join("skills", skill_id + ".png"), (size, size))
+def load_skill_icon(hero_id, skill_id, size=64):
+    # per-hero skill art: characters/{hero_id}/skills/{skill_id}.png
+    # fall back to the global skills/{skill_id}.png (for boss ultimates +
+    # skills not in the hero's kit). hero_id may be None to skip the per-hero
+    # lookup (e.g. a boss ultimate with no hero context).
+    paths = []
+    if hero_id:
+        paths.append(os.path.join("characters", hero_id, "skills", skill_id + ".png"))
+    paths.append(os.path.join("skills", skill_id + ".png"))
+    return _load_first(paths, (size, size))
 
 def load_bg(name):
     return load_image(os.path.join("backgrounds", name + ".png"))

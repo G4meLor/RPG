@@ -126,6 +126,12 @@ _SIG_ON_KILL = {"stacking_atk": _sig_stacking_atk}
 from main import Button, draw_bar
 
 
+# Sentinel for the village-cell cache (None is a valid cached value — "no
+# village in this biome" — so the cache uses a distinct sentinel to tell
+# "cached None" from "not yet cached"). Module-level so the id is stable.
+_VILLAGE_SENTINEL = object()
+
+
 # ---------------------------------------------------------------------------
 # Map renderer - bakes a map's ground + decorations to one Surface
 # ---------------------------------------------------------------------------
@@ -1757,6 +1763,106 @@ class WorldScene:
         # complete, which itself requires the 4 before it complete.
         prev = order[idx - 1]
         return sp.get(prev) == "complete"
+
+    # -----------------------------------------------------------------
+    # Story quest tracker helpers (Task E3) — the chain + the compass target.
+    # The quest tracker (_draw_hud) shows the active story quest's name +
+    # objective so the player knows where to go next; the compass
+    # (_nearest_objective) points at the story target (the boss cell once the
+    # quest is active, or the biome NPC's village when the next quest hasn't
+    # been accepted yet). The chain reads from player.story_progress
+    # (quest_id -> "active"/"complete"); a quest is "available" when the
+    # previous quest in the chain is complete (see _is_quest_available). The
+    # first quest (plains_boss) is available from the start, so at boot the
+    # tracker shows "seek the plains NPC" + the compass points to the plains
+    # village. Once the player accepts the quest (the NPC dialogue), the
+    # tracker shows "defeat the boss at the east edge" + the compass points to
+    # the boss cell (column 9 of the biome's row). The village cell for a biome
+    # is found by scanning the row's gen_map (the village is a deterministic
+    # gen_map feature — the same cell always has the village for that biome).
+    # -----------------------------------------------------------------
+    def _active_story_quest(self):
+        """The active story quest (the first STORY_QUESTS entry whose status in
+        player.story_progress is "active"), or None if no quest is active. The
+        chain unlocks one quest at a time, so at most one quest is "active"
+        (the next quest is "available" but not yet accepted). Returns the
+        STORY_QUESTS dict (with id/name/giver/objective/...) or None."""
+        sp = self.game.player.story_progress
+        for qid in D.STORY_QUEST_ORDER:
+            if sp.get(qid) == "active":
+                return D.STORY_QUEST_BY_ID[qid]
+        return None
+
+    def _next_story_quest(self):
+        """The next quest the player should pursue — the active quest if one
+        is active, else the first available-but-not-yet-accepted quest (the
+        quest whose NPC the player should seek). Returns the STORY_QUESTS dict
+        or None when the whole chain is complete (the endgame)."""
+        active = self._active_story_quest()
+        if active is not None:
+            return active
+        for qid in D.STORY_QUEST_ORDER:
+            if (self.game.player.story_progress.get(qid) != "complete"
+                    and self._is_quest_available(qid)):
+                return D.STORY_QUEST_BY_ID[qid]
+        return None
+
+    def _village_cell_for_biome(self, biome):
+        """The (c, r) cell that holds the village for `biome`, or None if no
+        cell in the biome's row generates a village. The village is a
+        deterministic gen_map feature (seeded from cell_seed), so the same
+        cell always has the village for that biome. Scans the biome's row
+        (ROW_BIOME[r] == biome) for the first cell whose gen_map has a
+        village. Cached per (biome) on the scene so the compass hot path is a
+        dict lookup, not a gen_map scan, on every frame."""
+        if not hasattr(self, "_village_cell_cache"):
+            self._village_cell_cache = {}
+        cached = self._village_cell_cache.get(biome, _VILLAGE_SENTINEL)
+        if cached is not _VILLAGE_SENTINEL:
+            return cached
+        row = None
+        for ridx, rb in enumerate(WD.ROW_BIOME):
+            if rb == biome:
+                row = ridx
+                break
+        if row is None:
+            self._village_cell_cache[biome] = None
+            return None
+        # boss cells (column 9) don't generate villages (gen_map gates the
+        # village on `not is_boss`), so scan columns 0..GRID_W-2.
+        found = None
+        for c in range(WD.GRID_W - 1):
+            m = WD.gen_map(c, row)
+            if m.get("village") is not None:
+                found = (c, row)
+                break
+        self._village_cell_cache[biome] = found
+        return found
+
+    def _story_target(self):
+        """The (c, r, label, color) the compass should point at for the story
+        chain, or None if the chain is done (no story target). The active quest
+        points to the boss cell (column 9 of the biome's row); the next
+        available (not-yet-accepted) quest points to the biome NPC's village
+        (the village cell for the biome). The boss cell is gold (same as the
+        existing boss compass); the village cell is a warm cyan so the player
+        can tell the two apart."""
+        q = self._next_story_quest()
+        if q is None:
+            return None
+        biome = q["giver"]
+        row = WD.ROW_BIOME.index(biome) if biome in WD.ROW_BIOME else None
+        if row is None:
+            return None
+        sp = self.game.player.story_progress
+        if sp.get(q["id"]) == "active":
+            # the quest is accepted — point to the boss cell (column 9)
+            return (WD.GRID_W - 1, row, "Boss", (255, 200, 80))
+        # the quest isn't accepted yet — point to the biome NPC's village
+        vc = self._village_cell_for_biome(biome)
+        if vc is None:
+            return None
+        return (vc[0], vc[1], "NPC", (120, 220, 255))
 
     # -----------------------------------------------------------------
     # NPC dialogue (Task E1) — the village NPC + a dialogue text-box overlay.
@@ -4652,17 +4758,29 @@ class WorldScene:
         return ic
 
     def _nearest_objective(self):
-        """Return (tc, tr, label, color) for the nearest un-cleared boss cell,
-        or the nearest undiscovered cell if all bosses are cleared. O(50) per
-        frame (scans the 5 boss cells in the right-most column + up to 50 cells
-        for undiscovered ones). Returns None when every boss is cleared and
-        every cell is discovered, so the compass hides in the endgame."""
+        """Return (tc, tr, label, color) for the compass target. Priority:
+        1. The story target (Task E3) — the boss cell for the active quest, or
+           the biome NPC's village for the next available (not-yet-accepted)
+           quest. This is the main story chain, so it takes priority over the
+           generic nearest-boss fallback (the story target is the *right* boss
+           to fight next, not just the nearest one).
+        2. The nearest un-cleared boss cell (right-most column, all rows) —
+           the v1 #20 fallback for non-story bosses / a pre-E2 save.
+        3. The nearest undiscovered cell (cyan) when all bosses are cleared.
+        Returns None when the chain is done + every boss is cleared + every
+        cell is discovered, so the compass hides in the endgame."""
+        # 1. story target (Task E3) — the active quest's boss cell, or the
+        # next available quest's NPC village. Takes priority so the compass
+        # points the player along the chain (not just to the nearest boss).
+        st = self._story_target()
+        if st is not None:
+            return st
         p = self.game.player
         cleared = set(p.ow_bosses_cleared)
         discovered = set(p.ow_discovered)
         best = None
         best_d2 = None
-        # 1. nearest un-cleared boss cell (right-most column, all rows) — gold
+        # 2. nearest un-cleared boss cell (right-most column, all rows) — gold
         bc = WD.GRID_W - 1
         for r in range(WD.GRID_H):
             cid = WD.cell_id(bc, r)
@@ -4674,7 +4792,7 @@ class WorldScene:
                 best = (bc, r, "Boss", (255, 200, 80))
         if best is not None:
             return best
-        # 2. all bosses cleared — fall back to nearest undiscovered cell — cyan
+        # 3. all bosses cleared — fall back to nearest undiscovered cell — cyan
         for r in range(WD.GRID_H):
             for c in range(WD.GRID_W):
                 cid = WD.cell_id(c, r)
@@ -4926,16 +5044,58 @@ class WorldScene:
         self._draw_skill_bar(surf)
 
         # quest tracker (top-right, under the resource counters — y~110, x>900
-        # so it clears the boss HP bar at top-center x=320..960). Shows the top
-        # daily quest's name + a progress bar + N/goal so the player always sees
-        # their active objective. Skipped when no quests are loaded yet (the
-        # quest tab calls reset_quests_if_needed; the world scene reads the
-        # in-memory dict, which may be empty on a fresh load before the quest
-        # tab is opened — guard with .get).
+        # so it clears the boss HP bar at top-center x=320..960). Two panels:
+        # the story quest (Task E3, above) + the daily quest (v1 #20, below).
+        # The story panel shows the active/next story quest's name + a short
+        # hint ("seek the <biome> NPC" when not yet accepted, "defeat the boss
+        # at the east edge" when active). The daily panel shows the top daily
+        # quest's name + a progress bar + N/goal. Skipped when no quests are
+        # loaded yet (the quest tab calls reset_quests_if_needed; the world
+        # scene reads the in-memory dict, which may be empty on a fresh load
+        # before the quest tab is opened — guard with .get).
         try:
             p.reset_quests_if_needed()
         except Exception:
             pass
+        qx = 1276
+        qy = 110
+        # story quest panel (Task E3) — the active/next story quest. Shown
+        # above the daily-quest panel so the main story reads as the primary
+        # objective. The hint is "seek the <biome> NPC" when the quest isn't
+        # accepted yet (the next available quest) or "defeat the boss at the
+        # east edge" when the quest is active. Skipped only when the whole
+        # chain is complete (the endgame — no story target).
+        sq = self._next_story_quest()
+        if sq is not None:
+            sp = p.story_progress
+            sq_active = sp.get(sq["id"]) == "active"
+            sq_done = sp.get(sq["id"]) == "complete"
+            sq_w = 220
+            sq_h = 64
+            sq_panel = pygame.Rect(qx - sq_w, qy, sq_w, sq_h)
+            sqp = scratch(sq_w, sq_h)
+            pygame.draw.rect(sqp, (20, 20, 36, 200), sqp.get_rect(), border_radius=8)
+            # gold border for an active quest, dim green for complete, cyan
+            # for "seek the NPC" (the next available quest).
+            if sq_active:
+                sq_col = (255, 200, 80)
+            elif sq_done:
+                sq_col = (120, 180, 140)
+            else:
+                sq_col = (140, 200, 250)
+            pygame.draw.rect(sqp, sq_col, sqp.get_rect(), 2, border_radius=8)
+            surf.blit(sqp, sq_panel.topleft)
+            text(surf, "STORY", 10, (160, 160, 200), (sq_panel.x + 8, sq_panel.y + 4))
+            text(surf, sq["name"], 13, (255, 240, 220),
+                 (sq_panel.x + 8, sq_panel.y + 18))
+            # hint line: "seek the <biome> NPC" or "defeat the boss at the east edge"
+            if sq_active:
+                hint = "Defeat the boss at the east edge"
+            else:
+                hint = f"Seek the {sq['giver']} NPC"
+            text(surf, hint, 11, sq_col, (sq_panel.x + 8, sq_panel.y + 38))
+            # shift the daily-quest panel below the story panel
+            qy += sq_h + 4
         first_qid = next(iter(D.DAILY_QUESTS), None)
         if first_qid is not None:
             qd = D.DAILY_QUESTS[first_qid]
@@ -4945,8 +5105,6 @@ class WorldScene:
             prog = st.get("progress", 0)
             goal = st.get("goal", qd["goal"])
             claimed = st.get("claimed", False)
-            qx = 1276
-            qy = 110
             # panel: right-aligned, ~220 wide so it fits under the resources
             qpanel_w = 220
             qpanel_h = 56

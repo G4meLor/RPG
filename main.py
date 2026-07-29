@@ -1944,14 +1944,15 @@ class SettingsScene(Scene):
 # Stats scene
 # ---------------------------------------------------------------------------
 class StatsScene(Scene):
-    """Show battle stats, achievements and daily quests."""
+    """Show battle stats, achievements, the story chain, and daily quests."""
     def __init__(self, game):
         super().__init__(game)
         self.back_btn = Button((40, 40, 140, 48), "Back", (60, 60, 90), (90, 90, 130), size=20)
         self.tab = "stats"
-        self.tab_stats = Button((WIDTH // 2 - 240, 100, 140, 44), "Stats", (60, 80, 120), (90, 120, 180), size=18)
-        self.tab_ach = Button((WIDTH // 2 - 90, 100, 140, 44), "Awards", (60, 80, 120), (90, 120, 180), size=18)
-        self.tab_quest = Button((WIDTH // 2 + 60, 100, 160, 44), "Daily Quests", (60, 80, 120), (90, 120, 180), size=16)
+        self.tab_stats = Button((WIDTH // 2 - 320, 100, 120, 44), "Stats", (60, 80, 120), (90, 120, 180), size=18)
+        self.tab_ach = Button((WIDTH // 2 - 190, 100, 120, 44), "Awards", (60, 80, 120), (90, 120, 180), size=18)
+        self.tab_story = Button((WIDTH // 2 - 60, 100, 120, 44), "Story", (60, 80, 120), (90, 120, 180), size=18)
+        self.tab_quest = Button((WIDTH // 2 + 70, 100, 150, 44), "Daily Quests", (60, 80, 120), (90, 120, 180), size=14)
         # "Claim All" button for the Daily Quests tab (reduces the daily chore
         # from one click per quest to one click for the whole board).
         self.claim_all_btn = Button((WIDTH // 2 - 110, 158, 220, 34), "Claim All",
@@ -1972,6 +1973,7 @@ class StatsScene(Scene):
         self.back_btn.update(mp, mdown)
         self.tab_stats.update(mp, mdown)
         self.tab_ach.update(mp, mdown)
+        self.tab_story.update(mp, mdown)
         self.tab_quest.update(mp, mdown)
         self.claim_all_btn.update(mp, mdown)
         self.game.player.reset_quests_if_needed()
@@ -1987,12 +1989,14 @@ class StatsScene(Scene):
                 self.tab = "stats"; self.scroll = 0
             if self.tab_ach.clicked(e):
                 self.tab = "ach"; self.scroll = 0
+            if self.tab_story.clicked(e):
+                self.tab = "story"; self.scroll = 0
             if self.tab_quest.clicked(e):
                 self.tab = "quest"; self.scroll = 0
             # keyboard tab switching (Left/Right arrows) for consistency with the
             # world scene's full keyboard control.
             if e.type == pygame.KEYDOWN and e.key in (pygame.K_LEFT, pygame.K_RIGHT):
-                order = ["stats", "ach", "quest"]
+                order = ["stats", "ach", "story", "quest"]
                 idx = order.index(self.tab) if self.tab in order else 0
                 if e.key == pygame.K_LEFT:
                     self.tab = order[max(0, idx - 1)]
@@ -2027,6 +2031,8 @@ class StatsScene(Scene):
                     content_h = 10 * 60
                 elif self.tab == "ach":
                     content_h = len(D.ACHIEVEMENTS) * 72
+                elif self.tab == "story":
+                    content_h = len(D.STORY_QUESTS) * 80
                 else:
                     content_h = len(D.DAILY_QUESTS) * 80
                 max_scroll = max(0, content_h - (HEIGHT - 180 - 40))
@@ -2036,7 +2042,8 @@ class StatsScene(Scene):
         surf.fill(BG_DARK)
         text(surf, "Records", 40, WHITE, (WIDTH // 2, 40), center=True)
         # tab indicator
-        for btn, key in [(self.tab_stats, "stats"), (self.tab_ach, "ach"), (self.tab_quest, "quest")]:
+        for btn, key in [(self.tab_stats, "stats"), (self.tab_ach, "ach"),
+                         (self.tab_story, "story"), (self.tab_quest, "quest")]:
             btn.color = (90, 120, 180) if self.tab == key else (60, 80, 120)
             btn.draw(surf)
         p = self.game.player
@@ -2072,6 +2079,44 @@ class StatsScene(Scene):
                 if unlocked:
                     text(surf, "DONE", 16, (140, 220, 160), (WIDTH // 2 + 260, y + 40), center=True)
                 y += 72
+        elif self.tab == "story":
+            # Story chain (Task E3) — the 6 STORY_QUESTS with complete/active/
+            # locked state. The chain unlocks one quest at a time: a quest is
+            # "complete" when its boss is dead, "active" when the NPC gave it,
+            # "locked" when the previous quest isn't complete yet. The first
+            # quest (plains_boss) is available from the start, so at boot only
+            # the first is active/locked and the rest are locked. Read the
+            # chain state from player.story_progress (quest_id -> status).
+            y = 180 - self.scroll
+            sp = p.story_progress
+            for i, qid in enumerate(D.STORY_QUEST_ORDER):
+                q = D.STORY_QUEST_BY_ID[qid]
+                status = sp.get(qid)
+                if status == "complete":
+                    label = "COMPLETE"
+                    col = (140, 220, 160)
+                    mark = "v"
+                elif status == "active":
+                    label = "ACTIVE"
+                    col = (255, 200, 80)
+                    mark = ">"
+                else:
+                    label = "LOCKED"
+                    col = (120, 120, 140)
+                    mark = "X"
+                r = pygame.Rect(WIDTH // 2 - 300, y, 600, 64)
+                draw_panel(surf, r)
+                # status mark (check/triangle/lock) on the left
+                text(surf, mark, 22, col, (r.x + 16, r.y + 8))
+                text(surf, q["name"], 22, WHITE if status != "locked" else DIM,
+                     (r.x + 56, r.y + 8))
+                text(surf, q["objective"], 14, DIM, (r.x + 56, r.y + 34))
+                text(surf, label, 16, col, (r.right - 16, r.y + 22), center=False)
+                # the reward line (gems + shards) so the player sees the payout
+                rw = q.get("reward", {})
+                rtxt = f"+{rw.get('gems', 0)} gems  +{rw.get('shards', 0)} shards"
+                text(surf, rtxt, 14, (120, 200, 255), (r.right - 16, r.y + 42), center=False)
+                y += 80
         else:  # quest
             self.claim_all_btn.draw(surf)
             for qid, r in self.quest_rects:

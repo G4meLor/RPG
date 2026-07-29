@@ -619,10 +619,241 @@ def _write_champions_py(champs):
 
 
 # ---------------------------------------------------------------------------
-# Task 2: image rearrange (stub — implemented in Task 2)
+# Task 2: image rearrange — copy the real LoL art into the per-champion bundle.
+#   For each champion:
+#     {Key}.png              -> assets/characters/{Key}/icon.png        (128x128)
+#     splash_tile_0.jpg      -> assets/characters/{Key}/portrait.jpg    (380x380)
+#     splash_tile_{N}.jpg    -> assets/characters/{Key}/skins/{N}.jpg   (per skin)
+#     ability icon (fuzzy)   -> assets/characters/{Key}/skills/{skill_id}.png (64x64)
+#   Missing ability icons fall back to a 64x64 element-tinted placeholder so no
+#   loader ever hits FileNotFoundError. The source dirs is NOT deleted here
+#   (Task 9 deletes the three source dirs after the whole build verifies).
 # ---------------------------------------------------------------------------
+
+import shutil
+import re
+
+def _champ_img_dir(key):
+    return os.path.join(IMG_DIR, key)
+
+def _ability_icon_dir(key):
+    return os.path.join(ICON_DIR, key.lower())
+
+def _splash_tile_path(key, index):
+    """The splash_tile_{index}.jpg path for a champion (key is the dir name)."""
+    # filenames are lowercase: ahri_splash_tile_0.jpg
+    return os.path.join(_champ_img_dir(key), f"{key.lower()}_splash_tile_{index}.jpg")
+
+def _all_splash_tiles(key):
+    """All splash_tile_{N}.jpg in the champ's image dir, as {index: path}."""
+    d = _champ_img_dir(key)
+    if not os.path.isdir(d):
+        return {}
+    out = {}
+    for f in os.listdir(d):
+        if f.lower().startswith(f"{key.lower()}_splash_tile_") and f.lower().endswith(".jpg"):
+            try:
+                idx = int(f.split("_tile_")[1].split(".")[0])
+                out[idx] = os.path.join(d, f)
+            except ValueError:
+                pass
+    return out
+
+def _numeric_skin_png(key, skin_id):
+    """The {skinId}.png numeric skin-tile path (270x303), if it exists."""
+    p = os.path.join(_champ_img_dir(key), f"{skin_id}.png")
+    return p if os.path.exists(p) else None
+
+def _to_square_jpg(src_path, dst_path, size=380):
+    """Center-crop + scale a source image to a size×size jpg (headless pygame)."""
+    import pygame
+    s = pygame.image.load(src_path).convert()
+    w, h = s.get_size()
+    side = min(w, h)
+    cx, cy = (w - side) // 2, (h - side) // 2
+    cropped = pygame.Surface((side, side))
+    cropped.blit(s, (-cx, -cy))
+    out = pygame.transform.smoothscale(cropped, (size, size))
+    pygame.image.save(out, dst_path)
+
+def _best_portrait_src(key, skins):
+    """Pick the best real-image source for the default-skin portrait.
+    Returns (path, needs_crop) — needs_crop True if the source isn't already
+    a 380x380 square (so the caller should _to_square_jpg it). Preference:
+      1. splash_tile_0 (already 380x380 square) — copy as-is
+      2. the lowest-N splash_tile (380x380 square) — copy as-is
+      3. the base skin's numeric {skinId}.png (270x303) — crop to square
+      4. the lowest-id numeric png — crop to square
+      5. {Key}.png (128x128 icon) — crop to square (last resort)
+    """
+    tiles = _all_splash_tiles(key)
+    if 0 in tiles:
+        return (tiles[0], False)
+    if tiles:
+        lowest = min(tiles)
+        return (tiles[lowest], False)
+    # numeric pngs (skin tiles, 270x303)
+    img_dir = _champ_img_dir(key)
+    if os.path.isdir(img_dir):
+        # the base skin's numeric png
+        base_id = skins[0]["id"] if skins else None
+        if base_id is not None:
+            p = _numeric_skin_png(key, base_id)
+            if p:
+                return (p, True)
+        # lowest-id numeric png
+        nums = []
+        for f in os.listdir(img_dir):
+            if f.lower().endswith(".png"):
+                stem = f[:-4]
+                if stem.isdigit():
+                    nums.append(int(stem))
+        if nums:
+            return (os.path.join(img_dir, f"{min(nums)}.png"), True)
+    # last resort: the champ icon
+    icon = os.path.join(img_dir, f"{key}.png")
+    if os.path.exists(icon):
+        return (icon, True)
+    return (None, False)
+
+def _ensure_bundle_dirs(key):
+    base = os.path.join(BUNDLE_DIR, key)
+    os.makedirs(os.path.join(base, "skills"), exist_ok=True)
+    os.makedirs(os.path.join(base, "skins"), exist_ok=True)
+    return base
+
+def _match_ability_icon(key, slot):
+    """Find the real LoL ability icon for (champ, slot). slot in
+    {passive,q,w,e,r}. Returns the source path or None.
+
+    Naming is inconsistent across champs: aatrox_q, icons_ahri_q, garen_q,
+    jinx_q1, leesinq1, luxprismawrap (no slot keyword at all). Strategy:
+      1. glob the champ's ability-icon dir
+      2. for files whose basename (lowercased, stripped of the champ name +
+         'icons_' prefix + digits + .png) ends in the slot keyword -> candidates
+      3. if none, fall back to the slot keyword anywhere in the basename
+      4. pick the base variant (no trailing digit, else the lowest digit)
+    The 'passive' slot also matches 'p' (leesinp.png) and 'passive' substring.
+    """
+    d = _ability_icon_dir(key)
+    if not os.path.isdir(d):
+        return None
+    files = [f for f in os.listdir(d) if f.lower().endswith(".png")]
+    if not files:
+        return None
+    kl = key.lower()
+    slots = {"q": ["q"], "w": ["w"], "e": ["e"], "r": ["r"],
+             "passive": ["passive", "p"]}[slot]
+
+    def _score(fn):
+        n = fn.lower()[:-4]  # strip .png
+        # strip the champ name + icons_ prefix
+        for prefix in (kl, "icons_" + kl):
+            if n.startswith(prefix):
+                n = n[len(prefix):]
+                break
+        n = n.lstrip("_")
+        # exact-slot match: the whole remaining token is the slot (maybe +digit)
+        m = re.match(r"^(passive|p|q|w|e|r)(\d*)$", n)
+        if m and m.group(1) in slots:
+            return (0, int(m.group(2) or 0))
+        # slot keyword at the start of the remaining token (after champ strip)
+        for s in slots:
+            if n.startswith(s):
+                return (1, 0)
+        # slot keyword anywhere in the full basename
+        for s in slots:
+            if s in fn.lower():
+                return (2, 0)
+        return None
+
+    scored = []
+    for fn in files:
+        sc = _score(fn)
+        if sc is not None:
+            scored.append((sc, fn))
+    if not scored:
+        return None
+    # lowest (rank, digit) wins; rank 0 (exact-slot) beats rank 1/2
+    scored.sort(key=lambda x: x[0])
+    return os.path.join(d, scored[0][1])
+
+def _placeholder_skill_icon(element, path):
+    """Generate a 64x64 element-tinted square as a fallback skill icon."""
+    import pygame
+    pygame.init()
+    pygame.display.set_mode((1, 1))
+    s = pygame.Surface((64, 64), pygame.SRCALPHA)
+    pal = EL_PALETTE[element]
+    pygame.draw.rect(s, (*pal["primary"], 255), s.get_rect(), border_radius=10)
+    pygame.draw.rect(s, (*pal["secondary"], 255), s.get_rect().inflate(-12, -12), border_radius=6)
+    pygame.draw.circle(s, (*pal["accent"], 255), (32, 32), 10)
+    pygame.image.save(s, path)
+
 def rearrange_images(champs):
-    raise NotImplementedError("Task 2 implements rearrange_images()")
+    """Copy the real LoL art into the per-champion bundle layout."""
+    import pygame
+    pygame.init()
+    pygame.display.set_mode((1, 1))
+    n_ok = n_icon_ok = n_skin_ok = n_skill_ok = n_skill_fallback = 0
+    n_portrait_crop = 0
+    for c in champs:
+        key = c["id"]
+        element = c["element"]
+        base = _ensure_bundle_dirs(key)
+        img_dir = _champ_img_dir(key)
+        if not os.path.isdir(img_dir):
+            print(f"  WARN: {key} image dir missing")
+            continue
+        # icon.png <- {Key}.png
+        icon_src = os.path.join(img_dir, f"{key}.png")
+        if os.path.exists(icon_src):
+            shutil.copy(icon_src, os.path.join(base, "icon.png"))
+            n_icon_ok += 1
+        # portrait.jpg + skins/0.jpg <- best available real splash for skin 0
+        src, needs_crop = _best_portrait_src(key, c["skins"])
+        if src:
+            portrait_dst = os.path.join(base, "portrait.jpg")
+            skins0_dst = os.path.join(base, "skins", "0.jpg")
+            if needs_crop:
+                _to_square_jpg(src, portrait_dst, 380)
+                _to_square_jpg(src, skins0_dst, 380)
+                n_portrait_crop += 1
+            else:
+                shutil.copy(src, portrait_dst)
+                shutil.copy(src, skins0_dst)
+            n_ok += 1
+        # skins/{N}.jpg <- splash_tile_{N}.jpg for each alt skin whose tile exists
+        tiles = _all_splash_tiles(key)
+        for sk in c["skins"]:
+            idx = sk["index"]
+            if idx == 0:
+                continue  # already copied as portrait.jpg + skins/0.jpg
+            if idx in tiles:
+                shutil.copy(tiles[idx], os.path.join(base, "skins", f"{idx}.jpg"))
+                n_skin_ok += 1
+        # skills/{skill_id}.png <- real ability icon for the slot that skill fills
+        # The skill_id is shared, but the icon is the real per-champ ability
+        # icon for that slot. basic_attack has no icon (uses the champ's
+        # attack VFX), so skip it.
+        slot_for_skill = {}  # skill_id -> slot (Q/W/E/R) for this champ
+        for i, sid in enumerate(c["skills"]):
+            slot_for_skill[sid] = ["Q", "W", "E"][i]
+        slot_for_skill[c["ultimate"]] = "R"
+        for sid, slot in slot_for_skill.items():
+            slot_kw = {"Q": "q", "W": "w", "E": "e", "R": "r"}[slot]
+            src = _match_ability_icon(key, slot_kw)
+            dst = os.path.join(base, "skills", f"{sid}.png")
+            if src:
+                shutil.copy(src, dst)
+                n_skill_ok += 1
+            else:
+                _placeholder_skill_icon(element, dst)
+                n_skill_fallback += 1
+    print(f"Rearrange: {n_ok} portraits ({n_portrait_crop} cropped from "
+          f"numeric/png), {n_icon_ok} icons, {n_skin_ok} alt skins, "
+          f"{n_skill_ok} real skill icons, {n_skill_fallback} skill-icon fallbacks")
+
 
 
 # ---------------------------------------------------------------------------

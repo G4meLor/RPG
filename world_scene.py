@@ -1386,16 +1386,58 @@ class WorldScene:
                 eid = random.choice(pool)
                 self.enemies.append(WorldEnemy(eid, sx, sy, level + night_bonus, is_boss=False))
         else:
-            _, boss_id = WD.ROW_ENEMIES[self.r]
-            bx, by = m["boss"]
-            self.enemies.append(WorldEnemy(boss_id, bx, by, level + 6, is_boss=True))
-            # boss intro cinematic: a name banner + a brief slow-mo the first time
-            # the player enters this boss arena. Skips on a revisit (re-entering a
-            # cleared arena shouldn't replay the intro).
-            boss_name = D.ENEMIES_DB.get(boss_id, {}).get("name", "Boss")
-            self._boss_intro_t = 1.6
-            self._boss_intro_name = boss_name
-            audio.play("boss_intro", 0.7)
+            # Task E2: gate the boss on its story quest. A biome-boss quest is
+            # "active" when the player has accepted it from the NPC (the dialogue
+            # acceptance in _advance_dialogue sets story_progress[quest_id] to
+            # "active"). The final-boss quest (demon_king) is active only when
+            # all 5 biome-boss quests are complete (the chain - see
+            # _is_quest_active). Until the quest is active, the boss arena is
+            # SEALED: no boss spawns (the arena is empty - the player can still
+            # walk in + explore, just no boss to fight) + a "sealed" float at the
+            # arena center tells the player to seek the biome's NPC. The gate is
+            # on quest acceptance, NOT completion, so the boss spawns the moment
+            # the NPC gives the quest. The gate does NOT block exploration: the
+            # cell loads, the map renders, the player walks in - just no boss.
+            # This keeps the 20/20 suite green (it teleports into the boss cell
+            # without the quest; the gate seals the boss but doesn't crash).
+            biome = WD.cell_biome(self.c, self.r)
+            # Each row's boss cell (column 9) is gated by the row's biome-boss
+            # quest (STORY_BIOME_QUEST[biome]). The void row's boss (9,4) is the
+            # Demon King - the void_boss quest (the 5th biome-boss) gates it.
+            # The void_boss quest is available when castle_boss is complete (the
+            # chain), so the Demon King unseals only after the 4 biome bosses
+            # before it are cleared + the void NPC gives the void_boss quest.
+            # The demon_king quest (the 6th/final) is the chain's end marker -
+            # it completes when the Demon King dies (the same kill as the
+            # void_boss quest); see the boss-defeat handler. It is NOT a separate
+            # gate (the Demon King is the void row's boss, gated by void_boss).
+            quest_id = D.STORY_BIOME_QUEST.get(biome)
+            if quest_id is not None and not self._is_quest_active(quest_id):
+                # sealed - skip the boss spawn + show a "seek the NPC" float at
+                # the arena center (the boss spawn pos from gen_map). The float
+                # is short-lived (2.5s) so it doesn't linger on a long stay; the
+                # cell still loads (no return) so the player can explore the
+                # arena + read the seal message.
+                bx, by = m["boss"]
+                npc_name = D.NPCS.get(biome, {}).get("name", "the NPC")
+                self.floats.append(FloatText(
+                    bx, by - 40,
+                    f"SEALED - seek {npc_name} for the quest",
+                    (220, 180, 120), size=20, life=2.5))
+                self.set_message(
+                    f"The arena is sealed. Seek {npc_name} in the {biome} village.",
+                    3.0)
+            else:
+                _, boss_id = WD.ROW_ENEMIES[self.r]
+                bx, by = m["boss"]
+                self.enemies.append(WorldEnemy(boss_id, bx, by, level + 6, is_boss=True))
+                # boss intro cinematic: a name banner + a brief slow-mo the first time
+                # the player enters this boss arena. Skips on a revisit (re-entering a
+                # cleared arena shouldn't replay the intro).
+                boss_name = D.ENEMIES_DB.get(boss_id, {}).get("name", "Boss")
+                self._boss_intro_t = 1.6
+                self._boss_intro_name = boss_name
+                audio.play("boss_intro", 0.7)
         # reset camera to the active hero (clamped; the edge-entry case already
         # snapped it above, this covers teleport-to and initial load)
         a = self.party[self.active]
@@ -1668,6 +1710,55 @@ class WorldScene:
         self.message_t = dur / max(0.5, min(2.0, float(text_speed)))
 
     # -----------------------------------------------------------------
+    # Story quest chain (Task E2) — helpers for the boss gating + the
+    # boss-defeat advance. A quest is "active" when the NPC gave it (the
+    # dialogue acceptance in _advance_dialogue sets story_progress[id] to
+    # "active"); "complete" when the boss dies (the boss-defeat handler sets
+    # it). The final-boss quest (demon_king) is "active" only when all 5
+    # biome-boss quests are "complete" (the chain - the player must clear all 5
+    # biome bosses before the Demon King's arena unseals). A quest is
+    # "available" when the previous quest in the chain is "complete" (the
+    # first quest, plains_boss, is available from the start) - the NPC only
+    # offers a quest that's available, so the player can't skip ahead.
+    # -----------------------------------------------------------------
+    def _is_quest_active(self, quest_id):
+        """True if the quest is active (the NPC gave it) or complete (the boss
+        died - the arena should stay open on a revisit). For the final-boss
+        quest (demon_king), active requires all 5 biome-boss quests complete
+        (the void NPC gives the demon_king quest, but the arena stays sealed
+        until the chain is done - the void_boss quest is the void row's
+        biome-boss gate; the demon_king quest is the chain's final gate)."""
+        sp = self.game.player.story_progress
+        if quest_id == D.STORY_FINAL_QUEST:
+            # the Demon King's arena unseals only when all 5 biome-boss quests
+            # are complete (the chain). The demon_king entry itself may also be
+            # "active" (set by the void NPC) but the chain gate is the stricter
+            # condition - both must hold for the boss to spawn.
+            biome_quests = [q for q in D.STORY_QUEST_ORDER
+                            if q != D.STORY_FINAL_QUEST]
+            return all(sp.get(q) == "complete" for q in biome_quests)
+        return sp.get(quest_id) in ("active", "complete")
+
+    def _is_quest_available(self, quest_id):
+        """True if the NPC can offer the quest (the previous quest in the chain
+        is complete, or it's the first quest). The first quest (plains_boss) is
+        always available; the final quest (demon_king) is available when all 5
+        biome-boss quests are complete."""
+        order = D.STORY_QUEST_ORDER
+        if quest_id not in order:
+            return False
+        idx = order.index(quest_id)
+        if idx == 0:
+            return True
+        sp = self.game.player.story_progress
+        # available when the previous quest is complete (the chain unlocks
+        # one quest at a time). The final quest (demon_king) follows the same
+        # rule - it's available when void_boss (the previous in the list) is
+        # complete, which itself requires the 4 before it complete.
+        prev = order[idx - 1]
+        return sp.get(prev) == "complete"
+
+    # -----------------------------------------------------------------
     # NPC dialogue (Task E1) — the village NPC + a dialogue text-box overlay.
     # The dialogue is a UI overlay, NOT a pause: the world keeps updating behind
     # it (update runs as normal; only F/Space/Esc are intercepted to advance the
@@ -1700,12 +1791,52 @@ class WorldScene:
         """Advance the dialogue to the next line, or dismiss when the lines run
         out. Called from the KEYDOWN interceptor in update on F/Space/Esc when a
         dialogue is open. Dismiss (set _dialogue=None) on the last line so the
-        player isn't stuck in the box — the world kept simulating behind it, so
-        there's no 'resume' step (the overlay just stops drawing)."""
+        player isn't stuck in the box - the world kept simulating behind it, so
+        there's no 'resume' step (the overlay just stops drawing).
+
+        Task E2: on the dismiss (the last line), accept the quest - set the
+        NPC's quest_id to "active" in story_progress so the boss arena unseals.
+        The NPC only offers a quest that's available (the previous quest in the
+        chain is complete, or it's the first quest); if the quest is already
+        active/complete, the dialogue still plays (the NPC re-tells the story)
+        but doesn't re-accept (no double-accept). The quest is accepted even if
+        the player hasn't explored the boss cell yet - the gate is on quest
+        acceptance, not exploration; the boss spawns the moment the quest is
+        active (the next visit to the boss cell)."""
         if self._dialogue is None:
             return
         self._dialogue["idx"] += 1
         if self._dialogue["idx"] >= len(self._dialogue["lines"]):
+            # dismiss - the dialogue's last line is the quest hook; finishing
+            # the dialogue accepts the quest (the NPC gives it). Only accept
+            # if the quest is available (the chain) + not already active/
+            # complete (no double-accept).
+            if self._npc is not None:
+                qid = self._npc.get("quest_id")
+                if (qid is not None and qid in D.STORY_QUEST_BY_ID
+                        and self._is_quest_available(qid)
+                        and self.game.player.story_progress.get(qid) not in
+                            ("active", "complete")):
+                    self.game.player.story_progress[qid] = "active"
+                    q = D.STORY_QUEST_BY_ID[qid]
+                    self.set_message(
+                        f"Quest accepted: {q['name']} - {q['objective']}", 3.0)
+                    # the void NPC ALSO gives the demon_king quest (the chain's
+                    # final marker) when the void_boss quest is accepted - the
+                    # void row's boss (9,4) IS the Demon King, so accepting the
+                    # void_boss quest (the row's biome-boss) means the player is
+                    # also on the demon_king quest. Mark demon_king active too so
+                    # the boss-defeat handler can complete the chain's final
+                    # marker (the demon_king quest) on the Demon King's death.
+                    # The void NPC's dialogue already foreshadows the Demon
+                    # King ("The Demon King waits where the world's edge frays"
+                    # + "End him, and the Cycle may turn at last"), so the
+                    # player learns about the Demon King from the void NPC.
+                    if (qid == "void_boss"
+                            and self.game.player.story_progress.get(
+                                D.STORY_FINAL_QUEST) not in ("active", "complete")):
+                        self.game.player.story_progress[D.STORY_FINAL_QUEST] = "active"
+                    self.game.player.save()
             self._dialogue = None
         else:
             audio.play("hit", 0.12)
@@ -2499,6 +2630,87 @@ class WorldScene:
             if first_clear:
                 p.ow_bosses_cleared = sorted(cleared | {cid})
             self.set_message(f"Boss defeated! +{boss_gem} gems, +{shards} shards")
+            # Task E2: advance the story quest chain. The biome-boss quest for
+            # this row is marked "complete" + the quest reward (gems + shards)
+            # pays out once (only on the first clear, so a rematch doesn't
+            # re-pay). The next quest in the chain becomes available (the next
+            # NPC can now give it). The void row's boss (9,4) is the Demon King;
+            # killing it marks BOTH the void_boss quest (the row's biome-boss)
+            # + the demon_king quest (the chain's final marker) complete - the
+            # void_boss quest is the row's gate, the demon_king quest is the
+            # chain's end (the "World Ascended!" NG+ path below stays). Only
+            # mark complete if the quest was active (defensive - a boss that
+            # spawned through a stale gate shouldn't advance the chain; the gate
+            # should have sealed it).
+            biome = WD.cell_biome(self.c, self.r)
+            fqid = D.STORY_BIOME_QUEST.get(biome)
+            # the void row's boss (9,4) is the Demon King; killing it completes
+            # BOTH the void_boss quest (the row's biome-boss gate) + the
+            # demon_king quest (the chain's final marker). The void_boss quest
+            # is the row's gate (the boss spawned because it was active); the
+            # demon_king quest is the chain's end (the "World Ascended!" NG+
+            # banner below + the chain's final reward). The void_boss quest is
+            # the row's gate, so it's marked complete when the row's boss dies;
+            # the demon_king quest is the chain's end, so it's marked complete
+            # when the Demon King dies (the same kill, on the void row). The
+            # gate on the void row is the void_boss quest (not the demon_king
+            # quest), so a void boss that spawned (void_boss active) is the
+            # Demon King; killing it completes both. The demon_king quest is
+            # marked complete here too (the chain's end) - it was set "active"
+            # by the void NPC when the void_boss quest was accepted (the void
+            # NPC gives both the void_boss quest + the demon_king quest, since
+            # the void row's boss IS the Demon King).
+            is_final = (self.r == WD.GRID_H - 1
+                        and getattr(en, "id", None) == "demonking")
+            if (fqid is not None and fqid in D.STORY_QUEST_BY_ID
+                    and p.story_progress.get(fqid) == "active"
+                    and first_clear):
+                p.story_progress[fqid] = "complete"
+                # the void row's boss (9,4) is the Demon King; killing it also
+                # completes the demon_king quest (the chain's final marker). The
+                # demon_king quest is the chain's end - it has its own reward +
+                # the "World Ascended!" NG+ banner below. Mark it complete so
+                # the chain reads as done (the next-quest toast + the NG+ path
+                # both fire). Only mark it if it was active (the void NPC set it
+                # active when the void_boss quest was accepted).
+                if (is_final
+                        and p.story_progress.get(D.STORY_FINAL_QUEST) == "active"):
+                    p.story_progress[D.STORY_FINAL_QUEST] = "complete"
+                q = D.STORY_QUEST_BY_ID[fqid]
+                rw = q.get("reward", {})
+                rg = int(rw.get("gems", 0))
+                rs = int(rw.get("shards", 0))
+                if rg:
+                    p.gems += rg
+                    p.stats["gems_earned"] = p.stats.get("gems_earned", 0) + rg
+                if rs:
+                    p.shards += rs
+                # pay the demon_king quest's reward too (the chain's end pays
+                # its own reward on top of the void_boss reward) so the final
+                # boss feels like a climax.
+                if is_final:
+                    fq = D.STORY_QUEST_BY_ID.get(D.STORY_FINAL_QUEST)
+                    if fq is not None:
+                        frw = fq.get("reward", {})
+                        frg = int(frw.get("gems", 0))
+                        frs = int(frw.get("shards", 0))
+                        if frg:
+                            p.gems += frg
+                            p.stats["gems_earned"] = p.stats.get("gems_earned", 0) + frg
+                        if frs:
+                            p.shards += frs
+                # the next quest in the chain becomes available - surface a
+                # toast so the player knows where to go next. If this was the
+                # last quest (demon_king), the "World Ascended!" banner below
+                # is the end-of-chain beat (no "next quest" toast).
+                idx = D.STORY_QUEST_ORDER.index(fqid)
+                if idx + 1 < len(D.STORY_QUEST_ORDER):
+                    nq = D.STORY_QUEST_BY_ID[D.STORY_QUEST_ORDER[idx + 1]]
+                    self.set_message(
+                        f"Quest complete: {q['name']}! Next: {nq['name']}", 3.0)
+                else:
+                    self.set_message(
+                        f"Quest complete: {q['name']}! The chain is done.", 3.0)
             # defeat celebration: a long hit-stop, a big flash, a victory burst,
             # and a "BOSS DEFEATED" banner with the boss name for ~2.5s
             self.hit_stop = max(self.hit_stop, 0.5)

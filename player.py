@@ -97,6 +97,17 @@ class Player:
         # Default "endless" so the base game (the open world with full live swap +
         # roster changes) is unchanged without D2.
         self.mode = "endless"
+        # Story quest chain (Task E2) — a dict {quest_id -> status} where status
+        # is "active" (the NPC gave the quest; the boss spawns) or "complete"
+        # (the boss died; the next quest unlocks). A quest is "available" when
+        # the previous quest in STORY_QUEST_ORDER is "complete" (the first quest,
+        # plains_boss, is available from the start). Stored as a dict (not a set)
+        # so json can serialize it + the "active" vs "complete" distinction
+        # survives the round-trip. Reset on a new Aetheric Cycle so a fresh
+        # play-through starts the chain over (see reset_world). Added in save
+        # version 8; older saves default to {} so a pre-E2 save loads cleanly
+        # (the chain just starts from the top).
+        self.story_progress = {}
         # init owned heroes
         for hid in D.STARTING_OWNED:
             self.owned[hid] = dict(level=1, xp=0, dupes=0, ascension=0,
@@ -429,6 +440,10 @@ class Player:
         # re-show landmark lore on a new cycle so a fresh play-through re-shows
         # the landmark lore floats (a fresh cycle is a fresh world).
         self.ow_landmarks_seen = []
+        # reset the story quest chain on a new cycle so a fresh play-through
+        # starts the chain over (the bosses re-seal until the NPCs re-give the
+        # quests). The chain is a fresh-world beat, so it resets with the world.
+        self.story_progress = {}
         self.ng_cycle = self.ng_cycle + 1
 
     # --- save / load ---
@@ -460,6 +475,7 @@ class Player:
             "ow_landmarks_seen": self.ow_landmarks_seen,
             "adventure_best_stage": self.adventure_best_stage,
             "mode": self.mode,
+            "story_progress": self.story_progress,
             "version": 8,
         }
         with open(SAVE_FILE, "w") as f:
@@ -551,6 +567,13 @@ class Player:
             # base game is unchanged for an existing save too.
             p.adventure_best_stage = d.get("adventure_best_stage", 0)
             p.mode = d.get("mode", "endless")
+            # Story quest chain (Task E2) — added in save version 8. Older saves
+            # default to {} so a pre-E2 save loads cleanly (the chain starts from
+            # the top). Stored as a dict (id -> status) so the "active"/"complete"
+            # distinction survives the round-trip; a malformed value on an old
+            # save (a set or a list) is replaced with {} so the load never raises.
+            sp = d.get("story_progress", {})
+            p.story_progress = sp if isinstance(sp, dict) else {}
             return p
         except Exception:
             return cls()

@@ -1959,3 +1959,61 @@ NPCS = {
 # caller can fetch a tree by npc_id without re-deriving the biome (E2 will use
 # this when it wires the quest-accept flow off the NPC).
 DIALOGUE = {biome: list(npc["dialogue"]) for biome, npc in NPCS.items()}
+
+# ---------------------------------------------------------------------------
+# Story quest chain (Task E2) — the main quest: 5 biome-boss quests + 1
+# final-boss quest, chained plains -> forest -> cave -> castle -> void ->
+# demon_king. Each quest's `giver` is the biome whose NPC offers it (matches
+# NPCS[biome]["quest_id"]); `objective` is the boss it asks the player to
+# defeat; `reward` is the payout on completion (gems + shards); `lore` is a
+# one-line flavour beat. The chain order is the list order: a quest is
+# "available" when the previous quest in the list is "complete" (the first
+# quest, plains_boss, is available from the start). The boss cell for a biome
+# (column 9 of that row) is SEALED until the biome's quest is "active"
+# (accepted via the NPC dialogue — see world_scene._advance_dialogue); the
+# final boss (demon_king at 9,4) is sealed until all 5 biome-boss quests are
+# complete (the chain). The boss-defeat handler
+# (world_scene._on_enemy_death) marks the biome-boss quest "complete" + the
+# next quest becomes available (the next NPC can now give it).
+# ---------------------------------------------------------------------------
+STORY_QUESTS = [
+    {"id": "plains_boss", "name": "The Goblin King", "giver": "plains",
+     "objective": "Defeat the Goblin King in the plains (row 0, east edge).",
+     "reward": {"gems": 50, "shards": 5},
+     "lore": "The farms burn each new moon. Break the crown that lights them."},
+    {"id": "forest_boss", "name": "The Forest Warden", "giver": "forest",
+     "objective": "Defeat the Hydra where the old watchtower fell (row 1, east edge).",
+     "reward": {"gems": 80, "shards": 8},
+     "lore": "Each head it grows spreads the rot a league further. Cut them all."},
+    {"id": "cave_boss", "name": "The Frost Titan", "giver": "cave",
+     "objective": "Defeat the Frost Titan in the deep gallery (row 2, east edge).",
+     "reward": {"gems": 120, "shards": 12},
+     "lore": "Its breath froze the river solid, then the keepers. Melt its heart."},
+    {"id": "castle_boss", "name": "The Dragon", "giver": "castle",
+     "objective": "Defeat the Dragon on the fallen throne (row 3, east edge).",
+     "reward": {"gems": 160, "shards": 16},
+     "lore": "Its flames guard the banner no one dares to raise. Put it down."},
+    {"id": "void_boss", "name": "The Riftbreaker", "giver": "void",
+     "objective": "Defeat the Demon King's herald at the world's edge (row 4, east edge).",
+     "reward": {"gems": 200, "shards": 20},
+     "lore": "He was a hero once. The rifts were his last mercy. End him."},
+    {"id": "demon_king", "name": "The Demon King", "giver": "void",
+     "objective": "Defeat the Demon King at the world's end (9,4).",
+     "reward": {"gems": 400, "shards": 40},
+     "lore": "End him, and the Cycle may turn at last. Or break."},
+]
+
+# Fast lookups derived from STORY_QUESTS so callers don't re-derive on every
+# _load_map / boss-defeat. STORY_QUEST_BY_ID is the dict {id -> quest};
+# STORY_QUEST_ORDER is the chain order (the list of ids, plains -> demon_king)
+# so the "next quest" is the one at index+1. STORY_BIOME_QUEST maps a biome
+# (the giver) to its biome-boss quest id (the 5 biome-boss quests only; the
+# final demon_king quest shares the void giver but is gated on the chain, not
+# on the void NPC). The final-boss quest id is exported as STORY_FINAL_QUEST
+# so the boss-defeat handler can detect it without a magic string.
+STORY_QUEST_BY_ID = {q["id"]: q for q in STORY_QUESTS}
+STORY_QUEST_ORDER = [q["id"] for q in STORY_QUESTS]
+STORY_BIOME_QUEST = {q["giver"]: q["id"]
+                     for q in STORY_QUESTS
+                     if q["id"] in {v["quest_id"] for v in NPCS.values()}}
+STORY_FINAL_QUEST = "demon_king"

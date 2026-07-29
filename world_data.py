@@ -538,6 +538,119 @@ def gen_map(c, r):
                     breakables.append((x, y, kind_by_biome, loot))
                     break
 
+    # water bodies + bridges (Task C3) — 1-2 impassable water pools per non-boss
+    # map, with a passable bridge carved across each pool so the hero can cross
+    # (water is collision like obstacles; bridges are NOT). Placed on free tiles
+    # via _free_grid + the center-distance check (> TILE*3 from the map center)
+    # so a pool never blocks the central corridor or the edge-portal gaps carved
+    # at line 386. Each pool is a small 3x2-tile rect; the bridge is a 1-tile-wide
+    # strip across the pool's midline. Water/bridges are STATIC gen_map features
+    # so they're cache-safe (the MapRenderer cache is keyed on (c,r) only).
+    water = []
+    bridges = []
+    if not is_boss:
+        n_water = rng.randint(1, 2)
+        for _ in range(n_water):
+            for _try in range(30):
+                tx = rng.randint(4, MAP_TW - 7)
+                ty = rng.randint(4, MAP_TH - 6)
+                x, y = tx * TILE, ty * TILE
+                pw, ph = TILE * 3, TILE * 2
+                # gate: free + far enough from center so the edge-portal gaps +
+                # the central corridor stay clear. Reuse the spatial grid so the
+                # pool doesn't overlap an existing obstacle (or another pool).
+                if (_free_grid(x, y, grid) and _free_grid(x + pw - TILE, y, grid)
+                        and _free_grid(x, y + ph - TILE, grid)
+                        and _free_grid(x + pw - TILE, y + ph - TILE, grid)
+                        and _dist(x + pw // 2, y + ph // 2, cx_mid, cy_mid) > TILE * 3):
+                    pool = pygame_rect(x, y, pw, ph)
+                    water.append(pool)
+                    # carve a 1-tile-wide bridge across the pool's midline (a
+                    # horizontal strip so the hero can walk across the pool).
+                    bx = x + pw // 2 - TILE // 2
+                    by = y
+                    bridge = pygame_rect(bx, by, TILE, ph)
+                    bridges.append(bridge)
+                    # register the pool in the spatial grid so a second pool
+                    # doesn't overlap it (the bridge is passable, so it is NOT
+                    # registered — the hero walks through it).
+                    _register(grid, pool)
+                    break
+
+    # landmark (Task C3) — one per biome, on a free tile via _free_grid + the
+    # center-distance check. The kind by biome: plains=statue, forest=ruin,
+    # cave=shrine, castle=obelisk, void=rift_anchor. Decorative (no collision);
+    # world_scene shows a lore float on first visit (LANDMARK_LORE[biome]).
+    landmark = None
+    if not is_boss:
+        kind_by_biome = {"plains": "statue", "forest": "ruin",
+                         "cave": "shrine", "castle": "obelisk",
+                         "void": "rift_anchor"}.get(biome, "statue")
+        for _try in range(40):
+            tx = rng.randint(3, MAP_TW - 4)
+            ty = rng.randint(3, MAP_TH - 4)
+            x, y = tx * TILE, ty * TILE
+            if _free_grid(x, y, grid) and _dist(x, y, cx_mid, cy_mid) > TILE * 3:
+                landmark = {"x": x, "y": y, "kind": kind_by_biome,
+                            "biome": biome}
+                break
+
+    # village (Task C3) — a cluster of 3-5 buildings + an NPC spawn point on a
+    # free tile cluster. Decorative (no collision — buildings are drawn, not
+    # walled). The NPC entity + interact is Task E1; for C3 we just store the
+    # village NPC spawn point in the gen_map return. Building kinds pick by
+    # biome (plains/forest = house-heavy, cave = shrine-temple, castle = shop,
+    # void = temple) with a random spread so each village reads differently.
+    village = None
+    if not is_boss:
+        for _try in range(40):
+            tx = rng.randint(4, MAP_TW - 8)
+            ty = rng.randint(4, MAP_TH - 6)
+            vx, vy = tx * TILE, ty * TILE
+            # the village center must be free + far from the map center so it
+            # doesn't block the corridor / edge-portal gaps.
+            if not (_free_grid(vx, vy, grid)
+                    and _dist(vx, vy, cx_mid, cy_mid) > TILE * 3):
+                continue
+            # build a 3-5 building cluster around the village center on free
+            # adjacent tiles. Each building is a (x, y, kind) tuple; kinds pick
+            # from house/shop/temple weighted by biome so a plains village and a
+            # void village read differently.
+            # village building kinds: house/shop/temple (the only village sprites
+            # Task A4 ships — NOT shrine, which is a landmark kind). Weighted by
+            # biome so a plains village (house-heavy) and a void village
+            # (temple-heavy) read differently.
+            kinds_pool = {"plains": ["house", "house", "shop", "temple"],
+                          "forest": ["house", "house", "shop", "temple"],
+                          "cave":   ["temple", "house", "house", "shop"],
+                          "castle": ["shop", "shop", "house", "temple"],
+                          "void":   ["temple", "temple", "house", "shop"]
+                          }.get(biome, ["house", "shop", "temple"])
+            n_bld = rng.randint(3, 5)
+            buildings = []
+            # candidate offsets around the village center (a 3x3 ring, shuffled
+            # so the cluster shape varies per village).
+            offsets = [(-TILE, -TILE), (0, -TILE), (TILE, -TILE),
+                       (-TILE, 0), (0, 0), (TILE, 0),
+                       (-TILE, TILE), (0, TILE), (TILE, TILE)]
+            rng.shuffle(offsets)
+            for ox, oy in offsets:
+                if len(buildings) >= n_bld:
+                    break
+                bx, by = vx + ox, vy + oy
+                if not (0 < bx < MAP_W - TILE and 0 < by < MAP_H - TILE):
+                    continue
+                if _free_grid(bx, by, grid):
+                    kind = rng.choice(kinds_pool)
+                    buildings.append((bx, by, kind))
+            if len(buildings) >= 3:
+                # the NPC spawn point is the village center (a free tile by the
+                # gate above). Task E1 wires the NPC entity + interact.
+                village = {"x": vx, "y": vy,
+                           "buildings": buildings,
+                           "npc_spawn": (vx, vy), "biome": biome}
+                break
+
     # hidden rift mini-dungeon — ~15% of non-boss maps hide a glowing rift. A
     # deterministic 15% chance (rng from cell_seed at line 59) so the same cell
     # always has/doesn't have a rift across reloads. Placed on a free tile via
@@ -576,7 +689,8 @@ def gen_map(c, r):
 
     return dict(obstacles=obstacles, deco=deco, spawns=spawns, boss=boss,
                 is_boss=is_boss, biome=biome, pal=pal, chests=chests,
-                breakables=breakables, secret=secret)
+                breakables=breakables, secret=secret,
+                water=water, bridges=bridges, landmark=landmark, village=village)
 
 
 def pygame_rect(x, y, w, h):

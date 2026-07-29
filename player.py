@@ -77,6 +77,13 @@ class Player:
         # A cleared rift stays cleared across revisits + reloads so the player
         # can't re-trigger the wave for infinite SR/SSR chests.
         self.ow_secrets_done = []
+        # landmark lore shown (Task C3) — set of cell ids whose landmark's lore
+        # float has already been shown, so revisiting a cell doesn't re-show the
+        # lore float (the lore is a one-time discovery beat). Stored as a list
+        # (not a set) so json can serialize it; the scene treats it as a set via
+        # `in` checks. Reset on a new Aetheric Cycle so a new play-through re-shows
+        # the lore (a fresh cycle is a fresh world).
+        self.ow_landmarks_seen = []
         # init owned heroes
         for hid in D.STARTING_OWNED:
             self.owned[hid] = dict(level=1, xp=0, dupes=0, ascension=0,
@@ -406,6 +413,9 @@ class Player:
         # re-enable the hidden rifts on a new cycle so the player can re-clear
         # them for the SR/SSR chest + lore drop on the next play-through.
         self.ow_secrets_done = []
+        # re-show landmark lore on a new cycle so a fresh play-through re-shows
+        # the landmark lore floats (a fresh cycle is a fresh world).
+        self.ow_landmarks_seen = []
         self.ng_cycle = self.ng_cycle + 1
 
     # --- save / load ---
@@ -434,7 +444,8 @@ class Player:
             "ow_bosses_cleared": self.ow_bosses_cleared,
             "ng_cycle": self.ng_cycle,
             "ow_secrets_done": self.ow_secrets_done,
-            "version": 7,
+            "ow_landmarks_seen": self.ow_landmarks_seen,
+            "version": 8,
         }
         with open(SAVE_FILE, "w") as f:
             json.dump(data, f, indent=2)
@@ -509,6 +520,11 @@ class Player:
             # (no re-trigger). Stored as a list (not a set) so json can serialize
             # it; the scene treats it as a set via `in` checks.
             p.ow_secrets_done = d.get("ow_secrets_done", [])
+            # landmark lore shown (Task C3) — added in save version 8. Older
+            # saves default to an empty list so a landmark on an old save re-shows
+            # its lore on the next visit (safe — the lore is a one-time beat, not
+            # a reward). Stored as a list (not a set) so json can serialize it.
+            p.ow_landmarks_seen = d.get("ow_landmarks_seen", [])
             return p
         except Exception:
             return cls()

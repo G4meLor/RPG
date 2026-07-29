@@ -10,7 +10,8 @@ import time
 import pygame
 
 import data as D
-from entities import Hero, load_char_sprite, load_enemy_sprite, load_skill_icon, load_drop
+from entities import (Hero, load_char_sprite, load_enemy_sprite, load_skill_icon,
+                      load_drop, load_terrain, load_landmark, load_village)
 import audio
 import generate_assets as GA
 import world_data as WD
@@ -987,6 +988,18 @@ class WorldScene:
         # don't persist across maps. Declared before _load_map (init-order).
         self._summons = []
         self._traps = []
+        # water/bridges/landmark/village (Task C3) — STATIC gen_map features read
+        # in _load_map. Declared BEFORE _load_map (the same init-order trap as
+        # _world_time / the boss intro timer — _load_map reads these on the first
+        # call). Water rects are appended to the obstacles list in _load_map so
+        # the existing collision check treats them as walls (impassable); bridges
+        # are passable (NOT added to obstacles). Landmarks are decorative (no
+        # collision); villages are decorative (no collision — buildings are drawn,
+        # not walled; the NPC entity + interact is Task E1).
+        self._water = []
+        self._bridges = []
+        self._landmark = None
+        self._village = None
         self._load_map(enter_edge=None)
 
         # input state
@@ -1254,6 +1267,23 @@ class WorldScene:
         # re-break them on revisit (the loot is small, so this is fine).
         self.breakables = [dict(x=x, y=y, kind=kind, loot=loot, broken=False)
                            for (x, y, kind, loot) in m.get("breakables", [])]
+        # water/bridges/landmark/village (Task C3) — read the STATIC gen_map
+        # features. Water rects are appended to the obstacles list so the existing
+        # collision check (self._map_data["obstacles"]) treats them as walls
+        # (impassable, like obstacles); bridges are passable (NOT appended). The
+        # water/bridge rects are also kept on the scene for the draw loop. A copy
+        # of the obstacles list is NOT needed — gen_map returns a fresh list per
+        # cell, so appending water to it doesn't mutate a cached map (the
+        # MapRenderer cache stores a rendered Surface, not the dict).
+        self._water = list(m.get("water", []))
+        self._bridges = list(m.get("bridges", []))
+        self._landmark = m.get("landmark")
+        self._village = m.get("village")
+        # append the water rects to the obstacles list so the existing collision
+        # check treats them as walls (impassable). The bridges are passable, so
+        # they are NOT appended (the hero walks through them).
+        if self._water:
+            m["obstacles"].extend(self._water)
         # hidden rift mini-dungeon: read the per-cell secret from gen_map. A
         # cleared rift stays cleared (persisted in ow_secrets_done) so the
         # player can't re-trigger the wave for infinite SR/SSR chests. Reset
@@ -3326,6 +3356,17 @@ class WorldScene:
         ox, oy = self.camera.offset()
         surf.blit(self._map_surf, (-ox, -oy))
 
+        # water + bridges (Task C3) — drawn BEFORE the drawables so they're
+        # ground (under the hero/enemies/breakables). Water is a dithered
+        # shimmer (a slow sine on the alpha) blitted tiled over each water rect;
+        # bridges are a passable tile blitted over each bridge rect. Both are
+        # cached by load_terrain so this is a single blit per tile per frame.
+        # Biome-tinted: the water sprite is re-tinted toward the biome's ground
+        # color at load time (load_terrain returns the neutral sprite; the
+        # shimmer is a global alpha pulse so the water reads as wet).
+        if self._water or self._bridges:
+            self._draw_water_bridges(surf, ox, oy)
+
         # depth-sorted drawables: enemies + active hero + projectiles
         # the boss aura reads the night level (expanded at night) — set it once
         # per frame on each enemy so WorldEnemy.draw doesn't re-derive it per
@@ -3356,6 +3397,15 @@ class WorldScene:
         # hero, a drop behind the hero is drawn first — same rule as breakables).
         for d in self.drops:
             drawables.append((d["y"], "drop", d))
+        # landmark + village buildings (Task C3) — sorted with the rest so they
+        # occlude correctly against the hero/enemies (a landmark behind the hero
+        # is drawn first). Landmarks are decorative (no collision); village
+        # buildings are decorative (no collision — the NPC entity is Task E1).
+        if self._landmark is not None:
+            drawables.append((self._landmark["y"], "landmark", self._landmark))
+        if self._village is not None:
+            for (bx, by, bkind) in self._village["buildings"]:
+                drawables.append((by, "village", (bx, by, bkind)))
         wc = self.party[self.active]
         if wc:
             drawables.append((wc.y, "hero", wc))
@@ -3365,6 +3415,11 @@ class WorldScene:
                 self._draw_breakable(surf, obj, ox, oy)
             elif kind == "drop":
                 self._draw_drop(surf, obj, ox, oy)
+            elif kind == "landmark":
+                self._draw_landmark(surf, obj, ox, oy)
+            elif kind == "village":
+                bx, by, bkind = obj
+                self._draw_village_building(surf, bx, by, bkind, ox, oy)
             elif kind in ("summon", "trap"):
                 obj.draw(surf, ox, oy)
             else:
@@ -3706,6 +3761,118 @@ class WorldScene:
             sprite = load_drop(sprite_kind, (24, 24))
             sw, sh = sprite.get_size()
             surf.blit(sprite, (dx - sw // 2, dy - sh // 2 + bob))
+
+    # -----------------------------------------------------------------
+    # Water / bridges / landmark / village (Task C3)
+    # -----------------------------------------------------------------
+    def _draw_water_bridges(self, surf, ox, oy):
+        """Draw the water pools + bridges (Task C3). Water is a dithered
+        shimmer (a slow sine on the alpha) blited tiled over each water rect;
+        bridges are a passable tile blitted over each bridge rect. Both sprites
+        are cached by load_terrain so this is a single blit per tile per frame.
+        Drawn BEFORE the drawables so they're ground (under the hero/enemies).
+        The shimmer is a global alpha pulse on the water tiles so the water
+        reads as wet, not a static blue square. Gated on reduce_motion (static
+        under RM — no shimmer, just the tile)."""
+        # the water sprite is a 40x40 tile (TILE_PX); the bridge sprite is the
+        # same size. Both are cached by load_terrain so this is a single blit per
+        # tile per frame.
+        tile = WD.TILE
+        # shimmer: a slow sine on the alpha (amplitude 40, ~2s period). Gated on
+        # reduce_motion (static under RM — no shimmer, full alpha).
+        if not self._reduce_motion:
+            shimmer = int(40 * (0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.003)))
+        else:
+            shimmer = 0
+        # water tiles — blit the water sprite tiled over each water rect, with
+        # the shimmer applied as a global alpha on the sprite. The sprite is
+        # cached per (path, scale); we set the alpha per frame on a copy so the
+        # shimmer doesn't mutate the cached sprite (set_alpha on the cached
+        # surface would persist across frames).
+        water_sprite = load_terrain("water")
+        for wr in self._water:
+            # cull off-screen water rects (the rect is in world coords; the
+            # camera offset is ox/oy)
+            wx, wy = wr.x, wr.y
+            if wx - ox > 1280 or wx + wr.w - ox < 0:
+                continue
+            if wy - oy > 720 or wy + wr.h - oy < 0:
+                continue
+            for ty in range(wr.y, wr.y + wr.h, tile):
+                for tx in range(wr.x, wr.x + wr.w, tile):
+                    sx = tx - ox
+                    sy = ty - oy
+                    if -tile < sx < 1280 and -tile < sy < 720:
+                        if shimmer > 0:
+                            # a copy so the shimmer alpha doesn't mutate the
+                            # cached sprite (set_alpha on the cached surface
+                            # would persist across frames + across cells).
+                            ws = water_sprite.copy()
+                            ws.set_alpha(255 - shimmer)
+                            surf.blit(ws, (sx, sy))
+                        else:
+                            surf.blit(water_sprite, (sx, sy))
+        # bridge tiles — blit the bridge sprite over each bridge rect. The bridge
+        # is passable (NOT in the obstacles list), so the hero walks through it.
+        bridge_sprite = load_terrain("bridge")
+        for br in self._bridges:
+            bx0, by0 = br.x, br.y
+            if bx0 - ox > 1280 or bx0 + br.w - ox < 0:
+                continue
+            if by0 - oy > 720 or by0 + br.h - oy < 0:
+                continue
+            for ty in range(br.y, br.y + br.h, tile):
+                for tx in range(br.x, br.x + br.w, tile):
+                    sx = tx - ox
+                    sy = ty - oy
+                    if -tile < sx < 1280 and -tile < sy < 720:
+                        surf.blit(bridge_sprite, (sx, sy))
+
+    def _draw_landmark(self, surf, lm, ox, oy):
+        """Draw a landmark (Task C3) — a pixel-art sprite (load_landmark from
+        Task A4) at the landmark's screen pos, with a lore float on the first
+        visit (tracked in ow_landmarks_seen per cell). Decorative (no collision).
+        The sprite is an 80x80 surface cached by load_landmark so this is a
+        single blit per landmark per frame. The lore float is a one-time
+        discovery beat (LANDMARK_LORE[biome] from data.py)."""
+        lx = int(lm["x"] - ox)
+        ly = int(lm["y"] - oy)
+        if -80 < lx < 1360 and -80 < ly < 800:
+            kind = lm["kind"]
+            sprite = load_landmark(kind)
+            sw, sh = sprite.get_size()
+            surf.blit(sprite, (lx - sw // 2, ly - sh // 2))
+        # lore float on the first visit to this cell's landmark. Tracked in
+        # ow_landmarks_seen (a list of cell ids) so revisiting a cell doesn't
+        # re-show the lore (the lore is a one-time discovery beat, not a reward).
+        # The lore line is LANDMARK_LORE[biome] from data.py (one per biome).
+        cid = WD.cell_id(self.c, self.r)
+        if cid not in self.game.player.ow_landmarks_seen:
+            self.game.player.ow_landmarks_seen.append(cid)
+            biome = lm.get("biome", "plains")
+            lore = D.LANDMARK_LORE.get(biome, "")
+            if lore:
+                # a longer-lived float (2.5s) so the player has time to read the
+                # lore line. Sized 18 so it reads as a subtitle, not a damage
+                # number. Color is the biome accent so it reads as worldbuilding.
+                pal = WD.BIOMES.get(biome, {})
+                col = pal.get("accent", (230, 220, 180))
+                self.floats.append(FloatText(lm["x"], lm["y"] - 50, lore, col,
+                                            size=18, life=2.5))
+
+    def _draw_village_building(self, surf, bx, by, kind, ox, oy):
+        """Draw a village building (Task C3) — a pixel-art sprite (load_village
+        from Task A4) at the building's screen pos. Decorative (no collision —
+        the NPC entity + interact is Task E1). The sprite is a 60x60 surface
+        cached by load_village so this is a single blit per building per frame.
+        Drawn depth-sorted with the hero/enemies so a building behind the hero
+        is drawn first (occludes correctly)."""
+        sx = int(bx - ox)
+        sy = int(by - oy)
+        if -60 < sx < 1340 and -60 < sy < 780:
+            sprite = load_village(kind)
+            sw, sh = sprite.get_size()
+            surf.blit(sprite, (sx - sw // 2, sy - sh // 2))
 
     def _draw_boss_banner(self, surf, name, t, intro):
         """A full-width cinematic banner for the boss intro / defeat. Fades in

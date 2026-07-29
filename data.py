@@ -1859,3 +1859,19 @@ LORE_FRAGMENTS = [
     "A page of the world's first map, torn and glowing.",
     "The rift closes behind a breath you did not take.",
 ]
+
+# ---------------------------------------------------------------------------
+# Landmark lore (Task C3) — one atmospheric one-liner per biome, shown as a
+# floating text the first time the player enters a cell with a landmark
+# (world_scene tracks visited landmarks per cell in ow_landmarks_seen). The
+# kind by biome: plains=statue, forest=ruin, cave=shrine, castle=obelisk,
+# void=rift_anchor. Picked by biome so the same landmark always shows the same
+# lore (a stable piece of worldbuilding the player collects by exploring).
+# ---------------------------------------------------------------------------
+LANDMARK_LORE = {
+    "plains": "The statue of the First Wanderer, weathered but watchful.",
+    "forest": "Moss-grown ruins of a watchtower lost to the Whispering Woods.",
+    "cave":   "A crystal shrine where the cavern-keepers once prayed.",
+    "castle": "The obelisk marks the citadel's fallen banner.",
+    "void":   "The rift-anchor hums, holding the dark at bay - for now.",
+}

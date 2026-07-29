@@ -857,10 +857,12 @@ def rearrange_images(champs):
 
 
 # ---------------------------------------------------------------------------
-# Task 3: procedural world sprite (stub — implemented in Task 3)
+# Task 3: procedural world sprite — delegate to generate_assets.py, which has
+# the descriptor system (10 archetypes + feature-adders + weapon-drawers).
 # ---------------------------------------------------------------------------
 def generate_sprites(champs):
-    raise NotImplementedError("Task 3 implements generate_sprites()")
+    import generate_assets as GA
+    GA.generate_sprites(champs)
 
 
 def main():

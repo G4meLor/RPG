@@ -901,10 +901,888 @@ def draw_weapon(surf, cx, cy, weapon, accent, outline, element):
             my = int(by + math.sin(ang) * 22)
             pygame.draw.circle(surf, light_el, (mx, my), 5)
             pygame.draw.rect(surf, (255, 255, 255), (mx - 2, my - 2, 4, 4))
+    elif weapon == "axe":
+        bx, by = cx + 50, 140
+        # haft — 2-tone dithered wood (solid block, no AA)
+        haft = px_dither_surf(7, 110, (150, 105, 60), (85, 55, 30))
+        clip_to_rect(haft, pygame.Rect(0, 0, 7, 110))
+        surf.blit(haft, (bx, by - 55))
+        pygame.draw.rect(surf, outline, (bx, by - 55, 7, 110), 2)
+        # axe head — 2-tone dithered fill clipped to a crescent polygon (no AA)
+        head_pts = [(bx + 6, by - 40), (bx + 30, by - 48), (bx + 34, by - 30),
+                    (bx + 30, by - 12), (bx + 6, by - 20)]
+        head = px_dither_surf(30, 40, (200, 205, 220), (110, 115, 135))
+        m = pygame.Surface((30, 40), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                            [(p[0] - bx - 6, p[1] - by + 48) for p in head_pts])
+        head.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(head, (bx + 6, by - 48))
+        pygame.draw.rect(surf, (255, 255, 255), (bx + 8, by - 44, 4, 4))
+        pygame.draw.polygon(surf, outline, head_pts, 2)
+    elif weapon == "spear":
+        bx, by = cx + 52, 130
+        # shaft — 2-tone dithered wood (solid block, no AA)
+        shaft = px_dither_surf(6, 130, (150, 105, 60), (85, 55, 30))
+        clip_to_rect(shaft, pygame.Rect(0, 0, 6, 130))
+        surf.blit(shaft, (bx, by - 70))
+        pygame.draw.rect(surf, outline, (bx, by - 70, 6, 130), 2)
+        # spearhead — 2-tone dithered fill clipped to a leaf polygon (no AA)
+        head_pts = [(bx + 3, by - 86), (bx + 12, by - 74), (bx + 3, by - 62),
+                    (bx - 6, by - 74)]
+        head = px_dither_surf(18, 24, (225, 228, 240), (140, 145, 165))
+        m = pygame.Surface((18, 24), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                            [(p[0] - bx + 6, p[1] - by + 86) for p in head_pts])
+        head.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(head, (bx - 6, by - 86))
+        pygame.draw.line(surf, (255, 255, 255), (bx + 2, by - 80), (bx + 2, by - 68), 1)
+        pygame.draw.polygon(surf, outline, head_pts, 2)
+        # butt spike (solid block, no AA)
+        pygame.draw.polygon(surf, (180, 185, 200), [(bx, by + 60), (bx + 6, by + 60), (bx + 3, by + 72)])
+    elif weapon == "gun":
+        bx, by = cx + 48, 150
+        # barrel — 2-tone dithered metal (solid block, no AA)
+        barrel = px_dither_surf(46, 10, (90, 95, 115), (50, 55, 70))
+        clip_to_rect(barrel, pygame.Rect(0, 0, 46, 10))
+        surf.blit(barrel, (bx - 8, by - 5))
+        pygame.draw.rect(surf, outline, (bx - 8, by - 5, 46, 10), 2)
+        # muzzle (solid block, no AA)
+        pygame.draw.rect(surf, (40, 45, 60), (bx + 34, by - 6, 6, 12))
+        # sight (solid block, no AA)
+        pygame.draw.rect(surf, (60, 65, 80), (bx + 10, by - 12, 4, 8))
+        # grip/stock — 2-tone dithered fill (solid block, no AA)
+        stock = px_dither_surf(12, 30, shade(accent, 0.8), shade(accent, 0.4))
+        clip_to_rect(stock, pygame.Rect(0, 0, 12, 30))
+        surf.blit(stock, (bx - 4, by + 4))
+        pygame.draw.rect(surf, outline, (bx - 4, by + 4, 12, 30), 2)
+        # trigger guard (solid arc-line, no AA)
+        pygame.draw.arc(surf, outline, (bx + 2, by + 6, 10, 12), math.pi, 2 * math.pi, 2)
+    elif weapon == "fists":
+        # big gauntleted fists flanking the body (solid blocks, no AA)
+        for side in (-1, 1):
+            fx = cx + side * 46
+            fy = 168
+            fist = px_dither_surf(26, 26, shade(accent, 1.2), shade(accent, 0.5))
+            clip_to_circle(fist, (13, 13), 12)
+            surf.blit(fist, (fx - 13, fy - 13))
+            # knuckle plates (solid blocks, no AA)
+            for kx in (-7, -1, 5):
+                pygame.draw.rect(surf, (255, 255, 255), (fx + kx, fy - 9, 3, 3))
+            pygame.draw.circle(surf, outline, (fx, fy), 12, 2)
+    elif weapon == "scythe":
+        bx, by = cx + 50, 130
+        # shaft — 2-tone dithered wood (solid block, no AA)
+        shaft = px_dither_surf(6, 120, (120, 80, 40), (70, 45, 25))
+        clip_to_rect(shaft, pygame.Rect(0, 0, 6, 120))
+        surf.blit(shaft, (bx, by - 60))
+        pygame.draw.rect(surf, outline, (bx, by - 60, 6, 120), 2)
+        # curved blade — a thick arc approximated by stacked blocks (no AA arc)
+        for i in range(9):
+            t = i / 8.0
+            ang = math.pi * (0.9 - t * 1.3)
+            r = 34
+            px_ = int(bx + 3 + math.cos(ang) * r)
+            py_ = int(by - 64 + math.sin(ang) * r * 0.55 - t * 6)
+            pygame.draw.rect(surf, (220, 225, 240) if i < 5 else (150, 155, 175),
+                             (px_ - 2, py_ - 3, 5, 7))
+        pygame.draw.circle(surf, outline, (bx + 3, by - 64), 4, 2)
+    elif weapon == "whip":
+        # a coiled/extended whip — a chain of blocks forming a curve (no AA)
+        bx, by = cx + 48, 150
+        pts = []
+        for i in range(14):
+            t = i / 13.0
+            x = bx + t * 36
+            y = by - 30 + math.sin(t * math.pi * 1.4) * 40 + t * 20
+            pts.append((x, y))
+        for i, (x, y) in enumerate(pts):
+            r = 5 - i // 5
+            pygame.draw.circle(surf, shade(accent, 0.6), (int(x), int(y)), r)
+            pygame.draw.circle(surf, outline, (int(x), int(y)), r, 1)
+        # handle (solid block, no AA)
+        pygame.draw.rect(surf, (110, 80, 50), (bx - 2, by - 4, 8, 14))
+        pygame.draw.rect(surf, outline, (bx - 2, by - 4, 8, 14), 1)
+    # weapon == "none": draw nothing (the archetype's bare hands/body)
+
 
 # ---------------------------------------------------------------------------
-# Enemy sprites
+# Descriptor-driven world sprite (Task 3) — 10 archetypes, each a distinct
+# silhouette, + shared feature-adders. The descriptor drives the palette +
+# motif + features + weapon. This replaces the single-chibi-body approach so
+# 170 champions read as visually distinct at the 96px world-billboard scale.
 # ---------------------------------------------------------------------------
+
+# Motif -> the element-aura color + a particle kind. Drives the aura disc
+# behind the body + the floating particles.
+MOTIF_COLOR = {
+    "flame":     (255, 140, 60),
+    "ice":       (150, 220, 255),
+    "wind":      (180, 240, 190),
+    "lightning": (255, 240, 150),
+    "shadow":    (180, 120, 220),
+    "light":     (255, 240, 180),
+    "void":      (200, 120, 240),
+    "nature":    (140, 220, 130),
+}
+
+# Build -> vertical/horizontal scale multipliers on the base silhouette.
+BUILD_SCALE = {
+    "slender": (0.92, 1.08),
+    "average": (1.00, 1.00),
+    "bulky":   (1.18, 0.94),
+    "tall":    (0.96, 1.12),
+    "short":   (1.06, 0.84),
+}
+
+
+def _motif_aura(surf, cx, cy, motif):
+    """Draw a small element-aura disc behind the head + a few chunky particles.
+    Kept tight (radius 46, alpha-bounded) so it does NOT dominate the sprite's
+    coverage/bbox — the archetype silhouette must read as the distinct part."""
+    col = MOTIF_COLOR.get(motif, (200, 200, 220))
+    dark = shade(col, 0.5)
+    aura_r = 46
+    aura = pygame.Surface((aura_r * 2, aura_r * 2), pygame.SRCALPHA)
+    pygame.draw.circle(aura, (*dark, 60), (aura_r, aura_r), aura_r)
+    pygame.draw.circle(aura, (*col, 90), (aura_r, aura_r), aura_r - 12)
+    pygame.draw.circle(aura, (*shade(col, 1.25), 110), (aura_r, aura_r), aura_r - 24)
+    surf.blit(aura, (cx - aura_r, cy - 96))
+    # a few chunky particles (stable layout: seeded from the motif string)
+    rng = random.Random(sum(ord(c) for c in motif) * 100003 + 7)
+    for _ in range(4):
+        px = cx + rng.randint(-36, 36)
+        py = cy + rng.randint(-30, 40)
+        ps = rng.randint(2, 3) * PIXEL // 2
+        pygame.draw.rect(surf, col, (int(px), int(py), ps, ps))
+
+
+def _body_outline(surf, cx, cy, w, h, primary, outline):
+    """A chunky pixel-art humanoid body silhouette: torso + head + legs + arms.
+    w/h are the scaled body box. Returns the head center (for features)."""
+    light = shade(primary, 1.22)
+    dark = shade(primary, 0.58)
+    # torso — 2-tone dithered fill clipped to a rounded rect (no AA)
+    tw, th = int(w * 0.5), int(h * 0.34)
+    tx = cx - tw // 2
+    ty = cy - th // 2 - int(h * 0.04)
+    torso = px_dither_surf(tw, th, light, dark)
+    clip_to_rect(torso, pygame.Rect(0, 0, tw, th), border_radius=6)
+    surf.blit(torso, (tx, ty))
+    pygame.draw.rect(surf, outline, (tx, ty, tw, th), 2, border_radius=6)
+    # legs — two solid blocks (no AA)
+    lw, lh = int(tw * 0.34), int(h * 0.30)
+    ly = ty + th - 2
+    for lx in (tx + 3, tx + tw - lw - 3):
+        leg = px_dither_surf(lw, lh, shade(primary, 0.7), shade(primary, 0.45))
+        clip_to_rect(leg, pygame.Rect(0, 0, lw, lh), border_radius=3)
+        surf.blit(leg, (lx, ly))
+        pygame.draw.rect(surf, outline, (lx, ly, lw, lh), 2, border_radius=3)
+    # arms — two solid blocks flanking the torso (no AA)
+    aw, ah = int(tw * 0.26), int(th * 0.92)
+    ay = ty + 3
+    for ax in (tx - aw - 1, tx + tw + 1):
+        arm = px_dither_surf(aw, ah, shade(primary, 0.85), shade(primary, 0.5))
+        clip_to_rect(arm, pygame.Rect(0, 0, aw, ah), border_radius=4)
+        surf.blit(arm, (ax, ay))
+        pygame.draw.rect(surf, outline, (ax, ay, aw, ah), 2, border_radius=4)
+    # head — 2-tone dithered fill clipped to a circle (no AA)
+    hr = int(w * 0.20)
+    hx, hy = cx, ty - hr - 2
+    head = px_dither_surf(hr * 2, hr * 2, shade(primary, 1.15), shade(primary, 0.62))
+    clip_to_circle(head, (hr, hr), hr - 1)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.circle(surf, outline, (hx, hy), hr, 2)
+    # eyes (two chunky blocks, no AA)
+    ey = hy - 1
+    pygame.draw.rect(surf, (40, 40, 60), (hx - hr // 2 - 1, ey, 3, 3))
+    pygame.draw.rect(surf, (40, 40, 60), (hx + hr // 2 - 2, ey, 3, 3))
+    return (hx, hy, hr)
+
+
+def _add_cape(surf, cx, cy, w, h, color, outline):
+    """A cape behind the torso — a dithered polygon (no AA)."""
+    pts = [(cx - int(w * 0.30), cy - int(h * 0.18)),
+           (cx + int(w * 0.30), cy - int(h * 0.18)),
+           (cx + int(w * 0.36), cy + int(h * 0.34)),
+           (cx - int(w * 0.36), cy + int(h * 0.34))]
+    cape = px_dither_surf(int(w * 0.72), int(h * 0.52), shade(color, 1.15), shade(color, 0.5))
+    m = pygame.Surface((int(w * 0.72), int(h * 0.52)), pygame.SRCALPHA)
+    pygame.draw.polygon(m, (255, 255, 255, 255),
+                        [(p[0] - (cx - int(w * 0.36)), p[1] - (cy - int(h * 0.18))) for p in pts])
+    cape.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    surf.blit(cape, (cx - int(w * 0.36), cy - int(h * 0.18)))
+    pygame.draw.polygon(surf, outline, pts, 2)
+
+
+def _add_horns(surf, hx, hy, hr, color, outline):
+    """Two curved horns above the head (stacked blocks, no AA arc)."""
+    for side in (-1, 1):
+        bx = hx + side * (hr - 4)
+        for i in range(5):
+            t = i / 4.0
+            x = bx + side * int(t * 10)
+            y = hy - hr - int(t * 14)
+            r = 5 - i
+            pygame.draw.circle(surf, color, (x, y), r)
+            pygame.draw.circle(surf, outline, (x, y), r, 1)
+
+
+def _add_wings(surf, cx, cy, w, h, color, outline):
+    """Two bat/feather wings behind the torso (dithered polygons, no AA)."""
+    for side in (-1, 1):
+        pts = [(cx + side * int(w * 0.28), cy - int(h * 0.16)),
+               (cx + side * int(w * 0.62), cy - int(h * 0.08)),
+               (cx + side * int(w * 0.58), cy + int(h * 0.20)),
+               (cx + side * int(w * 0.28), cy + int(h * 0.10))]
+        wing = px_dither_surf(int(w * 0.40), int(h * 0.40), shade(color, 1.1), shade(color, 0.45))
+        m = pygame.Surface((int(w * 0.40), int(h * 0.40)), pygame.SRCALPHA)
+        pygame.draw.polygon(m, (255, 255, 255, 255),
+                            [(p[0] - min(p[0] for p in pts), p[1] - min(p[1] for p in pts)) for p in pts])
+        wing.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(wing, (min(p[0] for p in pts), min(p[1] for p in pts)))
+        pygame.draw.polygon(surf, outline, pts, 2)
+
+
+def _add_hood(surf, hx, hy, hr, color, outline):
+    """A hood over the head — a dithered arc (no AA)."""
+    hood = pygame.Surface((hr * 2 + 8, hr * 2 + 4), pygame.SRCALPHA)
+    pygame.draw.ellipse(hood, (*shade(color, 0.7), 255),
+                        (0, 0, hr * 2 + 8, hr * 2 + 4))
+    # cut the lower half so the face shows (zero-alpha the lower band)
+    sub = pygame.Surface((hr * 2 + 8, hr + 4), pygame.SRCALPHA)
+    hood.blit(sub, (0, hr), special_flags=pygame.BLEND_RGBA_SUB)
+    surf.blit(hood, (hx - hr - 4, hy - hr - 6))
+    pygame.draw.arc(surf, outline, (hx - hr - 4, hy - hr - 6, hr * 2 + 8, hr * 2), math.pi, 2 * math.pi, 2)
+
+
+def _add_mask(surf, hx, hy, hr, color, outline):
+    """A face mask — a dithered band across the eyes (no AA)."""
+    band = px_dither_surf(hr * 2, hr // 2 + 2, shade(color, 1.1), shade(color, 0.5))
+    clip_to_rect(band, pygame.Rect(0, 0, hr * 2, hr // 2 + 2), border_radius=3)
+    surf.blit(band, (hx - hr, hy - hr // 4))
+    pygame.draw.rect(surf, outline, (hx - hr, hy - hr // 4, hr * 2, hr // 2 + 2), 2, border_radius=3)
+    # eye-slits (solid dark blocks, no AA)
+    pygame.draw.rect(surf, (20, 20, 30), (hx - hr // 2 - 1, hy - 1, 3, 3))
+    pygame.draw.rect(surf, (20, 20, 30), (hx + hr // 2 - 2, hy - 1, 3, 3))
+
+
+def _add_crown(surf, hx, hy, hr, color, outline):
+    """A crown above the head — a dithered zigzag (no AA)."""
+    cy = hy - hr - 2
+    pts = [(hx - hr, cy + 8), (hx - hr, cy), (hx - hr // 2, cy + 4),
+           (hx - hr // 4, cy - 4), (hx, cy + 2), (hx + hr // 4, cy - 4),
+           (hx + hr // 2, cy + 4), (hx + hr, cy), (hx + hr, cy + 8)]
+    crown = px_dither_surf(hr * 2, 12, shade(color, 1.3), shade(color, 0.6))
+    m = pygame.Surface((hr * 2, 12), pygame.SRCALPHA)
+    pygame.draw.polygon(m, (255, 255, 255, 255),
+                        [(p[0] - (hx - hr), p[1] - (cy - 4)) for p in pts])
+    crown.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    surf.blit(crown, (hx - hr, cy - 4))
+    pygame.draw.polygon(surf, outline, pts, 2)
+
+
+def _add_halo(surf, hx, hy, hr, color, outline):
+    """A glowing halo ring above the head (no AA)."""
+    pygame.draw.circle(surf, color, (hx, hy - hr - 8), hr // 2 + 2, 3)
+    pygame.draw.circle(surf, shade(color, 1.3), (hx, hy - hr - 8), hr // 2 + 2, 1)
+
+
+def _add_spikes(surf, cx, cy, w, h, color, outline):
+    """Spikes along the shoulders (solid triangles, no AA)."""
+    ty = cy - int(h * 0.18)
+    for i in range(4):
+        sx = cx - int(w * 0.30) + i * int(w * 0.20)
+        pygame.draw.polygon(surf, color,
+                            [(sx, ty), (sx + 4, ty - 10), (sx + 8, ty)])
+        pygame.draw.polygon(surf, outline,
+                            [(sx, ty), (sx + 4, ty - 10), (sx + 8, ty)], 1)
+
+
+def _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline):
+    """Apply 0-3 features from the descriptor."""
+    sec = pal["secondary"]
+    acc = pal["accent"]
+    for f in features:
+        if f == "cape":
+            _add_cape(surf, cx, cy, w, h, sec, outline)
+        elif f == "horns":
+            _add_horns(surf, hx, hy, hr, shade(acc, 0.85), outline)
+        elif f == "wings":
+            _add_wings(surf, cx, cy, w, h, shade(sec, 0.8), outline)
+        elif f == "hood":
+            _add_hood(surf, hx, hy, hr, shade(sec, 0.6), outline)
+        elif f == "mask":
+            _add_mask(surf, hx, hy, hr, acc, outline)
+        elif f == "crown":
+            _add_crown(surf, hx, hy, hr, acc, outline)
+        elif f == "halo":
+            _add_halo(surf, hx, hy, hr, acc, outline)
+        elif f == "spikes":
+            _add_spikes(surf, cx, cy, w, h, shade(sec, 0.7), outline)
+
+
+# --- per-archetype silhouettes ---------------------------------------------
+# Each draws its distinct body onto surf (256x256), returns (hx, hy, hr, w, h)
+# so _apply_features + draw_weapon can place features/weapon consistently.
+# cx,cy = 128,150 (the same anchor as the legacy draw_chibi).
+
+def _arch_knight(surf, cx, cy, pal, outline, build):
+    """Armored knight: broad shoulders, plate torso, helmet."""
+    sx, sy = BUILD_SCALE.get(build, (1.0, 1.0))
+    w, h = int(96 * sx), int(120 * sy)
+    primary = pal["primary"]
+    sec = pal["secondary"]
+    # ground shadow
+    sh = pygame.Surface((int(w * 1.6), 16), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 70), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.8), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "light")
+    # plate torso — wide, dithered steel (no AA)
+    tw, th = int(w * 0.56), int(h * 0.36)
+    tx, ty = cx - tw // 2, cy - th // 2 - int(h * 0.04)
+    torso = px_dither_surf(tw, th, shade(sec, 1.15), shade(primary, 0.55))
+    clip_to_rect(torso, pygame.Rect(0, 0, tw, th), border_radius=6)
+    surf.blit(torso, (tx, ty))
+    # pauldrons (broad shoulders) — two dithered discs (no AA)
+    for side in (-1, 1):
+        pd = px_dither_surf(20, 20, shade(sec, 1.2), shade(primary, 0.5))
+        clip_to_circle(pd, (10, 10), 9)
+        surf.blit(pd, (cx + side * (tw // 2 + 2) - 10, ty - 4))
+        pygame.draw.circle(surf, outline, (cx + side * (tw // 2 + 2), ty + 6), 9, 2)
+    pygame.draw.rect(surf, outline, (tx, ty, tw, th), 2, border_radius=6)
+    # chest emblem (solid block, no AA)
+    pygame.draw.rect(surf, pal["accent"], (cx - 6, ty + 6, 12, 12))
+    pygame.draw.rect(surf, outline, (cx - 6, ty + 6, 12, 12), 1)
+    # legs — armored greaves (solid blocks, no AA)
+    lw, lh = int(tw * 0.36), int(h * 0.30)
+    ly = ty + th - 2
+    for lx in (tx + 3, tx + tw - lw - 3):
+        leg = px_dither_surf(lw, lh, shade(primary, 0.75), shade(primary, 0.45))
+        clip_to_rect(leg, pygame.Rect(0, 0, lw, lh), border_radius=3)
+        surf.blit(leg, (lx, ly))
+        pygame.draw.rect(surf, outline, (lx, ly, lw, lh), 2, border_radius=3)
+    # arms — gauntlets flanking the torso (solid blocks, no AA)
+    aw, ah = int(tw * 0.26), int(th * 0.9)
+    ay = ty + 4
+    for ax in (tx - aw - 1, tx + tw + 1):
+        arm = px_dither_surf(aw, ah, shade(sec, 0.9), shade(primary, 0.5))
+        clip_to_rect(arm, pygame.Rect(0, 0, aw, ah), border_radius=4)
+        surf.blit(arm, (ax, ay))
+        pygame.draw.rect(surf, outline, (ax, ay, aw, ah), 2, border_radius=4)
+    # helmet — full helm with a T-visor (no AA)
+    hr = int(w * 0.22)
+    hx, hy = cx, ty - hr - 2
+    helm = px_dither_surf(hr * 2, hr * 2, shade(sec, 1.1), shade(primary, 0.5))
+    clip_to_circle(helm, (hr, hr), hr - 1)
+    surf.blit(helm, (hx - hr, hy - hr))
+    pygame.draw.circle(surf, outline, (hx, hy), hr, 2)
+    # T-visor (solid dark blocks, no AA)
+    pygame.draw.rect(surf, (30, 30, 40), (hx - hr + 3, hy - 2, hr * 2 - 6, 4))
+    pygame.draw.rect(surf, (30, 30, 40), (hx - 2, hy - 2, 4, hr))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_mage(surf, cx, cy, pal, outline, build):
+    """Robed mage: floating, no legs visible, hooded robe."""
+    sx, sy = BUILD_SCALE.get(build, (1.0, 1.0))
+    w, h = int(88 * sx), int(124 * sy)
+    primary = pal["primary"]
+    sec = pal["secondary"]
+    sh = pygame.Surface((int(w * 1.5), 16), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 60), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.75), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "light")
+    # robe — a flaring dithered polygon (no AA): narrow at top, wide at bottom
+    rtop = int(w * 0.22)
+    rbot = int(w * 0.48)
+    rty = cy - int(h * 0.20)
+    rby = cy + int(h * 0.34)
+    pts = [(cx - rtop, rty), (cx + rtop, rty),
+           (cx + rbot, rby), (cx - rbot, rby)]
+    robe = px_dither_surf(rbot * 2, rby - rty, shade(primary, 1.15), shade(primary, 0.5))
+    m = pygame.Surface((rbot * 2, rby - rty), pygame.SRCALPHA)
+    pygame.draw.polygon(m, (255, 255, 255, 255),
+                        [(p[0] - (cx - rbot), p[1] - rty) for p in pts])
+    robe.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    surf.blit(robe, (cx - rbot, rty))
+    pygame.draw.polygon(surf, outline, pts, 2)
+    # robe trim (solid accent band, no AA)
+    pygame.draw.rect(surf, pal["accent"], (cx - rbot, rby - 5, rbot * 2, 5))
+    # sleeves — two dithered polygons (no AA)
+    for side in (-1, 1):
+        spts = [(cx + side * rtop, rty + 2),
+                (cx + side * (rtop + 18), rty + 18),
+                (cx + side * (rtop + 6), rty + 30),
+                (cx + side * (rtop - 4), rty + 16)]
+        sl = px_dither_surf(24, 30, shade(primary, 0.95), shade(primary, 0.45))
+        m2 = pygame.Surface((24, 30), pygame.SRCALPHA)
+        pygame.draw.polygon(m2, (255, 255, 255, 255),
+                            [(p[0] - min(p[0] for p in spts), p[1] - min(p[1] for p in spts)) for p in spts])
+        sl.blit(m2, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(sl, (min(p[0] for p in spts), min(p[1] for p in spts)))
+        pygame.draw.polygon(surf, outline, spts, 2)
+    # head — smaller, with a hood (drawn as a feature below); bare here
+    hr = int(w * 0.18)
+    hx, hy = cx, rty - hr - 2
+    head = px_dither_surf(hr * 2, hr * 2, shade(sec, 1.1), shade(primary, 0.6))
+    clip_to_circle(head, (hr, hr), hr - 1)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.circle(surf, outline, (hx, hy), hr, 2)
+    pygame.draw.rect(surf, (40, 40, 60), (hx - hr // 2 - 1, hy - 1, 3, 3))
+    pygame.draw.rect(surf, (40, 40, 60), (hx + hr // 2 - 2, hy - 1, 3, 3))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_archer(surf, cx, cy, pal, outline, build):
+    """Lean archer: slim torso, quiver on the back, bow arm."""
+    sx, sy = BUILD_SCALE.get(build, (1.0, 1.0))
+    w, h = int(84 * sx), int(128 * sy)
+    primary = pal["primary"]
+    sec = pal["secondary"]
+    sh = pygame.Surface((int(w * 1.5), 16), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 65), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.75), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "wind")
+    # slim torso — dithered tunic (no AA)
+    tw, th = int(w * 0.42), int(h * 0.32)
+    tx, ty = cx - tw // 2, cy - th // 2 - int(h * 0.06)
+    torso = px_dither_surf(tw, th, shade(sec, 1.12), shade(primary, 0.55))
+    clip_to_rect(torso, pygame.Rect(0, 0, tw, th), border_radius=5)
+    surf.blit(torso, (tx, ty))
+    pygame.draw.rect(surf, outline, (tx, ty, tw, th), 2, border_radius=5)
+    # quiver on the back (solid block + arrow fletching, no AA)
+    qx = cx + tw // 2 - 2
+    pygame.draw.rect(surf, shade(sec, 0.6), (qx, ty - 8, 8, 26), border_radius=2)
+    pygame.draw.rect(surf, outline, (qx, ty - 8, 8, 26), 1, border_radius=2)
+    for fy in (ty - 14, ty - 10, ty - 6):
+        pygame.draw.rect(surf, pal["accent"], (qx + 1, fy, 6, 2))
+    # legs — slim, two blocks (no AA)
+    lw, lh = int(tw * 0.40), int(h * 0.34)
+    ly = ty + th - 2
+    for lx in (tx + 2, tx + tw - lw - 2):
+        leg = px_dither_surf(lw, lh, shade(primary, 0.7), shade(primary, 0.45))
+        clip_to_rect(leg, pygame.Rect(0, 0, lw, lh), border_radius=3)
+        surf.blit(leg, (lx, ly))
+        pygame.draw.rect(surf, outline, (lx, ly, lw, lh), 2, border_radius=3)
+    # bow arm — extended forward (solid block, no AA)
+    aw, ah = int(tw * 0.30), int(th * 0.7)
+    pygame.draw.rect(surf, shade(sec, 0.8), (tx - aw - 2, ty + 6, aw, ah), border_radius=4)
+    pygame.draw.rect(surf, outline, (tx - aw - 2, ty + 6, aw, ah), 1, border_radius=4)
+    # head — lean, with a headband (no AA)
+    hr = int(w * 0.19)
+    hx, hy = cx, ty - hr - 2
+    head = px_dither_surf(hr * 2, hr * 2, shade(sec, 1.12), shade(primary, 0.6))
+    clip_to_circle(head, (hr, hr), hr - 1)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.circle(surf, outline, (hx, hy), hr, 2)
+    pygame.draw.rect(surf, pal["accent"], (hx - hr, hy - hr // 2, hr * 2, 4))
+    pygame.draw.rect(surf, (40, 40, 60), (hx - hr // 2 - 1, hy + 1, 3, 3))
+    pygame.draw.rect(surf, (40, 40, 60), (hx + hr // 2 - 2, hy + 1, 3, 3))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_brute(surf, cx, cy, pal, outline, build):
+    """Huge brute: hunched, massive torso, tiny head, big fists."""
+    sx, sy = BUILD_SCALE.get(build, (1.18, 0.94))
+    w, h = int(112 * sx), int(116 * sy)
+    primary = pal["primary"]
+    sec = pal["secondary"]
+    sh = pygame.Surface((int(w * 1.5), 18), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 80), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.75), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "flame")
+    # massive hunched torso — dithered, wide + short (no AA)
+    tw, th = int(w * 0.62), int(h * 0.40)
+    tx, ty = cx - tw // 2, cy - th // 2 + int(h * 0.02)
+    torso = px_dither_surf(tw, th, shade(sec, 1.1), shade(primary, 0.5))
+    clip_to_rect(torso, pygame.Rect(0, 0, tw, th), border_radius=8)
+    surf.blit(torso, (tx, ty))
+    pygame.draw.rect(surf, outline, (tx, ty, tw, th), 2, border_radius=8)
+    # belt (solid accent band, no AA)
+    pygame.draw.rect(surf, pal["accent"], (tx, ty + th - 8, tw, 8))
+    # legs — thick stumps (solid blocks, no AA)
+    lw, lh = int(tw * 0.36), int(h * 0.26)
+    ly = ty + th - 4
+    for lx in (tx + 4, tx + tw - lw - 4):
+        leg = px_dither_surf(lw, lh, shade(primary, 0.7), shade(primary, 0.42))
+        clip_to_rect(leg, pygame.Rect(0, 0, lw, lh), border_radius=3)
+        surf.blit(leg, (lx, ly))
+        pygame.draw.rect(surf, outline, (lx, ly, lw, lh), 2, border_radius=3)
+    # massive arms — thick, hanging forward (solid blocks, no AA)
+    aw, ah = int(tw * 0.32), int(th * 1.05)
+    ay = ty - 2
+    for ax in (tx - aw - 2, tx + tw + 2):
+        arm = px_dither_surf(aw, ah, shade(sec, 0.95), shade(primary, 0.45))
+        clip_to_rect(arm, pygame.Rect(0, 0, aw, ah), border_radius=5)
+        surf.blit(arm, (ax, ay))
+        pygame.draw.rect(surf, outline, (ax, ay, aw, ah), 2, border_radius=5)
+        # big fist at the end (dithered disc, no AA)
+        fx = ax + aw // 2
+        fy = ay + ah - 2
+        fist = px_dither_surf(24, 24, shade(sec, 1.1), shade(primary, 0.5))
+        clip_to_circle(fist, (12, 12), 11)
+        surf.blit(fist, (fx - 12, fy - 12))
+        pygame.draw.circle(surf, outline, (fx, fy), 11, 2)
+    # tiny head (hunched forward, low) (no AA)
+    hr = int(w * 0.14)
+    hx, hy = cx, ty - hr + 2
+    head = px_dither_surf(hr * 2, hr * 2, shade(sec, 1.1), shade(primary, 0.6))
+    clip_to_circle(head, (hr, hr), hr - 1)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.circle(surf, outline, (hx, hy), hr, 2)
+    pygame.draw.rect(surf, (40, 30, 30), (hx - hr // 2, hy, 3, 3))
+    pygame.draw.rect(surf, (40, 30, 30), (hx + hr // 2 - 2, hy, 3, 3))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_rogue(surf, cx, cy, pal, outline, build):
+    """Crouched rogue: low stance, hood, daggers."""
+    sx, sy = BUILD_SCALE.get(build, (0.94, 1.06))
+    w, h = int(84 * sx), int(116 * sy)
+    primary = pal["primary"]
+    sec = pal["secondary"]
+    sh = pygame.Surface((int(w * 1.5), 14), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 65), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.75), cy + h // 2 + 4))
+    _motif_aura(surf, cx, cy, "shadow")
+    # crouched torso — low + leaning forward (dithered, no AA)
+    tw, th = int(w * 0.46), int(h * 0.28)
+    tx, ty = cx - tw // 2 + 4, cy - th // 2 + int(h * 0.06)
+    torso = px_dither_surf(tw, th, shade(sec, 1.1), shade(primary, 0.5))
+    clip_to_rect(torso, pygame.Rect(0, 0, tw, th), border_radius=5)
+    surf.blit(torso, (tx, ty))
+    pygame.draw.rect(surf, outline, (tx, ty, tw, th), 2, border_radius=5)
+    # bent legs — two angled blocks (no AA)
+    lw, lh = int(tw * 0.42), int(h * 0.26)
+    ly = ty + th - 2
+    for lx, lean in ((tx + 2, 6), (tx + tw - lw - 2, -6)):
+        leg = px_dither_surf(lw, lh, shade(primary, 0.7), shade(primary, 0.42))
+        clip_to_rect(leg, pygame.Rect(0, 0, lw, lh), border_radius=3)
+        surf.blit(leg, (lx + lean, ly))
+        pygame.draw.rect(surf, outline, (lx + lean, ly, lw, lh), 2, border_radius=3)
+    # arms — crossed forward (solid blocks, no AA)
+    aw, ah = int(tw * 0.30), int(th * 0.8)
+    ay = ty + 4
+    for ax in (tx - aw, tx + tw):
+        pygame.draw.rect(surf, shade(sec, 0.85), (ax, ay, aw, ah), border_radius=4)
+        pygame.draw.rect(surf, outline, (ax, ay, aw, ah), 1, border_radius=4)
+    # head — small, hooded (hood added as a feature below)
+    hr = int(w * 0.17)
+    hx, hy = cx + 4, ty - hr
+    head = px_dither_surf(hr * 2, hr * 2, shade(sec, 1.1), shade(primary, 0.6))
+    clip_to_circle(head, (hr, hr), hr - 1)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.circle(surf, outline, (hx, hy), hr, 2)
+    pygame.draw.rect(surf, (40, 40, 60), (hx - hr // 2, hy - 1, 3, 3))
+    pygame.draw.rect(surf, (40, 40, 60), (hx + hr // 2 - 2, hy - 1, 3, 3))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_undead(surf, cx, cy, pal, outline, build):
+    """Wraith-like undead: floating, tattered lower body, glowing eyes."""
+    sx, sy = BUILD_SCALE.get(build, (0.96, 1.12))
+    w, h = int(88 * sx), int(128 * sy)
+    primary = pal["primary"]
+    sec = pal["secondary"]
+    sh = pygame.Surface((int(w * 1.4), 14), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 50), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.7), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "shadow")
+    # tattered robe — a jagged-bottom dithered polygon (no AA)
+    rtop = int(w * 0.24)
+    rbot = int(w * 0.42)
+    rty = cy - int(h * 0.22)
+    rby = cy + int(h * 0.30)
+    # jagged bottom hem
+    hem = []
+    steps = 6
+    for i in range(steps + 1):
+        t = i / steps
+        x = cx - rbot + t * rbot * 2
+        y = rby + (8 if i % 2 else 0)
+        hem.append((x, y))
+    pts = [(cx - rtop, rty), (cx + rtop, rty)] + hem[::-1]
+    robe = px_dither_surf(rbot * 2, rby - rty + 10, shade(primary, 0.85), shade(primary, 0.35))
+    m = pygame.Surface((rbot * 2, rby - rty + 10), pygame.SRCALPHA)
+    pygame.draw.polygon(m, (255, 255, 255, 255),
+                        [(p[0] - (cx - rbot), p[1] - rty) for p in pts])
+    robe.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    surf.blit(robe, (cx - rbot, rty))
+    pygame.draw.polygon(surf, outline, pts, 2)
+    # spectral arms — thin, fading (solid blocks, no AA)
+    aw, ah = int(rtop * 0.5), int(h * 0.30)
+    ay = rty + 4
+    for ax in (cx - rtop - aw - 2, cx + rtop + 2):
+        arm = pygame.Surface((aw, ah), pygame.SRCALPHA)
+        pygame.draw.rect(arm, (*shade(primary, 0.7), 180), (0, 0, aw, ah), border_radius=3)
+        surf.blit(arm, (ax, ay))
+        pygame.draw.rect(surf, outline, (ax, ay, aw, ah), 1, border_radius=3)
+    # head — skull-like, with glowing eyes (no AA)
+    hr = int(w * 0.19)
+    hx, hy = cx, rty - hr - 2
+    head = px_dither_surf(hr * 2, hr * 2, shade(sec, 0.9), shade(primary, 0.4))
+    clip_to_circle(head, (hr, hr), hr - 1)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.circle(surf, outline, (hx, hy), hr, 2)
+    # glowing eyes (solid bright blocks, no AA)
+    glow = pal["accent"]
+    pygame.draw.rect(surf, glow, (hx - hr // 2 - 1, hy - 1, 4, 4))
+    pygame.draw.rect(surf, glow, (hx + hr // 2 - 3, hy - 1, 4, 4))
+    pygame.draw.rect(surf, shade(glow, 1.3), (hx - hr // 2, hy, 2, 2))
+    pygame.draw.rect(surf, shade(glow, 1.3), (hx + hr // 2 - 2, hy, 2, 2))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_yordle(surf, cx, cy, pal, outline, build):
+    """Tiny yordle: big head, small body, big ears."""
+    sx, sy = BUILD_SCALE.get(build, (1.06, 0.84))
+    w, h = int(76 * sx), int(96 * sy)
+    primary = pal["primary"]
+    sec = pal["secondary"]
+    sh = pygame.Surface((int(w * 1.5), 12), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 60), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.75), cy + h // 2 + 4))
+    _motif_aura(surf, cx, cy, "nature")
+    # tiny body — small dithered torso (no AA)
+    tw, th = int(w * 0.40), int(h * 0.30)
+    tx, ty = cx - tw // 2, cy + int(h * 0.06)
+    torso = px_dither_surf(tw, th, shade(sec, 1.12), shade(primary, 0.55))
+    clip_to_rect(torso, pygame.Rect(0, 0, tw, th), border_radius=5)
+    surf.blit(torso, (tx, ty))
+    pygame.draw.rect(surf, outline, (tx, ty, tw, th), 2, border_radius=5)
+    # little legs (solid blocks, no AA)
+    lw, lh = int(tw * 0.40), int(h * 0.18)
+    ly = ty + th - 2
+    for lx in (tx + 2, tx + tw - lw - 2):
+        pygame.draw.rect(surf, shade(primary, 0.6), (lx, ly, lw, lh), border_radius=3)
+        pygame.draw.rect(surf, outline, (lx, ly, lw, lh), 1, border_radius=3)
+    # little arms (solid blocks, no AA)
+    aw, ah = int(tw * 0.26), int(th * 0.8)
+    ay = ty + 2
+    for ax in (tx - aw, tx + tw):
+        pygame.draw.rect(surf, shade(sec, 0.85), (ax, ay, aw, ah), border_radius=4)
+        pygame.draw.rect(surf, outline, (ax, ay, aw, ah), 1, border_radius=4)
+    # BIG head — oversized for the yordle look (no AA)
+    hr = int(w * 0.30)
+    hx, hy = cx, ty - hr + 2
+    head = px_dither_surf(hr * 2, hr * 2, shade(sec, 1.12), shade(primary, 0.6))
+    clip_to_circle(head, (hr, hr), hr - 1)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.circle(surf, outline, (hx, hy), hr, 2)
+    # big ears (two dithered ellipses, no AA)
+    for side in (-1, 1):
+        ear = pygame.Surface((hr, hr), pygame.SRCALPHA)
+        pygame.draw.ellipse(ear, (*shade(sec, 1.05), 255), (0, 0, hr, hr))
+        surf.blit(ear, (hx + side * hr - hr // 2, hy - hr // 4))
+        pygame.draw.ellipse(surf, outline, (hx + side * hr - hr // 2, hy - hr // 4, hr, hr), 2)
+    # big eyes (no AA)
+    pygame.draw.rect(surf, (40, 40, 60), (hx - hr // 2, hy - 2, 5, 5))
+    pygame.draw.rect(surf, (40, 40, 60), (hx + hr // 2 - 4, hy - 2, 5, 5))
+    pygame.draw.rect(surf, (255, 255, 255), (hx - hr // 2 + 1, hy - 1, 2, 2))
+    pygame.draw.rect(surf, (255, 255, 255), (hx + hr // 2 - 3, hy - 1, 2, 2))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_vastaya(surf, cx, cy, pal, outline, build):
+    """Vastaya: humanoid with animal ears + a tail."""
+    sx, sy = BUILD_SCALE.get(build, (1.0, 1.04))
+    w, h = int(90 * sx), int(122 * sy)
+    primary = pal["primary"]
+    sec = pal["secondary"]
+    sh = pygame.Surface((int(w * 1.5), 16), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 65), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.75), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "wind")
+    # humanoid body (reuse the base silhouette)
+    hx, hy, hr = _body_outline(surf, cx, cy, w, h, primary, outline)
+    # animal ears — two pointed triangles on the head (no AA)
+    for side in (-1, 1):
+        ex = hx + side * (hr - 2)
+        pygame.draw.polygon(surf, shade(sec, 1.1),
+                            [(ex - 5, hy - hr + 2), (ex + 5, hy - hr + 2), (ex, hy - hr - 12)])
+        pygame.draw.polygon(surf, outline,
+                            [(ex - 5, hy - hr + 2), (ex + 5, hy - hr + 2), (ex, hy - hr - 12)], 2)
+        pygame.draw.polygon(surf, shade(pal["accent"], 1.2),
+                            [(ex - 2, hy - hr + 1), (ex + 2, hy - hr + 1), (ex, hy - hr - 6)])
+    # tail — a curved block chain behind the body (no AA)
+    tx0 = cx - int(w * 0.30)
+    ty0 = cy + int(h * 0.20)
+    for i in range(7):
+        t = i / 6.0
+        x = tx0 - int(t * 14)
+        y = ty0 - int(math.sin(t * math.pi) * 18)
+        r = 5 - i // 3
+        pygame.draw.circle(surf, shade(sec, 0.9), (x, y), r)
+        pygame.draw.circle(surf, outline, (x, y), r, 1)
+    return (hx, hy, hr, w, h)
+
+
+def _arch_construct(surf, cx, cy, pal, outline, build):
+    """Construct: angular, rocky/metallic, segmented joints."""
+    sx, sy = BUILD_SCALE.get(build, (1.18, 0.96))
+    w, h = int(104 * sx), int(118 * sy)
+    primary = pal["primary"]
+    sec = pal["secondary"]
+    sh = pygame.Surface((int(w * 1.5), 18), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 75), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.75), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "lightning")
+    # angular torso — a dithered hexagon (no AA)
+    tw, th = int(w * 0.56), int(h * 0.38)
+    tx, ty = cx - tw // 2, cy - th // 2 - int(h * 0.04)
+    pts = [(cx, ty - 6), (cx + tw // 2, ty + 6), (cx + tw // 2, ty + th - 6),
+           (cx, ty + th), (cx - tw // 2, ty + th - 6), (cx - tw // 2, ty + 6)]
+    torso = px_dither_surf(tw, th, shade(sec, 1.1), shade(primary, 0.5))
+    m = pygame.Surface((tw, th), pygame.SRCALPHA)
+    pygame.draw.polygon(m, (255, 255, 255, 255),
+                        [(p[0] - (cx - tw // 2), p[1] - ty) for p in pts])
+    torso.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    surf.blit(torso, (cx - tw // 2, ty))
+    # core gem in the chest (dithered disc, no AA)
+    gem = px_dither_surf(20, 20, pal["accent"], shade(pal["accent"], 0.4))
+    clip_to_circle(gem, (10, 10), 9)
+    surf.blit(gem, (cx - 10, ty + th // 2 - 10))
+    pygame.draw.circle(surf, outline, (cx, ty + th // 2), 9, 2)
+    pygame.draw.polygon(surf, outline, pts, 2)
+    # segmented legs — blocky (solid blocks, no AA)
+    lw, lh = int(tw * 0.34), int(h * 0.28)
+    ly = ty + th - 4
+    for lx in (tx + 4, tx + tw - lw - 4):
+        pygame.draw.rect(surf, shade(primary, 0.7), (lx, ly, lw, lh), border_radius=2)
+        pygame.draw.rect(surf, shade(primary, 0.5), (lx, ly + lh // 2, lw, 4))
+        pygame.draw.rect(surf, outline, (lx, ly, lw, lh), 2, border_radius=2)
+    # blocky arms (solid blocks, no AA)
+    aw, ah = int(tw * 0.28), int(th * 0.95)
+    ay = ty + 2
+    for ax in (tx - aw - 2, tx + tw + 2):
+        pygame.draw.rect(surf, shade(sec, 0.9), (ax, ay, aw, ah), border_radius=3)
+        pygame.draw.rect(surf, shade(primary, 0.5), (ax, ay + ah // 2, aw, 4))
+        pygame.draw.rect(surf, outline, (ax, ay, aw, ah), 2, border_radius=3)
+    # head — a rectangular helm (no AA)
+    hr = int(w * 0.18)
+    hx, hy = cx, ty - hr - 4
+    pygame.draw.rect(surf, shade(sec, 1.1), (hx - hr, hy - hr, hr * 2, hr * 2), border_radius=3)
+    pygame.draw.rect(surf, outline, (hx - hr, hy - hr, hr * 2, hr * 2), 2, border_radius=3)
+    # visor slit (solid dark block, no AA)
+    pygame.draw.rect(surf, pal["accent"], (hx - hr + 3, hy - 2, hr * 2 - 6, 4))
+    pygame.draw.rect(surf, (30, 30, 40), (hx - hr + 4, hy - 1, hr * 2 - 8, 2))
+    return (hx, hy, hr, 0, 0)  # w,h unused for construct features
+
+
+def _arch_beast(surf, cx, cy, pal, outline, build):
+    """Beast: feral, hunched-forward, clawed, bestial head."""
+    sx, sy = BUILD_SCALE.get(build, (1.10, 0.92))
+    w, h = int(108 * sx), int(112 * sy)
+    primary = pal["primary"]
+    sec = pal["secondary"]
+    sh = pygame.Surface((int(w * 1.6), 16), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 75), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.8), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "nature")
+    # hunched feral torso — dithered, leaning forward (no AA)
+    tw, th = int(w * 0.58), int(h * 0.36)
+    tx, ty = cx - tw // 2 + 6, cy - th // 2 + int(h * 0.04)
+    torso = px_dither_surf(tw, th, shade(sec, 1.05), shade(primary, 0.45))
+    clip_to_rect(torso, pygame.Rect(0, 0, tw, th), border_radius=8)
+    surf.blit(torso, (tx, ty))
+    pygame.draw.rect(surf, outline, (tx, ty, tw, th), 2, border_radius=8)
+    # fur tufts along the back (solid triangles, no AA)
+    for i in range(5):
+        fx = tx + i * (tw // 4)
+        pygame.draw.polygon(surf, shade(primary, 0.6),
+                            [(fx, ty + 2), (fx + 4, ty - 8), (fx + 8, ty + 2)])
+    # bent legs — digitigrade (angled blocks, no AA)
+    lw, lh = int(tw * 0.34), int(h * 0.30)
+    ly = ty + th - 2
+    for lx, lean in ((tx + 4, 8), (tx + tw - lw - 4, -8)):
+        leg = px_dither_surf(lw, lh, shade(primary, 0.7), shade(primary, 0.42))
+        clip_to_rect(leg, pygame.Rect(0, 0, lw, lh), border_radius=3)
+        surf.blit(leg, (lx + lean, ly))
+        pygame.draw.rect(surf, outline, (lx + lean, ly, lw, lh), 2, border_radius=3)
+        # claws at the foot (solid triangles, no AA)
+        pygame.draw.polygon(surf, shade(sec, 1.1),
+                            [(lx + lean, ly + lh), (lx + lean + 4, ly + lh + 6), (lx + lean + 8, ly + lh)])
+    # long arms reaching forward (solid blocks, no AA)
+    aw, ah = int(tw * 0.32), int(th * 1.0)
+    ay = ty
+    for ax in (tx - aw - 2, tx + tw + 2):
+        pygame.draw.rect(surf, shade(sec, 0.9), (ax, ay, aw, ah), border_radius=5)
+        pygame.draw.rect(surf, outline, (ax, ay, aw, ah), 2, border_radius=5)
+        # claws (solid triangles, no AA)
+        for ci in range(3):
+            pygame.draw.polygon(surf, shade(sec, 1.2),
+                                [(ax + ci * 4, ay + ah), (ax + ci * 4 + 2, ay + ah + 7), (ax + ci * 4 + 4, ay + ah)])
+    # bestial head — elongated, with a snout (no AA)
+    hr = int(w * 0.16)
+    hx, hy = cx + 8, ty - hr - 2
+    head = px_dither_surf(hr * 2 + 10, hr * 2, shade(sec, 1.05), shade(primary, 0.5))
+    clip_to_rect(head, pygame.Rect(0, 0, hr * 2 + 10, hr * 2), border_radius=6)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.rect(surf, outline, (hx - hr, hy - hr, hr * 2 + 10, hr * 2), 2, border_radius=6)
+    # snout (solid block, no AA)
+    pygame.draw.rect(surf, shade(primary, 0.7), (hx + hr - 2, hy + 2, 12, 8), border_radius=3)
+    # pointed ears (solid triangles, no AA)
+    for side in (-1, 1):
+        pygame.draw.polygon(surf, shade(sec, 1.1),
+                            [(hx + side * (hr - 4), hy - hr + 2), (hx + side * (hr + 2), hy - hr + 2), (hx + side * hr, hy - hr - 10)])
+    # glowing eyes (solid bright blocks, no AA)
+    pygame.draw.rect(surf, pal["accent"], (hx - hr // 2, hy - 1, 4, 4))
+    pygame.draw.rect(surf, pal["accent"], (hx + 2, hy - 1, 4, 4))
+    return (hx, hy, hr, w, h)
+
+
+# archetype dispatcher
+_ARCH_DRAW = {
+    "knight": _arch_knight, "mage": _arch_mage, "archer": _arch_archer,
+    "brute": _arch_brute, "rogue": _arch_rogue, "undead": _arch_undead,
+    "yordle": _arch_yordle, "vastaya": _arch_vastaya,
+    "construct": _arch_construct, "beast": _arch_beast,
+}
+
+
+def draw_chibi_descriptor(surf, descriptor):
+    """Draw a descriptor-driven world sprite onto surf (256x256, SRCALPHA).
+    descriptor fields: archetype, weapon, palette{primary,secondary,accent},
+    features[], build, motif. Dispatches to the per-archetype silhouette,
+    applies features, then draws the weapon."""
+    cx, cy = 128, 150
+    pal = descriptor["palette"]
+    primary = pal["primary"]
+    outline = shade(primary, 0.3)
+    archetype = descriptor["archetype"]
+    build = descriptor.get("build", "average")
+    fn = _ARCH_DRAW.get(archetype, _arch_knight)
+    hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
+    # features (skip 'helmet' — the knight/construct archetypes already draw a helm)
+    features = [f for f in descriptor.get("features", []) if f != "helmet"]
+    if w and h:
+        _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline)
+    # weapon
+    weapon = descriptor.get("weapon", "sword")
+    if weapon and weapon != "none":
+        draw_weapon(surf, cx, cy, weapon, pal["accent"], outline,
+                    {"fire": "fire", "water": "water", "wind": "wind",
+                     "light": "light", "dark": "dark"}.get(descriptor.get("motif"), "fire"))
+
+
+def generate_sprites(champs):
+    """Generate the descriptor-driven world sprite for every champion."""
+    pygame.init()
+    pygame.display.set_mode((1, 1))
+    n = 0
+    for c in champs:
+        key = c["id"]
+        desc = c["descriptor"]
+        hero_dir = os.path.join(ASSET_DIR, "characters", key)
+        os.makedirs(hero_dir, exist_ok=True)
+        s = pygame.Surface((256, 256), pygame.SRCALPHA)
+        draw_chibi_descriptor(s, desc)
+        pygame.image.save(s, os.path.join(hero_dir, "sprite.png"))
+        n += 1
+    print(f"Generated {n} descriptor-driven world sprites")
+
+
+
 def _grad_ellipse(surf, rect, inner, outer, center=None, falloff=1.0):
     """Fill an ellipse with a 2-tone dithered fill (pixel-art: no AA radial
     gradient). inner at center, outer at edge, clipped to the ellipse shape."""

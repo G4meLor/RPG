@@ -353,8 +353,16 @@ class TitleScene(Scene):
         # button is appended after the base 7 so the main menu stays familiar;
         # its index is stored because the list is rebuilt each __init__.
         self._ascend_idx = None
+        # D3: the single "Enter World" button is split into two mode buttons —
+        # "Adventure" (left, warm/fire tone; the 10-min wave-survival mode that
+        # routes to AdventureScene) + "Endless" (right, green/world tone; the
+        # open-world + story mode that routes to WorldScene). Both are 116x44 so
+        # a one-line description fits in the 8px gap above the Heroes button; the
+        # meta menus (Heroes/Summon/Shop/Codex/Records/Settings) keep their y
+        # positions, so indices shift by +1 (they were 1-6, now 2-7).
         self.buttons = [
-            Button((WIDTH // 2 - 120, 300, 240, 56), "Enter World", (70, 120, 90), (110, 180, 130)),
+            Button((WIDTH // 2 - 120, 300, 116, 44), "Adventure", (130, 70, 50), (180, 100, 70), size=20),
+            Button((WIDTH // 2 + 4, 300, 116, 44), "Endless", (70, 120, 90), (110, 180, 130), size=20),
             Button((WIDTH // 2 - 120, 364, 240, 56), "Heroes", (90, 80, 50), (160, 130, 70)),
             Button((WIDTH // 2 - 120, 428, 240, 56), "Summon", (90, 60, 130), (140, 90, 200)),
             Button((WIDTH // 2 - 120, 492, 240, 56), "Shop", (70, 90, 130), (100, 130, 190)),
@@ -391,19 +399,27 @@ class TitleScene(Scene):
         for e in events:
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
+            # D3: buttons[0] = Adventure, buttons[1] = Endless (each sets
+            # player.mode + routes via goto("world"), which _make_scene routes
+            # by mode to AdventureScene or WorldScene). The meta menus shift
+            # by +1 (Heroes was buttons[1], now buttons[2], etc.).
             if self.buttons[0].clicked(e):
+                self.game.player.mode = "adventure"; self.game.player.save()
                 self.game.goto("world")
             if self.buttons[1].clicked(e):
-                self.game.goto("roster")
+                self.game.player.mode = "endless"; self.game.player.save()
+                self.game.goto("world")
             if self.buttons[2].clicked(e):
-                self.game.goto("gacha")
+                self.game.goto("roster")
             if self.buttons[3].clicked(e):
-                self.game.goto("shop")
+                self.game.goto("gacha")
             if self.buttons[4].clicked(e):
-                self.game.goto("codex")
+                self.game.goto("shop")
             if self.buttons[5].clicked(e):
-                self.game.goto("stats")
+                self.game.goto("codex")
             if self.buttons[6].clicked(e):
+                self.game.goto("stats")
+            if self.buttons[7].clicked(e):
                 self.game.goto("settings")
             # Aetheric Cycle: "Ascend World" resets the world for NG+ and
             # drops the player into the fresh world at (0,0) on cycle N+1.
@@ -445,6 +461,14 @@ class TitleScene(Scene):
                                  (WIDTH // 2 + dx, 264), (WIDTH // 2 + dx - 6, 258)])
         for b in self.buttons:
             b.draw(surf)
+        # D3: one-line mode descriptions under the two mode buttons (subtle, dim,
+        # small) so the player sees what each mode is without a tooltip. The 20px
+        # gap between the mode buttons (bottom y=344) and Heroes (top y=364) fits
+        # a size-13 line centered at y=354.
+        text(surf, "10-min wave survival", 13, (200, 170, 150),
+             (WIDTH // 2 - 62, 354), center=True)
+        text(surf, "Open world + story", 13, (170, 200, 180),
+             (WIDTH // 2 + 62, 354), center=True)
         text(surf, f"Gems: {self.game.player.gems}   Gold: {self.game.player.gold}", 18, GOLD,
              (WIDTH // 2, 280), center=True)
         # Aetheric Cycle: show the current NG+ cycle under the gems/gold line

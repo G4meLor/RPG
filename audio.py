@@ -3,7 +3,6 @@ Aetheria Gacha - Procedural Audio
 Synthesizes all sound effects with numpy so the game has zero external
 audio dependencies. Sounds are generated once at startup and cached.
 """
-import os
 import math
 import numpy as np
 import pygame

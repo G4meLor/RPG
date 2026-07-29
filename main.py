@@ -3,15 +3,13 @@ Aetheria Gacha - Main game
 A complete turn-based gacha RPG built with pygame.
 Run:  python3 main.py
 """
-import os
-import sys
 import math
 import random
 import pygame
 
 import data as D
-from entities import (Hero, load_char_sprite, load_portrait,
-                      load_skill_icon, load_bg, load_ui, load_item_icon)
+from entities import (load_char_sprite, load_portrait,
+                      load_bg, load_ui, load_item_icon)
 from gacha import GachaSystem
 from player import Player
 import audio
@@ -175,10 +173,6 @@ def draw_bar(surf, rect, frac, fg, bg=(40, 40, 60), border=(0, 0, 0)):
         fr = r.copy(); fr.width = int(r.width * max(0, min(1, frac)))
         pygame.draw.rect(surf, fg, fr, border_radius=4)
     pygame.draw.rect(surf, border, r, 1, border_radius=4)
-
-def draw_hp_bar(surf, rect, frac):
-    col = HP_GREEN if frac > 0.5 else (GOLD if frac > 0.25 else HP_RED)
-    draw_bar(surf, rect, frac, col)
 
 def draw_stars(surf, x, y, n, size=16):
     for i in range(n):

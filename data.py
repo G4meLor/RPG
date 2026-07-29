@@ -10,7 +10,6 @@ ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
 # ---------------------------------------------------------------------------
 # Elements and damage chart (attacker -> defender multiplier)
 # ---------------------------------------------------------------------------
-ELEMENTS = ["fire", "water", "wind", "light", "dark"]
 
 # Fire > Wind > Earth(no). Fire beats Wind, Wind beats Water, Water beats Fire.
 # Light and Dark are mutually strong against each other.
@@ -119,29 +118,11 @@ RARITY_COLORS = {
 # ---------------------------------------------------------------------------
 # Status effects
 # ---------------------------------------------------------------------------
-EFFECT_NAMES = {
-    "poison":   ("Poison",  (120, 200, 80)),
-    "burn":     ("Burn",    (255, 140, 60)),
-    "regen":    ("Regen",   (120, 240, 160)),
-    "atk_up":   ("ATK Up",  (255, 200, 80)),
-    "def_up":   ("DEF Up",  (140, 180, 255)),
-    "atk_down": ("ATK Dn",  (200, 120, 200)),
-    "def_down": ("DEF Dn",  (180, 120, 160)),
-    "spd_up":   ("SPD Up",  (180, 240, 220)),
-    "stun":     ("Stun",    (255, 230, 90)),
-    "shield":   ("Shield",  (200, 230, 255)),
-    "freeze":   ("Freeze",  (160, 220, 255)),
-    "bleed":    ("Bleed",   (200, 60, 80)),
-    "taunt":    ("Taunt",   (255, 180, 80)),
-    "reflect":  ("Reflect", (180, 220, 255)),
-    "broken":   ("Broken",  (255, 200, 90)),
-}
 
 # ---------------------------------------------------------------------------
 # Combat tuning
 # ---------------------------------------------------------------------------
 BASE_CRIT_CHANCE = 0.08      # base chance any hit can crit
-CRIT_MULT = 1.6              # crit damage multiplier
 COMBO_BONUS_PER = 0.04       # +4% damage per combo step
 COMBO_MAX = 10
 # combo climax milestones: at 5 the next skill is empowered (wider AoE / a 2nd
@@ -219,7 +200,6 @@ def skill_energy_cost(skill):
 #   skipping basic_attack). The ultimate stays on hero["ultimate"].
 #   HERO_PASSIVES maps a hero id -> a passive id (see PASSIVES_DB).
 # ---------------------------------------------------------------------------
-ABILITY_KEYS = ["Q", "W", "E", "R"]
 
 # passive definitions — always-on combat modifiers, keyed by id.
 #   kind values handled in world_scene combat:
@@ -525,8 +505,6 @@ TOUGHNESS_BREAK_DAMAGE = 0.15      # one-time bonus damage on break = frac of ma
 # HSR-accurate: toughness does NOT mend on its own. Only a broken enemy recovers
 # (to full, the round after it was broken). So focused fire reliably breaks.
 TOUGHNESS_RECOVER_FRAC = 0.0       # non-broken toughness does not mend
-TOUGHNESS_HIT_BASE = 10            # every hit shaves this much toughness
-TOUGHNESS_HIT_WEAK = 30            # a weakness-element hit shaves this much
 
 # ---------------------------------------------------------------------------
 # Skill definitions
@@ -678,7 +656,6 @@ BOSS_ULT = {
     "golem":       "abyssal_wave",
 }
 BOSS_IDS = set(BOSS_ULT.keys())
-BOSS_ULT_HP_FRAC = 0.5   # boss uses ultimate when HP drops below this
 
 # Boss phase patterns — which telegraphed patterns a boss uses at each phase.
 # Phase 1 (100-66% HP): no special pattern (just the basic strike + the 50% ult).
@@ -1034,14 +1011,6 @@ ENEMIES_DB = {
 }
 
 # ---------------------------------------------------------------------------
-# Stages / map nodes — REMOVED.
-# The turn-based adventure campaign was deleted in favor of the open-world
-# mode. STAGES_DB is kept as an empty list so any stray references (and the
-# save migration) degrade gracefully instead of NameError-ing.
-# ---------------------------------------------------------------------------
-STAGES_DB = []
-
-# ---------------------------------------------------------------------------
 # Gacha pool
 # ---------------------------------------------------------------------------
 GACHA_RATES = {"SSR": 0.06, "SR": 0.34, "R": 0.60}
@@ -1110,7 +1079,6 @@ GACHA_DUPE_GEM_REFUND = 10
 # Ascension / Limit Break
 #   Duplicates convert into ascension stars; each star boosts stats.
 # ---------------------------------------------------------------------------
-ASCENSION_STARS_PER_DUPE = 1
 MAX_ASCENSION = 5
 ASCENSION_BONUS = {0: 1.0, 1: 1.08, 2: 1.16, 3: 1.25, 4: 1.35, 5: 1.50}
 
@@ -1952,13 +1920,6 @@ NPCS = {
         ],
     },
 }
-
-# Dialogue trees (Task E1) — keyed by npc_id (the biome key), each a list of
-# lines the dialogue box advances through on F/Space/Esc, then dismisses. The
-# NPCS[biome]["dialogue"] list is the canonical tree; DIALOGUE mirrors it so a
-# caller can fetch a tree by npc_id without re-deriving the biome (E2 will use
-# this when it wires the quest-accept flow off the NPC).
-DIALOGUE = {biome: list(npc["dialogue"]) for biome, npc in NPCS.items()}
 
 # ---------------------------------------------------------------------------
 # Story quest chain (Task E2) — the main quest: 5 biome-boss quests + 1

@@ -190,18 +190,6 @@ def neighbors(c, r):
     return out
 
 
-def edge_for(src, dst):
-    """Given we are walking from src to dst, which edge do we exit through,
-    and where do we enter the dst map (opposite edge)."""
-    sc, sr = src
-    dc, dr = dst
-    if dc > sc:   return "right",  "left"
-    if dc < sc:   return "left",   "right"
-    if dr > sr:   return "bottom", "top"
-    if dr < sr:   return "top",    "bottom"
-    return "right", "left"
-
-
 # ---------------------------------------------------------------------------
 # Per-cell map generation
 #   A generated map is a dict:
@@ -700,11 +688,6 @@ def pygame_rect(x, y, w, h):
     return pygame.Rect(x, y, w, h)
 
 
-def _free(x, y, obstacles, pad=8):
-    r = pygame_rect(x - pad, y - pad, TILE + pad * 2, TILE + pad * 2)
-    return not any(r.colliderect(o) for o in obstacles)
-
-
 def _free_grid(x, y, grid, pad=8):
     """Free-check using the spatial grid built during obstacle placement,
     instead of scanning all obstacles. O(nearby tiles) not O(all)."""
@@ -751,7 +734,3 @@ def entry_point(edge, cross=None):
 def cell_id(c, r):
     return f"{c},{r}"
 
-
-def parse_cell_id(s):
-    a, b = s.split(",")
-    return int(a), int(b)

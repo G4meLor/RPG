@@ -7,6 +7,15 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Virtualenvs / env
+.env
+.venv/
+venv/
+env/
 
 # Save files (player state — regenerated on play)
 saves/
@@ -19,8 +28,18 @@ saves/
 Thumbs.db
 *.swp
 *~
+
+# Patch leftovers / logs
+*.orig
+*.rej
+*.log
+
+# Editor configs
 .vscode/
 .idea/
 
 # Claude Code worktrees
 .claude/
+
+# Superpowers SDD scratch (task briefs / reports / progress)
+.superpowers/

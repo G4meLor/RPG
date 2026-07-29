@@ -5,8 +5,6 @@ crit and effects.
 """
 import os
 import pygame
-import random
-import math
 
 import data as D
 
@@ -158,34 +156,14 @@ class Combatant:
         self.max_energy = D.ENERGY_MAX
 
     # --- stat modifiers from effects ---
-    def atk_mod(self):
-        m = 1.0
-        for e in self.effects:
-            if e.type == "atk_up":   m += e.potency
-            elif e.type == "atk_down": m -= e.potency
-        return max(0.1, m)
-
-    def def_mod(self):
-        m = 1.0
-        for e in self.effects:
-            if e.type == "def_up":   m += e.potency
-            elif e.type == "def_down": m -= e.potency
-        return max(0.1, m)
-
     def spd_mod(self):
         m = 1.0
         for e in self.effects:
             if e.type == "spd_up": m += e.potency
         return m
 
-    def effective_spd(self):
-        return int(self.spd * self.spd_mod())
-
     def has_shield(self):
         return any(e.type == "shield" for e in self.effects)
-
-    def is_taunting(self):
-        return any(e.type == "taunt" for e in self.effects)
 
     def reflect_frac(self):
         """Fraction of incoming damage reflected, if any."""
@@ -194,18 +172,9 @@ class Combatant:
                 return 0.3
         return 0.0
 
-    def is_stunned(self):
-        return any(e.type == "stun" for e in self.effects)
-
-    def is_frozen(self):
-        return any(e.type == "freeze" for e in self.effects)
-
     # --- HSR-style toughness / break ---
     def has_toughness(self):
         return self.max_toughness > 0
-
-    def is_broken(self):
-        return self.broken
 
     # --- HSR-style energy (shared by heroes and enemies) ---
     def skill_energy_cost(self, skill_id):
@@ -299,22 +268,6 @@ class Combatant:
                     results.append(("+" + str(val), (140, 240, 120)))
         self.effects = [e for e in self.effects if not e.expired()]
         return results
-
-    def clear_round_flags(self):
-        self.defending = False
-
-    def update_anim(self, dt):
-        if self.shake > 0: self.shake = max(0, self.shake - dt * 40)
-        if self.flash > 0: self.flash = max(0, self.flash - dt * 3)
-        self.scale_fx += (self.target_scale - self.scale_fx) * min(1, dt * 10)
-        self.display_hp += (self.hp - self.display_hp) * min(1, dt * 8)
-        if self.max_toughness > 0:
-            self.display_toughness += (self.toughness - self.display_toughness) * min(1, dt * 8)
-        if self.entry_anim > 0:
-            self.entry_anim = max(0, self.entry_anim - dt * 2)
-        # KO fade-out animation
-        if not self.alive:
-            self.ko_anim = min(1.0, self.ko_anim + dt * 2)
 
 
 class Hero(Combatant):
@@ -545,31 +498,6 @@ class Hero(Combatant):
         # check agree (otherwise a tree-extended bar shows full but can't ult)
         return bool(self.ultimate) and self.energy >= self.max_energy
 
-    # --- evolution tree ---
-    def evo_tree(self):
-        return D.hero_evo_tree(self.def_dict)
-
-    def evo_unlocked(self):
-        return set(self.evo_nodes)
-
-    def evo_can_unlock(self, node_id):
-        tree = self.evo_tree()
-        node = next((n for n in tree if n["id"] == node_id), None)
-        if node is None:
-            return False
-        if node_id in self.evo_nodes:
-            return False
-        return D.evo_node_prereq_met(node, self.evo_nodes)
-
-    def evo_unlock(self, node_id):
-        """Apply a tree node. Returns True if applied."""
-        if not self.evo_can_unlock(node_id):
-            return False
-        self.evo_nodes.append(node_id)
-        self._evo_bonus = _compute_evo_bonus(self.def_dict, self.evo_nodes)
-        self._recompute()
-        return True
-
 
 def _compute_evo_bonus(hero_def, node_ids):
     """Sum the stat bonuses + passive from the unlocked tree nodes."""
@@ -640,5 +568,3 @@ class Enemy(Combatant):
         self.energy = 0
         self.max_energy = D.ENERGY_MAX
 
-    def boss_ultimate_id(self):
-        return D.BOSS_ULT.get(self.id)

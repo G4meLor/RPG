@@ -4,7 +4,6 @@ Inventory, equipment, ascension, shop, achievements and statistics.
 """
 import os
 import json
-import random
 import time
 
 import data as D
@@ -114,9 +113,6 @@ class Player:
                                   equipment={}, evolve=0, evo_nodes=[])
 
     # --- heroes ---
-    def has_hero(self, hid):
-        return hid in self.owned
-
     def add_hero(self, hid):
         if hid in self.owned:
             self.owned[hid]["dupes"] += 1
@@ -210,11 +206,6 @@ class Player:
     def team_power(self):
         return sum(h.power() for h in self.team_heroes() if h)
 
-    def set_team(self, ids):
-        self.team = [i for i in ids if i in self.owned][:4]
-        while len(self.team) < 4:
-            self.team.append(None)
-
     # --- equipment ---
     def add_equipment(self, item_id):
         if item_id in D.EQUIPMENT_DB:
@@ -241,17 +232,6 @@ class Player:
         if prev:
             self.equipment_inv.append(prev)
             del rec["equipment"][slot]
-        return True
-
-    def sell_equipment(self, item_id):
-        """Sell an equipment item from inventory for gold. Returns True on success."""
-        if item_id not in self.equipment_inv:
-            return False
-        item = D.EQUIPMENT_DB.get(item_id)
-        if not item:
-            return False
-        self.equipment_inv.remove(item_id)
-        self.gold += item.get("sell", item.get("price", 0) // 3)
         return True
 
     # --- inventory / consumables ---
@@ -305,26 +285,7 @@ class Player:
         self.gems += offer["gems"]
         return True
 
-    # --- rewards ---
-    def grant_rewards(self, rewards):
-        self.gold += rewards.get("gold", 0)
-        self.gems += rewards.get("gems", 0)
-        self.stats["gold_earned"] += rewards.get("gold", 0)
-        self.stats["gems_earned"] += rewards.get("gems", 0)
-        xp = rewards.get("xp", 0)
-        if xp:
-            for hid in self.team:
-                if hid and hid in self.owned:
-                    h = self.get_hero_instance(hid)
-                    leveled = h.gain_xp(xp)
-                    self.owned[hid]["level"] = h.level
-                    self.owned[hid]["xp"] = h.xp
-
     # --- achievements / stats ---
-    def record_kill(self, n=1):
-        """Tally a world kill (kept for any external callers / future use)."""
-        self.stats["enemies_defeated"] = self.stats.get("enemies_defeated", 0) + n
-
     def record_pulls(self, n):
         self.total_pulls += n
         self.stats["total_pulls"] += n

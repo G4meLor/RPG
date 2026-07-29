@@ -11,8 +11,7 @@ Run:
 """
 import os
 import sys
-import math
-import statistics
+import tempfile
 
 import pygame
 
@@ -112,19 +111,32 @@ def main():
 
     print()
     print("=" * 64)
-    print("PORTRAITS (512x512)")
+    print("PORTRAITS (512x512) — per-character bundle path")
     print("=" * 64)
     for name, element, weapon, hair_style, hair, body, accent in GA.HEROES:
-        path = os.path.join(ASSET_DIR, "portraits", f"{name}.png")
-        GA.make_portrait(element, body, hair, accent, hair_style, weapon, path)
-        # load the saved portrait back to measure the actual saved pixels
-        # (loading via pygame.image.load is fine — it is NOT the Read tool)
-        s = pygame.image.load(path)
+        # Portraits live in the per-character bundle (characters/{hero}/
+        # portrait.png); the flat assets/portraits/ layout is gone. Render to a
+        # scratch surface (NOT the on-disk bundle file) so verify doesn't mutate
+        # the committed PNGs — make_portrait is deterministic but re-saving a
+        # PNG can shift a few bytes, which would dirty the tree for no reason.
+        path = os.path.join(ASSET_DIR, "characters", name, "portrait.png")
+        scratch_fd, scratch_path = tempfile.mkstemp(suffix=".png", prefix="verify_")
+        os.close(scratch_fd)
+        GA.make_portrait(element, body, hair, accent, hair_style, weapon, scratch_path)
+        s = pygame.image.load(scratch_path)
         st = _stats(s)
         print(f"{name:9s} el={element:5s} {st['size']} cov={st['coverage_pct']:5.1f}% "
               f"bbox={st['bbox']} mean={st['mean_rgb_opaque']}")
         if st["size"] != EXPECT["portraits"]:
             failures.append(f"portraits/{name}: {st['size']} != {EXPECT['portraits']}")
+        os.remove(scratch_path)
+        # confirm the on-disk bundle portrait exists + is the right size
+        if not os.path.exists(path):
+            failures.append(f"characters/{name}/portrait.png missing")
+        else:
+            ds = pygame.image.load(path)
+            if ds.get_size() != EXPECT["portraits"]:
+                failures.append(f"characters/{name}/portrait.png: {ds.get_size()} != {EXPECT['portraits']}")
 
     print()
     print("=" * 64)
@@ -141,9 +153,14 @@ def main():
 
     print()
     print("=" * 64)
-    print("SKILL ICONS (128x128) — on-disk size check")
+    print("SKILL ICONS (128x128) — on-disk size check (boss ultimates only)")
     print("=" * 64)
-    for name, el, kind in GA.SKILLS:
+    # The global assets/skills/ now holds ONLY boss-ultimate icons (the per-hero
+    # kit icons live in assets/characters/{hero}/skills/). So only the boss-ult
+    # subset of GA.SKILLS has an on-disk file to check here.
+    boss_ults = [s for s in GA.SKILLS if s[0] in
+                 ("hellfire", "abyssal_wave", "frost_cataclysm", "storm_of_embers")]
+    for name, el, kind in boss_ults:
         path = os.path.join(ASSET_DIR, "skills", f"{name}.png")
         s = pygame.image.load(path)
         sz = s.get_size()

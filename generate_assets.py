@@ -15,8 +15,8 @@ SEED = 1337
 random.seed(SEED)
 
 ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-for sub in ["characters", "enemies", "skills", "backgrounds", "ui", "portraits",
-            "effects", "items", "terrain", "landmarks", "villages", "drops"]:
+for sub in ["characters", "enemies", "skills", "backgrounds", "ui",
+            "items", "terrain", "landmarks", "villages", "drops"]:
     os.makedirs(os.path.join(ASSET_DIR, sub), exist_ok=True)
 
 # ---------------------------------------------------------------------------
@@ -78,25 +78,6 @@ def _hue_shift(c, deg):
     r2, g2, b2 = colorsys.hsv_to_rgb(h, s, v)
     return (int(r2 * 255), int(g2 * 255), int(b2 * 255))
 
-def vgrad(surface, top, bottom):
-    w, h = surface.get_size()
-    for y in range(h):
-        t = y / max(1, h - 1)
-        pygame.draw.line(surface, lerp_color(top, bottom, t), (0, y), (w, y))
-
-def rgrad(surface, center, inner, outer, max_r):
-    w, h = surface.get_size()
-    cx, cy = center
-    for r in range(int(max_r), 0, -1):
-        t = r / max_r
-        pygame.draw.circle(surface, lerp_color(inner, outer, t), (cx, cy), r)
-
-def aa_circle(surf, color, pos, radius):
-    pygame.draw.circle(surf, color, pos, radius)
-
-def aa_polygon(surf, color, points):
-    pygame.draw.polygon(surf, color, points)
-
 # ---------------------------------------------------------------------------
 # Pixel-art primitives (chunky pixels, limited palette, dithered gradients, no
 # anti-aliasing). Every "logical pixel" below is a PIXEL×PIXEL block so the art
@@ -153,17 +134,6 @@ def vgrad_surf(w, h, top, bottom, a_top=255, a_bot=255):
     arr[..., 1] = (top[1] + (bottom[1] - top[1]) * t)
     arr[..., 2] = (top[2] + (bottom[2] - top[2]) * t)
     arr[..., 3] = (a_top + (a_bot - a_top) * t)
-    s = pygame.image.frombuffer(arr.tobytes(), (w, h), "RGBA")
-    return s.convert_alpha() if _display_ready() else s
-
-def hgrad_surf(w, h, left, right, a_left=255, a_right=255):
-    """Horizontal RGBA gradient (left->right)."""
-    t = np.linspace(0.0, 1.0, max(2, w))[None, :]
-    arr = np.empty((h, w, 4), np.uint8)
-    arr[..., 0] = (left[0] + (right[0] - left[0]) * t)
-    arr[..., 1] = (left[1] + (right[1] - left[1]) * t)
-    arr[..., 2] = (left[2] + (right[2] - left[2]) * t)
-    arr[..., 3] = (a_left + (a_right - a_left) * t)
     s = pygame.image.frombuffer(arr.tobytes(), (w, h), "RGBA")
     return s.convert_alpha() if _display_ready() else s
 
@@ -229,15 +199,9 @@ def clip_to_polygon(surf, points):
     pygame.draw.polygon(m, (255, 255, 255, 255), points)
     surf.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
 
-def add_blit(surf, src, pos):
-    """Blit a surface additively (great for glows/highlights over art)."""
-    surf.blit(src, pos, special_flags=pygame.BLEND_RGBA_ADD)
-
 # ---------------------------------------------------------------------------
 # Chibi character sprite
 # ---------------------------------------------------------------------------
-HAIR_STYLES = ["spiky", "long", "short", "twin", "hood",
-               "ponytail", "bob", "curly", "mohawk", "braided"]
 
 def draw_chibi(surf, element, body_color, hair_color, accent,
                weapon="sword", hair_style="spiky", eye_color=(40, 40, 60),
@@ -1995,120 +1959,14 @@ def make_title_bg(path):
     pygame.draw.polygon(surf, (40, 34, 60), [(620, 300), (640, 270), (660, 300)])
     pygame.image.save(surf, path)
 
-def make_battle_bg(path, theme):
-    surf = pygame.Surface((1280, 720))
-    if theme == "plains":
-        # pixel-art sky: 2-tone dithered vertical gradient (no AA)
-        px_dither(surf, (120, 180, 220), (200, 230, 240), (0, 0, 1280, 420))
-        grass = pygame.Rect(0, 420, 1280, 300)
-        pygame.draw.rect(surf, (90, 170, 90), grass)
-        for x in range(0, 1280, 40):
-            pygame.draw.polygon(surf, (60, 140, 70), [(x, 420), (x + 20, 400), (x + 40, 420)])
-        # distant hills (solid ellipses, no AA)
-        pygame.draw.ellipse(surf, (120, 170, 120), (-100, 360, 500, 160))
-        pygame.draw.ellipse(surf, (110, 160, 110), (800, 360, 600, 160))
-        # sun (solid discs, no AA)
-        pygame.draw.circle(surf, (255, 200, 120), (200, 120), 90)
-        pygame.draw.circle(surf, (255, 240, 200), (200, 120), 60)
-    elif theme == "forest":
-        # pixel-art sky: 2-tone dithered vertical gradient (no AA)
-        px_dither(surf, (90, 150, 120), (140, 180, 150), (0, 0, 1280, 420))
-        pygame.draw.rect(surf, (50, 90, 60), (0, 420, 1280, 300))
-        for x in range(-40, 1280, 90):
-            pygame.draw.rect(surf, (60, 40, 30), (x, 300, 20, 200))
-            pygame.draw.circle(surf, (40, 90, 60), (x + 10, 300), 60)
-            pygame.draw.circle(surf, (50, 110, 70), (x - 10, 280), 50)
-            pygame.draw.circle(surf, (60, 130, 80), (x + 30, 290), 50)
-    elif theme == "cave":
-        # pixel-art cave: 2-tone dithered vertical gradient (no AA)
-        px_dither(surf, (40, 30, 50), (70, 50, 80), (0, 0, 1280, 720))
-        pygame.draw.rect(surf, (30, 24, 36), (0, 480, 1280, 240))
-        for x in range(0, 1280, 120):
-            pygame.draw.polygon(surf, (50, 40, 60), [(x, 480), (x + 60, 420), (x + 120, 480)])
-        # crystals (solid palette fills, no AA)
-        for cx, col in [(200, (120, 200, 255)), (1080, (200, 120, 255)), (640, (120, 255, 200))]:
-            pygame.draw.polygon(surf, col, [(cx, 480), (cx - 20, 420), (cx, 360), (cx + 20, 420)])
-            pygame.draw.polygon(surf, (255, 255, 255), [(cx, 480), (cx - 6, 440), (cx, 400)])
-    elif theme == "castle":
-        # pixel-art castle: 2-tone dithered vertical gradient (no AA)
-        px_dither(surf, (60, 40, 80), (120, 60, 100), (0, 0, 1280, 720))
-        pygame.draw.rect(surf, (40, 30, 50), (0, 460, 1280, 260))
-        # castle silhouette (solid blocks, no AA)
-        pygame.draw.rect(surf, (30, 24, 40), (440, 280, 400, 220))
-        for tx in (440, 560, 680, 800):
-            pygame.draw.rect(surf, (30, 24, 40), (tx, 240, 80, 260))
-            pygame.draw.polygon(surf, (30, 24, 40), [(tx, 240), (tx + 40, 200), (tx + 80, 240)])
-        # windows (solid blocks, no AA)
-        for wx in (480, 720):
-            pygame.draw.rect(surf, (255, 180, 80), (wx, 360, 40, 60))
-        # moon (solid discs, no AA)
-        pygame.draw.circle(surf, (220, 200, 160), (980, 140), 70)
-        pygame.draw.circle(surf, (255, 250, 220), (980, 140), 50)
-    elif theme == "void":
-        # pixel-art void: 2-tone dithered vertical gradient (no AA)
-        px_dither(surf, (20, 10, 30), (60, 20, 70), (0, 0, 1280, 720))
-        for _ in range(80):
-            x = random.randint(0, 1280); y = random.randint(0, 720)
-            pygame.draw.rect(surf, (random.randint(120, 200), 80, 160), (x, y, 2, 2))
-        # swirling portal (solid discs, no AA)
-        pygame.draw.circle(surf, (40, 10, 60), (640, 380), 300)
-        pygame.draw.circle(surf, (180, 80, 200), (640, 380), 150)
-        pygame.draw.circle(surf, (20, 0, 30), (640, 380), 80)
-    pygame.image.save(surf, path)
-
-def make_map_bg(path):
-    surf = pygame.Surface((1280, 720))
-    # pixel-art sky: 2-tone dithered vertical gradient (no AA)
-    px_dither(surf, (44, 60, 90), (28, 36, 60), (0, 0, 1280, 720))
-    # parchment overlay (solid fill, no AA)
-    parch = pygame.Surface((1080, 600), pygame.SRCALPHA)
-    parch.fill((236, 220, 180, 230))
-    pygame.draw.rect(parch, (120, 90, 50), parch.get_rect(), 6, border_radius=20)
-    # subtle stains (solid blocks, no AA)
-    for _ in range(40):
-        x = random.randint(0, 1080); y = random.randint(0, 600)
-        pygame.draw.circle(parch, (210, 190, 150, 60), (x, y), random.randint(8, 30))
-    surf.blit(parch, (100, 60))
-    # decorative compass
-    cx, cy = 160, 620
-    pygame.draw.circle(surf, (120, 90, 50), (cx, cy), 34, 3)
-    for a in range(0, 360, 45):
-        rad = math.radians(a)
-        pygame.draw.line(surf, (120, 90, 50), (cx, cy), (cx + math.cos(rad) * 34, cy + math.sin(rad) * 34), 2)
-    pygame.image.save(surf, path)
-
-# helper for partial gradient height
-def vgrad(surface, top, bottom, target_h=None):
-    w, h = surface.get_size()
-    hh = target_h or h
-    for y in range(hh):
-        t = y / max(1, hh - 1)
-        pygame.draw.line(surface, lerp_color(top, bottom, t), (0, y), (w, y))
-
 # ---------------------------------------------------------------------------
 # UI elements
 # ---------------------------------------------------------------------------
 def make_ui():
-    # button (normal + hover) 240x64 — 2-tone dithered fill + top gloss + rim (pixel-art, no AA)
-    for state, col in [("normal", (60, 70, 110)), ("hover", (90, 110, 170))]:
-        s = pygame.Surface((240, 64), pygame.SRCALPHA)
-        bg = px_dither_surf(240, 64, shade(col, 1.18), shade(col, 0.7))
-        clip_to_rect(bg, pygame.Rect(0, 0, 240, 64), border_radius=16)
-        s.blit(bg, (0, 0))
-        # top-edge highlight (solid block, no AA)
-        pygame.draw.rect(s, (255, 255, 255), (4, 4, 232, 6), border_radius=3)
-        pygame.draw.rect(s, (200, 220, 255), s.get_rect(), 3, border_radius=16)
-        pygame.image.save(s, os.path.join(ASSET_DIR, "ui", f"button_{state}.png"))
-
-    # panel — 2-tone dithered fill + top sheen (pixel-art, no AA)
-    s = pygame.Surface((400, 300), pygame.SRCALPHA)
-    pg = px_dither_surf(400, 300, (50, 48, 76), (24, 22, 42))
-    clip_to_rect(pg, pygame.Rect(0, 0, 400, 300), border_radius=18)
-    s.blit(pg, (0, 0))
-    pygame.draw.rect(s, (255, 255, 255), (4, 4, 392, 8), border_radius=4)
-    pygame.draw.rect(s, (200, 200, 255), s.get_rect(), 3, border_radius=18)
-    pygame.image.save(s, os.path.join(ASSET_DIR, "ui", "panel.png"))
-
+    # Only the rarity frames are loaded by load_ui (frame_R/SR/SSR). The
+    # button / panel / gem / gold / star / element / cursor / banner sprites
+    # were all drawn programmatically by the scenes and never reached by a
+    # loader, so they are no longer generated.
     # rarity frames 220x280 — 2-tone dithered fill + colored rim + corner gems (pixel-art, no AA)
     for rar, col in RARITY_COLORS.items():
         s = pygame.Surface((220, 280), pygame.SRCALPHA)
@@ -2128,63 +1986,6 @@ def make_ui():
             pygame.draw.circle(s, shade(col, 1.3), (cx2, cy2), 5)
             pygame.draw.circle(s, shade(col, 0.4), (cx2, cy2), 3)
         pygame.image.save(s, os.path.join(ASSET_DIR, "ui", f"frame_{rar}.png"))
-
-    # gem icon — faceted crystal (2-tone dithered fill + specular, no AA)
-    s = pygame.Surface((64, 64), pygame.SRCALPHA)
-    gem = px_dither_surf(56, 56, (220, 245, 255), (40, 90, 150))
-    clip_to_polygon(gem, [(32, 6), (56, 28), (32, 58), (8, 28)])
-    s.blit(gem, (0, 0))
-    pygame.draw.polygon(s, (220, 245, 255), [(32, 6), (44, 28), (32, 30), (20, 28)])
-    pygame.draw.polygon(s, (40, 90, 140), [(32, 6), (56, 28), (32, 58), (8, 28)], 3)
-    pygame.draw.rect(s, (255, 255, 255), (22, 18, 6, 6))
-    pygame.image.save(s, os.path.join(ASSET_DIR, "ui", "gem.png"))
-
-    # gold icon — coin with 2-tone dithered fill + edge (pixel-art, no AA)
-    s = pygame.Surface((64, 64), pygame.SRCALPHA)
-    coin = px_dither_surf(56, 56, (255, 240, 160), (180, 140, 40))
-    clip_to_circle(coin, (28, 28), 26)
-    s.blit(coin, (6, 6))
-    pygame.draw.circle(s, (255, 230, 120), (32, 32), 26, 3)
-    pygame.draw.circle(s, (200, 160, 40), (32, 32), 18, 0)
-    pygame.draw.rect(s, (255, 250, 200), (22, 22, 6, 6))
-    pygame.image.save(s, os.path.join(ASSET_DIR, "ui", "gold.png"))
-
-    # star (rarity marker) — solid palette star + specular dot (pixel-art, no AA)
-    for rar, col in RARITY_COLORS.items():
-        s = pygame.Surface((48, 48), pygame.SRCALPHA)
-        draw_star(s, 24, 24, 20, 9, shade(col, 1.15), (255, 255, 255))
-        # specular highlight on the upper point (solid block, no AA)
-        pygame.draw.rect(s, (255, 255, 255), (22, 14, 6, 6))
-        pygame.image.save(s, os.path.join(ASSET_DIR, "ui", f"star_{rar}.png"))
-
-    # element badge 64x64 — 2-tone dithered disc + glyph + specular (pixel-art, no AA)
-    for el, (main, light, dark) in ELEMENT_COLORS.items():
-        s = pygame.Surface((64, 64), pygame.SRCALPHA)
-        disc = px_dither_surf(60, 60, shade(main, 1.25), shade(dark, 0.6))
-        clip_to_circle(disc, (30, 30), 30)
-        s.blit(disc, (2, 2))
-        pygame.draw.circle(s, (255, 255, 255), (32, 32), 30, 2)
-        draw_element_glyph(s, 32, 32, el, light)
-        pygame.draw.rect(s, (255, 255, 255), (22, 20, 6, 6))
-        pygame.image.save(s, os.path.join(ASSET_DIR, "ui", f"element_{el}.png"))
-
-    # cursor / selector arrow — 2-tone dithered fill + edge (pixel-art, no AA)
-    s = pygame.Surface((48, 48), pygame.SRCALPHA)
-    cur = px_dither_surf(40, 40, (255, 240, 120), (180, 130, 30))
-    clip_to_polygon(cur, [(8, 8), (8, 34), (18, 26), (28, 40), (34, 36), (24, 22), (36, 22)])
-    s.blit(cur, (0, 0))
-    pygame.draw.polygon(s, (120, 90, 30), [(8, 8), (8, 34), (18, 26), (28, 40), (34, 36), (24, 22), (36, 22)], 2)
-    pygame.image.save(s, os.path.join(ASSET_DIR, "ui", "cursor.png"))
-
-    # victory / defeat banners — 2-tone dithered fill + rim + sheen (pixel-art, no AA)
-    for name, col in [("victory", (255, 210, 80)), ("defeat", (200, 60, 80))]:
-        s = pygame.Surface((600, 120), pygame.SRCALPHA)
-        bg = px_dither_surf(600, 120, shade(col, 1.15), shade(col, 0.4))
-        clip_to_rect(bg, pygame.Rect(0, 0, 600, 120), border_radius=20)
-        s.blit(bg, (0, 0))
-        pygame.draw.rect(s, (255, 255, 255), (10, 8, 580, 8), border_radius=4)
-        pygame.draw.rect(s, col, s.get_rect(), 5, border_radius=20)
-        pygame.image.save(s, os.path.join(ASSET_DIR, "ui", f"banner_{name}.png"))
 
 def make_shop_bg(path):
     surf = pygame.Surface((1280, 720))
@@ -3110,31 +2911,6 @@ def draw_star(surf, cx, cy, r, points, color, inner_color):
     pygame.draw.polygon(surf, color, pts)
     pygame.draw.polygon(surf, (40, 30, 20), pts, 2)
 
-def draw_pot(surf, cx, cy):
-    """A small clay pot — rounded body + a rim + a tiny mouth. ~24px tall."""
-    pygame.draw.ellipse(surf, (150, 100, 70), (cx - 12, cy - 14, 24, 24))
-    pygame.draw.ellipse(surf, (90, 60, 40), (cx - 12, cy - 14, 24, 24), 2)
-    pygame.draw.rect(surf, (110, 75, 50), (cx - 7, cy - 18, 14, 6), border_radius=2)
-    pygame.draw.rect(surf, (60, 40, 25), (cx - 7, cy - 18, 14, 6), 2, border_radius=2)
-
-def draw_crate(surf, cx, cy):
-    """A wooden crate — a square with plank cross + iron corner studs. ~26px."""
-    pygame.draw.rect(surf, (140, 95, 55), (cx - 13, cy - 13, 26, 26), border_radius=2)
-    pygame.draw.rect(surf, (180, 130, 80), (cx - 13, cy - 13, 26, 6), border_radius=2)
-    pygame.draw.line(surf, (90, 60, 35), (cx - 13, cy - 13), (cx + 13, cy + 13), 2)
-    pygame.draw.line(surf, (90, 60, 35), (cx + 13, cy - 13), (cx - 13, cy + 13), 2)
-    pygame.draw.rect(surf, (60, 40, 20), (cx - 13, cy - 13, 26, 26), 2, border_radius=2)
-    for dx, dy in ((-10, -10), (8, -10), (-10, 8), (8, 8)):
-        pygame.draw.circle(surf, (70, 70, 80), (cx + dx, cy + dy), 2)
-
-def draw_barrel(surf, cx, cy):
-    """A wooden barrel — a wider body + two iron bands + a top opening. ~28px."""
-    pygame.draw.ellipse(surf, (120, 80, 45), (cx - 14, cy - 14, 28, 28))
-    pygame.draw.ellipse(surf, (80, 55, 30), (cx - 14, cy - 14, 28, 28), 2)
-    pygame.draw.rect(surf, (70, 70, 80), (cx - 14, cy - 6, 28, 3))
-    pygame.draw.rect(surf, (70, 70, 80), (cx - 14, cy + 4, 28, 3))
-    pygame.draw.ellipse(surf, (60, 40, 25), (cx - 10, cy - 16, 20, 8))
-
 def draw_rift_portal(surf, cx, cy, t=0.0):
     """A pulsing portal for the hidden rift mini-dungeon (task D4). A swirling
     violet ring + a bright core + a few orbiting shards, drawn inline in
@@ -3345,12 +3121,11 @@ SKILLS = [
     ("wind_arrow", "wind", "arrow"), ("wind_aoe", "wind", "aoe"),
     ("swift_buff", "wind", "buff"),
     ("light_slash", "light", "slash"), ("light_heal", "light", "heal"),
-    ("light_aoe", "light", "aoe"), ("blessing", "light", "shield"),
+    ("blessing", "light", "shield"),
     ("revive", "light", "heal"), ("light_hymn", "light", "heal"),
     ("dark_bolt", "dark", "bolt"), ("dark_curse", "dark", "curse"),
     ("dark_aoe", "dark", "aoe"), ("shield_ward", "dark", "shield"),
     ("void_nova", "dark", "aoe"),
-    ("buff_atk", "light", "buff"), ("buff_def", "wind", "shield"),
     ("basic_attack", "fire", "slash"),
     # --- new skills (Phase B) ---
     ("fire_strike", "fire", "slash"), ("phoenix", "fire", "heal"),
@@ -3365,7 +3140,7 @@ SKILLS = [
     # global assets/skills/{id}.png is generated for skills that appear in a
     # hero's kit but were missing from the SKILLS list (the per-hero bundle
     # loop uses SKILL_KIND below to look up the kind).
-    ("fire_summon", "fire", "summon"), ("water_summon", "water", "summon"),
+    ("fire_summon", "fire", "summon"),
     ("light_beam", "light", "beam"), ("dark_trap", "dark", "trap"),
     ("fire_curse", "fire", "curse"), ("tsunami", "water", "aoe"),
     ("tempest", "wind", "aoe"),
@@ -3437,29 +3212,32 @@ def main():
         pygame.image.save(s, os.path.join(ASSET_DIR, "enemies", f"{name}.png"))
     print(f"  {len(ENEMIES)} enemies")
 
-    # global skill icons (for boss ultimates + skills not in any hero's kit).
-    # The per-hero bundle loop above generates the per-hero-accent-tinted copies;
-    # these global copies are the fallback for bosses + any skill without a
-    # per-hero file (no hero_accent — the neutral version).
-    for name, el, kind in SKILLS:
+    # global skill icons — ONLY boss ultimates (the 4 skills no hero has in
+    # their kit). Per-hero bundle copies are generated above; these neutral
+    # globals are the fallback load_skill_icon reaches for boss ultimates.
+    boss_ults = [s for s in SKILLS if s[0] in
+                 ("hellfire", "abyssal_wave", "frost_cataclysm", "storm_of_embers")]
+    for name, el, kind in boss_ults:
         s = pygame.Surface((128, 128), pygame.SRCALPHA)
         draw_skill_icon(s, name, el, kind)
         pygame.image.save(s, os.path.join(ASSET_DIR, "skills", f"{name}.png"))
-    print(f"  {len(SKILLS)} skill icons")
+    print(f"  {len(boss_ults)} boss-ult skill icons")
 
-    # backgrounds
+    # backgrounds — only the two that the game actually loads (title + shop).
+    # The battle_* and map backgrounds were drawn programmatically by the
+    # scenes and never reached by load_bg, so they are no longer generated.
     make_title_bg(os.path.join(ASSET_DIR, "backgrounds", "title.png"))
-    make_map_bg(os.path.join(ASSET_DIR, "backgrounds", "map.png"))
     make_shop_bg(os.path.join(ASSET_DIR, "backgrounds", "shop.png"))
-    for theme in ["plains", "forest", "cave", "castle", "void"]:
-        make_battle_bg(os.path.join(ASSET_DIR, "backgrounds", f"battle_{theme}.png"), theme)
     print("  backgrounds")
 
     # items
     make_items()
     print("  item icons")
 
-    # ui
+    # ui — only the rarity frames are loaded by load_ui; the banner / button /
+    # cursor / element / gem / gold / panel / star sprites were all drawn
+    # programmatically by the scenes and never reached by load_ui, so they are
+    # no longer generated.
     make_ui()
     print("  UI elements")
 

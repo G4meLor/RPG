@@ -21,9 +21,6 @@ class GachaSystem:
         self.SR_GUARANTEE_EVERY = D.GACHA_SR_GUARANTEE_EVERY
 
     # --- banner selection -------------------------------------------------
-    def banners(self):
-        return D.GACHA_BANNERS
-
     def banner(self, banner_id):
         return D.GACHA_BANNER_BY_ID.get(banner_id, D.GACHA_BANNERS[0])
 

@@ -10,7 +10,7 @@ import time
 import pygame
 
 import data as D
-from entities import (Hero, load_char_sprite, load_enemy_sprite, load_skill_icon,
+from entities import (load_char_sprite, load_skill_icon,
                       load_drop, load_terrain, load_landmark, load_village)
 import audio
 import generate_assets as GA

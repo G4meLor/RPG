@@ -29,7 +29,7 @@ import data as D
 import audio
 import world_data as WD
 from world_entities import WorldEnemy, scratch
-from world_scene import WorldScene, _font, text
+from world_scene import WorldScene, text
 
 
 # Adventure HUD layout (top-center, above the boss bar at y=18).

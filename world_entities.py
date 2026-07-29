@@ -145,14 +145,6 @@ class Particles:
                                       color, size, grav, additive))
         self._trim()
 
-    def trail(self, x, y, color, n=4, additive=False):
-        n = self._qn(n)
-        for _ in range(n):
-            self.list.append(Particle(x + random.uniform(-4, 4), y + random.uniform(-4, 4),
-                                      random.uniform(-20, 20), random.uniform(-20, 20),
-                                      0.3, color, 3, 0, additive))
-        self._trim()
-
     def ring(self, x, y, color, n=24, speed=300, size=5, life=0.5, additive=False):
         """An expanding ring of particles — great for shockwaves/impacts."""
         n = self._qn(n)

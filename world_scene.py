@@ -1335,7 +1335,6 @@ class WorldScene:
                     self.floats.append(FloatText(self._landmark["x"],
                                                 self._landmark["y"] - 50,
                                                 lore, col, size=18, life=2.5))
-            m["obstacles"].extend(self._water)
         # hidden rift mini-dungeon: read the per-cell secret from gen_map. A
         # cleared rift stays cleared (persisted in ow_secrets_done) so the
         # player can't re-trigger the wave for infinite SR/SSR chests. Reset
@@ -2725,7 +2724,13 @@ class WorldScene:
                 self._spawn_drop(en.x, en.y, "equipment", eid)
         # boss cleared -> mark + row-scaled bonus gems (only the first clear per
         # cell pays out, so bosses can't be farm-grounded for infinite gems).
-        if en.is_boss:
+        # Adventure mode (Task D1) has its own stage-clear reward path + must NOT
+        # mutate the open-world state (ow_bosses_cleared, story_progress, the
+        # NG+ banner) — the adventure boss is a golem at (0,0), not the open-
+        # world boss at (9,r), so the open-world bookkeeping + the story chain
+        # are skipped in adventure. The _is_adventure flag is set in
+        # AdventureScene.__init__ (adventure_scene.py).
+        if en.is_boss and not getattr(self, "_is_adventure", False):
             cleared = set(p.ow_bosses_cleared)
             cid = WD.cell_id(self.c, self.r)
             first_clear = cid not in cleared
@@ -3154,8 +3159,10 @@ class WorldScene:
             wc.update(sim_dt, self.input_dir, self._map_data["obstacles"], want_dash)
 
         # edge transition check — suppressed while a rift is active (the exits
-        # are sealed: the player must clear the wave before they can leave).
-        if wc and not self._rift_active:
+        # are sealed: the player must clear the wave before they can leave) OR
+        # while in adventure mode (the stage is a fixed arena — the player must
+        # not walk out of the stage into the open world).
+        if wc and not self._rift_active and not getattr(self, "_is_adventure", False):
             if wc.x < 8:
                 self._transition("left"); return
             elif wc.x > WD.MAP_W - 8:

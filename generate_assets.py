@@ -1821,6 +1821,18 @@ def draw_enemy(surf, kind, palette):
     main_dark = shade(main, 0.62)
     accent_light = shade(accent, 1.22)
     dark_light = shade(dark, 1.25)
+    # The LoL mob/boss ids alias to the closest-fitting legacy silhouette so the
+    # existing per-kind art is reused without rewriting 16 sprites. Unknown ids
+    # fall through to the default branch (shadow + body block).
+    _ALIAS = {
+        "Razorbeaks": "harpy", "Krugs": "golem", "Voidlings": "imp",
+        "FallenKnight": "paladin", "MurkWolves": "wolf",
+        "CrimsonRaptor": "orc", "Gromp": "slime", "Wraiths": "wraith",
+        "Raptors": "harpy", "VoidHound": "ghoul",
+        "Sylas": "demonking", "Swain": "dragon", "Lissandra": "frosttitan",
+        "Mordekaiser": "demonking", "Viego": "wraith", "Baron": "embertyrant",
+    }
+    kind = _ALIAS.get(kind, kind)
 
     # ground shadow (chunky ellipse, no AA)
     shadow = pygame.Surface((180, 44), pygame.SRCALPHA)
@@ -3971,24 +3983,24 @@ HERO_SKIN_TONES = {
 }
 
 ENEMIES = [
-    ("slime",     "wind",   ((120, 220, 140), (200, 255, 200), (40, 120, 60))),
-    ("goblin",    "fire",   ((120, 160, 80),  (180, 220, 120), (40, 80, 30))),
-    ("bat",       "dark",   ((90, 60, 120),   (160, 120, 200), (30, 20, 40))),
-    ("skeleton",  "light",  ((230, 230, 220), (255, 255, 250), (80, 80, 90))),
-    ("wolf",      "wind",   ((120, 120, 130), (180, 180, 190), (40, 40, 50))),
-    ("orc",       "fire",   ((140, 100, 70),  (200, 160, 100), (60, 40, 30))),
-    ("golem",     "wind",   ((150, 140, 110), (200, 190, 160), (70, 60, 50))),
-    ("wraith",    "dark",   ((120, 130, 180), (180, 200, 240), (40, 50, 80))),
-    ("dragon",    "fire",   ((180, 80, 60),   (240, 180, 120), (90, 30, 20))),
-    ("demonking", "dark",   ((120, 40, 60),   (200, 80, 120),  (40, 10, 20))),
-    # --- new enemies (Phase B) ---
-    ("imp",         "fire",   ((200, 80, 50),   (255, 160, 90),  (80, 20, 10))),
-    ("harpy",       "wind",   ((160, 130, 90),  (220, 200, 160), (80, 60, 40))),
-    ("ghoul",       "dark",   ((120, 160, 110), (180, 220, 170), (40, 70, 50))),
-    ("paladin",     "light",  ((180, 180, 200), (230, 230, 245), (80, 80, 100))),
-    ("hydra",       "water",  ((80, 160, 180),  (140, 220, 230), (20, 60, 80))),
-    ("frosttitan",  "water",  ((140, 200, 240), (200, 230, 255), (40, 90, 140))),
-    ("embertyrant", "fire",   ((180, 60, 40),   (255, 180, 80),  (90, 20, 10))),
+    # LoL jungle mobs (open-world trash) — palette = (main, accent, dark)
+    ("Razorbeaks",    "wind",   ((120, 220, 140), (200, 255, 200), (40, 120, 60))),
+    ("Krugs",         "fire",   ((120, 160, 80),  (180, 220, 120), (40, 80, 30))),
+    ("Voidlings",     "dark",   ((90, 60, 120),   (160, 120, 200), (30, 20, 40))),
+    ("FallenKnight",  "light",  ((230, 230, 220), (255, 255, 250), (80, 80, 90))),
+    ("MurkWolves",    "wind",   ((120, 120, 130), (180, 180, 190), (40, 40, 50))),
+    ("CrimsonRaptor", "fire",   ((140, 100, 70),  (200, 160, 100), (60, 40, 30))),
+    ("Gromp",         "water",  ((150, 140, 110), (200, 190, 160), (70, 60, 50))),
+    ("Wraiths",       "dark",   ((120, 130, 180), (180, 200, 240), (40, 50, 80))),
+    ("Raptors",       "fire",   ((200, 80, 50),   (255, 160, 90),  (80, 20, 10))),
+    ("VoidHound",     "dark",   ((120, 160, 110), (180, 220, 170), (40, 70, 50))),
+    # LoL villain bosses
+    ("Sylas",         "dark",   ((120, 130, 180), (180, 200, 240), (40, 50, 80))),
+    ("Swain",         "fire",   ((180, 80, 60),   (240, 180, 120), (90, 30, 20))),
+    ("Lissandra",     "water",  ((140, 200, 240), (200, 230, 255), (40, 90, 140))),
+    ("Mordekaiser",   "dark",   ((120, 40, 60),   (200, 80, 120),  (40, 10, 20))),
+    ("Viego",         "dark",   ((120, 160, 110), (180, 220, 170), (40, 70, 50))),
+    ("Baron",         "dark",   ((180, 60, 40),   (255, 180, 80),  (90, 20, 10))),
 ]
 
 SKILLS = [

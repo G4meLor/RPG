@@ -52,6 +52,11 @@ class AdventureScene(WorldScene):
         # plains arena at (0,0), set the stage ladder from the save, reset the
         # stage timer + wave timer + boss flag + run-over flag.
         super().__init__(game)
+        # override the open-world _on_hero_down so a full party wipe ENDS the
+        # run (returns to title) instead of reviving at the hub (the open-world
+        # behavior). Bound here so the AdventureScene instance uses the
+        # adventure wipe path; the WorldScene._on_hero_down stays intact for the
+        # endless open-world mode.
         # the stage ladder: resume at the player's best stage so a returning
         # player picks up where they left off. _stage is the current stage
         # (0-indexed); adventure_best_stage is the highest stage reached.
@@ -96,6 +101,35 @@ class AdventureScene(WorldScene):
                 wc.alive = True
         # a stage-entry banner so the player sees which stage they're on.
         self.set_message(f"Stage {self._stage + 1} — Survive!", 2.5)
+
+    # -----------------------------------------------------------------
+    # Override _on_hero_down so a full party wipe ENDS the run (returns to
+    # title) instead of the open-world revive-at-hub behavior. The single-hero
+    # down case (auto-swap to a living hero) is unchanged — only the all-down
+    # branch is overridden. This fires DURING super().update() (from
+    # _hero_damaged), so the wipe is caught the instant the last hero falls,
+    # not on the next frame (the start-of-update party-wipe check would miss it
+    # because the open-world _on_hero_down would have revived the party first).
+    # -----------------------------------------------------------------
+    def _on_hero_down(self):
+        # try to switch to a living hero (the same single-hero-down path as the
+        # open world — only the all-down branch differs)
+        for i, wc in enumerate(self.party):
+            if wc and wc.alive:
+                self.active = i
+                self.swap_flash = 0.3
+                self.set_message(f"{wc.hero.name} is up!")
+                audio.play("weak", 0.4)
+                return
+        # all down -> END THE RUN (not revive at hub). Persist the best stage,
+        # stop the ambience, set the run-over flag, + return to the title screen.
+        self._run_over = True
+        if self.game.player.settings.get("auto_save", True):
+            self.game.player.save()
+        audio.set_ambience(False)
+        self.set_message("Party Wiped — Run Over", 3.0)
+        audio.play("defeat", 0.7)
+        self.game.goto("title")
 
     # -----------------------------------------------------------------
     # Wave spawner

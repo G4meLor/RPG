@@ -43,6 +43,17 @@ def _get_world_scene_cls():
         _world_scene_cls = _WS
     return _world_scene_cls
 
+# Adventure scene (Task D1): imported lazily to avoid a circular import
+# (adventure_scene imports WorldScene, which imports Button/draw_bar from main).
+# Resolved the first time the adventure scene is created.
+_adventure_scene_cls = None
+def _get_adventure_scene_cls():
+    global _adventure_scene_cls
+    if _adventure_scene_cls is None:
+        from adventure_scene import AdventureScene as _AS
+        _adventure_scene_cls = _AS
+    return _adventure_scene_cls
+
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
@@ -2241,6 +2252,14 @@ class Game:
         elif name == "codex":
             return CodexScene(self)
         elif name == "world":
+            # Adventure mode (Task D1): route to AdventureScene when the player's
+            # mode is "adventure" (set by the title menu — D2 wires the mode-
+            # select UI). Default "world" so the base game is unchanged without
+            # D2. AdventureScene is a subclass of WorldScene (inherits the combat
+            # engine); imported lazily via the same pattern as WorldScene to
+            # avoid a circular import (adventure_scene imports WorldScene).
+            if getattr(self.player, "mode", "world") == "adventure":
+                return _get_adventure_scene_cls()(self)
             return _get_world_scene_cls()(self)
         return TitleScene(self)
 

@@ -167,6 +167,20 @@ AA_CD = 0.32                  # auto-attack cooldown (seconds)
 NG_PLUS_LEVEL_BONUS = 8
 
 # ---------------------------------------------------------------------------
+# Adventure mode (Task D1) — a wave-survival mode distinct from the open world.
+# A 10-min survival per stage; enemies spawn from the arena edges every
+# ADVENTURE_WAVE_INTERVAL seconds (count + level scale with the stage level +
+# elapsed time); a boss spawns at the ADVENTURE_BOSS_TIME mark (5 min) and
+# defeating it clears the stage (advance the stage ladder, +5 enemy levels, full
+# heal); a party wipe ends the run. ADVENTURE_STAGE_LEVEL_STEP is the per-stage
+# enemy-level increment so deeper stages hit harder.
+# ---------------------------------------------------------------------------
+ADVENTURE_WAVE_INTERVAL = 25      # seconds between wave spawns
+ADVENTURE_BOSS_TIME = 300         # seconds into the stage when the boss spawns (5 min)
+ADVENTURE_STAGE_LEVEL_STEP = 5     # per-stage enemy-level increment
+ADVENTURE_STAGE_TIME_LIMIT = 600  # 10-min survival per stage (cosmetic HUD reference)
+
+# ---------------------------------------------------------------------------
 # HSR-style Energy (replaces MP as the per-hero action resource)
 #   - Basic attack is free and *generates* energy.
 #   - Skills cost energy (cost * ENERGY_COST_MULT).

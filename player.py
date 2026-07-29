@@ -84,6 +84,17 @@ class Player:
         # `in` checks. Reset on a new Aetheric Cycle so a new play-through re-shows
         # the lore (a fresh cycle is a fresh world).
         self.ow_landmarks_seen = []
+        # Adventure mode (Task D1) — wave-survival stage ladder. The highest stage
+        # the player has reached (and cleared, since best_stage is updated on a
+        # stage-clear). 0 = never entered Adventure / hasn't cleared stage 0 yet.
+        # The AdventureScene resumes at this stage so a returning player picks up
+        # where they left off on the ladder.
+        self.adventure_best_stage = 0
+        # the current game mode ("world" = open-world, "adventure" = wave-survival).
+        # Set by the title menu (D2 wires the mode-select UI); AdventureScene
+        # reads it via _make_scene routing. Default "world" so the base game is
+        # unchanged without D2.
+        self.mode = "world"
         # init owned heroes
         for hid in D.STARTING_OWNED:
             self.owned[hid] = dict(level=1, xp=0, dupes=0, ascension=0,
@@ -445,6 +456,8 @@ class Player:
             "ng_cycle": self.ng_cycle,
             "ow_secrets_done": self.ow_secrets_done,
             "ow_landmarks_seen": self.ow_landmarks_seen,
+            "adventure_best_stage": self.adventure_best_stage,
+            "mode": self.mode,
             "version": 8,
         }
         with open(SAVE_FILE, "w") as f:
@@ -525,6 +538,12 @@ class Player:
             # its lore on the next visit (safe — the lore is a one-time beat, not
             # a reward). Stored as a list (not a set) so json can serialize it.
             p.ow_landmarks_seen = d.get("ow_landmarks_seen", [])
+            # Adventure mode (Task D1) — added in save version 8 alongside
+            # ow_landmarks_seen. Default 0 so an old save starts the Adventure
+            # ladder at stage 0. mode defaults to "world" so the base game is
+            # unchanged on a pre-D2 save (the mode-select UI is D2).
+            p.adventure_best_stage = d.get("adventure_best_stage", 0)
+            p.mode = d.get("mode", "world")
             return p
         except Exception:
             return cls()

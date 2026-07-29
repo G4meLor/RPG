@@ -65,6 +65,19 @@ def shade(c, factor):
             max(0, int(c[1] * factor)),
             max(0, int(c[2] * factor)))
 
+
+def _hue_shift(c, deg):
+    """Rotate a color's hue by `deg` degrees (a per-hero tint so same-accent
+    heroes still differ). Uses colorsys so the rotation is a true hue shift,
+    not a flat channel add (which could clip or desaturate). Returns an RGB
+    tuple. A no-op if colorsys isn't available (it's stdlib)."""
+    import colorsys
+    r, g, b = c[0] / 255.0, c[1] / 255.0, c[2] / 255.0
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    h = (h + deg / 360.0) % 1.0
+    r2, g2, b2 = colorsys.hsv_to_rgb(h, s, v)
+    return (int(r2 * 255), int(g2 * 255), int(b2 * 255))
+
 def vgrad(surface, top, bottom):
     w, h = surface.get_size()
     for y in range(h):
@@ -1470,7 +1483,8 @@ def _skill_variant(skill_name):
     return sum(ord(c) for c in skill_name) % 4
 
 
-def draw_skill_icon(surf, skill_name, element, kind, hero_accent=None):
+def draw_skill_icon(surf, skill_name, element, kind, hero_accent=None,
+                   hero_tint=None):
     """Draw a skill icon with per-skill distinct art.
 
     The `kind` (slash/bolt/arrow/heal/shield/orb/aoe/curse/buff/summon/beam/
@@ -1479,13 +1493,24 @@ def draw_skill_icon(surf, skill_name, element, kind, hero_accent=None):
     drawings so fire_slash and light_slash no longer look the same shape.
 
     If `hero_accent` is given, the glyph's light color is tinted toward it
-    (lerp 0.3) so each hero's copy of a shared skill is accent-colored."""
+    (lerp 0.3) so each hero's copy of a shared skill is accent-colored. A
+    per-hero hue shift (derived from `hero_tint` via sum(ord(c))) is also
+    applied to the light color so two heroes with the same palette accent
+    still get a distinct tint (the accent palette has duplicates — kael/
+    ember, lyra/sera — so the accent alone isn't unique per hero)."""
     cx, cy = 64, 64
     outline = (30, 26, 40)
     main, light, dark = ELEMENT_COLORS[element]
-    # per-hero accent tinting: shift the light color toward the hero's accent
+    # per-hero accent tinting: shift the light color toward the hero's accent.
     if hero_accent is not None:
         light = lerp_color(light, hero_accent, 0.3)
+    # per-hero hue shift: rotate the light color's hue by a per-hero offset
+    # (derived from the hero_id) so two heroes with the same accent still get a
+    # distinct tint. The offset is a small hue rotation (±20°) via an additive
+    # per-hero color blend, deterministic from sum(ord(c)) (NOT hash()).
+    if hero_tint is not None:
+        hoff = (sum(ord(c) for c in hero_tint) % 40) - 20  # -20..+19
+        light = _hue_shift(light, hoff)
     v = _skill_variant(skill_name)
 
     # base disc — 2-tone dithered fill clipped to a circle (pixel-art: no AA
@@ -3397,7 +3422,10 @@ def main():
                 el = sk["element"]
                 kind = SKILL_KIND.get(sid, "orb")
                 s = pygame.Surface((128, 128), pygame.SRCALPHA)
-                draw_skill_icon(s, sid, el, kind, hero_accent=accent)
+                # pass the hero_id as the hero_tint so same-accent heroes still
+                # get a distinct per-hero tint (the accent palette has dupes).
+                draw_skill_icon(s, sid, el, kind, hero_accent=accent,
+                                hero_tint=name)
                 pygame.image.save(s, os.path.join(skills_dir, f"{sid}.png"))
                 n_skills += 1
     print(f"  {len(HEROES)} characters + portraits + {n_skills} per-hero skill icons")

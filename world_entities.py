@@ -275,6 +275,13 @@ WEAPON_STYLE = {
     "staff":  "ranged",
     "orb":    "ranged",
     "shield": "melee",
+    "axe":    "melee",
+    "spear":  "melee",
+    "gun":    "ranged",
+    "fists":  "melee",
+    "scythe": "melee",
+    "whip":   "melee",
+    "none":   "melee",
 }
 
 

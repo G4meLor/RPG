@@ -5453,17 +5453,12 @@ class WorldScene:
 
 
 # ---------------------------------------------------------------------------
-# Weapon style lookup (hero id -> weapon) from generate_assets HEROES list
+# Weapon style lookup (champion id -> weapon) from the baked descriptor in
+# champions.py. The descriptor's `weapon` field drives the attack VFX style.
 # ---------------------------------------------------------------------------
 def WEAPON_STYLE_KEY(hero_id):
-    # mirror of generate_assets.HEROES weapon field
-    weapons = {
-        "aria": "sword", "kael": "sword", "mira": "staff", "zephyr": "bow",
-        "luna": "dagger", "pyra": "staff", "lyra": "orb", "thorne": "shield",
-        "sera": "staff", "rune": "orb", "blaze": "sword", "nami": "orb",
-        "gale": "bow", "vex": "dagger", "ember": "sword", "tide": "shield",
-        "zephyra": "bow", "selene": "sword", "nox": "orb", "cinder": "sword",
-        "mist": "dagger", "sol": "orb", "gaia": "shield", "echo": "orb",
-        "raven": "dagger",
-    }
-    return weapons.get(hero_id, "sword")
+    import champions as _CH
+    c = _CH.CHAMPION_BY_KEY.get(hero_id)
+    if c is not None:
+        return c["descriptor"]["weapon"]
+    return "sword"

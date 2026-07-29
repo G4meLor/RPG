@@ -648,8 +648,19 @@ class HeroDetailScene(Scene):
         self.evolve_btn.update(mp, mdown)
         hid = self.hero_id
         in_team = hid in self.game.player.team
-        if self._team_full_t <= 0:
+        # Adventure mode (Task D2): the party is locked for the run — the team
+        # was set via the roster BEFORE entering adventure, and mid-run roster
+        # changes are refused. Grey the Add/Remove button + show "Locked for
+        # Run" so the player sees the lock instead of a silent no-op. The 1-4
+        # in-world swap (WorldScene._switch) is NOT affected (it changes only
+        # the active index, not the roster).
+        adv_locked = self.game.player.mode == "adventure"
+        if adv_locked:
+            self.team_btn.label = "Locked for Run"
+            self.team_btn.text_color = (120, 120, 140)
+        elif self._team_full_t <= 0:
             self.team_btn.label = "Remove from Team" if in_team else "Add to Team"
+            self.team_btn.text_color = WHITE
         rec = self.game.player.owned[hid]
         asc = rec.get("ascension", 0)
         can_ascend = rec["dupes"] > 0 and asc < D.MAX_ASCENSION
@@ -660,6 +671,12 @@ class HeroDetailScene(Scene):
             if self.back_btn.clicked(e) or (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
                 self.game.back("roster")
             if self.team_btn.clicked(e):
+                # Adventure mode: refuse the team edit (the party is locked for
+                # the run). Play a soft "hit" so the player hears the refusal
+                # instead of a silent no-op.
+                if adv_locked:
+                    audio.play("hit", 0.2)
+                    continue
                 if in_team:
                     self.game.player.team = [t for t in self.game.player.team if t != hid]
                     if len(self.game.player.team) < 3:
@@ -2252,13 +2269,16 @@ class Game:
         elif name == "codex":
             return CodexScene(self)
         elif name == "world":
-            # Adventure mode (Task D1): route to AdventureScene when the player's
-            # mode is "adventure" (set by the title menu — D2 wires the mode-
-            # select UI). Default "world" so the base game is unchanged without
-            # D2. AdventureScene is a subclass of WorldScene (inherits the combat
-            # engine); imported lazily via the same pattern as WorldScene to
-            # avoid a circular import (adventure_scene imports WorldScene).
-            if getattr(self.player, "mode", "world") == "adventure":
+            # Adventure mode (Task D1/D2): route to AdventureScene when the
+            # player's mode is "adventure" (the wave-survival mode with a fixed-4
+            # party locked for the run). The open-world mode is "endless" (full
+            # live swap + roster changes); a pre-D2 save that stored "world" is
+            # treated as the open-world path here (not adventure), so the base
+            # game is unchanged. AdventureScene is a subclass of WorldScene
+            # (inherits the combat engine); imported lazily via the same pattern
+            # as WorldScene to avoid a circular import (adventure_scene imports
+            # WorldScene).
+            if getattr(self.player, "mode", "endless") == "adventure":
                 return _get_adventure_scene_cls()(self)
             return _get_world_scene_cls()(self)
         return TitleScene(self)

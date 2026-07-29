@@ -90,11 +90,13 @@ class Player:
         # The AdventureScene resumes at this stage so a returning player picks up
         # where they left off on the ladder.
         self.adventure_best_stage = 0
-        # the current game mode ("world" = open-world, "adventure" = wave-survival).
-        # Set by the title menu (D2 wires the mode-select UI); AdventureScene
-        # reads it via _make_scene routing. Default "world" so the base game is
-        # unchanged without D2.
-        self.mode = "world"
+        # the current game mode ("endless" = open-world live-swap, "adventure" =
+        # wave-survival with a fixed-4 party locked for the run). Set by the title
+        # menu (D2 wires the mode-select UI); _make_scene routes "world" to
+        # AdventureScene when mode == "adventure", else the open-world WorldScene.
+        # Default "endless" so the base game (the open world with full live swap +
+        # roster changes) is unchanged without D2.
+        self.mode = "endless"
         # init owned heroes
         for hid in D.STARTING_OWNED:
             self.owned[hid] = dict(level=1, xp=0, dupes=0, ascension=0,
@@ -540,10 +542,15 @@ class Player:
             p.ow_landmarks_seen = d.get("ow_landmarks_seen", [])
             # Adventure mode (Task D1) — added in save version 8 alongside
             # ow_landmarks_seen. Default 0 so an old save starts the Adventure
-            # ladder at stage 0. mode defaults to "world" so the base game is
-            # unchanged on a pre-D2 save (the mode-select UI is D2).
+            # ladder at stage 0. mode defaults to "endless" so the base game
+            # (the open world with full live swap + roster changes) is unchanged
+            # on a pre-D2 save (D2 makes "adventure" the wave-survival mode that
+            # locks the party for the run; the open-world mode is now "endless").
+            # A pre-D2 save that stored mode == "world" loads as "world", which
+            # _make_scene treats as the open-world path (not adventure), so the
+            # base game is unchanged for an existing save too.
             p.adventure_best_stage = d.get("adventure_best_stage", 0)
-            p.mode = d.get("mode", "world")
+            p.mode = d.get("mode", "endless")
             return p
         except Exception:
             return cls()

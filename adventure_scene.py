@@ -43,7 +43,14 @@ class AdventureScene(WorldScene):
     """Wave-survival scene: 10-min per stage, waves every 25s, boss at 5 min,
     stage-clear on boss defeat, party-wipe ends the run. Subclass of WorldScene
     so the combat engine (AA, hold-to-aim, skill taxonomy, reactions, combo,
-    summons/traps, drops) is reused via inheritance — no duplication."""
+    summons/traps, drops) is reused via inheritance — no duplication.
+
+    Party lock (Task D2): the 4-char party is whatever player.team is when the
+    adventure starts (set via the roster before entering adventure). The team is
+    fixed for the run — the RosterScene (HeroDetailScene) refuses mid-run roster
+    changes when player.mode == "adventure". The 1-4 in-world swap
+    (WorldScene._switch, inherited) changes only the active index, not the
+    roster, so it stays available in adventure."""
 
     def __init__(self, game):
         # super().__init__ sets up the full WorldScene state (the party, the map,
@@ -52,6 +59,12 @@ class AdventureScene(WorldScene):
         # plains arena at (0,0), set the stage ladder from the save, reset the
         # stage timer + wave timer + boss flag + run-over flag.
         super().__init__(game)
+        # Snapshot the locked party ids at stage start so the run has a stable
+        # reference of the 4 heroes locked in for the adventure (the RosterScene
+        # refuses mid-run roster changes via the mode == "adventure" gate; this
+        # snapshot is the lock record — the team is fixed for the run). The
+        # 1-4 in-world swap changes only the active index, not the roster.
+        self._locked_team = list(self.game.player.team)
         # override the open-world _on_hero_down so a full party wipe ENDS the
         # run (returns to title) instead of reviving at the hub (the open-world
         # behavior). Bound here so the AdventureScene instance uses the

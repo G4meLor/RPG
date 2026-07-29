@@ -1889,3 +1889,73 @@ LANDMARK_LORE = {
     "castle": "The obelisk marks the citadel's fallen banner.",
     "void":   "The rift-anchor hums, holding the dark at bay - for now.",
 }
+
+# ---------------------------------------------------------------------------
+# NPCs + dialogue (Task E1) — one NPC per biome, standing in the village
+# (world_scene spawns the NPC at the village's npc_spawn from gen_map). Walk up
+# + press F to talk: a dialogue text box overlays the world (the world keeps
+# simulating behind it — the dialogue is a UI overlay, NOT a pause). Each NPC
+# reveals a piece of the world's story + the biome's boss quest (the quest_id
+# references the STORY_QUESTS Task E2 will wire; for E1 it is a placeholder the
+# NPC stores so E2 can read it off the NPC when the player accepts the quest).
+# Each line is <=80 chars so it fits the dialogue box without wrapping.
+# ---------------------------------------------------------------------------
+NPCS = {
+    "plains": {
+        "name": "Elder Mira",
+        "quest_id": "plains_boss",
+        "dialogue": [
+            "Welcome, traveler. The meadows were once at peace.",
+            "Then the Goblin King rose in the east, crowned in rust.",
+            "He drives his kin to burn the farms each new moon.",
+            "Slay him, and I will open my shard-vault to you.",
+        ],
+    },
+    "forest": {
+        "name": "Ranger Thorne",
+        "quest_id": "forest_boss",
+        "dialogue": [
+            "Stay quiet. The Woods have ears, and they bite.",
+            "The Hydra coils where the old watchtower fell.",
+            "Each head it grows spreads the rot a league further.",
+            "Cut all its heads, and the green may yet return.",
+        ],
+    },
+    "cave": {
+        "name": "Keeper Vesh",
+        "quest_id": "cave_boss",
+        "dialogue": [
+            "Mind the dark. The crystals used to sing, once.",
+            "Now the Frost Titan sleeps in the deep gallery.",
+            "Its breath froze the river solid, then the keepers.",
+            "Melt its heart, and the caverns will breathe again.",
+        ],
+    },
+    "castle": {
+        "name": "Sir Caelan",
+        "quest_id": "castle_boss",
+        "dialogue": [
+            "Halt. The citadel is no place for the living now.",
+            "The Dragon claimed the throne the day the king fell.",
+            "Its flames guard the banner no one dares to raise.",
+            "Put it down, and I will name you the rightful heir.",
+        ],
+    },
+    "void": {
+        "name": "Oracle Lyra",
+        "quest_id": "void_boss",
+        "dialogue": [
+            "You came. Few do. Fewer leave with their name intact.",
+            "The Demon King waits where the world's edge frays.",
+            "He was a hero once - the rifts were his last mercy.",
+            "End him, and the Cycle may turn at last. Or break.",
+        ],
+    },
+}
+
+# Dialogue trees (Task E1) — keyed by npc_id (the biome key), each a list of
+# lines the dialogue box advances through on F/Space/Esc, then dismisses. The
+# NPCS[biome]["dialogue"] list is the canonical tree; DIALOGUE mirrors it so a
+# caller can fetch a tree by npc_id without re-deriving the biome (E2 will use
+# this when it wires the quest-accept flow off the NPC).
+DIALOGUE = {biome: list(npc["dialogue"]) for biome, npc in NPCS.items()}

@@ -1000,6 +1000,14 @@ class WorldScene:
         self._bridges = []
         self._landmark = None
         self._village = None
+        # NPC + dialogue (Task E1) — the village NPC entity (spawned in _load_map
+        # at the village's npc_spawn) + the active dialogue overlay state. The
+        # dialogue is a UI overlay, NOT a pause: the world keeps simulating behind
+        # it (update runs as normal; the dialogue box just draws on top in draw).
+        # Declared BEFORE _load_map (the same init-order trap as _world_time /
+        # the boss intro timer — _load_map reads these on the first call).
+        self._npc = None            # {x, y, biome, name, quest_id, dialogue} or None
+        self._dialogue = None       # {name, lines, idx} active overlay, or None
         self._load_map(enter_edge=None)
 
         # input state
@@ -1279,6 +1287,24 @@ class WorldScene:
         self._bridges = list(m.get("bridges", []))
         self._landmark = m.get("landmark")
         self._village = m.get("village")
+        # NPC (Task E1) — spawn the village NPC at the village's npc_spawn (from
+        # C3's gen_map). The NPC is a simple entity: a name + quest_id + dialogue
+        # (from NPCS[biome]) + the x/y pos. Drawn in the drawables (a small sprite
+        # + a name tag); interact on walk-up + F (see the event loop in update).
+        # The dialogue is a UI overlay (NOT a pause — the world keeps updating
+        # behind it; the dialogue box just draws on top in draw).
+        self._npc = None
+        self._dialogue = None
+        if self._village is not None:
+            biome = self._village.get("biome", WD.cell_biome(self.c, self.r))
+            npc_data = D.NPCS.get(biome)
+            if npc_data is not None:
+                nx, ny = self._village["npc_spawn"]
+                self._npc = {"x": float(nx), "y": float(ny),
+                             "biome": biome,
+                             "name": npc_data["name"],
+                             "quest_id": npc_data["quest_id"],
+                             "dialogue": list(npc_data["dialogue"])}
         # append the water rects to the obstacles list so the existing collision
         # check treats them as walls (impassable). The bridges are passable, so
         # they are NOT appended (the hero walks through them).
@@ -1640,6 +1666,49 @@ class WorldScene:
         # speed -> shorter display, so the Gameplay slider does something.
         text_speed = self.game.player.settings.get("text_speed", 1.0)
         self.message_t = dur / max(0.5, min(2.0, float(text_speed)))
+
+    # -----------------------------------------------------------------
+    # NPC dialogue (Task E1) — the village NPC + a dialogue text-box overlay.
+    # The dialogue is a UI overlay, NOT a pause: the world keeps updating behind
+    # it (update runs as normal; only F/Space/Esc are intercepted to advance the
+    # line). Dismiss on the last line so the player isn't stuck in the box.
+    # -----------------------------------------------------------------
+    def _handle_npc_talk(self, wc):
+        """F key: open or advance the village NPC dialogue. If a dialogue is
+        already open, this is not reached (the KEYDOWN interceptor in update
+        routes F/Space/Esc to _advance_dialogue when a dialogue is open). Here we
+        only open a new dialogue when the active hero is within ~60px of the NPC.
+        The dialogue is a UI overlay (NOT a pause — the world keeps simulating)."""
+        if self._dialogue is not None:
+            # an overlay is already open but F slipped through (e.g. the hero was
+            # out of range when the box opened, then walked up) — advance instead
+            # of re-opening so the player doesn't get a second box stacked.
+            self._advance_dialogue()
+            return
+        if self._npc is None or wc is None or not wc.alive:
+            return
+        d = math.hypot(wc.x - self._npc["x"], wc.y - self._npc["y"])
+        if d <= 60:
+            self._dialogue = {"name": self._npc["name"],
+                              "lines": list(self._npc["dialogue"]),
+                              "idx": 0}
+            audio.play("hit", 0.15)
+        else:
+            self.set_message("No one nearby to talk to", 1.0)
+
+    def _advance_dialogue(self):
+        """Advance the dialogue to the next line, or dismiss when the lines run
+        out. Called from the KEYDOWN interceptor in update on F/Space/Esc when a
+        dialogue is open. Dismiss (set _dialogue=None) on the last line so the
+        player isn't stuck in the box — the world kept simulating behind it, so
+        there's no 'resume' step (the overlay just stops drawing)."""
+        if self._dialogue is None:
+            return
+        self._dialogue["idx"] += 1
+        if self._dialogue["idx"] >= len(self._dialogue["lines"]):
+            self._dialogue = None
+        else:
+            audio.play("hit", 0.12)
 
     # -----------------------------------------------------------------
     # Combat helpers
@@ -2830,8 +2899,22 @@ class WorldScene:
         # (swap), R/M/G/Esc stay instant (unchanged). Aim mode does not block
         # movement (RMB still moves) — the hold timer runs in parallel with the
         # normal input_dir update above.
+        # F (Task E1): talk to the village NPC. If a dialogue is open, F/Space/Esc
+        # advances the line; when the lines run out, dismiss (set _dialogue=None).
+        # If no dialogue is open + the active hero is within ~60px of the NPC,
+        # open the dialogue. The dialogue is a UI overlay (NOT a pause — the world
+        # keeps updating behind it; this event handler only toggles the overlay).
         for e in events:
             if e.type == pygame.KEYDOWN:
+                # dialogue overlay (Task E1): while a dialogue is open, F/Space/Esc
+                # advance the line (and dismiss when the lines run out) INSTEAD of
+                # their normal actions (Space=ult, Esc=pause). The dialogue is a UI
+                # overlay (NOT a pause — the world keeps updating behind it; this
+                # only intercepts these keys so the player can read at their own
+                # pace without accidentally firing an ult into the NPC's face).
+                if self._dialogue is not None and e.key in (pygame.K_f, pygame.K_SPACE, pygame.K_ESCAPE):
+                    self._advance_dialogue()
+                    continue
                 if e.key in (pygame.K_j,):
                     if wc and wc.alive: self._do_attack(wc)
                 elif e.key == pygame.K_q:
@@ -2892,6 +2975,13 @@ class WorldScene:
                     self.teleport = TeleportOverlay(self.game)
                 elif e.key == pygame.K_g:
                     self.evolve = EvolveOverlay(self.game)
+                elif e.key == pygame.K_f:
+                    # F (Task E1): talk to the village NPC. If a dialogue is open,
+                    # advance the line; when the lines run out, dismiss. If no
+                    # dialogue is open + the active hero is within ~60px of the NPC,
+                    # open the dialogue. The dialogue is a UI overlay (NOT a pause
+                    # — the world keeps updating; this only toggles the overlay).
+                    self._handle_npc_talk(wc)
                 elif e.key == pygame.K_ESCAPE:
                     self.pause = PauseHub(self.game)
             elif e.type == pygame.KEYUP:
@@ -3426,6 +3516,11 @@ class WorldScene:
         if self._village is not None:
             for (bx, by, bkind) in self._village["buildings"]:
                 drawables.append((by, "village", (bx, by, bkind)))
+        # NPC (Task E1) — sorted with the rest so the NPC occludes correctly
+        # against the hero/enemies (an NPC behind the hero is drawn first). Drawn
+        # as a small sprite + a name tag (see _draw_npc).
+        if self._npc is not None:
+            drawables.append((self._npc["y"], "npc", self._npc))
         wc = self.party[self.active]
         if wc:
             drawables.append((wc.y, "hero", wc))
@@ -3440,6 +3535,8 @@ class WorldScene:
             elif kind == "village":
                 bx, by, bkind = obj
                 self._draw_village_building(surf, bx, by, bkind, ox, oy)
+            elif kind == "npc":
+                self._draw_npc(surf, obj, ox, oy)
             elif kind in ("summon", "trap"):
                 obj.draw(surf, ox, oy)
             else:
@@ -3580,6 +3677,14 @@ class WorldScene:
         # player can now Ascend the World from the title screen.
         if self._ascend_banner_t > 0:
             self._draw_ascend_banner(surf, self._ascend_banner_t)
+
+        # NPC dialogue box (Task E1) — a UI overlay drawn on top of the HUD (so
+        # the box isn't covered by the skill bar) but under the modal overlays
+        # (teleport/evolve/pause take over the screen). The world keeps simulating
+        # behind it (the dialogue is a UI overlay, NOT a pause — update ran as
+        # normal; only F/Space/Esc were intercepted to advance the line).
+        if self._dialogue is not None:
+            self._draw_dialogue_box(surf)
 
         # modal overlays (teleport map, evolve, pause hub) on top of everything
         if self.teleport:
@@ -3875,6 +3980,92 @@ class WorldScene:
             sprite = load_village(kind)
             sw, sh = sprite.get_size()
             surf.blit(sprite, (sx - sw // 2, sy - sh // 2))
+
+    def _draw_npc(self, surf, npc, ox, oy):
+        """Draw the village NPC (Task E1) — a small figure + a name tag at the
+        NPC's screen pos. The NPC reuses a village building sprite (the temple
+        sprite, which reads as a robed figure at this scale) as the body so no
+        new asset is needed, tinted toward the biome's accent so a plains NPC
+        and a void NPC read differently. A name tag floats above so the player
+        can see who to walk up to. Decorative (no collision); interact on F
+        (see the event loop in update + _handle_npc_talk)."""
+        sx = int(npc["x"] - ox)
+        sy = int(npc["y"] - oy)
+        if -60 < sx < 1340 and -60 < sy < 780:
+            # body: a temple sprite tinted toward the biome accent (so the NPC
+            # reads as a person, not a building — the temple has a figure shape).
+            pal = WD.BIOMES.get(npc["biome"], {})
+            accent = pal.get("accent", (230, 220, 180))
+            sprite = load_village("temple")
+            sw, sh = sprite.get_size()
+            # tint by blitting a translucent accent rect over the sprite (cheap,
+            # no per-pixel work) so the NPC picks up the biome's mood.
+            surf.blit(sprite, (sx - sw // 2, sy - sh // 2))
+            tint = scratch(sw, sh)
+            pygame.draw.rect(tint, (*accent, 70), tint.get_rect())
+            surf.blit(tint, (sx - sw // 2, sy - sh // 2))
+            # a soft ground shadow so the NPC sits on the ground (not floating)
+            shadow = scratch(34, 10)
+            pygame.draw.ellipse(shadow, (0, 0, 0, 90), shadow.get_rect())
+            surf.blit(shadow, (sx - 17, sy + sh // 2 - 4))
+            # name tag above the NPC (a small label so the player sees who to talk
+            # to). Drawn with the cached text() helper so it doesn't re-render the
+            # string every frame.
+            text(surf, npc["name"], 18, (255, 240, 200),
+                 (sx, sy - sh // 2 - 14), center=True)
+            # an "F to talk" hint when the active hero is in range (so the player
+            # learns the interact key without a tutorial). Pulses softly so it
+            # reads as a prompt, not a static label.
+            wc = self.party[self.active]
+            if wc and math.hypot(wc.x - npc["x"], wc.y - npc["y"]) <= 60:
+                pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.006)
+                col = (int(220 + 35 * pulse), int(220 + 20 * pulse), int(160 + 40 * pulse))
+                text(surf, "[F] Talk", 16, col, (sx, sy - sh // 2 - 34), center=True)
+
+    def _draw_dialogue_box(self, surf):
+        """Draw the NPC dialogue box (Task E1) — a rounded rect at the bottom of
+        the screen with the NPC name + the current line + a '>' advance marker.
+        A UI overlay (NOT a pause — the world keeps simulating behind it; update
+        ran as normal, only F/Space/Esc were intercepted to advance the line).
+        Advance on F/Space/Esc; dismiss when the lines run out (see
+        _advance_dialogue). The box sits above the HUD (so the skill bar doesn't
+        cover it) but under the modal overlays (teleport/evolve/pause)."""
+        dlg = self._dialogue
+        if dlg is None:
+            return
+        # box geometry — a wide rounded rect at the bottom, above the skill bar
+        bw, bh = 960, 150
+        bx = (1280 - bw) // 2
+        by = 720 - bh - 90           # 90px above the bottom so the skill bar shows
+        # a dark translucent panel with a light border (reads as a text box)
+        panel = scratch(bw, bh)
+        pygame.draw.rect(panel, (16, 14, 24, 220), panel.get_rect(), border_radius=12)
+        pygame.draw.rect(panel, (220, 200, 140, 220), panel.get_rect(), 3, border_radius=12)
+        surf.blit(panel, (bx, by))
+        # NPC name (top-left, in the accent color so it reads as a speaker label)
+        text(surf, dlg["name"], 22, (255, 230, 160), (bx + 24, by + 16))
+        # the current line (centered in the box, wrapped if needed — the lines are
+        # <=80 chars so a single line fits at font size 24 in a 960px box)
+        lines = dlg["lines"]
+        idx = dlg["idx"]
+        if 0 <= idx < len(lines):
+            text(surf, lines[idx], 24, (240, 240, 250),
+                 (bx + bw // 2, by + bh // 2 - 6), center=True)
+        # advance marker — a '>' in the bottom-right that pulses so the player
+        # knows to press F/Space/Esc to advance. Gated on reduce_motion (static
+        # under RM). On the last line, show "[end]" so the player knows the next
+        # press dismisses the box (not advances to another line).
+        if idx < len(lines) - 1:
+            pulse = 1.0 if self._reduce_motion else (
+                0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.008))
+            col = (int(180 + 75 * pulse), int(180 + 60 * pulse), int(120 + 40 * pulse))
+            text(surf, ">", 26, col, (bx + bw - 28, by + bh - 28))
+        else:
+            text(surf, "[end]", 18, (200, 200, 220),
+                 (bx + bw - 48, by + bh - 26))
+        # a controls hint at the bottom-left so the player learns the advance keys
+        text(surf, "F/Space/Esc: continue", 15, (180, 180, 200),
+             (bx + 24, by + bh - 24))
 
     def _draw_boss_banner(self, surf, name, t, intro):
         """A full-width cinematic banner for the boss intro / defeat. Fades in

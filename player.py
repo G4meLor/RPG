@@ -110,7 +110,7 @@ class Player:
         # init owned heroes
         for hid in D.STARTING_OWNED:
             self.owned[hid] = dict(level=1, xp=0, dupes=0, ascension=0,
-                                  equipment={}, evolve=0, evo_nodes=[])
+                                  equipment={}, evolve=0, evo_nodes=[], skin=0)
 
     # --- heroes ---
     def add_hero(self, hid):
@@ -123,7 +123,7 @@ class Player:
                 self.shards += 5
             return "dupe"
         self.owned[hid] = dict(level=1, xp=0, dupes=0, ascension=0, equipment={},
-                               evolve=0, evo_nodes=[])
+                               evolve=0, evo_nodes=[], skin=0)
         return "new"
 
     def get_hero_instance(self, hid):
@@ -378,7 +378,7 @@ class Player:
 
     # --- Aetheric Cycle (NG+) ---
     def can_ascend_world(self):
-        """True when the player has cleared the final boss (Demon King at 9,4)
+        """True when the player has cleared the final boss (Baron Nashor at 9,4)
         and may now Ascend the World to start a new cycle."""
         return "9,4" in self.ow_bosses_cleared
 
@@ -453,13 +453,14 @@ class Player:
             p.gems = d.get("gems", D.STARTING_GEMS)
             p.gold = d.get("gold", D.STARTING_GOLD)
             p.owned = d.get("owned", {})
-            # migrate old records to include ascension/equipment/evolve
+            # migrate old records to include ascension/equipment/evolve/skin
             for hid, rec in p.owned.items():
                 rec.setdefault("ascension", 0)
                 rec.setdefault("equipment", {})
                 rec.setdefault("dupes", 0)
                 rec.setdefault("evolve", 0)
                 rec.setdefault("evo_nodes", [])
+                rec.setdefault("skin", 0)
             p.team = d.get("team", list(D.STARTING_TEAM))
             # validate team ids still owned
             p.team = [t if t in p.owned else None for t in p.team]

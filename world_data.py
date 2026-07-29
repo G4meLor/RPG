@@ -45,13 +45,14 @@ BIOMES = {
 # Row -> biome
 ROW_BIOME = ["plains", "forest", "cave", "castle", "void"]
 
-# Row -> (enemy pool, boss)
+# Row -> (enemy pool, boss). LoL-ified: each biome's trash mobs + the LoL
+# villain boss that anchors the faction story quest (see data.STORY_QUESTS).
 ROW_ENEMIES = {
-    0: (["slime", "goblin", "bat"],            "golem"),
-    1: (["wolf", "goblin", "harpy", "imp"],     "hydra"),
-    2: (["bat", "skeleton", "ghoul", "golem"],  "frosttitan"),
-    3: (["skeleton", "orc", "paladin", "wraith"], "dragon"),
-    4: (["wraith", "paladin", "hydra", "demonking"], "demonking"),
+    0: (["Razorbeaks", "Krugs", "MurkWolves"],            "Sylas"),
+    1: (["Raptors", "MurkWolves", "Krugs", "Gromp"],       "Swain"),
+    2: (["Voidlings", "Wraiths", "Gromp", "VoidHound"],    "Lissandra"),
+    3: (["Wraiths", "Voidlings", "FallenKnight"],          "Mordekaiser"),
+    4: (["Wraiths", "Voidlings", "VoidHound", "Viego"],    "Baron"),
 }
 
 # Master seed so the whole grid is stable across runs

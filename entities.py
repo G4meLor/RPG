@@ -16,7 +16,19 @@ def load_image(rel_path, scale=None):
     if key in _cache:
         return _cache[key]
     path = os.path.join(ASSET_DIR, rel_path)
-    img = pygame.image.load(path).convert_alpha()
+    img = pygame.image.load(path)
+    # jpg (splash art) has no alpha channel — .convert() is correct for it;
+    # png (sprites/icons) use .convert_alpha(). Detect by the file's actual
+    # format rather than the extension so a renamed file still works.
+    if img.get_flags() & 0x00010000:  # SRCALPHA already set (32-bit png)
+        img = img.convert_alpha()
+    else:
+        # no alpha (24-bit jpg) — try convert_alpha; pygame adds an opaque
+        # alpha channel so the surface is blittable everywhere a png would be.
+        try:
+            img = img.convert_alpha()
+        except pygame.error:
+            img = img.convert()
     if scale:
         img = pygame.transform.smoothscale(img, scale)
     _cache[key] = img
@@ -24,7 +36,7 @@ def load_image(rel_path, scale=None):
 
 def _load_first(paths, scale=None):
     """Try each relative path in order; return the first that exists on disk
-    (via load_image so the cache + convert_alpha are reused). If none exist,
+    (via load_image so the cache + convert are reused). If none exist,
     fall through to load_image on the last path so the caller gets the usual
     FileNotFoundError for a truly missing asset."""
     for rel in paths:
@@ -34,30 +46,44 @@ def _load_first(paths, scale=None):
     return load_image(paths[-1], scale)
 
 def load_char_sprite(hero_id, size=256):
-    # per-character bundle: characters/{hero_id}/sprite.png
-    # fall back to the old flat path characters/{hero_id}.png if the bundle
-    # isn't generated (a pre-restructure save or a missing bundle).
+    # per-character bundle: characters/{hero_id}/sprite.png (procedural world
+    # billboard). Fall back to the old flat path characters/{hero_id}.png.
     return _load_first([
         os.path.join("characters", hero_id, "sprite.png"),
         os.path.join("characters", hero_id + ".png"),
     ], (size, size))
 
-def load_portrait(hero_id, size=440):
-    # per-character bundle: characters/{hero_id}/portrait.png
-    # fall back to the old flat path portraits/{hero_id}.png
+def load_portrait(hero_id, skin_idx=0, size=440):
+    # per-champion bundle: the equipped skin's splash art.
+    #   skin_idx 0 -> characters/{hero_id}/portrait.jpg (the Original splash)
+    #   skin_idx N -> characters/{hero_id}/skins/{N}.jpg
+    # Fall back to the old flat portraits/{hero_id}.png for a pre-restructure
+    # save. The splash is a jpg (no alpha) — load_image handles the convert.
+    if skin_idx and skin_idx > 0:
+        skin_path = os.path.join("characters", hero_id, "skins", str(skin_idx) + ".jpg")
+        full = os.path.join(ASSET_DIR, skin_path)
+        if os.path.exists(full):
+            return load_image(skin_path, (size, size))
     return _load_first([
+        os.path.join("characters", hero_id, "portrait.jpg"),
         os.path.join("characters", hero_id, "portrait.png"),
         os.path.join("portraits", hero_id + ".png"),
+    ], (size, size))
+
+def load_champ_icon(hero_id, size=128):
+    # the real LoL champion icon (128x128, dark bg) for HUD/codex thumbnails.
+    return _load_first([
+        os.path.join("characters", hero_id, "icon.png"),
     ], (size, size))
 
 def load_enemy_sprite(enemy_id, size=256):
     return load_image(os.path.join("enemies", enemy_id + ".png"), (size, size))
 
 def load_skill_icon(hero_id, skill_id, size=64):
-    # per-hero skill art: characters/{hero_id}/skills/{skill_id}.png
-    # fall back to the global skills/{skill_id}.png (for boss ultimates +
-    # skills not in the hero's kit). hero_id may be None to skip the per-hero
-    # lookup (e.g. a boss ultimate with no hero context).
+    # per-champion skill art: characters/{hero_id}/skills/{skill_id}.png (the
+    # real LoL ability icon for the slot that skill_id fills). Fall back to the
+    # global skills/{skill_id}.png (for boss ultimates + skills not in the
+    # hero's kit). hero_id may be None to skip the per-hero lookup.
     paths = []
     if hero_id:
         paths.append(os.path.join("characters", hero_id, "skills", skill_id + ".png"))

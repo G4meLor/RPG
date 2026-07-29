@@ -8,7 +8,7 @@ import random
 import pygame
 
 import data as D
-from entities import (load_char_sprite, load_portrait,
+from entities import (load_char_sprite, load_portrait, load_champ_icon,
                       load_bg, load_ui, load_item_icon)
 from gacha import GachaSystem
 from player import Player
@@ -502,7 +502,10 @@ class RosterScene(Scene):
 
     def get_portrait(self, hid):
         if hid not in self.portrait_cache:
-            self.portrait_cache[hid] = load_portrait(hid, 220)
+            try:
+                self.portrait_cache[hid] = load_portrait(hid, 0, 220)
+            except Exception:
+                self.portrait_cache[hid] = load_char_sprite(hid, 220)
         return self.portrait_cache[hid]
 
     def _card_art_for(self, hid):
@@ -571,7 +574,10 @@ class RosterScene(Scene):
             pygame.draw.rect(surf, (200, 200, 240), (tx + 16, slot_y, 268, 48), 2, border_radius=10)
             if hid:
                 hd = D.HERO_BY_ID[hid]
-                p = load_portrait(hid, 44)
+                try:
+                    p = load_portrait(hid, 0, 44)
+                except Exception:
+                    p = load_char_sprite(hid, 44)
                 surf.blit(p, (tx + 22, slot_y + 2))
                 text(surf, f"{hd['name']} Lv.{self.game.player.owned[hid]['level']}", 18, WHITE, (tx + 76, slot_y + 6))
                 text(surf, hd['title'], 14, DIM, (tx + 76, slot_y + 28))
@@ -631,7 +637,7 @@ class RosterScene(Scene):
 
 
 class HeroDetailScene(Scene):
-    """View a hero, add/remove from team, ascend, equip items."""
+    """View a hero, add/remove from team, ascend, equip items, swap skins."""
     def __init__(self, game, hero_id):
         super().__init__(game)
         self.hero_id = hero_id
@@ -649,6 +655,14 @@ class HeroDetailScene(Scene):
         # "Team Full!" flash timer: the Add-to-Team button briefly shows this
         # when the team is full instead of silently overwriting a slot.
         self._team_full_t = 0.0
+        # skin selector state. Skins come from the baked champion metadata
+        # (champions.CHAMPION_BY_KEY); the equipped skin index lives on the
+        # hero record (rec["skin"], default 0 = Original). Left/right arrows
+        # under the portrait cycle the skin + re-render the portrait.
+        import champions as _CH
+        _c = _CH.CHAMPION_BY_KEY.get(hero_id)
+        self._skins = _c["skins"] if _c else [{"name": "Original", "id": 0, "index": 0}]
+        self._skin_rects = []  # [(rect, idx), ...] for click hit-testing
 
     def update(self, dt, events):
         self.t += dt
@@ -720,6 +734,14 @@ class HeroDetailScene(Scene):
                 rec["ascension"] = asc + 1
                 self.game.player.save()
                 audio.play("ultimate", 0.5)
+            # skin selector arrows (left/right under the portrait)
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                for rect, idx in self._skin_rects:
+                    if rect.collidepoint(e.pos):
+                        rec["skin"] = idx
+                        self.game.player.save()
+                        audio.play("menu_click")
+                        break
             if self.evolve_btn.clicked(e):
                 # jump to the world's evolve overlay for this hero
                 self.game.goto("world")
@@ -757,14 +779,44 @@ class HeroDetailScene(Scene):
         hid = self.hero_id
         hd = D.HERO_BY_ID[hid]
         rec = self.game.player.owned[hid]
-        # portrait big
-        p = load_portrait(hid, 360)
+        # portrait big — the equipped skin's splash (rec["skin"], default 0)
+        skin_idx = rec.get("skin", 0)
+        p = load_portrait(hid, skin_idx, 360)
         draw_panel(surf, (40, 110, 400, 480))
         surf.blit(p, (60, 130))
         text(surf, hd["name"], 36, WHITE, (240, 510), center=True)
         text(surf, hd["title"], 20, DIM, (240, 548), center=True)
         nstars = 3 if hd['rarity'] == "SSR" else (2 if hd['rarity'] == "SR" else 1)
         draw_stars(surf, 240 - 30, 576, nstars, size=12)
+        # skin selector: left/right arrows + the equipped skin's name. Cycles
+        # the champ's skins (from the baked metadata) + saves the choice on the
+        # hero record (rec["skin"]). The portrait above re-renders per skin.
+        self._skin_rects = []
+        if len(self._skins) > 1:
+            skin_idx = rec.get("skin", 0)
+            cur = next((s for s in self._skins if s["index"] == skin_idx), self._skins[0])
+            # only show skins whose splash art exists on disk
+            import os
+            avail = [s for s in self._skins
+                     if os.path.exists(os.path.join(D.ASSET_DIR, "characters", hid,
+                                                    "skins", f"{s['index']}.jpg"))
+                     or s["index"] == 0]
+            if avail:
+                cur = next((s for s in avail if s["index"] == skin_idx), avail[0])
+                ci = avail.index(cur)
+                prev_s = avail[(ci - 1) % len(avail)]
+                next_s = avail[(ci + 1) % len(avail)]
+                # arrow buttons + name, centered under the stars
+                ay = 596
+                pygame.draw.polygon(surf, (180, 200, 240),
+                                    [(150, ay), (150, ay + 16), (138, ay + 8)])
+                pygame.draw.polygon(surf, (180, 200, 240),
+                                    [(330, ay), (330, ay + 16), (342, ay + 8)])
+                self._skin_rects = [
+                    (pygame.Rect(132, ay - 4, 24, 24), prev_s["index"]),
+                    (pygame.Rect(324, ay - 4, 24, 24), next_s["index"]),
+                ]
+                text(surf, cur["name"], 13, (200, 220, 255), (240, ay + 22), center=True)
         # ascension pips
         asc = rec.get("ascension", 0)
         text(surf, f"Ascension {asc}/{D.MAX_ASCENSION}  (dupes: {rec['dupes']})", 16, (255, 180, 220), (240, 600), center=True)
@@ -1171,7 +1223,10 @@ class GachaScene(Scene):
         # featured hero portrait
         feat = b.get("featured_ssr")
         if feat:
-            fp = load_portrait(feat, 200)
+            try:
+                fp = load_portrait(feat, 0, 200)
+            except Exception:
+                fp = load_char_sprite(feat, 200)
             surf.blit(fp, (70, 260))
             text(surf, "Featured", 14, (255, 220, 120), (170, 470), center=True)
             text(surf, D.HERO_BY_ID[feat]["name"], 18, WHITE, (170, 490), center=True)
@@ -1270,17 +1325,16 @@ class GachaScene(Scene):
         frame = load_ui(f"frame_{rar}")
         frame = pygame.transform.smoothscale(frame, (cw, ch))
         surf.blit(frame, rect.topleft)
-        # the character sprite (bright chibi on transparent bg) over a bright
-        # element-tinted card — the portrait is too dark for the reveal (the
-        # "face too dark" fix). The portrait stays for the codex headshot.
-        el_main = D.ELEMENT_COLORS.get(hd["element"], ((200, 200, 220),))[0]
+        # the real LoL splash art (the default skin's 380x380 square) fills the
+        # reveal card — the "wow" moment with the champion's actual splash.
+        # The procedural world sprite stays for the in-game billboard; the
+        # splash is the reveal + codex + hero-detail art.
         card_size = int(cw * 0.9)
-        card = _scratch(card_size, card_size)
-        pygame.draw.rect(card, (*el_main, 60), card.get_rect(), border_radius=24)
-        pygame.draw.rect(card, (255, 255, 255, 40), card.get_rect(), 3, border_radius=24)
-        surf.blit(card, (rect.centerx - card_size // 2, rect.y + 16))
-        p = load_char_sprite(hid, card_size)
-        p2 = pygame.transform.smoothscale(p, (card_size, card_size))
+        try:
+            p = load_portrait(hid, 0, card_size)
+        except Exception:
+            p = load_char_sprite(hid, card_size)
+        p2 = pygame.transform.smoothscale(p, (card_size, int(card_size * p.get_height() / p.get_width())))
         surf.blit(p2, (rect.centerx - p2.get_width() // 2, rect.y + 16))
         # rotating rays scaled by rarity (SSR denser + counter-rotating set)
         if rar == "SSR":
@@ -2155,8 +2209,12 @@ class CodexScene(Scene):
     def _portrait(self, hid):
         if hid not in self.portrait_cache:
             # cache the already-scaled portrait at the display size so draw()
-            # doesn't smoothscale 25 portraits every frame.
-            pr = pygame.transform.smoothscale(load_portrait(hid, 160), (130, 130))
+            # doesn't smoothscale 170 portraits every frame. The default-skin
+            # splash (skin 0) is the codex headshot.
+            try:
+                pr = pygame.transform.smoothscale(load_portrait(hid, 0, 160), (130, 130))
+            except Exception:
+                pr = pygame.transform.smoothscale(load_char_sprite(hid, 160), (130, 130))
             self.portrait_cache[hid] = pr
         return self.portrait_cache[hid]
 

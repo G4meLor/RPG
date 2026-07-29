@@ -152,7 +152,7 @@ class AdventureScene(WorldScene):
         with the stage level + the elapsed time so the waves ramp in difficulty
         over the 10-min stage. Enemies spawn at the arena edges (x near 0 or
         MAP_W, y random in the playable area) so the player sees them coming."""
-        pool, _ = WD.ROW_ENEMIES[0]   # the plains row pool (slime/goblin/bat)
+        pool, _ = WD.ROW_ENEMIES[0]   # the plains row pool (Razorbeaks/Krugs/MurkWolves)
         # wave size: base 4 + the stage level + 1 per minute elapsed (capped so
         # a long stage doesn't flood the arena). The +1/min ramp makes the later
         # minutes of a stage feel more desperate than the opening.
@@ -183,11 +183,11 @@ class AdventureScene(WorldScene):
 
     def _spawn_adventure_boss(self):
         """Spawn the stage boss at the arena center. A row boss from the plains
-        row pool (golem), scaled to the stage level + 6 (the same +6 the
+        row pool (Sylas), scaled to the stage level + 6 (the same +6 the
         open-world boss arenas use) so the boss is a real threat. is_boss=True
         so the boss AI (phases, telegraphs, ult) + the boss HP bar + the boss
         intro cinematic all fire via the inherited WorldScene paths."""
-        _, boss_id = WD.ROW_ENEMIES[0]   # plains boss = golem
+        _, boss_id = WD.ROW_ENEMIES[0]   # plains boss = Sylas
         level = self._stage * D.ADVENTURE_STAGE_LEVEL_STEP + 6
         bx, by = WD.MAP_W // 2, WD.MAP_H // 2
         boss = WorldEnemy(boss_id, bx, by, level, is_boss=True)

@@ -1720,36 +1720,36 @@ class WorldScene:
     # boss-defeat advance. A quest is "active" when the NPC gave it (the
     # dialogue acceptance in _advance_dialogue sets story_progress[id] to
     # "active"); "complete" when the boss dies (the boss-defeat handler sets
-    # it). The final-boss quest (demon_king) is "active" only when all 5
-    # biome-boss quests are "complete" (the chain - the player must clear all 5
-    # biome bosses before the Demon King's arena unseals). A quest is
-    # "available" when the previous quest in the chain is "complete" (the
-    # first quest, plains_boss, is available from the start) - the NPC only
-    # offers a quest that's available, so the player can't skip ahead.
+    # it). The final-boss quest (baron) is "active" only when all 5
+    # faction-boss quests are "complete" (the chain - the player must clear all
+    # 5 faction bosses before Baron's arena unseals). A quest is "available"
+    # when the previous quest in the chain is "complete" (the first quest,
+    # demacia_quest, is available from the start) - the NPC only offers a
+    # quest that's available, so the player can't skip ahead.
     # -----------------------------------------------------------------
     def _is_quest_active(self, quest_id):
         """True if the quest is active (the NPC gave it) or complete (the boss
         died - the arena should stay open on a revisit). For the final-boss
-        quest (demon_king), active requires all 5 biome-boss quests complete
-        (the void NPC gives the demon_king quest, but the arena stays sealed
-        until the chain is done - the void_boss quest is the void row's
-        biome-boss gate; the demon_king quest is the chain's final gate)."""
+        quest (baron), active requires all 5 faction-boss quests complete
+        (the void NPC gives the baron quest, but the arena stays sealed
+        until the chain is done - the void_quest quest is the void row's
+        faction-boss gate; the baron quest is the chain's final gate)."""
         sp = self.game.player.story_progress
         if quest_id == D.STORY_FINAL_QUEST:
-            # the Demon King's arena unseals only when all 5 biome-boss quests
-            # are complete (the chain). The demon_king entry itself may also be
-            # "active" (set by the void NPC) but the chain gate is the stricter
+            # Baron's arena unseals only when all 5 faction-boss quests are
+            # complete (the chain). The baron entry itself may also be "active"
+            # (set by the void NPC) but the chain gate is the stricter
             # condition - both must hold for the boss to spawn.
-            biome_quests = [q for q in D.STORY_QUEST_ORDER
-                            if q != D.STORY_FINAL_QUEST]
-            return all(sp.get(q) == "complete" for q in biome_quests)
+            faction_quests = [q for q in D.STORY_QUEST_ORDER
+                              if q != D.STORY_FINAL_QUEST]
+            return all(sp.get(q) == "complete" for q in faction_quests)
         return sp.get(quest_id) in ("active", "complete")
 
     def _is_quest_available(self, quest_id):
         """True if the NPC can offer the quest (the previous quest in the chain
-        is complete, or it's the first quest). The first quest (plains_boss) is
-        always available; the final quest (demon_king) is available when all 5
-        biome-boss quests are complete."""
+        is complete, or it's the first quest). The first quest (demacia_quest)
+        is always available; the final quest (baron) is available when all 5
+        faction-boss quests are complete."""
         order = D.STORY_QUEST_ORDER
         if quest_id not in order:
             return False
@@ -1757,10 +1757,10 @@ class WorldScene:
         if idx == 0:
             return True
         sp = self.game.player.story_progress
-        # available when the previous quest is complete (the chain unlocks
-        # one quest at a time). The final quest (demon_king) follows the same
-        # rule - it's available when void_boss (the previous in the list) is
-        # complete, which itself requires the 4 before it complete.
+        # available when the previous quest is complete (the chain unlocks one
+        # quest at a time). The final quest (baron) follows the same rule - it's
+        # available when void_quest (the previous in the list) is complete,
+        # which itself requires the 4 before it complete.
         prev = order[idx - 1]
         return sp.get(prev) == "complete"
 
@@ -1927,18 +1927,18 @@ class WorldScene:
                     q = D.STORY_QUEST_BY_ID[qid]
                     self.set_message(
                         f"Quest accepted: {q['name']} - {q['objective']}", 3.0)
-                    # the void NPC ALSO gives the demon_king quest (the chain's
-                    # final marker) when the void_boss quest is accepted - the
-                    # void row's boss (9,4) IS the Demon King, so accepting the
-                    # void_boss quest (the row's biome-boss) means the player is
-                    # also on the demon_king quest. Mark demon_king active too so
-                    # the boss-defeat handler can complete the chain's final
-                    # marker (the demon_king quest) on the Demon King's death.
-                    # The void NPC's dialogue already foreshadows the Demon
-                    # King ("The Demon King waits where the world's edge frays"
-                    # + "End him, and the Cycle may turn at last"), so the
-                    # player learns about the Demon King from the void NPC.
-                    if (qid == "void_boss"
+                    # the void NPC ALSO gives the final quest (the chain's
+                    # final marker) when the void_quest quest is accepted - the
+                    # void row's boss (9,4) IS Baron Nashor, so accepting the
+                    # void_quest quest (the row's faction-boss) means the player
+                    # is also on the baron quest. Mark it active too so the
+                    # boss-defeat handler can complete the chain's final marker
+                    # (the baron quest) on Baron's death. The void NPC's
+                    # dialogue already foreshadows Baron ("Baron Nashor waits
+                    # where the world's edge frays" + "End it, and the Cycle may
+                    # turn at last"), so the player learns about Baron from the
+                    # void NPC.
+                    if (qid == "void_quest"
                             and self.game.player.story_progress.get(
                                 D.STORY_FINAL_QUEST) not in ("active", "complete")):
                         self.game.player.story_progress[D.STORY_FINAL_QUEST] = "active"
@@ -2773,7 +2773,7 @@ class WorldScene:
             # NPC gives both the void_boss quest + the demon_king quest, since
             # the void row's boss IS the Demon King).
             is_final = (self.r == WD.GRID_H - 1
-                        and getattr(en, "id", None) == "demonking")
+                        and getattr(en, "id", None) == "Baron")
             if (fqid is not None and fqid in D.STORY_QUEST_BY_ID
                     and p.story_progress.get(fqid) == "active"
                     and first_clear):
@@ -2835,15 +2835,15 @@ class WorldScene:
             audio.play("victory", 0.7)
             self._boss_defeat_name = en.enemy.name
             self._boss_defeat_t = 2.5
-            # Aetheric Cycle: when the FINAL boss (the Demon King at 9,4) is
+            # Aetheric Cycle: when the FINAL boss (Baron Nashor at 9,4) is
             # defeated for the first time this cycle, show a "World Ascended!"
             # banner so the player knows they can now Ascend the World from
             # the title screen to start NG+. The cell is (9,4) and the boss id
-            # for row 4 is "demonking" — check both so a non-final boss on the
+            # for row 4 is "Baron" — check both so a non-final boss on the
             # same row (none currently, but defensive) can't trigger this.
             if (WD.is_boss_cell(self.c, self.r) and self.c == WD.GRID_W - 1
                     and self.r == WD.GRID_H - 1
-                    and getattr(en, "id", None) == "demonking"):
+                    and getattr(en, "id", None) == "Baron"):
                 self._ascend_banner_t = 3.0
                 self.set_message(
                     "World Ascended! Return to the title to start a new cycle.",
@@ -4425,9 +4425,9 @@ class WorldScene:
             text(surf, name, 28, (255, 240, 200), (640, 300), center=True)
 
     def _draw_ascend_banner(self, surf, t):
-        """A full-width cinematic banner shown after the final boss (Demon King
-        at 9,4) is defeated, signalling the player can Ascend the World to
-        start a new Aetheric Cycle (NG+). Reuses the boss-banner fade shape."""
+        """A full-width cinematic banner shown after the final boss (Baron
+        Nashor at 9,4) is defeated, signalling the player can Ascend the World
+        to start a new Aetheric Cycle (NG+). Reuses the boss-banner fade shape."""
         dur = 3.0
         if t > dur * 0.8:
             a = max(0, 1 - (t - dur * 0.8) / (dur * 0.2))   # fading out
@@ -5453,17 +5453,12 @@ class WorldScene:
 
 
 # ---------------------------------------------------------------------------
-# Weapon style lookup (hero id -> weapon) from generate_assets HEROES list
+# Weapon style lookup (champion id -> weapon) from the baked descriptor in
+# champions.py. The descriptor's `weapon` field drives the attack VFX style.
 # ---------------------------------------------------------------------------
 def WEAPON_STYLE_KEY(hero_id):
-    # mirror of generate_assets.HEROES weapon field
-    weapons = {
-        "aria": "sword", "kael": "sword", "mira": "staff", "zephyr": "bow",
-        "luna": "dagger", "pyra": "staff", "lyra": "orb", "thorne": "shield",
-        "sera": "staff", "rune": "orb", "blaze": "sword", "nami": "orb",
-        "gale": "bow", "vex": "dagger", "ember": "sword", "tide": "shield",
-        "zephyra": "bow", "selene": "sword", "nox": "orb", "cinder": "sword",
-        "mist": "dagger", "sol": "orb", "gaia": "shield", "echo": "orb",
-        "raven": "dagger",
-    }
-    return weapons.get(hero_id, "sword")
+    import champions as _CH
+    c = _CH.CHAMPION_BY_KEY.get(hero_id)
+    if c is not None:
+        return c["descriptor"]["weapon"]
+    return "sword"

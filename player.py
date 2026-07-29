@@ -378,7 +378,7 @@ class Player:
 
     # --- Aetheric Cycle (NG+) ---
     def can_ascend_world(self):
-        """True when the player has cleared the final boss (Demon King at 9,4)
+        """True when the player has cleared the final boss (Baron Nashor at 9,4)
         and may now Ascend the World to start a new cycle."""
         return "9,4" in self.ow_bosses_cleared
 

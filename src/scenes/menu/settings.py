@@ -4,7 +4,7 @@ import pygame
 from src.core.scene import Scene
 from src.ui import (WIDTH, HEIGHT, WHITE, DIM, BG_DARK, PANEL_BORDER, FPS, Button,
                     draw_panel, text, f, Toggle, Slider)
-import audio
+import src.audio as audio
 class SettingsScene(Scene):
     """Full settings: Audio, Display, Gameplay, Accessibility, Data tabs."""
     TABS = ["Audio", "Display", "Gameplay", "Access", "Data"]

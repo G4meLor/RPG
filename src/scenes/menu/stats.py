@@ -6,7 +6,7 @@ from src.ui import (WIDTH, HEIGHT, WHITE, DIM, GOLD, BG_DARK, Button, draw_panel
                     draw_bar, text, f)
 from src.data.progression import ACHIEVEMENTS, DAILY_QUESTS
 from src.data.story import STORY_QUESTS, STORY_QUEST_BY_ID, STORY_QUEST_ORDER
-import audio
+import src.audio as audio
 class StatsScene(Scene):
     """Show battle stats, achievements, the story chain, and daily quests."""
     def __init__(self, game):

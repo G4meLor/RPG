@@ -8,7 +8,7 @@ from src.entities import load_bg, load_item_icon
 from src.data.consumables import CONSUMABLES_DB
 from src.data.equipment import EQUIPMENT_DB
 from src.data.shop import SHOP_GEMS
-import audio
+import src.audio as audio
 class ShopScene(Scene):
     """Buy consumables, equipment and gems with gold."""
     def __init__(self, game):

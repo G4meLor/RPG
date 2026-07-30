@@ -10,8 +10,8 @@ from src.data.equipment import EQUIPMENT_DB, EQUIPMENT_SETS
 from src.data.heroes import HERO_ASSETS, HERO_BY_ID, HERO_LORE, ULTIMATE_VARIANTS, hero_abilities
 from src.data.skills import SKILLS_DB
 from src.data.tuning import ASSET_DIR, MAX_ASCENSION, xp_to_next
-import champions as _CH
-import audio
+import src.build.champions as _CH
+import src.audio as audio
 class HeroDetailScene(Scene):
     """View a hero, add/remove from team, ascend, equip items, swap skins."""
     def __init__(self, game, hero_id):
@@ -120,7 +120,7 @@ class HeroDetailScene(Scene):
             if self.evolve_btn.clicked(e):
                 # jump to the world's evolve overlay for this hero
                 self.game.goto("world")
-                from world_scene import EvolveOverlay
+                from src.scenes.world import EvolveOverlay
                 self.game.scene.evolve = EvolveOverlay(self.game)
                 # select this hero in the overlay
                 try:

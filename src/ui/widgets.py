@@ -4,13 +4,13 @@ Aetheria — settings-menu widgets (Toggle + Slider).
 Split out of the main.py settings scene (where they originally lived) into the
 ui package so the settings scene can import them via `from src.ui import Toggle,
 Slider` without pulling in the whole game loop. They depend on the `text`
-helper (from primitives) and `audio` (the root shim, which proxies to
-src.audio — kept as `import audio` to match the original ui.py convention).
+helper (from primitives) and `audio` (kept as `import src.audio as audio` to
+match the original ui.py convention).
 """
 import pygame
 
 from src.ui.primitives import text
-import audio
+import src.audio as audio
 
 
 class Toggle:

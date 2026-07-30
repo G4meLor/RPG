@@ -8,11 +8,11 @@ from src.core.scene import Scene
 from src.ui import (WIDTH, HEIGHT, WHITE, DIM, GOLD, Button, draw_panel, draw_stars,
                     text, f, dim_overlay as _dim_overlay, scratch as _scratch)
 from src.entities import load_char_sprite, load_portrait, load_ui
-from gacha import GachaSystem
+from src.gacha import GachaSystem
 from src.data.elements import RARITY_COLORS
 from src.data.gacha_data import GACHA_BANNERS
 from src.data.heroes import HERO_BY_ID
-import audio
+import src.audio as audio
 class GachaScene(Scene):
     def __init__(self, game):
         super().__init__(game)

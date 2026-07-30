@@ -865,7 +865,7 @@ def rearrange_images(champs):
 # the descriptor system (10 archetypes + feature-adders + weapon-drawers).
 # ---------------------------------------------------------------------------
 def generate_sprites(champs):
-    import generate_assets as GA
+    import src.assets_gen.generate as GA
     GA.generate_sprites(champs)
 
 

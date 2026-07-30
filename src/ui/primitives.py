@@ -19,7 +19,7 @@ import math
 
 import pygame
 
-import audio
+import src.audio as audio
 
 # Reusable scratch surfaces (mirrors world_entities.scratch) for menu scenes
 # that allocate small SRCALPHA overlays each frame. Re-exported so callers
@@ -28,7 +28,7 @@ import audio
 # scratch surface factory needs a display mode set; under headless verify it
 # would otherwise hard-fail at import time).
 try:
-    from world_entities import scratch as _scratch
+    from src.entities._legacy_world_entities import scratch as _scratch
 except Exception:  # pragma: no cover - world_entities needs an init'd pygame
     _scratch = None
 scratch = _scratch

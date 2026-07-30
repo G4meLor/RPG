@@ -13,7 +13,7 @@ from src.data.heroes import HERO_BY_ID
 from src.data.progression import ACHIEVEMENTS, DAILY_QUESTS
 from src.data.shop import SHOP_GEMS
 from src.data.tuning import EVOLVE_COST, MAX_ASCENSION, MAX_EVOLVE, STARTING_GEMS, STARTING_GOLD, STARTING_INVENTORY, STARTING_OWNED, STARTING_TEAM
-from entities import Hero
+from src.entities import Hero
 
 # Repo root = parent of src/ = one level up from this file (src/player.py).
 # Saves live at <repo-root>/saves regardless of where this module sits, so the

@@ -7,7 +7,7 @@ from src.ui import (WIDTH, HEIGHT, WHITE, DIM, GOLD, BG_DARK, Button, draw_panel
 from src.entities import load_item_icon
 from src.data.consumables import CONSUMABLES_DB
 from src.data.equipment import EQUIPMENT_DB
-import audio
+import src.audio as audio
 class InventoryScene(Scene):
     """View and use consumables; sell items for gold."""
     def __init__(self, game):

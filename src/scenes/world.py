@@ -22,12 +22,12 @@ from src.data.roles import ROLES
 from src.data.skills import BOSS_ULT, SKILLS_DB
 from src.data.story import NPCS, STORY_BIOME_QUEST, STORY_FINAL_QUEST, STORY_QUEST_BY_ID, STORY_QUEST_ORDER
 from src.data.tuning import AA_CD, AA_RANGE, COMBO_BONUS_PER, COMBO_MAX, COMBO_MILESTONE_SKILL, COMBO_MILESTONE_ULT, ENERGY_GAIN_BASIC, ENERGY_GAIN_DEAL, ENERGY_START, element_mult
-from entities import (load_char_sprite, load_skill_icon,
+from src.entities import (load_char_sprite, load_skill_icon,
                       load_drop, load_terrain, load_landmark, load_village)
-import audio
-import fx
-import world_data as WD
-from world_entities import (Camera, Particles, Particle, Projectile, FloatText,
+import src.audio as audio
+import src.fx as fx
+import src.world.data as WD
+from src.entities import (Camera, Particles, Particle, Projectile, FloatText,
                             WorldCharacter, WorldEnemy, WEAPON_STYLE, scratch,
                             SummonAlly, Trap)
 
@@ -136,7 +136,7 @@ _SIG_ON_KILL = {"stacking_atk": _sig_stacking_atk}
 # Button + draw_bar come from ui.py (the shared UI-primitives module). This
 # used to import from main, which forced a main <-> world_scene circular
 # dependency; ui.py has no such cycle.
-from ui import Button, draw_bar
+from src.ui import Button, draw_bar
 
 
 # Sentinel for the village-cell cache (None is a valid cached value — "no
@@ -849,8 +849,8 @@ class EvolveOverlay:
 # Font + rendered-text + dim-overlay helpers live in ui.py now (one shared
 # cache instead of a per-module copy). Alias them under the names this module
 # already uses so the ~80 internal call sites stay unchanged.
-from ui import get_font as _font, text, dim_overlay
-from ui import _TEXT_CACHE  # noqa: F401 (shared cache; kept warm here too)
+from src.ui import get_font as _font, text, dim_overlay
+from src.ui import _TEXT_CACHE  # noqa: F401 (shared cache; kept warm here too)
 
 def _overlay_dim():
     """Back-compat wrapper: the world scene's modals want the fixed alpha-170
@@ -5452,7 +5452,7 @@ class WorldScene:
 # is called on every basic attack + skill + aim preview (3 hot-path call
 # sites), so a dict lookup beats re-walking CHAMPION_BY_KEY each time.
 # ---------------------------------------------------------------------------
-import champions as _CH
+import src.build.champions as _CH
 _WEAPON_STYLE_CACHE = {}
 def WEAPON_STYLE_KEY(hero_id):
     w = _WEAPON_STYLE_CACHE.get(hero_id)

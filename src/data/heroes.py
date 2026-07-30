@@ -98,7 +98,7 @@ def hero_abilities(hero_def):
 # _HERO_SKILL_TEXT / GACHA_POOL / STARTING_TEAM / WEAPON_STYLE_KEY) are
 # auto-derived from champions.py too. Stats: hp, atk, defn, spd, mp.
 # ---------------------------------------------------------------------------
-import champions as _CH
+import src.build.champions as _CH
 HEROES_DB = [
     dict(id=c["id"], name=c["name"], title=c["title"], element=c["element"],
          rarity=c["rarity"], role=c["role"], stats=c["stats"],

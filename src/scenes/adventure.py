@@ -27,11 +27,11 @@ import pygame
 
 from src.data.enemies import ENEMIES_DB
 from src.data.tuning import ADVENTURE_BOSS_TIME, ADVENTURE_STAGE_LEVEL_STEP, ADVENTURE_STAGE_TIME_LIMIT, ADVENTURE_WAVE_INTERVAL
-import audio
-import world_data as WD
-from world_entities import WorldEnemy, scratch
+import src.audio as audio
+import src.world.data as WD
+from src.entities import WorldEnemy, scratch
 from src.scenes.world import WorldScene
-from ui import text
+from src.ui import text
 
 
 # Adventure HUD layout (top-center, above the boss bar at y=18).

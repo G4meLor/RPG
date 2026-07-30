@@ -9,9 +9,9 @@ direct imports work.
 """
 import pygame
 
-import audio
-from ui import (WIDTH, HEIGHT, FPS, TITLE, init_fonts, text)
-from player import Player
+import src.audio as audio
+from src.ui import (WIDTH, HEIGHT, FPS, TITLE, init_fonts, text)
+from src.player import Player
 from src.scenes.world import WorldScene
 from src.scenes.adventure import AdventureScene
 from src.scenes.menu import (TitleScene, RosterScene, HeroDetailScene, GachaScene,

@@ -30,6 +30,13 @@ import src.world.data as WD
 from src.entities import (Camera, Particles, Particle, Projectile, FloatText,
                             WorldCharacter, WorldEnemy, WEAPON_STYLE, scratch,
                             SummonAlly, Trap)
+# ECS entity layer (Task 12): the adapter keeps a parallel World of entities
+# in sync with the legacy WorldCharacter/WorldEnemy objects. The legacy path
+# stays the source of truth this phase; the entity layer only tracks state.
+from src.core.world import World
+from src.entities.hero import spawn_hero
+from src.entities.enemy import spawn_enemy
+from src.entities.components import Transform, Health, ChampionRef
 
 
 def _seg_hit(x1, y1, x2, y2, px, py, r):
@@ -920,6 +927,16 @@ class WorldScene:
         # while >0 (skipped under reduce_motion — see _on_enemy_event).
         self._boss_phase_flash_t = 0.0
 
+        # ECS entity layer (Task 12): a parallel World of entities that tracks
+        # the legacy WorldCharacter/WorldEnemy objects. The legacy path stays
+        # the source of truth; the entity layer is ADDITIVE (parallel tracking).
+        # _entity_for_hero maps hero_id -> Entity; _entity_for_enemy maps
+        # id(legacy WorldEnemy) -> Entity. Initialized BEFORE _build_party so
+        # _build_party can spawn hero entities into self.world.
+        self.world = World()
+        self._entity_for_hero = {}   # hero_id -> Entity (party)
+        self._entity_for_enemy = {}  # id(legacy WorldEnemy) -> Entity
+
         # build the party of WorldCharacters
         self.party = []          # list of WorldCharacter (4 slots)
         self.active = 0
@@ -1133,6 +1150,15 @@ class WorldScene:
                 # default. A fresh party starts with revive available.
                 wc._revive_used = False
                 self.party.append(wc)
+                # ECS adapter (Task 12): spawn a parallel hero entity that tracks
+                # this WorldCharacter. The legacy wc stays the source of truth;
+                # the entity only mirrors its state each frame (_sync_entities).
+                e = spawn_hero(self.world, hid,
+                               level=rec.get("level", 1) if rec else 1,
+                               ascension=rec.get("ascension", 0) if rec else 0,
+                               evolve=rec.get("evolve", 0) if rec else 0,
+                               x=wc.x, y=wc.y)
+                self._entity_for_hero[hid] = e
             else:
                 self.party.append(None)
         # ensure at least the first owned hero is active
@@ -1144,6 +1170,11 @@ class WorldScene:
                 wc._revive_used = False
                 self.party[0] = wc
                 p.team[0] = hid
+                # ECS adapter (Task 12): spawn the fallback hero's entity too so
+                # the entity layer tracks it (mirrors the main-loop branch above).
+                if hid not in self._entity_for_hero:
+                    self._entity_for_hero[hid] = spawn_hero(
+                        self.world, hid, x=wc.x, y=wc.y)
                 break
         # active index
         self.active = 0
@@ -1210,6 +1241,15 @@ class WorldScene:
         m = WD.gen_map(self.c, self.r)
         self._map_data = m
         self.enemies = []
+        # ECS adapter (Task 12): the legacy enemy list is rebuilt on every map
+        # enter, so the parallel enemy entities from the previous map must be
+        # destroyed + the id()->Entity map cleared. Otherwise the entity layer
+        # would keep stale entities for WorldEnemy objects that no longer exist
+        # (the old Python objects are gone, so id() may even recycle). The hero
+        # entities persist across maps (the party is not rebuilt by _load_map).
+        for ee_id in list(self._entity_for_enemy.values()):
+            self.world.destroy(ee_id.eid if hasattr(ee_id, "eid") else ee_id)
+        self._entity_for_enemy = {}
         self.drops = []
         # clear summon/trap entities on map enter so a stale summon from the last
         # cell doesn't follow the player (Task A3).
@@ -1369,7 +1409,15 @@ class WorldScene:
                     eid = random.choice(champ_pool)
                 else:
                     eid = random.choice(pool)
-                self.enemies.append(WorldEnemy(eid, sx, sy, level + night_bonus, is_boss=False))
+                en = WorldEnemy(eid, sx, sy, level + night_bonus, is_boss=False)
+                self.enemies.append(en)
+                # ECS adapter (Task 12): spawn a parallel enemy entity that
+                # tracks this WorldEnemy. Match the level/is_boss args used in
+                # the WorldEnemy(...) call above.
+                ee = spawn_enemy(self.world, en.id,
+                                 level=level + night_bonus, is_boss=False,
+                                 x=en.x, y=en.y)
+                self._entity_for_enemy[id(en)] = ee
         else:
             # Task E2: gate the boss on its story quest. A biome-boss quest is
             # "active" when the player has accepted it from the NPC (the dialogue
@@ -1429,7 +1477,14 @@ class WorldScene:
                         and random.random() < 0.35):
                     boss_id = random.choice(champ_boss_pool)
                 bx, by = m["boss"]
-                self.enemies.append(WorldEnemy(boss_id, bx, by, level + 6, is_boss=True))
+                en = WorldEnemy(boss_id, bx, by, level + 6, is_boss=True)
+                self.enemies.append(en)
+                # ECS adapter (Task 12): spawn a parallel enemy entity that
+                # tracks this boss WorldEnemy. Match the level/is_boss args.
+                ee = spawn_enemy(self.world, en.id,
+                                 level=level + 6, is_boss=True,
+                                 x=en.x, y=en.y)
+                self._entity_for_enemy[id(en)] = ee
                 # boss intro cinematic: a name banner + a brief slow-mo the first time
                 # the player enters this boss arena. Skips on a revisit (re-entering a
                 # cleared arena shouldn't replay the intro).
@@ -1647,6 +1702,12 @@ class WorldScene:
             en = WorldEnemy(eid, sx, sy, level + wave_level, is_boss=False)
             self.enemies.append(en)
             self._rift_enemies.append(en)
+            # ECS adapter (Task 12): spawn a parallel enemy entity that tracks
+            # this rift-spawned WorldEnemy. Match the level/is_boss args.
+            ee = spawn_enemy(self.world, en.id,
+                             level=level + wave_level, is_boss=False,
+                             x=en.x, y=en.y)
+            self._entity_for_enemy[id(en)] = ee
         # a sealing burst at the rift tile so the trigger reads as a real event
         self.particles.burst(rx, ry, (180, 80, 220), n=30, speed=300, size=7, life=0.7)
         self.particles.ring(rx, ry, (200, 120, 240), n=24, speed=360, size=6, life=0.6)
@@ -2868,6 +2929,15 @@ class WorldScene:
         _sig = _SIG_ON_KILL.get(wc._signature_kind)
         if _sig:
             _sig(self, wc)
+        # ECS adapter (Task 12): the legacy enemy is dead — destroy its parallel
+        # entity so the entity layer stops tracking it. The legacy list is NOT
+        # mutated here (the dead WorldEnemy stays in self.enemies until the next
+        # _load_map rebuilds the list); only the entity is removed from self.world.
+        # pop with a -1 sentinel so a missing entry (e.g. an enemy spawned before
+        # the adapter existed) doesn't crash the death path.
+        ee = self._entity_for_enemy.pop(id(en), None)
+        if ee is not None:
+            self.world.destroy(ee.eid)
 
     def _spawn_drop(self, x, y, kind, value, count=1):
         """Spawn one (or `count`) ground loot drop(s) at (x, y). Each drop is a
@@ -3070,9 +3140,42 @@ class WorldScene:
         # stale aa_target (if any) shouldn't fire on entry.
         old.aa_target = None
         new.aa_target = None
+        # ECS adapter (Task 12): ensure the incoming hero has a parallel entity.
+        # _switch only swaps the active index — the hero was already in the
+        # party (and got an entity in _build_party), so the entity should exist.
+        # Spawn defensively if it doesn't (e.g. a hero added to the party after
+        # _build_party via some other path) so the entity layer never goes stale.
+        hid = new.hero.id
+        if hid not in self._entity_for_hero:
+            self._entity_for_hero[hid] = spawn_hero(
+                self.world, hid, x=new.x, y=new.y)
         # recompute elemental resonances — the active buffs track the live party,
         # so swapping in a 2nd hero of an element enables its resonance live.
         self._compute_resonances()
+
+    # -----------------------------------------------------------------
+    # ECS adapter (Task 12) — copy legacy state onto entity components each
+    # frame. READ-ONLY on the legacy path: it never mutates wc.x, wc.hero.hp,
+    # self.enemies, etc. It only WRITES to entity components in self.world.
+    # -----------------------------------------------------------------
+    def _sync_entities(self, dt):
+        for wc in self.party:
+            if wc is None:
+                continue
+            e = self._entity_for_hero.get(wc.hero.id)
+            if e is None:
+                continue
+            e.get(Transform).x = wc.x
+            e.get(Transform).y = wc.y
+            e.get(Health).hp = wc.hero.hp
+            e.get(Health).energy = wc.hero.mp
+        for en in self.enemies:
+            e = self._entity_for_enemy.get(id(en))
+            if e is None:
+                continue
+            e.get(Transform).x = en.x
+            e.get(Transform).y = en.y
+            e.get(Health).hp = en.enemy.hp
 
     # -----------------------------------------------------------------
     # Update
@@ -3604,6 +3707,10 @@ class WorldScene:
             self.game.player.ow_pos = [int(wc.x), int(wc.y)]
         self._persist_party()
         # light save every ~2s? we save on map changes and deaths already; skip per-frame save
+        # ECS adapter (Task 12): copy legacy state onto entity components at the
+        # END of update so the entity layer tracks the post-tick legacy state.
+        # READ-ONLY on the legacy path — only writes to entity components.
+        self._sync_entities(dt)
 
     def _on_enemy_event(self, name, en):
         if name == "enemy_strike":

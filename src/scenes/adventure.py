@@ -92,7 +92,9 @@ class AdventureScene(WorldScene):
         self._load_map(target_cell=(0, 0))
         # clear the open-world enemy spawns so the stage starts with a clean
         # arena (the wave spawner populates it). Keep chests/breakables as
-        # walk-over loot (they're benign in the fixed arena).
+        # walk-over loot (they're benign in the fixed arena). The ECS adapter's
+        # _entity_for_enemy dict was already cleared by the _load_map call above
+        # (it rebuilds the dict on every map enter), so no extra cleanup here.
         self.enemies = []
         # place the active hero at the arena center so the player starts in the
         # middle of the plains (not at the edge entry point _load_map set).
@@ -174,6 +176,12 @@ class AdventureScene(WorldScene):
             eid = random.choice(pool)
             en = WorldEnemy(eid, sx, sy, level, is_boss=False)
             self.enemies.append(en)
+            # ECS adapter (Task 12): spawn a parallel enemy entity for the
+            # adventure wave spawn (mirrors the WorldScene._load_map spawn).
+            from src.entities.enemy import spawn_enemy as _spawn_enemy
+            self._entity_for_enemy[id(en)] = _spawn_enemy(
+                self.world, en.id, level=level, is_boss=False,
+                x=en.x, y=en.y)
         # a wave-spawn burst at the edges so the spawn reads as an event (not a
         # silent pop). Reuses the rift-seal burst shape.
         self.particles.burst(WD.TILE + 8, WD.MAP_H // 2, (180, 80, 220),
@@ -195,6 +203,12 @@ class AdventureScene(WorldScene):
         boss = WorldEnemy(boss_id, bx, by, level, is_boss=True)
         self.enemies.append(boss)
         self._boss = boss
+        # ECS adapter (Task 12): spawn a parallel enemy entity for the
+        # adventure boss (mirrors the WorldScene._load_map boss spawn).
+        from src.entities.enemy import spawn_enemy as _spawn_enemy
+        self._entity_for_enemy[id(boss)] = _spawn_enemy(
+            self.world, boss.id, level=level, is_boss=True,
+            x=boss.x, y=boss.y)
         # boss intro cinematic: reuse the WorldScene boss-intro path so the
         # adventure boss gets the same name banner + slow-mo as an open-world boss.
         boss_name = ENEMIES_DB.get(boss_id, {}).get("name", "Boss")
@@ -257,6 +271,11 @@ class AdventureScene(WorldScene):
                     wc.invuln_t = 0.5
             # clear the enemies so the next stage starts with a clean arena.
             self.enemies = []
+            # ECS adapter (Task 12): destroy the parallel enemy entities for the
+            # cleared stage so the entity layer doesn't keep stale entities.
+            for ee in self._entity_for_enemy.values():
+                self.world.destroy(ee.eid)
+            self._entity_for_enemy = {}
             self.projectiles = []
             self._summons = []
             self._traps = []

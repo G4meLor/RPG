@@ -63,6 +63,37 @@ def test_spawn_enemy():
     assert e.get(Combat).element is not None
     assert e.get(Health).max_hp > 0
 
+def test_worldscene_entity_sync():
+    """Integration test (Task 12): WorldScene builds a parallel World of
+    entities (via the factories) that track the legacy WorldCharacter /
+    WorldEnemy objects. After 60 frames, each hero entity's Transform.x
+    matches its legacy WorldCharacter.x (±2) and the entity counts match
+    the legacy party/enemy lists. The adapter is READ-ONLY on the legacy
+    path — it must not change behavior."""
+    import main as M
+    g = M.Game()
+    from src.scenes.world import WorldScene
+    sc = WorldScene(g); g.scene = sc
+    # the adapter must expose a World
+    assert hasattr(sc, "world"), "WorldScene has no .world adapter"
+    for _ in range(60):
+        sc.update(0.016, []); sc.draw(g.screen)
+    # 4 party heroes (the legacy party is a 4-slot list)
+    heroes = sc.world.heroes()
+    assert len(heroes) == 4, f"expected 4 hero entities, got {len(heroes)}"
+    # each hero entity Transform matches its legacy WorldCharacter (±2 px)
+    for wc in sc.party:
+        if wc is None: continue
+        e = next((e for e in heroes if e.get(ChampionRef).hero_id == wc.hero.id), None)
+        assert e is not None, f"no entity for hero {wc.hero.id}"
+        assert abs(e.get(Transform).x - wc.x) < 2, \
+            f"{wc.hero.id} x drift: entity={e.get(Transform).x} legacy={wc.x}"
+    # enemy entities: count should equal the legacy enemy list length
+    # (the adapter spawns one entity per WorldEnemy append)
+    assert len(sc.world.enemies()) == len(sc.enemies), \
+        f"entity enemies {len(sc.world.enemies())} != legacy {len(sc.enemies)}"
+    print("  worldscene entity sync OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

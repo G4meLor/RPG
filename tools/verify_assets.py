@@ -15,9 +15,9 @@ import sys
 
 import pygame
 
-import champions as C
-import data as D
-import entities as E
+import src.build.champions as C
+import src.data as D
+import src.entities as E
 
 ASSET_DIR = D.ASSET_DIR
 
@@ -232,7 +232,7 @@ def main():
     print("=" * 64)
     print("ENEMIES + BOSSES (data consistency)")
     print("=" * 64)
-    import world_data as WD
+    import src.world.data as WD
     for row, (pool, boss) in WD.ROW_ENEMIES.items():
         for eid in pool + [boss]:
             if eid not in D.ENEMIES_DB:

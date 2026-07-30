@@ -33,6 +33,69 @@ def element_mult(atk_el, def_el):
         m = RESIST.get((atk_el, def_el), 1.0)
     return m
 
+# Inverse of CHART: the element an enemy of element X is weak to (fire->water,
+# water->wind, wind->fire, light->dark, dark->light). Used to derive a
+# champion-enemy's weakness from its element.
+WEAKNESS_FOR = {de: atk for (atk, de), m in CHART.items() if m > 1.0}
+
+# Champion-as-enemy: a champion can spawn as an open-world minion/boss instead
+# of a jungle mob/villain boss. This builds an ENEMIES_DB-style def from the
+# champion's baked stats so Enemy() can construct it the same way. The level
+# scaling + the is_boss flag are applied by the caller (the spawn site sets
+# the level; is_boss is set on the WorldEnemy, not here). The champ's real
+# skill kit (3 active + ult) is used so a champion enemy fights with its
+# actual abilities, not a generic basic_attack.
+def champion_enemy_def(champ_id, is_boss=False):
+    """Build an ENEMIES_DB-style dict for a champion acting as an enemy.
+    Stats are scaled up from the hero base so a champ enemy is a real threat
+    (a hero at level 1 has ~120 hp; an enemy at level 1 has ~80; we bump the
+    champ to enemy-tier + a boss multiplier). Skills = the champ's kit."""
+    c = _CH.CHAMPION_BY_KEY.get(champ_id)
+    if c is None:
+        return None
+    s = c["stats"]
+    el = c["element"]
+    # enemy-tier scaling: hero stats are ~1.5x enemy stats at equal level, so
+    # a champ enemy uses ~0.7x its hero stats to land in the enemy band; bosses
+    # get a further ~2.2x hp/atk so a champ boss rivals the villain bosses.
+    mul = 0.7 * (2.2 if is_boss else 1.0)
+    hp = int(s["hp"] * mul)
+    atk = int(s["atk"] * mul * (1.3 if is_boss else 1.0))
+    defn = int(s["defn"] * mul)
+    spd = s["spd"]
+    skills = list(c["skills"]) + ([c["ultimate"]] if c.get("ultimate") else [])
+    return {
+        "name": c["name"],
+        "element": el,
+        "hp": hp, "atk": atk, "defn": defn, "spd": spd,
+        "xp": int((90 if is_boss else 30) * (2.0 if is_boss else 1.0)),
+        "gold": int((90 if is_boss else 28) * (2.0 if is_boss else 1.0)),
+        "skills": skills,
+        "weakness": WEAKNESS_FOR.get(el),
+        "toughness": int((180 if is_boss else 55) * (1.0 if is_boss else 1.0)),
+        # marker so WorldEnemy knows to use the real champ sprite + ranged-from-weapon
+        "is_champion": True,
+        "champ_id": champ_id,
+    }
+
+# The pool of champions eligible to spawn as enemies. Excludes the 4
+# STARTING_TEAM champs (the player's own roster shouldn't fight itself on
+# first contact) + the villain bosses (they're already open-world bosses).
+# Built lazily (after STARTING_TEAM is defined) — see _get_champion_enemy_pool.
+_CHAMPION_ENEMY_POOL = None
+_CHAMPION_BOSS_POOL = None
+
+def _get_champion_enemy_pool():
+    global _CHAMPION_ENEMY_POOL, _CHAMPION_BOSS_POOL
+    if _CHAMPION_ENEMY_POOL is None:
+        start = set(STARTING_TEAM)
+        _CHAMPION_ENEMY_POOL = [c["id"] for c in _CH.CHAMPIONS_DB
+                                if c["id"] not in start]
+        _CHAMPION_BOSS_POOL = [c["id"] for c in _CH.CHAMPIONS_DB
+                               if c["rarity"] in ("SSR", "SR")
+                               and c["id"] not in start]
+    return _CHAMPION_ENEMY_POOL, _CHAMPION_BOSS_POOL
+
 # ---------------------------------------------------------------------------
 # Elemental reactions — a bonus effect when a hit of one element lands shortly
 # after a hit of a *different* element (Genshin-style). Rewards swapping the

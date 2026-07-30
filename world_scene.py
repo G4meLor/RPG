@@ -1388,8 +1388,15 @@ class WorldScene:
             # visual cue agree (was 0.5, leaving a 0.4-0.5 slice where the world
             # looked dark but enemies weren't tougher).
             night_bonus = 1 if 0.4 <= self._world_time <= 0.95 else 0
+            # Champion-as-enemy: ~16% of minions spawn as a random LoL champion
+            # (with its real kit + sprite) instead of a jungle mob. A rare,
+            # memorable encounter — the player meets the roster in the wild.
+            champ_pool, _ = D._get_champion_enemy_pool()
             for (sx, sy) in m["spawns"]:
-                eid = random.choice(pool)
+                if champ_pool and random.random() < 0.16:
+                    eid = random.choice(champ_pool)
+                else:
+                    eid = random.choice(pool)
                 self.enemies.append(WorldEnemy(eid, sx, sy, level + night_bonus, is_boss=False))
         else:
             # Task E2: gate the boss on its story quest. A biome-boss quest is
@@ -1435,6 +1442,20 @@ class WorldScene:
                     3.0)
             else:
                 _, boss_id = WD.ROW_ENEMIES[self.r]
+                # Champion-as-enemy: ~35% of bosses spawn as a random SSR/SR
+                # champion (boss-tier scaled, real kit + sprite) instead of the
+                # row's villain boss. The villain boss still anchors the story
+                # quest, so a champion boss only spawns when the quest is active
+                # AND the row's villain hasn't been cleared yet — on a rematch
+                # (cleared) the champion boss is the encounter. This keeps the
+                # story chain intact (the villain boss is the first-clear fight)
+                # while making boss arenas occasionally a champion duel.
+                _, champ_boss_pool = D._get_champion_enemy_pool()
+                cid = WD.cell_id(self.c, self.r)
+                already_cleared = cid in set(self.game.player.ow_bosses_cleared)
+                if (champ_boss_pool and already_cleared
+                        and random.random() < 0.35):
+                    boss_id = random.choice(champ_boss_pool)
                 bx, by = m["boss"]
                 self.enemies.append(WorldEnemy(boss_id, bx, by, level + 6, is_boss=True))
                 # boss intro cinematic: a name banner + a brief slow-mo the first time

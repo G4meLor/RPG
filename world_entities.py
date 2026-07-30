@@ -913,9 +913,11 @@ class WorldCharacter:
 class WorldEnemy:
     def __init__(self, enemy_id, x, y, level, is_boss=False):
         from entities import Enemy
-        self.enemy = Enemy(enemy_id, level)
+        self.enemy = Enemy(enemy_id, level, is_boss=is_boss)
         self.id = enemy_id
-        d = D.ENEMIES_DB[enemy_id]
+        # Champion-as-enemy: the def may come from champion_enemy_def (not in
+        # ENEMIES_DB), so read it off the Enemy instance rather than ENEMIES_DB.
+        d = self.enemy.def_dict
         self.x = float(x)
         self.y = float(y)
         self.vx = 0.0
@@ -979,17 +981,29 @@ class WorldEnemy:
 
         # sprite
         self.sprite_size = 96 if not is_boss else 180
+        # Champion-as-enemy: use the real champ world sprite (load_char_sprite)
+        # so a champion enemy looks like the champion, not a generic mob. Falls
+        # back to the enemy sprite for non-champion ids.
+        self.is_champion = bool(d.get("is_champion", False))
         try:
-            self._sprite = load_enemy_sprite(enemy_id, self.sprite_size)
+            if self.is_champion:
+                self._sprite = load_char_sprite(enemy_id, self.sprite_size)
+            else:
+                self._sprite = load_enemy_sprite(enemy_id, self.sprite_size)
         except Exception:
             self._sprite = None
         self._sprite_face = 1
 
         # weapon style for ranged (LoL mobs that cast at range — distinct from
         # the plain melee chaser archetype). Ranged mobs kite + fire projectiles.
-        self.ranged = self.id in ("Razorbeaks", "Raptors", "Gromp", "Voidlings",
-                                  "Wraiths", "VoidHound", "Lissandra", "Swain",
-                                  "Viego", "Baron")
+        # Champion enemies are ranged if their weapon is a ranged type.
+        if self.is_champion:
+            _wpn = D._CH.CHAMPION_BY_KEY.get(enemy_id, {}).get("descriptor", {}).get("weapon", "sword")
+            self.ranged = _wpn in ("bow", "staff", "orb", "gun")
+        else:
+            self.ranged = self.id in ("Razorbeaks", "Raptors", "Gromp", "Voidlings",
+                                      "Wraiths", "VoidHound", "Lissandra", "Swain",
+                                      "Viego", "Baron")
 
     @property
     def element(self):

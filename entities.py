@@ -563,8 +563,17 @@ def _compute_evo_bonus(hero_def, node_ids):
 
 
 class Enemy(Combatant):
-    def __init__(self, enemy_id, level=1):
-        d = D.ENEMIES_DB[enemy_id]
+    def __init__(self, enemy_id, level=1, is_boss=False):
+        # Champion-as-enemy: if enemy_id is a LoL champion key, build the def
+        # from the champion's baked stats (champion_enemy_def) instead of
+        # ENEMIES_DB. The is_boss flag scales the champ to boss-tier. This lets
+        # a champion spawn as an open-world minion/boss with its real kit.
+        if enemy_id in D._CH.CHAMPION_BY_KEY:
+            d = D.champion_enemy_def(enemy_id, is_boss=is_boss)
+            if d is None:
+                d = D.ENEMIES_DB[enemy_id]
+        else:
+            d = D.ENEMIES_DB[enemy_id]
         self.id = enemy_id
         self.def_dict = d
         self.level = level
@@ -580,7 +589,7 @@ class Enemy(Combatant):
         self.skills = list(d["skills"])
         self.xp = int(d["xp"] * scale)
         self.gold = int(d["gold"] * scale)
-        self.is_boss = enemy_id in D.BOSS_IDS
+        self.is_boss = enemy_id in D.BOSS_IDS or is_boss
         self._used_ultimate = False
         # HSR-style weakness + toughness
         self.weakness = d.get("weakness", None)

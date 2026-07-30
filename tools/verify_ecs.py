@@ -132,6 +132,31 @@ def test_physics_movement():
     assert sc._entity_for_hero[active.hero.id].get(Transform).x > start_x + 5
     print("  physics movement OK")
 
+def test_ai_pounce():
+    """Layer 2 (Task 16): AISystem.update drives a "pounce"-kind enemy entity
+    toward the active hero. A MurkWolves entity spawned 200px to the right of
+    the hero (within aggro range) must close the distance over 60 frames. The
+    legacy WorldEnemy.update path STAYS the source of truth this task; the
+    AISystem runs IN PARALLEL (additive) on the entity layer. The test entity
+    is spawned directly into sc.world (NOT via the legacy self.enemies list),
+    so the adapter's _sync_entities has no matching legacy WorldEnemy to
+    overwrite the entity's Transform — AISystem's writes persist."""
+    import main as M
+    g = M.Game()
+    from src.scenes.world import WorldScene
+    from src.entities.components import Transform, AI
+    sc = WorldScene(g); g.scene = sc
+    sc.enemies.clear(); sc._map_data["obstacles"] = []
+    hero_e = sc._entity_for_hero[sc.party[sc.active].hero.id]
+    en = spawn_enemy(sc.world, "MurkWolves", level=1,
+                     x=hero_e.get(Transform).x + 200, y=hero_e.get(Transform).y)
+    d0 = abs(en.get(Transform).x - hero_e.get(Transform).x)
+    for _ in range(60):
+        sc.ai.update(0.016)
+    d1 = abs(en.get(Transform).x - hero_e.get(Transform).x)
+    assert d1 < d0, f"pounce did not close distance: d0={d0:.1f} d1={d1:.1f}"
+    print("  ai pounce OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

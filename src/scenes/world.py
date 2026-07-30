@@ -679,6 +679,12 @@ class WorldScene:
         # Full takeover of movement from the legacy object happens in Task 20.
         self.physics = PhysicsSystem(self.world, self)
 
+        # AISystem (Task 16): per-enemy AI driving entity Transform/AI. Runs IN
+        # PARALLEL with legacy WorldEnemy.update (additive) — the legacy path
+        # stays the source of truth until Task 20 (full takeover).
+        from src.systems.ai import AISystem
+        self.ai = AISystem(self.world, self)
+
         # build the party of WorldCharacters
         self.party = []          # list of WorldCharacter (4 slots)
         self.active = 0

@@ -9,7 +9,9 @@ from src.ui import (WIDTH, HEIGHT, WHITE, DIM, GOLD, Button, draw_panel, draw_st
                     text, f, dim_overlay as _dim_overlay, scratch as _scratch)
 from src.entities import load_char_sprite, load_portrait, load_ui
 from gacha import GachaSystem
-import data as D
+from src.data.elements import RARITY_COLORS
+from src.data.gacha_data import GACHA_BANNERS
+from src.data.heroes import HERO_BY_ID
 import audio
 class GachaScene(Scene):
     def __init__(self, game):
@@ -18,7 +20,7 @@ class GachaScene(Scene):
         self.pull1 = Button((WIDTH // 2 - 240, 600, 200, 64), "Summon x1 (10)", (60, 80, 130), (90, 130, 200))
         self.pull10 = Button((WIDTH // 2 + 40, 600, 200, 64), "Summon x10 (90)", (120, 60, 130), (200, 90, 200))
         self.gacha = GachaSystem(game.player)
-        self.banner_id = D.GACHA_BANNERS[0]["id"]
+        self.banner_id = GACHA_BANNERS[0]["id"]
         self.state = "idle"
         self.anim_t = 0
         self.results = []          # list of (hid, rar, is_featured, status, refund)
@@ -41,11 +43,11 @@ class GachaScene(Scene):
 
     def _build_banner_rects(self):
         self._banner_rects = []
-        n = len(D.GACHA_BANNERS)
+        n = len(GACHA_BANNERS)
         bw, bh, gap = 170, 56, 12
         total = n * bw + (n - 1) * gap
         start_x = (WIDTH - total) // 2
-        for i, b in enumerate(D.GACHA_BANNERS):
+        for i, b in enumerate(GACHA_BANNERS):
             r = pygame.Rect(start_x + i * (bw + gap), 100, bw, bh)
             self._banner_rects.append((b["id"], r))
 
@@ -165,7 +167,7 @@ class GachaScene(Scene):
             self.particles.append([WIDTH // 2, HEIGHT // 2 - 20,
                                   math.cos(ang) * spd, math.sin(ang) * spd,
                                   random.uniform(0.6, 1.2),
-                                  D.RARITY_COLORS.get(rar, (255, 240, 180))])
+                                  RARITY_COLORS.get(rar, (255, 240, 180))])
 
     def _do_pull(self, count):
         self._pre_pull_owned = set(self.game.player.owned.keys())
@@ -226,7 +228,7 @@ class GachaScene(Scene):
                 fp = load_char_sprite(feat, 200)
             surf.blit(fp, (70, 260))
             text(surf, "Featured", 14, (255, 220, 120), (170, 470), center=True)
-            text(surf, D.HERO_BY_ID[feat]["name"], 18, WHITE, (170, 490), center=True)
+            text(surf, HERO_BY_ID[feat]["name"], 18, WHITE, (170, 490), center=True)
             text(surf, "Rate-up 50% SSR", 12, (255, 200, 120), (170, 512), center=True)
         # pity meter
         text(surf, "Pity Meter", 16, (220, 220, 240), (60, 540))
@@ -283,8 +285,8 @@ class GachaScene(Scene):
 
     def _draw_reveal(self, surf):
         hid, rar, is_feat, status, refund = self.results[self.reveal_idx]
-        hd = D.HERO_BY_ID[hid]
-        rcol = D.RARITY_COLORS.get(rar, (200, 200, 200))
+        hd = HERO_BY_ID[hid]
+        rcol = RARITY_COLORS.get(rar, (200, 200, 200))
         # dim backdrop (cached)
         surf.blit(_dim_overlay(180), (0, 0))
         # multi-stage scale keyed to rarity: SSR gets a slow zoom + overshoot,
@@ -389,7 +391,7 @@ class GachaScene(Scene):
         dx = (WIDTH - total_w) // 2
         for i in range(n):
             r_i = self.results[i][1]
-            c = D.RARITY_COLORS.get(r_i, (120, 120, 140))
+            c = RARITY_COLORS.get(r_i, (120, 120, 140))
             cx_d = dx + i * (dot_w + 8) + dot_w // 2
             if i < self.reveal_idx:
                 pygame.draw.circle(surf, c, (cx_d, dot_y), dot_w // 2)

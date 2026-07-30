@@ -16,10 +16,11 @@ import sys
 import pygame
 
 import src.build.champions as C
-import src.data as D
+from src.data.enemies import ENEMIES_DB
+from src.data.heroes import HERO_BY_ID
+from src.data.skills import BOSS_IDS, BOSS_ULT, SKILLS_DB
+from src.data.tuning import ASSET_DIR
 import src.entities as E
-
-ASSET_DIR = D.ASSET_DIR
 
 
 def _stats(surf):
@@ -121,7 +122,7 @@ def main():
                 if fn.endswith(".jpg"):
                     n_skins += 1
         # skills/{skill_id}.png (real ability icons) for each kit skill
-        hdef = D.HERO_BY_ID.get(key)
+        hdef = HERO_BY_ID.get(key)
         if hdef is None:
             failures.append(f"characters/{key}: no HEROES_DB entry")
             continue
@@ -129,7 +130,7 @@ def main():
         if hdef.get("ultimate"):
             skill_ids.append(hdef["ultimate"])
         for sid in skill_ids:
-            if sid not in D.SKILLS_DB:
+            if sid not in SKILLS_DB:
                 failures.append(f"characters/{key}: skill {sid} not in SKILLS_DB")
                 continue
             ipath = os.path.join(base, "skills", f"{sid}.png")
@@ -174,14 +175,14 @@ def main():
     from collections import defaultdict
     by_skill = defaultdict(list)
     for c in champs:
-        hdef = D.HERO_BY_ID.get(c["id"])
+        hdef = HERO_BY_ID.get(c["id"])
         if hdef is None:
             continue
         sids = [sid for sid in hdef["skills"] if sid]
         if hdef.get("ultimate"):
             sids.append(hdef["ultimate"])
         for sid in sids:
-            if sid in D.SKILLS_DB:
+            if sid in SKILLS_DB:
                 by_skill[sid].append(c["id"])
     distinct_checks = 0
     for sid, heroes in by_skill.items():
@@ -235,19 +236,19 @@ def main():
     import src.world.data as WD
     for row, (pool, boss) in WD.ROW_ENEMIES.items():
         for eid in pool + [boss]:
-            if eid not in D.ENEMIES_DB:
+            if eid not in ENEMIES_DB:
                 failures.append(f"ROW_ENEMIES[{row}] id {eid} not in ENEMIES_DB")
             else:
-                for s in D.ENEMIES_DB[eid]["skills"]:
-                    if s not in D.SKILLS_DB:
+                for s in ENEMIES_DB[eid]["skills"]:
+                    if s not in SKILLS_DB:
                         failures.append(f"enemy {eid} skill {s} not in SKILLS_DB")
-    for bid in D.BOSS_IDS:
-        if bid not in D.ENEMIES_DB:
+    for bid in BOSS_IDS:
+        if bid not in ENEMIES_DB:
             failures.append(f"boss {bid} not in ENEMIES_DB")
-        ult = D.BOSS_ULT.get(bid)
-        if ult and ult not in D.SKILLS_DB:
+        ult = BOSS_ULT.get(bid)
+        if ult and ult not in SKILLS_DB:
             failures.append(f"boss {bid} ult {ult} not in SKILLS_DB")
-    print(f"  mobs: {len(D.ENEMIES_DB) - len(D.BOSS_IDS)}, bosses: {len(D.BOSS_IDS)}")
+    print(f"  mobs: {len(ENEMIES_DB) - len(BOSS_IDS)}, bosses: {len(BOSS_IDS)}")
     print(f"  ROW_ENEMIES + BOSS_ULT consistent: "
           f"{'OK' if not any('ROW_ENEMIES' in f or 'boss ' in f for f in failures) else 'FAIL'}")
 

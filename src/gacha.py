@@ -4,9 +4,8 @@ Multi-banner pulls with rate-up, soft + hard pity, guaranteed SR+ in 10-pulls,
 duplicate coin-back, and per-banner pity persistence.
 """
 import random
-import data as D
-
-
+from src.data.gacha_data import GACHA_BANNERS, GACHA_BANNER_BY_ID, GACHA_COST, GACHA_RATES
+from src.data.tuning import GACHA_DUPE_GEM_REFUND, GACHA_PITY_HARD, GACHA_PITY_SOFT, GACHA_SR_GUARANTEE_EVERY, MAX_ASCENSION
 class GachaSystem:
     """Per-banner summoning. Pity is tracked per banner and persisted on the
     player (player.gacha_pity is now a dict: banner_id -> pulls since last SSR)."""
@@ -16,17 +15,17 @@ class GachaSystem:
         # player.gacha_pity may be an int (old save) -> migrate to a dict
         if not isinstance(player.gacha_pity, dict):
             player.gacha_pity = {}
-        self.PITY_HARD = D.GACHA_PITY_HARD
-        self.SOFT_PITY = D.GACHA_PITY_SOFT
-        self.SR_GUARANTEE_EVERY = D.GACHA_SR_GUARANTEE_EVERY
+        self.PITY_HARD = GACHA_PITY_HARD
+        self.SOFT_PITY = GACHA_PITY_SOFT
+        self.SR_GUARANTEE_EVERY = GACHA_SR_GUARANTEE_EVERY
 
     # --- banner selection -------------------------------------------------
     def banner(self, banner_id):
-        return D.GACHA_BANNER_BY_ID.get(banner_id, D.GACHA_BANNERS[0])
+        return GACHA_BANNER_BY_ID.get(banner_id, GACHA_BANNERS[0])
 
     # --- cost / affordability --------------------------------------------
     def cost(self, count):
-        return D.GACHA_COST["single" if count == 1 else "multi"]["gems"]
+        return GACHA_COST["single" if count == 1 else "multi"]["gems"]
 
     def can_pull(self, count):
         return self.player.gems >= self.cost(count)
@@ -44,12 +43,12 @@ class GachaSystem:
         if force_sr_floor:
             # 10th-pull guarantee: SR or SSR only
             r = random.random()
-            ssr_share = D.GACHA_RATES["SSR"] / (D.GACHA_RATES["SSR"] + D.GACHA_RATES["SR"])
+            ssr_share = GACHA_RATES["SSR"] / (GACHA_RATES["SSR"] + GACHA_RATES["SR"])
             return "SSR" if r < ssr_share else "SR"
         r = random.random()
         cum = 0.0
         for rar in ("SSR", "SR", "R"):
-            cum += D.GACHA_RATES[rar]
+            cum += GACHA_RATES[rar]
             if r < cum:
                 return rar
         return "R"
@@ -139,9 +138,9 @@ class GachaSystem:
         if hero_id in self.player.owned:
             status = "dupe"
             rec = self.player.owned[hero_id]
-            if rec.get("ascension", 0) >= D.MAX_ASCENSION:
+            if rec.get("ascension", 0) >= MAX_ASCENSION:
                 # already maxed -> refund some gems instead of more shards
-                refund = D.GACHA_DUPE_GEM_REFUND
+                refund = GACHA_DUPE_GEM_REFUND
                 self.player.gems += refund
                 self.player.stats["gems_earned"] = self.player.stats.get("gems_earned", 0) + refund
             else:

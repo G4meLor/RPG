@@ -5,7 +5,8 @@ from src.core.scene import Scene
 from src.ui import (WIDTH, HEIGHT, WHITE, DIM, GOLD, BG_DARK, Button, draw_panel,
                     text, f, rarity_color)
 from src.entities import load_item_icon
-import data as D
+from src.data.consumables import CONSUMABLES_DB
+from src.data.equipment import EQUIPMENT_DB
 import audio
 class InventoryScene(Scene):
     """View and use consumables; sell items for gold."""
@@ -38,7 +39,7 @@ class InventoryScene(Scene):
                         return
                     if sell_r.collidepoint(e.pos) and self.game.player.has_item(iid):
                         if self.game.player.sell_item(iid):
-                            self.toast = f"Sold {D.CONSUMABLES_DB[iid]['name']}!"
+                            self.toast = f"Sold {CONSUMABLES_DB[iid]['name']}!"
                             self.toast_t = 1.4
                             audio.play("menu_click")
                         return
@@ -47,7 +48,7 @@ class InventoryScene(Scene):
         """Apply a consumable to the world party (heal/restore the active hero,
         or all for elixir). Returns a toast string."""
         p = self.game.player
-        item = D.CONSUMABLES_DB.get(iid)
+        item = CONSUMABLES_DB.get(iid)
         if not item or not p.has_item(iid):
             return "Nothing to use"
         # find the active hero from the world scene if present, else the team
@@ -123,7 +124,7 @@ class InventoryScene(Scene):
             col = i % 6
             row = i // 6
             r = pygame.Rect(120 + col * 180, 110 + row * 220, 160, 200)
-            item = D.CONSUMABLES_DB.get(iid)
+            item = CONSUMABLES_DB.get(iid)
             if not item:
                 continue
             pygame.draw.rect(surf, (40, 40, 60), r, border_radius=12)
@@ -150,7 +151,7 @@ class InventoryScene(Scene):
             for i, item_id in enumerate(eq_items[:12]):
                 col = i % 6
                 r = pygame.Rect(120 + col * 90, 590, 80, 80)
-                item = D.EQUIPMENT_DB.get(item_id)
+                item = EQUIPMENT_DB.get(item_id)
                 if not item:
                     continue
                 pygame.draw.rect(surf, (40, 40, 60), r, border_radius=8)

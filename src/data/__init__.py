@@ -1,6 +1,6 @@
 """data package — per-concern modules. Public API re-exported here so
-`from src.data import SKILLS_DB` works. The root data.py shim (for the old
-`import data as D; D.X` pattern) is removed in Task 8 once call sites migrate.
+`from src.data import SKILLS_DB` works. The root data.py shim is removed and
+all call sites now import from the per-concern modules directly.
 
 Mechanically split from _legacy_data.py in Phase 2 of the ECS restructure.
 """
@@ -22,8 +22,8 @@ from src.data.heroes import *  # noqa: F401,F403
 from src.data.gacha_data import *  # noqa: F401,F403
 
 # Explicit re-export of the underscore-prefixed names accessed externally
-# (entities.py, world_scene.py, world_entities.py reach D._CH,
-# D._get_champion_enemy_pool, D._CHAMPION_ENEMY_POOL, D._CHAMPION_BOSS_POOL).
+# (entities.py, world_scene.py, world_entities.py reach _CH,
+# _get_champion_enemy_pool, _CHAMPION_ENEMY_POOL, _CHAMPION_BOSS_POOL).
 # The star-imports above cover these via __all__, but keep the explicit block
 # as a safety net so a missing __all__ entry can never break the game's
 # champion-as-enemy feature.

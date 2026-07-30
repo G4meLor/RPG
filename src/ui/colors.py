@@ -13,8 +13,7 @@ in main.py; importing it at module top would create a ui <-> main cycle). Root
 main.py re-exports Game, so `from main import Game` still resolves after the
 move into src/ui/.
 """
-import data as D
-
+from src.data.elements import COLORBLIND_PALETTES, ELEMENT_COLORS, RARITY_COLORS
 # ---------------------------------------------------------------------------
 # Color constants
 # ---------------------------------------------------------------------------
@@ -37,7 +36,7 @@ def element_color(el):
     # deuteranopia-safe set. The function reads the active Game's player
     # settings; if no Game has been instantiated yet (e.g. early import-time
     # probes), fall back to the default palette. REACTIONS are NOT routed here.
-    if el not in D.ELEMENT_COLORS:
+    if el not in ELEMENT_COLORS:
         return (200, 200, 200)
     try:
         # Late import to avoid a circular ui <-> main dependency: Game lives in
@@ -48,8 +47,8 @@ def element_color(el):
     except Exception:
         cb = False
     if cb:
-        return D.COLORBLIND_PALETTES[el]
-    return D.ELEMENT_COLORS[el][0]
+        return COLORBLIND_PALETTES[el]
+    return ELEMENT_COLORS[el][0]
 
 def rarity_color(rar):
-    return D.RARITY_COLORS.get(rar, (200, 200, 200))
+    return RARITY_COLORS.get(rar, (200, 200, 200))

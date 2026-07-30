@@ -25,7 +25,8 @@ import random
 
 import pygame
 
-import data as D
+from src.data.enemies import ENEMIES_DB
+from src.data.tuning import ADVENTURE_BOSS_TIME, ADVENTURE_STAGE_LEVEL_STEP, ADVENTURE_STAGE_TIME_LIMIT, ADVENTURE_WAVE_INTERVAL
 import audio
 import world_data as WD
 from world_entities import WorldEnemy, scratch
@@ -161,7 +162,7 @@ class AdventureScene(WorldScene):
         count = max(3, min(count, 14))
         # enemy level: the stage level * the step + 1 per 2 min elapsed so the
         # enemies scale with both the stage ladder + the time spent in the stage.
-        level = self._stage * D.ADVENTURE_STAGE_LEVEL_STEP + int(self._stage_t / 120)
+        level = self._stage * ADVENTURE_STAGE_LEVEL_STEP + int(self._stage_t / 120)
         level = max(1, level)
         # spawn from the arena edges: alternate left/right edges, y random in
         # the playable area (TILE..MAP_H-TILE so they don't spawn on the border
@@ -189,14 +190,14 @@ class AdventureScene(WorldScene):
         so the boss AI (phases, telegraphs, ult) + the boss HP bar + the boss
         intro cinematic all fire via the inherited WorldScene paths."""
         _, boss_id = WD.ROW_ENEMIES[0]   # plains boss = Sylas
-        level = self._stage * D.ADVENTURE_STAGE_LEVEL_STEP + 6
+        level = self._stage * ADVENTURE_STAGE_LEVEL_STEP + 6
         bx, by = WD.MAP_W // 2, WD.MAP_H // 2
         boss = WorldEnemy(boss_id, bx, by, level, is_boss=True)
         self.enemies.append(boss)
         self._boss = boss
         # boss intro cinematic: reuse the WorldScene boss-intro path so the
         # adventure boss gets the same name banner + slow-mo as an open-world boss.
-        boss_name = D.ENEMIES_DB.get(boss_id, {}).get("name", "Boss")
+        boss_name = ENEMIES_DB.get(boss_id, {}).get("name", "Boss")
         self._boss_intro_t = 1.6
         self._boss_intro_name = boss_name
         audio.play("boss_intro", 0.7)
@@ -226,12 +227,12 @@ class AdventureScene(WorldScene):
         self._stage_t += sim_dt
         # wave spawner: every ADVENTURE_WAVE_INTERVAL seconds, spawn a wave.
         self._wave_t += sim_dt
-        if self._wave_t >= D.ADVENTURE_WAVE_INTERVAL:
+        if self._wave_t >= ADVENTURE_WAVE_INTERVAL:
             self._wave_t = 0.0
             self._spawn_wave()
         # boss at the 5-min mark: spawn once per stage (gated on _boss_spawned
         # so the boss doesn't re-spawn every frame after 5 min).
-        if self._stage_t >= D.ADVENTURE_BOSS_TIME and not self._boss_spawned:
+        if self._stage_t >= ADVENTURE_BOSS_TIME and not self._boss_spawned:
             self._boss_spawned = True
             self._spawn_adventure_boss()
         # stage-clear: the boss was spawned + is now dead (no boss enemy alive).
@@ -342,7 +343,7 @@ class AdventureScene(WorldScene):
             surf.blit(panel, (px, py))
             # the 10-min countdown: 10 min - elapsed (in minutes), so the player
             # sees the time remaining in the stage. Turns red in the last 2 min.
-            mins_left = max(0, D.ADVENTURE_STAGE_TIME_LIMIT - self._stage_t) / 60.0
+            mins_left = max(0, ADVENTURE_STAGE_TIME_LIMIT - self._stage_t) / 60.0
             timer_col = (255, 220, 120) if mins_left > 2.0 else (255, 120, 120)
             text(surf, f"{mins_left:4.1f}m", 20, timer_col, (px + 12, py + 4))
             # the stage number (left of center) so the player knows which stage.
@@ -358,7 +359,7 @@ class AdventureScene(WorldScene):
         # (so the player knows the boss is near + can prep). Drawn under the
         # timer panel so it reads as a subtitle, not a replacement.
         if not self._boss_spawned:
-            t_to_boss = D.ADVENTURE_BOSS_TIME - self._stage_t
+            t_to_boss = ADVENTURE_BOSS_TIME - self._stage_t
             if 0 < t_to_boss < 30:
                 pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.012)
                 col = (int(200 * pulse + 55), int(40 * pulse + 30), int(60 * pulse + 40))

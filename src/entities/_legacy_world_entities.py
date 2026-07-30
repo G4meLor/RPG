@@ -8,7 +8,11 @@ import random
 
 import pygame
 
-import data as D
+from src.data.elements import ELEMENT_COLORS
+from src.data.heroes import hero_abilities
+from src.data.skills import SKILLS_DB, boss_patterns
+from src.data.tuning import ENERGY_REGEN_PCT, TOUGHNESS_BREAK_DAMAGE, TOUGHNESS_BREAK_MULT
+from src.build.champions import CHAMPION_BY_KEY
 from entities import Hero, Enemy, load_char_sprite, load_enemy_sprite
 
 
@@ -479,7 +483,7 @@ class WorldCharacter:
 
     def skill_list(self):
         """The three skills mapped to Q/W/E (skip basic_attack)."""
-        return D.hero_abilities(self.hero.def_dict)
+        return hero_abilities(self.hero.def_dict)
 
     def can_skill(self, idx):
         sk = self.skill_list()
@@ -497,7 +501,7 @@ class WorldCharacter:
         cost = self.hero.skill_energy_cost(sid)
         self.hero.energy -= cost
         # cooldown scales with the skill's cost tier (heavier skills cool slower)
-        cd = 0.6 + (D.SKILLS_DB[sid].get("cost", 2)) * 0.18
+        cd = 0.6 + (SKILLS_DB[sid].get("cost", 2)) * 0.18
         self.skill_cd[idx] = cd
         self.skill_cd_max[idx] = cd
 
@@ -507,7 +511,7 @@ class WorldCharacter:
         # death_coil cost 9) cool slightly longer than light ones (cost 8) —
         # this gives the per-ult "cost" field in the data sheet real meaning,
         # since every ult otherwise costs the full energy bar + a flat cd.
-        self.ult_cd = 1.0 + D.SKILLS_DB[self.hero.ultimate].get("cost", 8) * 0.05
+        self.ult_cd = 1.0 + SKILLS_DB[self.hero.ultimate].get("cost", 8) * 0.05
 
     def take_damage(self, amount, src_x=0, src_y=0, is_melee=False):
         """Apply incoming damage to this hero. Always returns a 2-tuple
@@ -783,7 +787,7 @@ class WorldCharacter:
         # to discrete energy gains from hits/skills, not to this passive trickle,
         # so there's no double-apply to guard here.
         if self.alive and self.hero.energy < self.hero.max_energy:
-            rate = D.ENERGY_REGEN_PCT * (0.5 if self._last_combat_t < 1.5 else 1.0)
+            rate = ENERGY_REGEN_PCT * (0.5 if self._last_combat_t < 1.5 else 1.0)
             rate *= (1 + self._res_energy_regen)
             self.hero.energy = min(self.hero.max_energy,
                                    self.hero.energy + self.hero.max_energy * rate * dt)
@@ -852,7 +856,7 @@ class WorldCharacter:
         if self.dash_t > 0 or self.atk_anim > 0:
             gw = self.r * 2
             g = scratch(gw, 14)
-            ec = D.ELEMENT_COLORS.get(self.element, ((200, 200, 220),))[0]
+            ec = ELEMENT_COLORS.get(self.element, ((200, 200, 220),))[0]
             pygame.draw.ellipse(g, (*ec, 60), g.get_rect())
             surf.blit(g, (x - gw // 2, y + self.r - 6))
         # walk bob (vertical hop) + idle breathing offset
@@ -997,7 +1001,7 @@ class WorldEnemy:
         # the plain melee chaser archetype). Ranged mobs kite + fire projectiles.
         # Champion enemies are ranged if their weapon is a ranged type.
         if self.is_champion:
-            _wpn = D._CH.CHAMPION_BY_KEY.get(enemy_id, {}).get("descriptor", {}).get("weapon", "sword")
+            _wpn = CHAMPION_BY_KEY.get(enemy_id, {}).get("descriptor", {}).get("weapon", "sword")
             self.ranged = _wpn in ("bow", "staff", "orb", "gun")
         else:
             self.ranged = self.id in ("Razorbeaks", "Raptors", "Gromp", "Voidlings",
@@ -1019,7 +1023,7 @@ class WorldEnemy:
         # multiplier — they don't compound absurdly because each is a flat
         # factor on the pre-broken base, not a chain of +50%s.
         if self.enemy.broken:
-            amount = int(amount * D.TOUGHNESS_BREAK_MULT)
+            amount = int(amount * TOUGHNESS_BREAK_MULT)
         dmg = max(1, int(amount))
         self.enemy.hp -= dmg
         self.hit_flash = 0.2
@@ -1039,7 +1043,7 @@ class WorldEnemy:
                 # Gated to bosses only — non-boss toughness enemies are too
                 # squishy to absorb a 15%-max-hp nuke without being one-shot.
                 if self.is_boss:
-                    burst = int(self.enemy.max_hp * D.TOUGHNESS_BREAK_DAMAGE)
+                    burst = int(self.enemy.max_hp * TOUGHNESS_BREAK_DAMAGE)
                     if burst > 0:
                         self.enemy.hp -= burst
                         if on_attack:
@@ -1155,7 +1159,7 @@ class WorldEnemy:
             # fight visibly escalates (phase 3 favors the newly-unlocked slam).
             if (self.is_boss and self._boss_phase >= 2 and self._boss_pattern is None
                     and self.atk_cd <= 0 and self._boss_pat_t <= 0):
-                patterns = D.boss_patterns(self.id, self._boss_phase)
+                patterns = boss_patterns(self.id, self._boss_phase)
                 trigger_p = {1: 0.0, 2: 0.5, 3: 0.75}.get(self._boss_phase, 0.6)
                 if patterns and random.random() < trigger_p:
                     if self._boss_phase >= 3 and len(patterns) > 1:
@@ -1266,7 +1270,7 @@ class WorldEnemy:
         # abort the strike rather than dereferencing a None target.
         if target is None:
             return
-        col = D.ELEMENT_COLORS.get(self.element, ((200, 200, 200),))[0]
+        col = ELEMENT_COLORS.get(self.element, ((200, 200, 200),))[0]
         # wolf pounce: a long lunge toward the target then a heavy strike — a
         # real predator archetype (distinct from the blob and the skirmisher).
         if getattr(self, "_pounce", False):
@@ -1289,7 +1293,7 @@ class WorldEnemy:
         if (not self.is_boss and self.atk_cd2 <= 0
                 and len(self.enemy.skills) > 1):
             sid = self.enemy.skills[-1]
-            sk = D.SKILLS_DB.get(sid)
+            sk = SKILLS_DB.get(sid)
             if sk and sk.get("type") in ("magic", "aoe_magic", "debuff"):
                 self._cast_skill(sid, sk, target, projectiles, on_attack)
                 self.atk_cd2 = 3.0
@@ -1328,7 +1332,7 @@ class WorldEnemy:
         magic -> a single fast bolt at sk power; aoe_magic -> a ring of 8
         projectiles; debuff -> a slow bolt (the scene applies the debuff on
         hit via the element/skill type)."""
-        col = D.ELEMENT_COLORS.get(sk.get("element", self.element), ((200, 200, 200),))[0]
+        col = ELEMENT_COLORS.get(sk.get("element", self.element), ((200, 200, 200),))[0]
         if target is None:
             return
         dx = target.x - self.x; dy = target.y - self.y
@@ -1403,7 +1407,7 @@ class WorldEnemy:
             gw = int(self.r * 3 * rad_mul)
             g = scratch(gw, gw)
             pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.005)
-            ec = D.ELEMENT_COLORS.get(self.element, ((220, 60, 60),))[0]
+            ec = ELEMENT_COLORS.get(self.element, ((220, 60, 60),))[0]
             ring_w = int(18 * rad_mul)
             for rr in range(self.r + ring_w, self.r, -3):
                 a = int(min(255, 50 * pulse * (1 - (rr - self.r) / max(1, ring_w)) * int_mul))

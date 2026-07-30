@@ -6,8 +6,7 @@ graph (neighbor links), and difficulty scaling. All static so it is cheap.
 import random
 import math
 
-import data as D
-
+from src.data.tuning import NG_PLUS_LEVEL_BONUS
 # ---------------------------------------------------------------------------
 # Grid + tile geometry
 # ---------------------------------------------------------------------------
@@ -161,7 +160,7 @@ def cell_level(c, r, ng_cycle=0):
     stays challenging after Ascending."""
     base = 1 + r * 6 + int(c * 1.5)
     if ng_cycle:
-        base += ng_cycle * D.NG_PLUS_LEVEL_BONUS
+        base += ng_cycle * NG_PLUS_LEVEL_BONUS
     return base
 
 

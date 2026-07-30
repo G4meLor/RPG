@@ -49,7 +49,7 @@ ELEMENT_COLORS = {
 # locked per element (base/light/shadow/outline/accent) so gradients dither
 # instead of smoothing. Re-exported from data.py so the rest of the codebase can
 # import a single source of truth.
-from data import PIXEL, PIXEL_PALETTE  # noqa: E402 (re-export; same values as data.py)
+from src.data.elements import PIXEL, PIXEL_PALETTE
 
 RARITY_COLORS = {
     "R":   (140, 150, 165),

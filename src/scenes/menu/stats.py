@@ -4,7 +4,8 @@ import pygame
 from src.core.scene import Scene
 from src.ui import (WIDTH, HEIGHT, WHITE, DIM, GOLD, BG_DARK, Button, draw_panel,
                     draw_bar, text, f)
-import data as D
+from src.data.progression import ACHIEVEMENTS, DAILY_QUESTS
+from src.data.story import STORY_QUESTS, STORY_QUEST_BY_ID, STORY_QUEST_ORDER
 import audio
 class StatsScene(Scene):
     """Show battle stats, achievements, the story chain, and daily quests."""
@@ -41,7 +42,7 @@ class StatsScene(Scene):
         self.claim_all_btn.update(mp, mdown)
         self.game.player.reset_quests_if_needed()
         self.quest_rects = []
-        for i, qid in enumerate(D.DAILY_QUESTS):
+        for i, qid in enumerate(DAILY_QUESTS):
             r = pygame.Rect(WIDTH // 2 - 280, 200 + i * 80, 560, 70)
             self.quest_rects.append((qid, r))
         for e in events:
@@ -70,9 +71,9 @@ class StatsScene(Scene):
                 return
             if self.tab == "quest" and self.claim_all_btn.clicked(e):
                 total = 0
-                for qid in D.DAILY_QUESTS:
+                for qid in DAILY_QUESTS:
                     if self.game.player.claim_quest(qid):
-                        total += D.DAILY_QUESTS[qid]["reward_gems"]
+                        total += DAILY_QUESTS[qid]["reward_gems"]
                 if total > 0:
                     self.toast = f"Claimed all: +{total} gems!"
                     self.toast_t = 2.0
@@ -82,7 +83,7 @@ class StatsScene(Scene):
                 for qid, r in self.quest_rects:
                     if r.collidepoint(e.pos):
                         if self.game.player.claim_quest(qid):
-                            q = D.DAILY_QUESTS[qid]
+                            q = DAILY_QUESTS[qid]
                             self.toast = f"+{q['reward_gems']} gems!"
                             self.toast_t = 1.6
                             audio.play("menu_click", 0.4)
@@ -93,11 +94,11 @@ class StatsScene(Scene):
                 if self.tab == "stats":
                     content_h = 10 * 60
                 elif self.tab == "ach":
-                    content_h = len(D.ACHIEVEMENTS) * 72
+                    content_h = len(ACHIEVEMENTS) * 72
                 elif self.tab == "story":
-                    content_h = len(D.STORY_QUESTS) * 80
+                    content_h = len(STORY_QUESTS) * 80
                 else:
-                    content_h = len(D.DAILY_QUESTS) * 80
+                    content_h = len(DAILY_QUESTS) * 80
                 max_scroll = max(0, content_h - (HEIGHT - 180 - 40))
                 self.scroll = max(0, min(self.scroll - e.y * 40, max_scroll))
 
@@ -131,7 +132,7 @@ class StatsScene(Scene):
                 y += 60
         elif self.tab == "ach":
             y = 180 - self.scroll
-            for aid, ach in D.ACHIEVEMENTS.items():
+            for aid, ach in ACHIEVEMENTS.items():
                 unlocked = aid in p.achievements
                 draw_panel(surf, (WIDTH // 2 - 300, y, 600, 64))
                 text(surf, ach["name"], 22, GOLD if unlocked else WHITE, (WIDTH // 2 - 280, y + 8))
@@ -152,8 +153,8 @@ class StatsScene(Scene):
             # chain state from player.story_progress (quest_id -> status).
             y = 180 - self.scroll
             sp = p.story_progress
-            for i, qid in enumerate(D.STORY_QUEST_ORDER):
-                q = D.STORY_QUEST_BY_ID[qid]
+            for i, qid in enumerate(STORY_QUEST_ORDER):
+                q = STORY_QUEST_BY_ID[qid]
                 status = sp.get(qid)
                 if status == "complete":
                     label = "COMPLETE"
@@ -183,7 +184,7 @@ class StatsScene(Scene):
         else:  # quest
             self.claim_all_btn.draw(surf)
             for qid, r in self.quest_rects:
-                q = D.DAILY_QUESTS[qid]
+                q = DAILY_QUESTS[qid]
                 st = p.quests.get(qid, dict(progress=0, claimed=False, goal=q["goal"]))
                 prog = st.get("progress", 0)
                 goal = st.get("goal", q["goal"])

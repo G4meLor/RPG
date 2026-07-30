@@ -9,7 +9,19 @@ import time
 
 import pygame
 
-import data as D
+from src.data.consumables import CONSUMABLES_DB
+from src.data.elements import ELEMENT_COLORS, REACTION_WINDOW, WET_EFFECT, reaction_for
+from src.data.enemies import ENEMIES_DB
+from src.data.equipment import EQUIPMENT_DB
+from src.data.evolution import EVO_LINKS, EVO_NODE_POS, evo_node_prereq_met, hero_evo_tree
+from src.data.heroes import HERO_ASSETS, HERO_BY_ID, HERO_PASSIVES, ULTIMATE_VARIANTS, _get_champion_enemy_pool
+from src.data.passives import PASSIVES_DB
+from src.data.progression import ACHIEVEMENTS, DAILY_QUESTS, LANDMARK_LORE, LORE_FRAGMENTS
+from src.data.resonance import ELEMENTAL_RESONANCE, team_resonances
+from src.data.roles import ROLES
+from src.data.skills import BOSS_ULT, SKILLS_DB
+from src.data.story import NPCS, STORY_BIOME_QUEST, STORY_FINAL_QUEST, STORY_QUEST_BY_ID, STORY_QUEST_ORDER
+from src.data.tuning import AA_CD, AA_RANGE, COMBO_BONUS_PER, COMBO_MAX, COMBO_MILESTONE_SKILL, COMBO_MILESTONE_ULT, ENERGY_GAIN_BASIC, ENERGY_GAIN_DEAL, ENERGY_START, element_mult
 from entities import (load_char_sprite, load_skill_icon,
                       load_drop, load_terrain, load_landmark, load_village)
 import audio
@@ -89,7 +101,7 @@ def _sig_cleave(scene, wc, primary_x, primary_y, atk):
     if not sig or sig.get("kind") != "cleave":
         return
     cleave_dmg = int(atk * sig.get("val", 0.5))
-    col = D.ELEMENT_COLORS.get(wc.element, ((200, 200, 200),))[0]
+    col = ELEMENT_COLORS.get(wc.element, ((200, 200, 200),))[0]
     for en in scene.enemies:
         if not en.alive:
             continue
@@ -594,7 +606,7 @@ class EvolveOverlay:
         return 620, 140
 
     def _node_center(self, node_id):
-        col, row = D.EVO_NODE_POS.get(node_id, (1, 0))
+        col, row = EVO_NODE_POS.get(node_id, (1, 0))
         ox, oy = self._tree_origin()
         # 3 columns spaced 180px, 3 rows spaced 150px
         cx = ox + 90 + col * 180
@@ -672,8 +684,8 @@ class EvolveOverlay:
             return
         if p.can_unlock_evo_node(hid, node_id):
             p.unlock_evo_node(hid, node_id)
-            hd = D.HERO_BY_ID[hid]
-            tree = D.hero_evo_tree(hd)
+            hd = HERO_BY_ID[hid]
+            tree = hero_evo_tree(hd)
             node = next((n for n in tree if n["id"] == node_id), None)
             name = node["name"] if node else node_id
             self.flash = f"Unlocked: {name}!"
@@ -681,11 +693,11 @@ class EvolveOverlay:
             audio.play("buff", 0.6)
         else:
             # figure out why not
-            hd = D.HERO_BY_ID[hid]
-            tree = D.hero_evo_tree(hd)
+            hd = HERO_BY_ID[hid]
+            tree = hero_evo_tree(hd)
             node = next((n for n in tree if n["id"] == node_id), None)
             unlocked = set(p.owned[hid].get("evo_nodes", []))
-            if node and not D.evo_node_prereq_met(node, unlocked):
+            if node and not evo_node_prereq_met(node, unlocked):
                 req = node.get("req")
                 self.flash = f"Unlock '{req}' first."
             else:
@@ -735,19 +747,19 @@ class EvolveOverlay:
 
     def _draw_tree(self, surf, hid):
         p = self.game.player
-        hd = D.HERO_BY_ID[hid]
+        hd = HERO_BY_ID[hid]
         h = p.get_hero_instance(hid)
-        tree = D.hero_evo_tree(hd)
+        tree = hero_evo_tree(hd)
         unlocked = set(p.owned[hid].get("evo_nodes", []))
         ox, oy = self._tree_origin()
         # panel
         panel = pygame.Rect(ox - 20, oy - 30, 620, 470)
         pygame.draw.rect(surf, (24, 20, 40), panel, border_radius=14)
         pygame.draw.rect(surf, (150, 130, 200), panel, 2, border_radius=14)
-        text(surf, f"{h.name} - {D.ROLES.get(h.role, {}).get('name', h.role)} Tree",
+        text(surf, f"{h.name} - {ROLES.get(h.role, {}).get('name', h.role)} Tree",
              20, (255, 240, 180), (panel.centerx, oy - 12), center=True)
         # links
-        for a, b in D.EVO_LINKS:
+        for a, b in EVO_LINKS:
             ax, ay = self._node_center(a)
             bx, by = self._node_center(b)
             both = (a in unlocked) and (b in unlocked)
@@ -782,8 +794,8 @@ class EvolveOverlay:
             # can see a waste before spending shards
             pid = node.get("passive")
             if pid:
-                pname = D.PASSIVES_DB.get(pid, {}).get("name", pid)
-                base_pid = D.HERO_PASSIVES.get(hid)
+                pname = PASSIVES_DB.get(pid, {}).get("name", pid)
+                base_pid = HERO_PASSIVES.get(hid)
                 dead = (pid == base_pid)
                 pcol = (220, 140, 140) if dead else (140, 240, 160)
                 tag = f"{pname} (have)" if dead else pname
@@ -829,7 +841,7 @@ class EvolveOverlay:
         # name the granted passive so the player sees the passive they paid for
         pid = eb.get("passive")
         if pid:
-            pname = D.PASSIVES_DB.get(pid, {}).get("name", pid)
+            pname = PASSIVES_DB.get(pid, {}).get("name", pid)
             text(surf, f"Passive: {pname}", 12, (180, 220, 255),
                  (panel.x + 16, by + 34))
 
@@ -1108,7 +1120,7 @@ class WorldScene:
                 rec = p.ow_party_state.get(hid)
                 if rec:
                     hero.hp = rec.get("hp", hero.max_hp)
-                    hero.energy = rec.get("energy", D.ENERGY_START)
+                    hero.energy = rec.get("energy", ENERGY_START)
                 # a hero saved with hp<=0 (downed when the save was written)
                 # would otherwise reload as alive with 0 HP and die to the next
                 # tick. Revive at half HP instead so the run isn't bricked.
@@ -1157,7 +1169,7 @@ class WorldScene:
         team_ids = []
         for wc in self.party:
             team_ids.append(wc.hero.id if wc else None)
-        self._resonances = D.team_resonances(team_ids)
+        self._resonances = team_resonances(team_ids)
         # flatten into a kind -> val map for the per-hero fields
         rmap = {}
         for r in self._resonances:
@@ -1264,7 +1276,7 @@ class WorldScene:
         self._dialogue = None
         if self._village is not None:
             biome = self._village.get("biome", WD.cell_biome(self.c, self.r))
-            npc_data = D.NPCS.get(biome)
+            npc_data = NPCS.get(biome)
             if npc_data is not None:
                 nx, ny = self._village["npc_spawn"]
                 self._npc = {"x": float(nx), "y": float(ny),
@@ -1289,7 +1301,7 @@ class WorldScene:
             if cid not in self.game.player.ow_landmarks_seen:
                 self.game.player.ow_landmarks_seen.append(cid)
                 biome = self._landmark.get("biome", WD.cell_biome(self.c, self.r))
-                lore = D.LANDMARK_LORE.get(biome, "")
+                lore = LANDMARK_LORE.get(biome, "")
                 if lore:
                     pal = WD.BIOMES.get(biome, {})
                     col = pal.get("accent", (230, 220, 180))
@@ -1329,8 +1341,8 @@ class WorldScene:
             # "skills don't recover" fix: a hero loaded from save with stale low
             # energy should top up to ENERGY_START on map enter)
             a = self.party[self.active]
-            if a and a.hero.energy < D.ENERGY_START:
-                a.hero.energy = min(D.ENERGY_START, a.hero.max_energy)
+            if a and a.hero.energy < ENERGY_START:
+                a.hero.energy = min(ENERGY_START, a.hero.max_energy)
         # pre-render the new map's surface on a background thread so the first
         # visit doesn't stall the frame (the render is ~10ms but a fresh map's
         # ground-base build can spike). We render synchronously here but the
@@ -1351,7 +1363,7 @@ class WorldScene:
             # Champion-as-enemy: ~16% of minions spawn as a random LoL champion
             # (with its real kit + sprite) instead of a jungle mob. A rare,
             # memorable encounter — the player meets the roster in the wild.
-            champ_pool, _ = D._get_champion_enemy_pool()
+            champ_pool, _ = _get_champion_enemy_pool()
             for (sx, sy) in m["spawns"]:
                 if champ_pool and random.random() < 0.16:
                     eid = random.choice(champ_pool)
@@ -1384,7 +1396,7 @@ class WorldScene:
             # it completes when the Demon King dies (the same kill as the
             # void_boss quest); see the boss-defeat handler. It is NOT a separate
             # gate (the Demon King is the void row's boss, gated by void_boss).
-            quest_id = D.STORY_BIOME_QUEST.get(biome)
+            quest_id = STORY_BIOME_QUEST.get(biome)
             if quest_id is not None and not self._is_quest_active(quest_id):
                 # sealed - skip the boss spawn + show a "seek the NPC" float at
                 # the arena center (the boss spawn pos from gen_map). The float
@@ -1392,7 +1404,7 @@ class WorldScene:
                 # cell still loads (no return) so the player can explore the
                 # arena + read the seal message.
                 bx, by = m["boss"]
-                npc_name = D.NPCS.get(biome, {}).get("name", "the NPC")
+                npc_name = NPCS.get(biome, {}).get("name", "the NPC")
                 self.floats.append(FloatText(
                     bx, by - 40,
                     f"SEALED - seek {npc_name} for the quest",
@@ -1410,7 +1422,7 @@ class WorldScene:
                 # (cleared) the champion boss is the encounter. This keeps the
                 # story chain intact (the villain boss is the first-clear fight)
                 # while making boss arenas occasionally a champion duel.
-                _, champ_boss_pool = D._get_champion_enemy_pool()
+                _, champ_boss_pool = _get_champion_enemy_pool()
                 cid = WD.cell_id(self.c, self.r)
                 already_cleared = cid in set(self.game.player.ow_bosses_cleared)
                 if (champ_boss_pool and already_cleared
@@ -1421,7 +1433,7 @@ class WorldScene:
                 # boss intro cinematic: a name banner + a brief slow-mo the first time
                 # the player enters this boss arena. Skips on a revisit (re-entering a
                 # cleared arena shouldn't replay the intro).
-                boss_name = D.ENEMIES_DB.get(boss_id, {}).get("name", "Boss")
+                boss_name = ENEMIES_DB.get(boss_id, {}).get("name", "Boss")
                 self._boss_intro_t = 1.6
                 self._boss_intro_name = boss_name
                 audio.play("boss_intro", 0.7)
@@ -1536,18 +1548,18 @@ class WorldScene:
             p.shards += amt
             label, col = f"+{amt} shards", (200, 160, 255)
         else:  # equipment
-            pool = [k for k, v in D.EQUIPMENT_DB.items() if v["rarity"] in ("SR", "SSR")]
+            pool = [k for k, v in EQUIPMENT_DB.items() if v["rarity"] in ("SR", "SSR")]
             if pool:
                 eid = random.choice(pool)
                 p.add_equipment(eid)
-                label, col = f"+{D.EQUIPMENT_DB[eid]['name']}!", (255, 200, 120)
+                label, col = f"+{EQUIPMENT_DB[eid]['name']}!", (255, 200, 120)
             else:
                 p.gold += 100
                 label, col = "+100 gold", (255, 220, 120)
         p.stats["treasures_opened"] = p.stats.get("treasures_opened", 0) + 1
         p.quest_progress("open_chests", 1)
         for aid in p.check_achievements():
-            ach = D.ACHIEVEMENTS.get(aid, {})
+            ach = ACHIEVEMENTS.get(aid, {})
             self.set_message(
                 f"Achievement: {ach.get('name', '?')}! +{ach.get('reward_gems', 0)} gems",
                 3.0)
@@ -1657,11 +1669,11 @@ class WorldScene:
         # row's difficulty (a row-4 rift should pay better than a row-0 rift).
         p = self.game.player
         rar = "SSR" if (self.r >= 3 and random.random() < 0.5) else "SR"
-        pool = [k for k, v in D.EQUIPMENT_DB.items() if v["rarity"] == rar]
+        pool = [k for k, v in EQUIPMENT_DB.items() if v["rarity"] == rar]
         if pool:
             eid = random.choice(pool)
             p.add_equipment(eid)
-            label = f"+{D.EQUIPMENT_DB[eid]['name']}!"
+            label = f"+{EQUIPMENT_DB[eid]['name']}!"
             col = (255, 200, 120)
         else:
             # fallback: a gem bonus if the equipment pool is somehow empty
@@ -1673,9 +1685,9 @@ class WorldScene:
         # a lore fragment float so the rift reads as a story beat, not just a
         # loot pinata. Pick deterministically from the cell so the same rift
         # always drops the same fragment (a stable piece of worldbuilding).
-        if D.LORE_FRAGMENTS:
+        if LORE_FRAGMENTS:
             frag_rng = random.Random(WD.cell_seed(self.c, self.r) + 4242)
-            frag = frag_rng.choice(D.LORE_FRAGMENTS)
+            frag = frag_rng.choice(LORE_FRAGMENTS)
             self.floats.append(FloatText(rx, ry - 56, frag, (200, 200, 255), size=18))
         # a victory burst + ring at the rift tile so the clear feels rewarding
         self.particles.burst(rx, ry, (255, 220, 120), n=40, speed=320, size=8, life=0.8, grav=0)
@@ -1716,13 +1728,13 @@ class WorldScene:
         until the chain is done - the void_quest quest is the void row's
         faction-boss gate; the baron quest is the chain's final gate)."""
         sp = self.game.player.story_progress
-        if quest_id == D.STORY_FINAL_QUEST:
+        if quest_id == STORY_FINAL_QUEST:
             # Baron's arena unseals only when all 5 faction-boss quests are
             # complete (the chain). The baron entry itself may also be "active"
             # (set by the void NPC) but the chain gate is the stricter
             # condition - both must hold for the boss to spawn.
-            faction_quests = [q for q in D.STORY_QUEST_ORDER
-                              if q != D.STORY_FINAL_QUEST]
+            faction_quests = [q for q in STORY_QUEST_ORDER
+                              if q != STORY_FINAL_QUEST]
             return all(sp.get(q) == "complete" for q in faction_quests)
         return sp.get(quest_id) in ("active", "complete")
 
@@ -1731,7 +1743,7 @@ class WorldScene:
         is complete, or it's the first quest). The first quest (demacia_quest)
         is always available; the final quest (baron) is available when all 5
         faction-boss quests are complete."""
-        order = D.STORY_QUEST_ORDER
+        order = STORY_QUEST_ORDER
         if quest_id not in order:
             return False
         idx = order.index(quest_id)
@@ -1769,9 +1781,9 @@ class WorldScene:
         (the next quest is "available" but not yet accepted). Returns the
         STORY_QUESTS dict (with id/name/giver/objective/...) or None."""
         sp = self.game.player.story_progress
-        for qid in D.STORY_QUEST_ORDER:
+        for qid in STORY_QUEST_ORDER:
             if sp.get(qid) == "active":
-                return D.STORY_QUEST_BY_ID[qid]
+                return STORY_QUEST_BY_ID[qid]
         return None
 
     def _next_story_quest(self):
@@ -1782,10 +1794,10 @@ class WorldScene:
         active = self._active_story_quest()
         if active is not None:
             return active
-        for qid in D.STORY_QUEST_ORDER:
+        for qid in STORY_QUEST_ORDER:
             if (self.game.player.story_progress.get(qid) != "complete"
                     and self._is_quest_available(qid)):
-                return D.STORY_QUEST_BY_ID[qid]
+                return STORY_QUEST_BY_ID[qid]
         return None
 
     def _village_cell_for_biome(self, biome):
@@ -1900,12 +1912,12 @@ class WorldScene:
             # complete (no double-accept).
             if self._npc is not None:
                 qid = self._npc.get("quest_id")
-                if (qid is not None and qid in D.STORY_QUEST_BY_ID
+                if (qid is not None and qid in STORY_QUEST_BY_ID
                         and self._is_quest_available(qid)
                         and self.game.player.story_progress.get(qid) not in
                             ("active", "complete")):
                     self.game.player.story_progress[qid] = "active"
-                    q = D.STORY_QUEST_BY_ID[qid]
+                    q = STORY_QUEST_BY_ID[qid]
                     self.set_message(
                         f"Quest accepted: {q['name']} - {q['objective']}", 3.0)
                     # the void NPC ALSO gives the final quest (the chain's
@@ -1921,8 +1933,8 @@ class WorldScene:
                     # void NPC.
                     if (qid == "void_quest"
                             and self.game.player.story_progress.get(
-                                D.STORY_FINAL_QUEST) not in ("active", "complete")):
-                        self.game.player.story_progress[D.STORY_FINAL_QUEST] = "active"
+                                STORY_FINAL_QUEST) not in ("active", "complete")):
+                        self.game.player.story_progress[STORY_FINAL_QUEST] = "active"
                     self.game.player.save()
             self._dialogue = None
         else:
@@ -1932,16 +1944,16 @@ class WorldScene:
     # Combat helpers
     # -----------------------------------------------------------------
     def _element_mult(self, atk_el, def_el):
-        return D.element_mult(atk_el, def_el)
+        return element_mult(atk_el, def_el)
 
     def _do_attack(self, wc, target=None):
         if wc.atk_cd > 0:
             return
-        wc.atk_cd = D.AA_CD
+        wc.atk_cd = AA_CD
         wc.atk_anim = 0.2
         wc._last_combat_t = 0
         style = WEAPON_STYLE.get(WEAPON_STYLE_KEY(wc.hero.id), "melee")
-        col = D.ELEMENT_COLORS.get(wc.element, ((200, 200, 200),))[0]
+        col = ELEMENT_COLORS.get(wc.element, ((200, 200, 200),))[0]
         a = wc.hero
         # crit chance includes the keen-eye passive and the tree's crit bonus
         crit_chance = a.crit_chance
@@ -2006,7 +2018,7 @@ class WorldScene:
                 if math.hypot(en.x - arc_x, en.y - arc_y) < ar + en.r:
                     mult = self._element_mult(wc.element, en.element)
                     is_crit = random.random() < crit_chance
-                    combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
+                    combo_mul = 1.0 + max(0, self._combo_count) * COMBO_BONUS_PER
                     dmg = int(atk * (1.0 + random.uniform(-0.1, 0.2)) * mult
                               * (crit_mul if is_crit else 1.0) * combo_mul)
                     dealt = en.take_damage(dmg, wc.x, wc.y, is_crit,
@@ -2021,7 +2033,7 @@ class WorldScene:
                 # routed through wc.add_energy so the light resonance
                 # (energy_regen) and the p_energy (Flow State) passive add
                 # instead of both multiplying the base.
-                wc.add_energy(D.ENERGY_GAIN_BASIC)
+                wc.add_energy(ENERGY_GAIN_BASIC)
                 audio.play("hit", 0.3)
                 self.camera.add_shake(3, self._shake_mul)
                 # impact shockwave ring on a clean hit
@@ -2078,8 +2090,8 @@ class WorldScene:
         sk = wc.skill_list()[idx]
         if sk is None:
             return
-        skill = D.SKILLS_DB[sk]
-        col = D.ELEMENT_COLORS.get(skill["element"], ((200, 200, 200),))[0]
+        skill = SKILLS_DB[sk]
+        col = ELEMENT_COLORS.get(skill["element"], ((200, 200, 200),))[0]
         wc.spend_skill(idx)
         wc._last_combat_t = 0
         # constellation cd_reduction perk: shave the skill's cooldown by the hero's
@@ -2160,7 +2172,7 @@ class WorldScene:
                 # empowered melee: widen the arc radius so the nuke reaches a
                 # wider cluster (a radius bump, not a damage multiplier).
                 arc_r = 130 if empowered else 90
-                combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
+                combo_mul = 1.0 + max(0, self._combo_count) * COMBO_BONUS_PER
                 for en in self.enemies:
                     if en.alive and math.hypot(en.x - arc_x, en.y - wc.y) < arc_r:
                         mult = self._element_mult(skill["element"], en.element)
@@ -2188,7 +2200,7 @@ class WorldScene:
             if empowered:
                 self.particles.ring(aoe_cx, aoe_cy, (255, 255, 255),
                                     n=24, speed=380, size=6, life=0.45)
-            combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
+            combo_mul = 1.0 + max(0, self._combo_count) * COMBO_BONUS_PER
             for en in self.enemies:
                 if en.alive and math.hypot(en.x - aoe_cx, en.y - aoe_cy) < aoe_r:
                     mult = self._element_mult(skill["element"], en.element)
@@ -2266,7 +2278,7 @@ class WorldScene:
                 target = downed[0]
                 target.alive = True
                 target.hero.hp = target.hero.max_hp // 2
-                target.hero.energy = D.ENERGY_START
+                target.hero.energy = ENERGY_START
                 target.invuln_t = 0.5
                 self.particles.burst(target.x, target.y, (140, 240, 160),
                                      n=30, speed=240, size=7, life=0.7, grav=-60)
@@ -2312,7 +2324,7 @@ class WorldScene:
                 dd = math.hypot(en.x - wc.x, en.y - wc.y)
                 if dd < best_d:
                     best_d = dd; ex, ey = en.x + wc.facing * 60, en.y
-            combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
+            combo_mul = 1.0 + max(0, self._combo_count) * COMBO_BONUS_PER
             for en in self.enemies:
                 if not en.alive:
                     continue
@@ -2357,7 +2369,7 @@ class WorldScene:
         # resonance (energy_regen) and the passive (energy_gen) add rather than
         # both multiplying the base (the old inline code only applied the
         # passive; add_energy now sums them).
-        gain = D.ENERGY_GAIN_DEAL
+        gain = ENERGY_GAIN_DEAL
         wc.add_energy(gain)
 
     def _do_ultimate(self, wc):
@@ -2367,8 +2379,8 @@ class WorldScene:
             # soft denied buzz so a rejected ult isn't silent
             audio.play("weak", 0.15)
             return
-        skill = D.SKILLS_DB[wc.hero.ultimate]
-        col = D.ELEMENT_COLORS.get(skill["element"], ((255, 255, 200),))[0]
+        skill = SKILLS_DB[wc.hero.ultimate]
+        col = ELEMENT_COLORS.get(skill["element"], ((255, 255, 200),))[0]
         wc.spend_ultimate()
         wc._last_combat_t = 0
         a = wc.hero
@@ -2392,7 +2404,7 @@ class WorldScene:
         if self._reduce_motion:
             _hs *= 0.5
         self.hit_stop = max(self.hit_stop, _hs)
-        combo_mul = 1.0 + max(0, self._combo_count) * D.COMBO_BONUS_PER
+        combo_mul = 1.0 + max(0, self._combo_count) * COMBO_BONUS_PER
         # total damage dealt by the ultimate — used by the per-hero variant's
         # self_heal effect (a fraction of damage dealt). Heal ults deal 0 damage
         # so their variants never pick self_heal (see ULTIMATE_VARIANTS).
@@ -2457,7 +2469,7 @@ class WorldScene:
                                          n=10, speed=160, size=5, life=0.5)
             self.floats.append(FloatText(wc.x, wc.y - 50, "EMPOWERED!",
                                          (255, 180, 240), size=22))
-        var = D.ULTIMATE_VARIANTS.get(wc.hero.id)
+        var = ULTIMATE_VARIANTS.get(wc.hero.id)
         if var:
             eff = var["extra_effect"]
             pot = var.get("potency", 0)
@@ -2524,23 +2536,23 @@ class WorldScene:
         # The multiplier itself is applied at the damage source (see _do_attack /
         # _do_skill / _do_ultimate) using the pre-increment count, so the first
         # hit of a streak gets 0% bonus and the ramp builds from there.
-        self._combo_count = min(D.COMBO_MAX, self._combo_count + 1)
+        self._combo_count = min(COMBO_MAX, self._combo_count + 1)
         self._combo_t = self._combo_window
         # combo climax milestones: arm the next skill/ult with a bonus effect.
         # The skill milestone (5) arms _skill_empowered; the ult milestone (10)
         # coincides with COMBO_MAX and arms _ult_empowered. Re-hitting the
         # milestone while already empowered is a no-op (the flag is set, not
         # toggled) so the player keeps the empowerment until they spend it.
-        if self._combo_count == D.COMBO_MILESTONE_SKILL:
+        if self._combo_count == COMBO_MILESTONE_SKILL:
             self._skill_empowered = True
-        if self._combo_count == D.COMBO_MILESTONE_ULT:
+        if self._combo_count == COMBO_MILESTONE_ULT:
             self._ult_empowered = True
         # max-combo one-shot celebration: the first time the streak hits
         # COMBO_MAX in this window, fire a chord + a brief hit-stop. Gated by
         # _combo_max_celebrated so it only fires once per window (reset on
         # window expiry below). The hit-stop uses max() so it doesn't stack
         # with a crit's freeze on the same frame.
-        if self._combo_count >= D.COMBO_MAX and not self._combo_max_celebrated:
+        if self._combo_count >= COMBO_MAX and not self._combo_max_celebrated:
             self._combo_max_celebrated = True
             audio.play("combo_max", 0.5)
             _hs = 0.18
@@ -2563,10 +2575,10 @@ class WorldScene:
             if weak_hit:
                 self.floats.append(FloatText(en.x, en.y - 8, "WEAK!",
                                             (255, 180, 80), size=16))
-        el_col = D.ELEMENT_COLORS.get(wc.element, ((200, 200, 200),))[0]
+        el_col = ELEMENT_COLORS.get(wc.element, ((200, 200, 200),))[0]
         self.particles.burst(en.x, en.y, el_col, n=8, speed=200, size=4, life=0.3)
         # wet effect: when the current map's weather is rain (or storm), the
-        # wet multiplier (D.WET_EFFECT) extends the reaction window (+50%) and
+        # wet multiplier (WET_EFFECT) extends the reaction window (+50%) and
         # scales the reaction bonus (water x1.2, fire x0.8). Gated to the
         # reaction window ONLY — the wet effect extends the reaction window,
         # not the Freeze stun duration (en._react_stun stays at its base 1.5s,
@@ -2576,16 +2588,16 @@ class WorldScene:
         # that hit this enemy within the reaction window, trigger a reaction
         # (bonus damage + a named float + a distinct particle). This rewards
         # swapping the active hero mid-fight (the Genshin-style 4-hero party).
-        rxn = D.reaction_for(en._last_element_hit, wc.element) if en._last_element_hit else None
+        rxn = reaction_for(en._last_element_hit, wc.element) if en._last_element_hit else None
         if rxn and en._element_hit_t > 0:
             name, bonus_frac, effect, rcol = rxn
             # wet scales the reaction bonus: water +20%, fire -20% (the wet
             # effect amplifies water reactions and dampens fire ones)
             if wet:
                 if wc.element == "water":
-                    bonus_frac *= D.WET_EFFECT["water"]
+                    bonus_frac *= WET_EFFECT["water"]
                 elif wc.element == "fire":
-                    bonus_frac *= D.WET_EFFECT["fire"]
+                    bonus_frac *= WET_EFFECT["fire"]
             bonus = int(dmg * bonus_frac)
             if bonus > 0:
                 en.enemy.hp -= bonus
@@ -2622,7 +2634,7 @@ class WorldScene:
         en._last_element_hit = wc.element
         # wet extends the reaction window (+50%) so the next element swap has a
         # longer window to trigger a reaction in the rain (the wet effect).
-        en._element_hit_t = D.REACTION_WINDOW * (D.WET_EFFECT["reaction_window"] if wet else 1.0)
+        en._element_hit_t = REACTION_WINDOW * (WET_EFFECT["reaction_window"] if wet else 1.0)
         if is_crit:
             # crits get a sharper white spark + a small ring + bigger hit-stop
             self.particles.ring(en.x, en.y, (255, 240, 180), n=14, speed=300, size=4, life=0.28)
@@ -2700,7 +2712,7 @@ class WorldScene:
         first_clear = en.is_boss and cid not in set(p.ow_bosses_cleared)
         if first_clear and random.random() < 0.6:
             rar = "SSR" if (self.r >= 3 and random.random() < 0.5) else "SR"
-            pool = [k for k, v in D.EQUIPMENT_DB.items() if v["rarity"] == rar]
+            pool = [k for k, v in EQUIPMENT_DB.items() if v["rarity"] == rar]
             if pool:
                 eid = random.choice(pool)
                 self._spawn_drop(en.x, en.y, "equipment", eid)
@@ -2736,7 +2748,7 @@ class WorldScene:
             # spawned through a stale gate shouldn't advance the chain; the gate
             # should have sealed it).
             biome = WD.cell_biome(self.c, self.r)
-            fqid = D.STORY_BIOME_QUEST.get(biome)
+            fqid = STORY_BIOME_QUEST.get(biome)
             # the void row's boss (9,4) is the Demon King; killing it completes
             # BOTH the void_boss quest (the row's biome-boss gate) + the
             # demon_king quest (the chain's final marker). The void_boss quest
@@ -2755,7 +2767,7 @@ class WorldScene:
             # the void row's boss IS the Demon King).
             is_final = (self.r == WD.GRID_H - 1
                         and getattr(en, "id", None) == "Baron")
-            if (fqid is not None and fqid in D.STORY_QUEST_BY_ID
+            if (fqid is not None and fqid in STORY_QUEST_BY_ID
                     and p.story_progress.get(fqid) == "active"
                     and first_clear):
                 p.story_progress[fqid] = "complete"
@@ -2767,9 +2779,9 @@ class WorldScene:
                 # both fire). Only mark it if it was active (the void NPC set it
                 # active when the void_boss quest was accepted).
                 if (is_final
-                        and p.story_progress.get(D.STORY_FINAL_QUEST) == "active"):
-                    p.story_progress[D.STORY_FINAL_QUEST] = "complete"
-                q = D.STORY_QUEST_BY_ID[fqid]
+                        and p.story_progress.get(STORY_FINAL_QUEST) == "active"):
+                    p.story_progress[STORY_FINAL_QUEST] = "complete"
+                q = STORY_QUEST_BY_ID[fqid]
                 rw = q.get("reward", {})
                 rg = int(rw.get("gems", 0))
                 rs = int(rw.get("shards", 0))
@@ -2782,7 +2794,7 @@ class WorldScene:
                 # its own reward on top of the void_boss reward) so the final
                 # boss feels like a climax.
                 if is_final:
-                    fq = D.STORY_QUEST_BY_ID.get(D.STORY_FINAL_QUEST)
+                    fq = STORY_QUEST_BY_ID.get(STORY_FINAL_QUEST)
                     if fq is not None:
                         frw = fq.get("reward", {})
                         frg = int(frw.get("gems", 0))
@@ -2796,9 +2808,9 @@ class WorldScene:
                 # toast so the player knows where to go next. If this was the
                 # last quest (demon_king), the "World Ascended!" banner below
                 # is the end-of-chain beat (no "next quest" toast).
-                idx = D.STORY_QUEST_ORDER.index(fqid)
-                if idx + 1 < len(D.STORY_QUEST_ORDER):
-                    nq = D.STORY_QUEST_BY_ID[D.STORY_QUEST_ORDER[idx + 1]]
+                idx = STORY_QUEST_ORDER.index(fqid)
+                if idx + 1 < len(STORY_QUEST_ORDER):
+                    nq = STORY_QUEST_BY_ID[STORY_QUEST_ORDER[idx + 1]]
                     self.set_message(
                         f"Quest complete: {q['name']}! Next: {nq['name']}", 3.0)
                 else:
@@ -2838,7 +2850,7 @@ class WorldScene:
         # surface newly-unlocked achievements as real-time toasts (the return
         # value was discarded, so unlocks were invisible until the Records tab)
         for aid in p.check_achievements():
-            ach = D.ACHIEVEMENTS.get(aid, {})
+            ach = ACHIEVEMENTS.get(aid, {})
             self.set_message(
                 f"Achievement: {ach.get('name', '?')}! +{ach.get('reward_gems', 0)} gems",
                 3.0)
@@ -2978,7 +2990,7 @@ class WorldScene:
             if wc:
                 wc.alive = True
                 wc.hero.hp = wc.hero.max_hp // 2
-                wc.hero.energy = D.ENERGY_START
+                wc.hero.energy = ENERGY_START
                 wc.kb_x = wc.kb_y = 0.0
                 wc.iframes = 0.5
                 wc.invuln_t = 0.5
@@ -3025,7 +3037,7 @@ class WorldScene:
         self.active = idx
         self.swap_flash = 0.35
         # element-tinted swap burst (outgoing) + ring (incoming)
-        el_col = D.ELEMENT_COLORS.get(new.element, ((180, 220, 255),))[0]
+        el_col = ELEMENT_COLORS.get(new.element, ((180, 220, 255),))[0]
         self.particles.burst(old.x, old.y, (180, 220, 255), n=18, speed=240, size=5, life=0.4)
         self.particles.burst(new.x, new.y, el_col, n=24, speed=300, size=6, life=0.5, grav=-40)
         self.camera.add_shake(2)
@@ -3121,7 +3133,7 @@ class WorldScene:
                 wc.aa_target = None
             else:
                 d = math.hypot(wc.aa_target.x - wc.x, wc.aa_target.y - wc.y)
-                if d < D.AA_RANGE:
+                if d < AA_RANGE:
                     # in range: face the target + auto-fire at the AA cd (reuse
                     # wc.atk_cd so the AA + the manual J attack share a cd). Clear
                     # any stale move_target so the hero stops + attacks (otherwise
@@ -3265,7 +3277,7 @@ class WorldScene:
                                 used = pid
                                 break
                         if used is not None:
-                            item = D.CONSUMABLES_DB[used]
+                            item = CONSUMABLES_DB[used]
                             amt = item.get("power", 60)
                             self.game.player.use_item(used)
                             wc.heal(amt)
@@ -3414,7 +3426,7 @@ class WorldScene:
                                 # projectile source so ranged heroes charge energy + ult.
                                 # Routed through add_energy so the light resonance
                                 # (energy_regen) and the p_energy passive add.
-                                p.source.add_energy(D.ENERGY_GAIN_BASIC)
+                                p.source.add_energy(ENERGY_GAIN_BASIC)
                                 # lifesteal passive for ranged heroes (the melee branch
                                 # has its own lifesteal block; mirror it here so pyra /
                                 # cinder / ranged staffs actually heal on basic hits)
@@ -3604,13 +3616,13 @@ class WorldScene:
             # boss ultimate: big AoE around boss. The radius/damage scale with the
             # mapped BOSS_ULT skill so the 6 bosses differ (frost = wider+freeze,
             # storm = wider high-damage, abyssal = lingering, hellfire = big).
-            ult_id = D.BOSS_ULT.get(en.id)
-            usk = D.SKILLS_DB.get(ult_id, {}) if ult_id else {}
+            ult_id = BOSS_ULT.get(en.id)
+            usk = SKILLS_DB.get(ult_id, {}) if ult_id else {}
             upower = usk.get("power", 1.8)
             radius = 260
             if ult_id in ("frost_cataclysm", "storm_of_embers"):
                 radius = 320
-            col = D.ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
+            col = ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
             self.particles.burst(en.x, en.y, col, n=50, speed=360, size=8, life=0.8, grav=0)
             self.particles.ring(en.x, en.y, col, n=36, speed=440, size=7, life=0.6)
             self.camera.add_shake(12, self._shake_mul)
@@ -3688,7 +3700,7 @@ class WorldScene:
                             self.floats.append(FloatText(
                                 en.x, en.y - 20, str(reflected),
                                 (180, 220, 255), size=18))
-            col = D.ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
+            col = ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
             self.particles.burst(en.x, en.y, col, n=24, speed=300, size=6, life=0.5)
             self.camera.add_shake(8, self._shake_mul)
         elif name == "boss_slam":
@@ -3716,7 +3728,7 @@ class WorldScene:
                             self.floats.append(FloatText(
                                 en.x, en.y - 20, str(reflected),
                                 (180, 220, 255), size=18))
-            col = D.ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
+            col = ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
             # a big expanding ring + burst so the slam reads as a shockwave
             self.particles.ring(en.x, en.y, col, n=40, speed=500, size=8, life=0.6)
             self.particles.burst(en.x, en.y, col, n=30, speed=360, size=7, life=0.6, grav=0)
@@ -3729,7 +3741,7 @@ class WorldScene:
             # float + a longer hit-stop so the player feels the break land and
             # gets a clear window to pour damage in (the +50% multiplier is
             # applied inside WorldEnemy.take_damage while enemy.broken is true).
-            col = D.ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
+            col = ELEMENT_COLORS.get(en.element, ((255, 80, 80),))[0]
             # a white-tinged ring so the break reads distinctly from the
             # element-colored boss_ult/slam bursts
             self.particles.ring(en.x, en.y, (255, 240, 200), n=44, speed=520, size=8, life=0.7)
@@ -3871,7 +3883,7 @@ class WorldScene:
             if -60 < sx < 1340 and -60 < sy < 780:
                 # element-tinted (not pure white) + fading over 0.5s so the
                 # reticle reads as a soft target marker, not a stray circle
-                el_col = D.ELEMENT_COLORS.get(wc.element, ((200, 200, 220),))[0]
+                el_col = ELEMENT_COLORS.get(wc.element, ((200, 200, 220),))[0]
                 fade = max(0.0, 1.0 - wc.move_target_t / 0.5)
                 if fade > 0:
                     pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() * 0.01)
@@ -4019,11 +4031,11 @@ class WorldScene:
         sk_id = sk_list[idx]
         if sk_id is None:
             return
-        skill = D.SKILLS_DB.get(sk_id)
+        skill = SKILLS_DB.get(sk_id)
         if not skill:
             return
         kind = skill["type"]
-        col = D.ELEMENT_COLORS.get(skill["element"], ((200, 200, 200),))[0]
+        col = ELEMENT_COLORS.get(skill["element"], ((200, 200, 200),))[0]
         # mouse → world space, clamped to AIM_MAX_RANGE from the hero
         mp = pygame.mouse.get_pos()
         mx, my = mp[0] + ox, mp[1] + oy
@@ -4811,7 +4823,7 @@ class WorldScene:
             if port:
                 surf.blit(port, (24, 24))
             text(surf, hero.name, 18, (255, 255, 255), (96, 26))
-            el_col = D.ELEMENT_COLORS.get(hero.element, ((200, 200, 200),))[0]
+            el_col = ELEMENT_COLORS.get(hero.element, ((200, 200, 200),))[0]
             ev_col = hero.evolve_color() if hero.evolve > 0 else el_col
             tier = f"  {hero.evolve_title()}" if hero.evolve > 0 else ""
             text(surf, f"Lv {hero.level}  {hero.element}{tier}", 13, ev_col, (96, 48))
@@ -4844,7 +4856,7 @@ class WorldScene:
                 pygame.draw.rect(surf, (60, 60, 80), r2, 2, border_radius=10)
                 text(surf, str(i + 1), 16, (90, 90, 110), r2.center, center=True)
                 continue
-            el_col2 = D.ELEMENT_COLORS.get(wc2.hero.element, ((180, 200, 220),))[0]
+            el_col2 = ELEMENT_COLORS.get(wc2.hero.element, ((180, 200, 220),))[0]
             is_active = (i == self.active)
             # active slot glows with the element color
             col = el_col2 if is_active else (46, 50, 70)
@@ -4888,9 +4900,9 @@ class WorldScene:
             bx = 16
             by = 178
             for r in self._resonances:
-                el = next((e for e, d in D.ELEMENTAL_RESONANCE.items()
+                el = next((e for e, d in ELEMENTAL_RESONANCE.items()
                            if d.get("buff") == r.get("buff")), None)
-                col = D.ELEMENT_COLORS.get(el, ((180, 200, 220),))[0]
+                col = ELEMENT_COLORS.get(el, ((180, 200, 220),))[0]
                 val_pct = int(r.get("val", 0) * 100)
                 # short label per buff kind (kept terse so the row fits 2-3 badges)
                 short = {"atk_pct": "ATK", "heal_amp": "HEAL",
@@ -4930,7 +4942,7 @@ class WorldScene:
         if self._combo_count >= 2:
             cx = 640
             cy = 120
-            bonus = int(self._combo_count * D.COMBO_BONUS_PER * 100)
+            bonus = int(self._combo_count * COMBO_BONUS_PER * 100)
             label = f"x{self._combo_count}  +{bonus}% DMG"
             col = (255, 220, 80) if self._combo_count < 10 else (255, 120, 120)
             text(surf, label, 26, col, (cx, cy), center=True)
@@ -5087,9 +5099,9 @@ class WorldScene:
             text(surf, hint, 11, sq_col, (sq_panel.x + 8, sq_panel.y + 38))
             # shift the daily-quest panel below the story panel
             qy += sq_h + 4
-        first_qid = next(iter(D.DAILY_QUESTS), None)
+        first_qid = next(iter(DAILY_QUESTS), None)
         if first_qid is not None:
-            qd = D.DAILY_QUESTS[first_qid]
+            qd = DAILY_QUESTS[first_qid]
             st = p.quests.get(first_qid)
             if st is None:
                 st = dict(progress=0, claimed=False, goal=qd["goal"])
@@ -5336,14 +5348,14 @@ class WorldScene:
             return
         # resolve the skill's presentation from the manifest (fallback to
         # SKILLS_DB if the hero isn't in HERO_ASSETS — graceful, no crash)
-        ha = D.HERO_ASSETS.get(wc.hero.id)
+        ha = HERO_ASSETS.get(wc.hero.id)
         entry = None
         if ha:
             for s in ha["skills"]:
                 if s["id"] == sid:
                     entry = s; break
         if entry is None:
-            sk = D.SKILLS_DB.get(sid, {})
+            sk = SKILLS_DB.get(sid, {})
             entry = {"id": sid, "name": sk.get("name", sid),
                      "category": sk.get("category", sk.get("type", "").title()),
                      "type": sk.get("type", ""), "cost": sk.get("cost", 0),
@@ -5411,7 +5423,7 @@ class WorldScene:
         text(s, cost_txt, 13, cost_col, (pw - pad - cost_w, y))
         y += 18
         # element (left) + cooldown (right-aligned) on one line
-        el_col = D.ELEMENT_COLORS.get(element, ((200, 200, 220),))[0] if element else (160, 160, 180)
+        el_col = ELEMENT_COLORS.get(element, ((200, 200, 220),))[0] if element else (160, 160, 180)
         text(s, element.title() if element else "-", 13, el_col, (pad, y))
         if cd is not None and cd > 0:
             cd_txt = f"cd {cd:.1f}s"

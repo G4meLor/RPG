@@ -5,7 +5,11 @@ from src.core.scene import Scene
 from src.ui import (WIDTH, WHITE, DIM, GOLD, HP_RED, MP_BLUE, XP_PURPLE, Button,
                     draw_panel, draw_bar, draw_stars, rarity_color, text, f)
 from src.entities import load_portrait, load_item_icon
-import data as D
+from src.data.constellation import hero_constellation_perks
+from src.data.equipment import EQUIPMENT_DB, EQUIPMENT_SETS
+from src.data.heroes import HERO_ASSETS, HERO_BY_ID, HERO_LORE, ULTIMATE_VARIANTS, hero_abilities
+from src.data.skills import SKILLS_DB
+from src.data.tuning import ASSET_DIR, MAX_ASCENSION, xp_to_next
 import champions as _CH
 import audio
 class HeroDetailScene(Scene):
@@ -66,7 +70,7 @@ class HeroDetailScene(Scene):
             self.team_btn.text_color = WHITE
         rec = self.game.player.owned[hid]
         asc = rec.get("ascension", 0)
-        can_ascend = rec["dupes"] > 0 and asc < D.MAX_ASCENSION
+        can_ascend = rec["dupes"] > 0 and asc < MAX_ASCENSION
         self.ascend_btn.text_color = WHITE if can_ascend else (150, 150, 150)
         # invalidate the cached stat instance when equipment/level changes
         self._stat_hid = None
@@ -148,7 +152,7 @@ class HeroDetailScene(Scene):
     def draw(self, surf):
         surf.fill(BG_DARK)
         hid = self.hero_id
-        hd = D.HERO_BY_ID[hid]
+        hd = HERO_BY_ID[hid]
         rec = self.game.player.owned[hid]
         # portrait big — the equipped skin's splash (rec["skin"], default 0)
         skin_idx = rec.get("skin", 0)
@@ -169,7 +173,7 @@ class HeroDetailScene(Scene):
             # only show skins whose splash art exists on disk
             import os
             avail = [s for s in self._skins
-                     if os.path.exists(os.path.join(D.ASSET_DIR, "characters", hid,
+                     if os.path.exists(os.path.join(ASSET_DIR, "characters", hid,
                                                     "skins", f"{s['index']}.jpg"))
                      or s["index"] == 0]
             if avail:
@@ -190,13 +194,13 @@ class HeroDetailScene(Scene):
                 text(surf, cur["name"], 13, (200, 220, 255), (240, ay + 22), center=True)
         # ascension pips
         asc = rec.get("ascension", 0)
-        text(surf, f"Ascension {asc}/{D.MAX_ASCENSION}  (dupes: {rec['dupes']})", 16, (255, 180, 220), (240, 600), center=True)
+        text(surf, f"Ascension {asc}/{MAX_ASCENSION}  (dupes: {rec['dupes']})", 16, (255, 180, 220), (240, 600), center=True)
         # constellation nodes (C1-C6) — 6 pips in a row, lit for each unlocked
         # star, with the NEXT perk's description under the Ascend button so the
         # player sees what the next star will do before spending a dupe.
         # (Task A2) constellation perks come from HERO_ASSETS (same data, one bundle).
-        hero_assets = D.HERO_ASSETS.get(hid)
-        perks = hero_assets["constellation"] if hero_assets else D.hero_constellation_perks(hd)
+        hero_assets = HERO_ASSETS.get(hid)
+        perks = hero_assets["constellation"] if hero_assets else hero_constellation_perks(hd)
         cx0 = 240 - 90   # center 6 pips of width ~30 each
         for i in range(6):
             cx = cx0 + i * 30
@@ -214,7 +218,7 @@ class HeroDetailScene(Scene):
             text(surf, "Constellation MAX", 12, (255, 220, 240), (240, 640), center=True)
         # lore panel: bio + centered italic quote, below the portrait (space at y~620+)
         # (Task A2) lore comes from HERO_ASSETS (same data, one bundle).
-        lore = hero_assets["lore"] if hero_assets else D.HERO_LORE.get(hid)
+        lore = hero_assets["lore"] if hero_assets else HERO_LORE.get(hid)
         if lore:
             # "italic" via a SysFont with italic=True, cached so we don't rebuild it each frame.
             if not hasattr(self, "_lore_font"):
@@ -284,7 +288,7 @@ class HeroDetailScene(Scene):
             text(surf, str(val), 20, col, (660, y))
         # level + xp (left zone, below the stat rows)
         text(surf, f"Level {rec['level']}", 22, WHITE, (470, 384))
-        xp_need = D.xp_to_next(rec["level"])
+        xp_need = xp_to_next(rec["level"])
         draw_bar(surf, (540, 390, 110, 18), rec["xp"] / max(1, xp_need), XP_PURPLE)
         text(surf, f"XP {rec['xp']}/{xp_need}", 13, DIM, (660, 386))
         # ultimate / passive / skills / evo — moved up inside the panel (which
@@ -298,13 +302,13 @@ class HeroDetailScene(Scene):
         else:
             ult_entry = None
         ult_var = hero_assets["ultimate"] if hero_assets else (
-            D.ULTIMATE_VARIANTS.get(hd["id"]) if hd.get("ultimate") else None)
+            ULTIMATE_VARIANTS.get(hd["id"]) if hd.get("ultimate") else None)
         if ult_entry:
             ult_name = ult_entry["name"]
         elif ult_var:
             ult_name = ult_var["name"]
         else:
-            ult_name = D.SKILLS_DB[hd["ultimate"]]["name"] if hd.get("ultimate") else "None"
+            ult_name = SKILLS_DB[hd["ultimate"]]["name"] if hd.get("ultimate") else "None"
         ult_desc = ult_var.get("desc", "") if ult_var else ""
         text(surf, f"Ultimate: {ult_name}", 18, (255, 180, 120), (470, 412))
         if ult_desc:
@@ -320,8 +324,8 @@ class HeroDetailScene(Scene):
             actives = [s for s in hero_assets["skills"] if s["id"] != "basic_attack"
                        and s["type"] != "ultimate"]
         else:
-            ab = D.hero_abilities(hd)
-            actives = [{"name": D.SKILLS_DB[s]["name"] if s and s in D.SKILLS_DB else "-",
+            ab = hero_abilities(hd)
+            actives = [{"name": SKILLS_DB[s]["name"] if s and s in SKILLS_DB else "-",
                         "how_to_use": ""} for s in ab]
         # pad to 3 so the HUD line is stable
         while len(actives) < 3:
@@ -354,11 +358,11 @@ class HeroDetailScene(Scene):
             if eq:
                 ic = load_item_icon(eq, 120)
                 surf.blit(ic, (sr.centerx - 60, sr.y + 20))
-                text(surf, D.EQUIPMENT_DB[eq]["name"], 13, WHITE, (sr.centerx, sr.bottom + 24), center=True)
+                text(surf, EQUIPMENT_DB[eq]["name"], 13, WHITE, (sr.centerx, sr.bottom + 24), center=True)
         # active set bonus indicator (below the equipment slots)
         set_name = h_inst.set_name()
         if set_name:
-            set_def = next((v for v in D.EQUIPMENT_SETS.values() if v["name"] == set_name), None)
+            set_def = next((v for v in EQUIPMENT_SETS.values() if v["name"] == set_name), None)
             if set_def:
                 text(surf, f"Set: {set_name} ({set_def['desc']})", 13, (255, 220, 120), (680, 372))
         # equipment inventory list — moved below the stats panel (y=490+) so it
@@ -369,7 +373,7 @@ class HeroDetailScene(Scene):
             col = i % 4
             row = i // 4
             r = pygame.Rect(ex + col * 100, ey + row * 100, 88, 88)
-            item = D.EQUIPMENT_DB[item_id]
+            item = EQUIPMENT_DB[item_id]
             pygame.draw.rect(surf, (40, 40, 60), r, border_radius=10)
             pygame.draw.rect(surf, rarity_color(item["rarity"]), r, 2, border_radius=10)
             ic = load_item_icon(item_id, 64)

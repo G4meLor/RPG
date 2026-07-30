@@ -6,7 +6,13 @@ import os
 import json
 import time
 
-import data as D
+from src.data.consumables import CONSUMABLES_DB
+from src.data.equipment import EQUIPMENT_DB
+from src.data.evolution import evo_node_prereq_met, hero_evo_tree
+from src.data.heroes import HERO_BY_ID
+from src.data.progression import ACHIEVEMENTS, DAILY_QUESTS
+from src.data.shop import SHOP_GEMS
+from src.data.tuning import EVOLVE_COST, MAX_ASCENSION, MAX_EVOLVE, STARTING_GEMS, STARTING_GOLD, STARTING_INVENTORY, STARTING_OWNED, STARTING_TEAM
 from entities import Hero
 
 # Repo root = parent of src/ = one level up from this file (src/player.py).
@@ -20,14 +26,14 @@ SAVE_FILE = os.path.join(SAVE_DIR, "save.json")
 
 class Player:
     def __init__(self):
-        self.gems = D.STARTING_GEMS
-        self.gold = D.STARTING_GOLD
+        self.gems = STARTING_GEMS
+        self.gold = STARTING_GOLD
         self.owned = {}          # hero_id -> {level, xp, dupes, ascension, equipment, evolve}
-        self.team = list(D.STARTING_TEAM)
+        self.team = list(STARTING_TEAM)
         self.gacha_pity = {}     # banner_id -> pulls since last SSR (per-banner pity)
         self.total_pulls = 0
         # inventory
-        self.inventory = dict(D.STARTING_INVENTORY)      # item_id -> count
+        self.inventory = dict(STARTING_INVENTORY)      # item_id -> count
         self.equipment_inv = []                          # list of equipment ids owned
         # stats / achievements
         self.stats = dict(battles_won=0, battles_lost=0, total_pulls=0,
@@ -113,7 +119,7 @@ class Player:
         # (the chain just starts from the top).
         self.story_progress = {}
         # init owned heroes
-        for hid in D.STARTING_OWNED:
+        for hid in STARTING_OWNED:
             self.owned[hid] = dict(level=1, xp=0, dupes=0, ascension=0,
                                   equipment={}, evolve=0, evo_nodes=[], skin=0)
 
@@ -122,7 +128,7 @@ class Player:
         if hid in self.owned:
             self.owned[hid]["dupes"] += 1
             # convert dupe to ascension if below cap, else refund some shards
-            if self.owned[hid]["ascension"] < D.MAX_ASCENSION:
+            if self.owned[hid]["ascension"] < MAX_ASCENSION:
                 self.owned[hid]["ascension"] += 1
             else:
                 self.shards += 5
@@ -133,7 +139,7 @@ class Player:
 
     def get_hero_instance(self, hid):
         if hid not in self.owned: return None
-        hd = D.HERO_BY_ID[hid]
+        hd = HERO_BY_ID[hid]
         rec = self.owned[hid]
         return Hero(hd, level=rec["level"], ascension=rec.get("ascension", 0),
                     equipment=rec.get("equipment", {}),
@@ -145,9 +151,9 @@ class Player:
         rec = self.owned.get(hid)
         if not rec: return None
         tier = rec.get("evolve", 0)
-        if tier >= D.MAX_EVOLVE:
+        if tier >= MAX_EVOLVE:
             return None
-        return D.EVOLVE_COST.get(tier + 1, 9999)
+        return EVOLVE_COST.get(tier + 1, 9999)
 
     def can_evolve(self, hid):
         cost = self.evolve_cost(hid)
@@ -167,8 +173,8 @@ class Player:
         """Shard cost to unlock a tree node for a hero."""
         rec = self.owned.get(hid)
         if not rec: return None
-        hd = D.HERO_BY_ID[hid]
-        tree = D.hero_evo_tree(hd)
+        hd = HERO_BY_ID[hid]
+        tree = hero_evo_tree(hd)
         node = next((n for n in tree if n["id"] == node_id), None)
         if node is None: return None
         return node.get("cost", 20)
@@ -179,11 +185,11 @@ class Player:
         unlocked = set(rec.get("evo_nodes", []))
         if node_id in unlocked:
             return False
-        hd = D.HERO_BY_ID[hid]
-        tree = D.hero_evo_tree(hd)
+        hd = HERO_BY_ID[hid]
+        tree = hero_evo_tree(hd)
         node = next((n for n in tree if n["id"] == node_id), None)
         if node is None: return False
-        if not D.evo_node_prereq_met(node, unlocked):
+        if not evo_node_prereq_met(node, unlocked):
             return False
         return self.shards >= node.get("cost", 20)
 
@@ -213,13 +219,13 @@ class Player:
 
     # --- equipment ---
     def add_equipment(self, item_id):
-        if item_id in D.EQUIPMENT_DB:
+        if item_id in EQUIPMENT_DB:
             self.equipment_inv.append(item_id)
 
     def equip(self, hero_id, item_id):
         if hero_id not in self.owned or item_id not in self.equipment_inv:
             return False
-        item = D.EQUIPMENT_DB[item_id]
+        item = EQUIPMENT_DB[item_id]
         slot = item["slot"]
         rec = self.owned[hero_id]
         # return currently equipped item in that slot to inventory
@@ -258,7 +264,7 @@ class Player:
         """Sell a consumable from inventory for gold. Returns True on success."""
         if not self.has_item(item_id):
             return False
-        item = D.CONSUMABLES_DB.get(item_id)
+        item = CONSUMABLES_DB.get(item_id)
         if not item:
             return False
         self.use_item(item_id)
@@ -267,7 +273,7 @@ class Player:
 
     # --- shop ---
     def buy_consumable(self, item_id):
-        item = D.CONSUMABLES_DB.get(item_id)
+        item = CONSUMABLES_DB.get(item_id)
         if not item: return False
         if self.gold < item["price"]: return False
         self.gold -= item["price"]
@@ -275,7 +281,7 @@ class Player:
         return True
 
     def buy_equipment(self, item_id):
-        item = D.EQUIPMENT_DB.get(item_id)
+        item = EQUIPMENT_DB.get(item_id)
         if not item: return False
         if self.gold < item["price"]: return False
         self.gold -= item["price"]
@@ -283,7 +289,7 @@ class Player:
         return True
 
     def buy_gems(self, offer_id):
-        offer = next((o for o in D.SHOP_GEMS if o["id"] == offer_id), None)
+        offer = next((o for o in SHOP_GEMS if o["id"] == offer_id), None)
         if not offer: return False
         if self.gold < offer["price"]: return False
         self.gold -= offer["price"]
@@ -326,19 +332,19 @@ class Player:
         if aid in self.achievements:
             return False
         self.achievements.append(aid)
-        reward = D.ACHIEVEMENTS.get(aid, {}).get("reward_gems", 0)
+        reward = ACHIEVEMENTS.get(aid, {}).get("reward_gems", 0)
         if reward:
             self.gems += reward
             self.stats["gems_earned"] = self.stats.get("gems_earned", 0) + reward
         return True
 
     def _has_ssr(self):
-        return any(D.HERO_BY_ID[h].get("rarity") == "SSR" for h in self.owned)
+        return any(HERO_BY_ID[h].get("rarity") == "SSR" for h in self.owned)
 
     def check_achievements(self):
         """Evaluate achievement conditions; return list of newly-unlocked ids."""
         newly = []
-        for aid, ach in D.ACHIEVEMENTS.items():
+        for aid, ach in ACHIEVEMENTS.items():
             if aid in self.achievements:
                 continue
             if ach["check"](self):
@@ -351,7 +357,7 @@ class Player:
         today = time.strftime("%Y-%m-%d")
         if self.quests_last_reset != today:
             self.quests = {}
-            for qid, q in D.DAILY_QUESTS.items():
+            for qid, q in DAILY_QUESTS.items():
                 self.quests[qid] = dict(progress=0, claimed=False, goal=q["goal"])
             self.quests_last_reset = today
 
@@ -370,7 +376,7 @@ class Player:
         if st.get("progress", 0) < st.get("goal", 1):
             return False
         st["claimed"] = True
-        q = D.DAILY_QUESTS[qid]
+        q = DAILY_QUESTS[qid]
         self.gems += q["reward_gems"]
         self.stats["gems_earned"] = self.stats.get("gems_earned", 0) + q["reward_gems"]
         # board-clear capstone: when every quest is claimed, grant a daily bonus
@@ -455,8 +461,8 @@ class Player:
             with open(SAVE_FILE) as f:
                 d = json.load(f)
             p = cls()
-            p.gems = d.get("gems", D.STARTING_GEMS)
-            p.gold = d.get("gold", D.STARTING_GOLD)
+            p.gems = d.get("gems", STARTING_GEMS)
+            p.gold = d.get("gold", STARTING_GOLD)
             p.owned = d.get("owned", {})
             # migrate old records to include ascension/equipment/evolve/skin
             for hid, rec in p.owned.items():
@@ -466,7 +472,7 @@ class Player:
                 rec.setdefault("evolve", 0)
                 rec.setdefault("evo_nodes", [])
                 rec.setdefault("skin", 0)
-            p.team = d.get("team", list(D.STARTING_TEAM))
+            p.team = d.get("team", list(STARTING_TEAM))
             # validate team ids still owned
             p.team = [t if t in p.owned else None for t in p.team]
             while len(p.team) < 4:
@@ -476,7 +482,7 @@ class Player:
             if not isinstance(p.gacha_pity, dict):
                 p.gacha_pity = {"standard": int(p.gacha_pity)} if p.gacha_pity else {}
             p.total_pulls = d.get("total_pulls", 0)
-            p.inventory = d.get("inventory", dict(D.STARTING_INVENTORY))
+            p.inventory = d.get("inventory", dict(STARTING_INVENTORY))
             p.equipment_inv = d.get("equipment_inv", [])
             p.stats = d.get("stats", p.stats)
             # ensure every stat key the game reads/writes exists on old saves

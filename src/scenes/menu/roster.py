@@ -5,7 +5,11 @@ from src.core.scene import Scene
 from src.ui import (WIDTH, HEIGHT, WHITE, DIM, GOLD, BG_DARK, Button, draw_panel,
                     draw_stars, text, f)
 from src.entities import load_char_sprite, load_portrait, load_ui
-import data as D
+from src.data.elements import ELEMENT_COLORS
+from src.data.equipment import EQUIPMENT_SETS
+from src.data.heroes import HERO_BY_ID
+from src.data.resonance import ELEMENTAL_RESONANCE, team_resonances
+from src.data.tuning import MAX_ASCENSION
 class RosterScene(Scene):
     """List all owned heroes; click to open hero detail."""
     def __init__(self, game):
@@ -35,7 +39,7 @@ class RosterScene(Scene):
         """Cached (frame, portrait) surfaces at the card display size."""
         art = self._card_art.get(hid)
         if art is None:
-            hd = D.HERO_BY_ID[hid]
+            hd = HERO_BY_ID[hid]
             frame = pygame.transform.smoothscale(load_ui(f"frame_{hd['rarity']}"), (180, 240))
             p = pygame.transform.smoothscale(self.get_portrait(hid), (156, 156))
             art = (frame, p)
@@ -96,7 +100,7 @@ class RosterScene(Scene):
             pygame.draw.rect(surf, (50, 50, 70), (tx + 16, slot_y, 268, 48), border_radius=10)
             pygame.draw.rect(surf, (200, 200, 240), (tx + 16, slot_y, 268, 48), 2, border_radius=10)
             if hid:
-                hd = D.HERO_BY_ID[hid]
+                hd = HERO_BY_ID[hid]
                 try:
                     p = load_portrait(hid, 0, 44)
                 except Exception:
@@ -110,18 +114,18 @@ class RosterScene(Scene):
         # elemental resonance — show active resonance buffs under Team Power so
         # the player sees what their party composition grants before entering the
         # world. Each line is the resonance name + value in the element's color.
-        resonances = D.team_resonances(self.game.player.team)
+        resonances = team_resonances(self.game.player.team)
         ry = 326
         for r in resonances:
-            el = next((e for e, d in D.ELEMENTAL_RESONANCE.items()
+            el = next((e for e, d in ELEMENTAL_RESONANCE.items()
                        if d.get("buff") == r.get("buff")), None)
-            col = D.ELEMENT_COLORS.get(el, ((180, 200, 220),))[0]
+            col = ELEMENT_COLORS.get(el, ((180, 200, 220),))[0]
             val_pct = int(r.get("val", 0) * 100)
             text(surf, f"  {r['name']}  +{val_pct}%", 13, col, (tx + 16, ry))
             ry += 16
         # cards
         for hid, rect in self.cards:
-            hd = D.HERO_BY_ID[hid]
+            hd = HERO_BY_ID[hid]
             info = self.game.player.owned[hid]
             in_team = hid in self.game.player.team
             frame, p2 = self._card_art_for(hid)
@@ -137,14 +141,14 @@ class RosterScene(Scene):
             draw_stars(surf, rect.centerx - 30, rect.y + pw + 58, nstars, size=10)
             # ascension pips
             asc = info.get("ascension", 0)
-            for a in range(D.MAX_ASCENSION):
+            for a in range(MAX_ASCENSION):
                 col = (255, 120, 200) if a < asc else (70, 60, 80)
                 pygame.draw.circle(surf, col, (rect.x + 24 + a * 16, rect.y + 12), 5)
             # equipment set-progress hint: nudge the player toward a set bonus by
             # showing the completed set name or a "2/3" in-progress line.
             eq = info.get("equipment", {})
             eq_ids = set(eq.values()) if eq else set()
-            for sdef in D.EQUIPMENT_SETS.values():
+            for sdef in EQUIPMENT_SETS.values():
                 have = len(set(sdef["items"]) & eq_ids)
                 if have == 3:
                     text(surf, sdef["name"], 10, (255, 220, 120),

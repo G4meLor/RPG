@@ -6,9 +6,16 @@ crit and effects.
 import os
 import pygame
 
-import data as D
-
-ASSET_DIR = D.ASSET_DIR
+from src.data.constellation import constellation_perks_for
+from src.data.enemies import ENEMIES_DB
+from src.data.equipment import EQUIPMENT_DB, equipment_set_bonus
+from src.data.evolution import hero_evo_tree
+from src.data.heroes import HERO_PASSIVES, champion_enemy_def, hero_passive, hero_signature
+from src.data.passives import PASSIVES_DB
+from src.data.roles import role_mult
+from src.data.skills import BOSS_IDS, SKILLS_DB
+from src.data.tuning import ASCENSION_BONUS, ASSET_DIR, BASE_CRIT_CHANCE, DEFEND_MITIGATION, ENERGY_MAX, ENERGY_START, EVOLVE_BONUS, EVOLVE_COLORS, EVOLVE_TITLES, MAX_LEVEL, STAT_GROWTH, TOUGHNESS_BREAK_MULT, TOUGHNESS_RECOVER_FRAC, skill_energy_cost, xp_to_next
+from src.build.champions import CHAMPION_BY_KEY
 _cache = {}
 
 def load_image(rel_path, scale=None):
@@ -171,7 +178,7 @@ class Combatant:
         self.last_damage_time = 0
         self.entry_anim = 1.0      # 1.0 = full entrance; animates to 0
         self.ko_anim = 0.0         # 0.0 = alive; animates to 1 on death
-        self.crit_chance = D.BASE_CRIT_CHANCE
+        self.crit_chance = BASE_CRIT_CHANCE
         # HSR-style toughness / break
         self.max_toughness = 0
         self.toughness = 0
@@ -179,7 +186,7 @@ class Combatant:
         self.display_toughness = 0
         # HSR-style energy (replaces MP as the action resource for heroes)
         self.energy = 0
-        self.max_energy = D.ENERGY_MAX
+        self.max_energy = ENERGY_MAX
 
     # --- stat modifiers from effects ---
     def spd_mod(self):
@@ -204,7 +211,7 @@ class Combatant:
 
     # --- HSR-style energy (shared by heroes and enemies) ---
     def skill_energy_cost(self, skill_id):
-        return D.skill_energy_cost(D.SKILLS_DB[skill_id])
+        return skill_energy_cost(SKILLS_DB[skill_id])
 
     def can_use_skill(self, skill_id):
         return self.energy >= self.skill_energy_cost(skill_id)
@@ -234,7 +241,7 @@ class Combatant:
             self.toughness = self.max_toughness
         else:
             self.toughness = min(self.max_toughness,
-                                  self.toughness + int(self.max_toughness * D.TOUGHNESS_RECOVER_FRAC))
+                                  self.toughness + int(self.max_toughness * TOUGHNESS_RECOVER_FRAC))
         self.display_toughness = self.toughness
 
     def take_damage(self, amount, is_crit=False, source=None):
@@ -242,10 +249,10 @@ class Combatant:
         if self.has_shield():
             amount = int(amount * 0.5)
         if self.defending:
-            amount = int(amount * (1 - D.DEFEND_MITIGATION))
+            amount = int(amount * (1 - DEFEND_MITIGATION))
         # HSR: broken targets take +50% damage
         if self.broken:
-            amount = int(amount * D.TOUGHNESS_BREAK_MULT)
+            amount = int(amount * TOUGHNESS_BREAK_MULT)
         self.hp -= amount
         if self.hp <= 0:
             self.hp = 0
@@ -316,24 +323,24 @@ class Hero(Combatant):
         # compute the tree-derived bonuses (stat multipliers + extra passive)
         self._evo_bonus = _compute_evo_bonus(hero_def, self.evo_nodes)
         # equipment set bonus (complete matching set across 3 slots)
-        self._set_name, self._set_bonus = D.equipment_set_bonus(
+        self._set_name, self._set_bonus = equipment_set_bonus(
             [v for v in (self.equipment or {}).values() if v])
         # ascension multiplier + evolve multiplier (compounding)
-        asc_mul = D.ASCENSION_BONUS.get(ascension, 1.0)
-        evolve_mul = D.EVOLVE_BONUS.get(evolve, 1.0)
-        g = D.STAT_GROWTH
+        asc_mul = ASCENSION_BONUS.get(ascension, 1.0)
+        evolve_mul = EVOLVE_BONUS.get(evolve, 1.0)
+        g = STAT_GROWTH
         eb = self._evo_bonus
         sb = self._set_bonus
         def stat(key):
             base = s[key] * (1 + g[key] * (level - 1))
             # equipment bonuses
             for it in self.equipment.values():
-                if it and it in D.EQUIPMENT_DB:
-                    base += D.EQUIPMENT_DB[it]["stats"].get(key, 0)
+                if it and it in EQUIPMENT_DB:
+                    base += EQUIPMENT_DB[it]["stats"].get(key, 0)
             # set-bonus flat additions
             base += sb.get(key, 0)
             # role stat multiplier (HSR paths)
-            base *= D.role_mult(self.role, key)
+            base *= role_mult(self.role, key)
             # evolution-tree stat bonuses
             if key == "hp":   base *= (1 + eb.get("hp_pct", 0))
             if key == "atk":  base *= (1 + eb.get("atk_pct", 0))
@@ -349,7 +356,7 @@ class Hero(Combatant):
         super().__init__(hero_def["name"], hero_def["element"], hp, hp, atk, defn, spd, mp, mp)
         self.full_mp = mp
         # crit scales slightly with ascension; hunt role crits more
-        self.crit_chance = D.BASE_CRIT_CHANCE + 0.02 * ascension + 0.01 * evolve
+        self.crit_chance = BASE_CRIT_CHANCE + 0.02 * ascension + 0.01 * evolve
         if self.role == "hunt":
             self.crit_chance += 0.04
         # crit + crit-dmg bonuses from the evolution tree
@@ -361,16 +368,16 @@ class Hero(Combatant):
         self.crit_dmg_bonus += sb.get("crit_dmg", 0)
         # HSR-style energy gauge (replaces MP as the action resource)
         # energy pool can be enlarged by the tree and by equipment set bonuses
-        self.max_energy = int(D.ENERGY_MAX * (1 + eb.get("energy_pct", 0) + sb.get("energy_pct", 0)))
-        self.energy = min(D.ENERGY_START, self.max_energy)
+        self.max_energy = int(ENERGY_MAX * (1 + eb.get("energy_pct", 0) + sb.get("energy_pct", 0)))
+        self.energy = min(ENERGY_START, self.max_energy)
         # skill cost multiplier from the tree and set bonus (e.g. Overflow: 0.85)
         self.skill_cost_mult = eb.get("skill_cost_mult", 1.0) * sb.get("skill_cost_mult", 1.0)
         # LoL-style passive (always-on combat modifier) for this hero. The
         # evolution tree can grant an extra passive; we pick the tree's if any,
         # else the hero's base passive.
-        base_passive = D.hero_passive(self.id)
+        base_passive = hero_passive(self.id)
         if eb.get("passive"):
-            self.passive = D.PASSIVES_DB.get(eb["passive"], base_passive)
+            self.passive = PASSIVES_DB.get(eb["passive"], base_passive)
         else:
             self.passive = base_passive
         # per-hero signature passive (C6) — ADDITIONAL to the shared base
@@ -379,7 +386,7 @@ class Hero(Combatant):
         # passive without replacing it. Distinct from HERO_PASSIVES so pulling
         # Ember (revive_once) vs Cinder (stacking_atk) — both fire destruction,
         # both p_lifesteal today — feels like different heroes.
-        self.signature = D.hero_signature(self.id)
+        self.signature = hero_signature(self.id)
         # constellation perks (C1-C6) — layered on top of the flat ascension
         # bonus so old saves don't regress. The flat ASCENSION_BONUS already
         # applied above; here we add the gameplay-changing perks per star.
@@ -409,13 +416,13 @@ class Hero(Combatant):
         # previous passive_boost doesn't compound on an already-boosted val. A
         # copy is made so the shared PASSIVES_DB entry is never mutated.
         eb = self._evo_bonus
-        base_passive = D.hero_passive(self.id)
+        base_passive = hero_passive(self.id)
         if eb.get("passive"):
-            base_passive = D.PASSIVES_DB.get(eb["passive"], base_passive)
+            base_passive = PASSIVES_DB.get(eb["passive"], base_passive)
         self.passive = dict(base_passive) if base_passive else None
         # start from the tree/set crit_dmg and skill_cost_mult (already set by
         # the caller); perks add to crit_dmg_bonus and multiply skill_cost_mult
-        perks = D.constellation_perks_for(self.def_dict, self.ascension)
+        perks = constellation_perks_for(self.def_dict, self.ascension)
         for p in perks:
             eff = p.get("effect")
             val = p.get("val", 0)
@@ -449,37 +456,37 @@ class Hero(Combatant):
         return self._set_name
 
     def evolve_title(self):
-        return D.EVOLVE_TITLES.get(self.evolve, "Hero")
+        return EVOLVE_TITLES.get(self.evolve, "Hero")
 
     def evolve_color(self):
-        return D.EVOLVE_COLORS.get(self.evolve, (220, 220, 235))
+        return EVOLVE_COLORS.get(self.evolve, (220, 220, 235))
 
     def gain_xp(self, amount):
         self.xp += amount
         leveled = False
-        while self.level < D.MAX_LEVEL and self.xp >= D.xp_to_next(self.level):
-            self.xp -= D.xp_to_next(self.level)
+        while self.level < MAX_LEVEL and self.xp >= xp_to_next(self.level):
+            self.xp -= xp_to_next(self.level)
             self.level += 1
             leveled = True
             self._recompute()
         return leveled
 
     def _recompute(self):
-        s = self.def_dict["stats"]; g = D.STAT_GROWTH
-        asc_mul = D.ASCENSION_BONUS.get(self.ascension, 1.0)
-        evolve_mul = D.EVOLVE_BONUS.get(self.evolve, 1.0)
+        s = self.def_dict["stats"]; g = STAT_GROWTH
+        asc_mul = ASCENSION_BONUS.get(self.ascension, 1.0)
+        evolve_mul = EVOLVE_BONUS.get(self.evolve, 1.0)
         eb = self._evo_bonus
         # re-evaluate the set bonus in case equipment changed
-        self._set_name, self._set_bonus = D.equipment_set_bonus(
+        self._set_name, self._set_bonus = equipment_set_bonus(
             [v for v in (self.equipment or {}).values() if v])
         sb = self._set_bonus
         def stat(key):
             base = s[key] * (1 + g[key] * (self.level - 1))
             for it in self.equipment.values():
-                if it and it in D.EQUIPMENT_DB:
-                    base += D.EQUIPMENT_DB[it]["stats"].get(key, 0)
+                if it and it in EQUIPMENT_DB:
+                    base += EQUIPMENT_DB[it]["stats"].get(key, 0)
             base += sb.get(key, 0)
-            base *= D.role_mult(self.role, key)
+            base *= role_mult(self.role, key)
             if key == "hp":   base *= (1 + eb.get("hp_pct", 0))
             if key == "atk":  base *= (1 + eb.get("atk_pct", 0))
             if key == "defn": base *= (1 + eb.get("defn_pct", 0))
@@ -490,11 +497,11 @@ class Hero(Combatant):
             return max(1, int(base * asc_mul * evolve_mul))
         self.max_hp = stat("hp"); self.atk = stat("atk"); self.defn = stat("defn")
         self.spd = stat("spd"); self.max_mp = stat("mp")
-        self.max_energy = int(D.ENERGY_MAX * (1 + eb.get("energy_pct", 0) + sb.get("energy_pct", 0)))
+        self.max_energy = int(ENERGY_MAX * (1 + eb.get("energy_pct", 0) + sb.get("energy_pct", 0)))
         self.hp = self.max_hp
         self.mp = self.max_mp
         # crit bonuses from the tree and equipment set bonus
-        self.crit_chance = (D.BASE_CRIT_CHANCE + 0.02 * self.ascension
+        self.crit_chance = (BASE_CRIT_CHANCE + 0.02 * self.ascension
                             + 0.01 * self.evolve + eb.get("crit", 0) + sb.get("crit", 0))
         if self.role == "hunt":
             self.crit_chance += 0.04
@@ -511,7 +518,7 @@ class Hero(Combatant):
         return self.max_hp + self.atk * 8 + self.defn * 5 + self.spd * 3
 
     def skill_energy_cost(self, skill_id):
-        cost = D.skill_energy_cost(D.SKILLS_DB[skill_id])
+        cost = skill_energy_cost(SKILLS_DB[skill_id])
         # evolution tree can reduce skill energy costs (multiplicative)
         return int(cost * getattr(self, "skill_cost_mult", 1.0))
 
@@ -527,11 +534,11 @@ class Hero(Combatant):
 
 def _compute_evo_bonus(hero_def, node_ids):
     """Sum the stat bonuses + passive from the unlocked tree nodes."""
-    tree = D.hero_evo_tree(hero_def)
+    tree = hero_evo_tree(hero_def)
     by_id = {n["id"]: n for n in tree}
     # base passive id for this hero — used to detect dead-upgrade nodes whose
     # passive == the hero's base passive (a pure no-op without a consolation).
-    base_pid = D.HERO_PASSIVES.get(hero_def.get("id"))
+    base_pid = HERO_PASSIVES.get(hero_def.get("id"))
     bonus = dict(hp_pct=0, atk_pct=0, defn_pct=0, energy_pct=0,
                  crit=0, crit_dmg=0, skill_cost_mult=1.0)
     passive = None
@@ -568,12 +575,12 @@ class Enemy(Combatant):
         # from the champion's baked stats (champion_enemy_def) instead of
         # ENEMIES_DB. The is_boss flag scales the champ to boss-tier. This lets
         # a champion spawn as an open-world minion/boss with its real kit.
-        if enemy_id in D._CH.CHAMPION_BY_KEY:
-            d = D.champion_enemy_def(enemy_id, is_boss=is_boss)
+        if enemy_id in CHAMPION_BY_KEY:
+            d = champion_enemy_def(enemy_id, is_boss=is_boss)
             if d is None:
-                d = D.ENEMIES_DB[enemy_id]
+                d = ENEMIES_DB[enemy_id]
         else:
-            d = D.ENEMIES_DB[enemy_id]
+            d = ENEMIES_DB[enemy_id]
         self.id = enemy_id
         self.def_dict = d
         self.level = level
@@ -589,7 +596,7 @@ class Enemy(Combatant):
         self.skills = list(d["skills"])
         self.xp = int(d["xp"] * scale)
         self.gold = int(d["gold"] * scale)
-        self.is_boss = enemy_id in D.BOSS_IDS or is_boss
+        self.is_boss = enemy_id in BOSS_IDS or is_boss
         self._used_ultimate = False
         # HSR-style weakness + toughness
         self.weakness = d.get("weakness", None)
@@ -601,5 +608,5 @@ class Enemy(Combatant):
         # They start at 0 so they open with a basic attack (building energy)
         # rather than nuking with their strongest skill on turn 1.
         self.energy = 0
-        self.max_energy = D.ENERGY_MAX
+        self.max_energy = ENERGY_MAX
 

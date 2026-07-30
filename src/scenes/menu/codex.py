@@ -5,7 +5,7 @@ from src.core.scene import Scene
 from src.ui import (WIDTH, HEIGHT, WHITE, GOLD, BG_DARK, Button, draw_panel,
                     draw_stars, text, f, get_font, scratch as _scratch)
 from src.entities import load_char_sprite, load_portrait, load_ui
-import data as D
+from src.data.heroes import HEROES_DB, HERO_ASSETS, HERO_LORE
 class CodexScene(Scene):
     """Show all heroes with owned/total counts."""
     def __init__(self, game):
@@ -39,7 +39,7 @@ class CodexScene(Scene):
             if e.type == pygame.MOUSEWHEEL:
                 # clamp scroll to the codex content height so it can't scroll
                 # past the last row (which left a blank screen with no way back).
-                rows = (len(D.HEROES_DB) + 6) // 7
+                rows = (len(HEROES_DB) + 6) // 7
                 content_h = rows * (200 + 16)
                 max_scroll = max(0, content_h - (HEIGHT - 130 - 40))
                 self.scroll = max(0, min(self.scroll - e.y * 40, max_scroll))
@@ -48,9 +48,9 @@ class CodexScene(Scene):
         surf.fill(BG_DARK)
         p = self.game.player
         text(surf, "Codex", 40, WHITE, (WIDTH // 2, 40), center=True)
-        text(surf, f"Collected {len(p.owned)}/{len(D.HEROES_DB)} heroes", 20, GOLD,
+        text(surf, f"Collected {len(p.owned)}/{len(HEROES_DB)} heroes", 20, GOLD,
              (WIDTH // 2, 80), center=True)
-        all_heroes = D.HEROES_DB
+        all_heroes = HEROES_DB
         cols = 7
         cw, ch = 150, 200
         gap = 16
@@ -97,8 +97,8 @@ class CodexScene(Scene):
         # (Task A2) read the bio from HERO_ASSETS — the single source of truth —
         # falling back to HERO_LORE only if the manifest is somehow missing.
         if hovered_id is not None and hovered_rect is not None and hovered_id in p.owned:
-            ha = D.HERO_ASSETS.get(hovered_id)
-            lore = ha["lore"] if ha else D.HERO_LORE.get(hovered_id)
+            ha = HERO_ASSETS.get(hovered_id)
+            lore = ha["lore"] if ha else HERO_LORE.get(hovered_id)
             if lore:
                 bio = lore["bio"]
                 tt_w, tt_h = 360, 60

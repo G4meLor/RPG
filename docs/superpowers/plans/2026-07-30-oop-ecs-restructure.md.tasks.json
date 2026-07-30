@@ -1,0 +1,30 @@
+{
+  "planPath": "docs/superpowers/plans/2026-07-30-oop-ecs-restructure.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 1: src/ skeleton + thin main.py", "status": "pending", "description": "Phase 1 — create src/ package tree + thin main.py entry. See plan Task 1.", "blockedBy": []},
+    {"id": 1, "subject": "Task 2: move data/champions/audio/player/gacha into src/", "status": "pending", "description": "Phase 1 — move data-layer modules into src/ with root shims. See plan Task 2.", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 3: move entities/world_data/world_entities into src/", "status": "pending", "description": "Phase 1 — move entity + world-data modules into src/ with shims. See plan Task 3.", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 4: move ui/fx/generate_assets/build_champions into src/", "status": "pending", "description": "Phase 1 — move UI/VFX/build modules into src/ with shims. See plan Task 4.", "blockedBy": [2]},
+    {"id": 4, "subject": "Task 5: move scenes into src/scenes/", "status": "pending", "description": "Phase 1 — move world/adventure + 10 menu scenes into src/scenes/. See plan Task 5.", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 6: move verify_assets to tools/ + Phase 1 gate", "status": "pending", "description": "Phase 1 gate — move verify_assets to tools/, run full gate. See plan Task 6.", "blockedBy": [4]},
+    {"id": 6, "subject": "Task 7: split _legacy_data into 17 src/data/ modules", "status": "pending", "description": "Phase 2 — split data.py into 17 per-concern modules. See plan Task 7.", "blockedBy": [5]},
+    {"id": 7, "subject": "Task 8: migrate 416 D.* call sites + remove data.py shim", "status": "pending", "description": "Phase 2 — rewrite all D.* to specific imports, remove shim. See plan Task 8.", "blockedBy": [6]},
+    {"id": 8, "subject": "Task 9: remove remaining root shims + Phase 2 gate", "status": "pending", "description": "Phase 2 gate — remove 13 root shims, only main.py at root. See plan Task 9.", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 10: ECS core (components/Entity/World) + Layer 1 tests", "status": "pending", "description": "Phase 3 — build ECS primitives with unit tests. See plan Task 10.", "blockedBy": [8]},
+    {"id": 10, "subject": "Task 11: hero/enemy entity factories + Combatant bridge", "status": "pending", "description": "Phase 3 — spawn_hero/spawn_enemy factories + Combat.stat_obj. See plan Task 11.", "blockedBy": [9]},
+    {"id": 11, "subject": "Task 12: WorldScene entity adapter (parallel tracking)", "status": "pending", "description": "Phase 3 — World tracks party+enemies in parallel with legacy. See plan Task 12.", "blockedBy": [10]},
+    {"id": 12, "subject": "Task 13: Phase 3 gate", "status": "pending", "description": "Phase 3 gate — verify_ecs + verify_assets + 21-test + stress. See plan Task 13.", "blockedBy": [11]},
+    {"id": 13, "subject": "Task 14: MapController system", "status": "pending", "description": "Phase 4 — extract map mgmt into MapController. See plan Task 14.", "blockedBy": [12]},
+    {"id": 14, "subject": "Task 15: PhysicsSystem (movement/collision/camera)", "status": "pending", "description": "Phase 4 — extract movement/collision/camera. See plan Task 15.", "blockedBy": [13]},
+    {"id": 15, "subject": "Task 16: AISystem (enemy AI branches)", "status": "pending", "description": "Phase 4 — extract per-enemy AI into AISystem. See plan Task 16.", "blockedBy": [14]},
+    {"id": 16, "subject": "Task 17: CombatSystem (attack/skill/ultimate/on_hit/on_death)", "status": "pending", "description": "Phase 4 — extract combat into CombatSystem operating on entities. See plan Task 17.", "blockedBy": [15]},
+    {"id": 17, "subject": "Task 18: DropSystem + RiftSystem + DialogueSystem", "status": "pending", "description": "Phase 4 — extract drops/rift/dialogue systems. See plan Task 18.", "blockedBy": [16]},
+    {"id": 18, "subject": "Task 19: RenderSystem + HudSystem", "status": "pending", "description": "Phase 4 — extract draw + HUD into systems. See plan Task 19.", "blockedBy": [17]},
+    {"id": 19, "subject": "Task 20: WorldScene thin coordinator + delete adapter", "status": "pending", "description": "Phase 4 — collapse WorldScene to thin coordinator, entities drive. See plan Task 20.", "blockedBy": [18]},
+    {"id": 20, "subject": "Task 21: AdventureScene on ECS + Phase 4 gate", "status": "pending", "description": "Phase 4 gate — AdventureScene on new ECS + full gate. See plan Task 21.", "blockedBy": [19]},
+    {"id": 21, "subject": "Task 22: delete _legacy_* remnants + consolidate", "status": "pending", "description": "Phase 5 — remove _legacy_* files, consolidate particles/summons. See plan Task 22.", "blockedBy": [20]},
+    {"id": 22, "subject": "Task 23: update README + AGENTS + memory", "status": "pending", "description": "Phase 5 — document final package layout + ECS arch. See plan Task 23.", "blockedBy": [21]},
+    {"id": 23, "subject": "Task 24: final ECS suite (5 layers) + full gate", "status": "pending", "description": "Phase 5 — complete verify_ecs Layer 5 + final gate. See plan Task 24.", "blockedBy": [22]}
+  ],
+  "lastUpdated": "2026-07-30"
+}

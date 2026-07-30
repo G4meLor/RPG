@@ -112,6 +112,26 @@ def test_map_controller():
     assert mc.cell == (5, 2), mc.cell
     print("  map controller OK")
 
+def test_physics_movement():
+    """Layer 2 (Task 15): PhysicsSystem.update drives an entity's Transform
+    from input + accel/friction. A hero entity given input (1,0) for 30 frames
+    moves +px; Transform.x increases past start+5. Obstacles + enemies are
+    cleared so collision doesn't interfere. The legacy WorldCharacter.update
+    path stays the source of truth this task; PhysicsSystem runs in parallel
+    (additive) — this test proves the extraction works in isolation."""
+    import main as M
+    g = M.Game()
+    from src.scenes.world import WorldScene
+    from src.entities.components import Transform
+    sc = WorldScene(g); g.scene = sc
+    sc.enemies.clear(); sc._map_data["obstacles"] = []
+    active = sc.party[sc.active]
+    start_x = active.x
+    for _ in range(30):
+        sc.physics.update(0.016, sc._entity_for_hero[active.hero.id], (1.0, 0.0))
+    assert sc._entity_for_hero[active.hero.id].get(Transform).x > start_x + 5
+    print("  physics movement OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

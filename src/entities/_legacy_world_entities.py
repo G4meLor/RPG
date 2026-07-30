@@ -38,52 +38,12 @@ def scratch(w, h):
 _BROKEN_TAG_SURF = None
 
 
-# ---------------------------------------------------------------------------
-# Camera
-# ---------------------------------------------------------------------------
-class Camera:
-    def __init__(self, vw, vh):
-        self.x = 0.0
-        self.y = 0.0
-        self.vw = vw
-        self.vh = vh
-        self.shake = 0.0
-        self.shake_t = 0.0
-        # smoothed velocity for look-ahead + a little extra lerp weight so the
-        # camera feels weighty but never laggy
-        self._vx = 0.0
-        self._vy = 0.0
-
-    def follow(self, tx, ty, map_w, map_h, dt, look_ahead=(0, 0)):
-        # smooth lerp toward target (top-left of the view)
-        lax, lay = look_ahead
-        target_x = tx - self.vw / 2 + lax
-        target_y = ty - self.vh / 2 + lay
-        # clamp to map bounds
-        target_x = max(0, min(map_w - self.vw, target_x))
-        target_y = max(0, min(map_h - self.vh, target_y))
-        # critically-damped spring: faster catch-up, no overshoot
-        k = min(1, dt * 9)
-        self.x += (target_x - self.x) * k
-        self.y += (target_y - self.y) * k
-        # clamp again after lerp (avoids drift past edges)
-        self.x = max(0, min(map_w - self.vw, self.x))
-        self.y = max(0, min(map_h - self.vh, self.y))
-        # shake decay
-        if self.shake > 0:
-            self.shake = max(0, self.shake - dt * 40)
-            self.shake_t += dt * 40
-
-    def add_shake(self, amt, mult=1.0):
-        self.shake = min(14, self.shake + amt * mult)
-
-    def offset(self):
-        ox, oy = self.x, self.y
-        if self.shake > 0:
-            # two-frequency shake feels less mechanical than a single sine
-            ox += math.sin(self.shake_t * 3.1) * self.shake + math.sin(self.shake_t * 7.3) * self.shake * 0.3
-            oy += math.cos(self.shake_t * 2.7) * self.shake + math.cos(self.shake_t * 6.1) * self.shake * 0.3
-        return int(ox), int(oy)
+# Camera was moved to src/systems/physics.py (Phase 4, Task 15). Re-exported
+# here so existing importers (`from src.entities import Camera`, and any
+# `from src.entities._legacy_world_entities import Camera`) keep working
+# without touching their import lines. The legacy WorldCharacter + the
+# entities __init__ re-export both pull Camera through this alias.
+from src.systems.physics import Camera  # noqa: F401
 
 
 # ---------------------------------------------------------------------------

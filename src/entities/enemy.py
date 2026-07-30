@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from src.entities.entity import Entity
 from src.entities.components import (Transform, Health, Combat, AI, Render,
-    Identity, Statuses)
+    Identity, Statuses, Movement)
 from src.entities.combatant import Enemy
 
 if TYPE_CHECKING:
@@ -28,4 +28,8 @@ def spawn_enemy(world: "World", enemy_id: str, level: int = 1, is_boss: bool = F
     e.add(AI(kind=_AI_KIND.get(enemy_id, "melee")))
     e.add(Render(sprite_id=enemy_id, weapon="sword"))
     e.add(Statuses())
+    # Movement component (Phase 4, Task 15): mirrors the hero's so the
+    # PhysicsSystem can drive enemy entities uniformly. Bosses use r=40 to
+    # match their larger collision radius.
+    e.add(Movement(r=40 if is_boss else 26))
     return e

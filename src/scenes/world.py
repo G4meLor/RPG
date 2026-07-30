@@ -32,6 +32,7 @@ from src.entities import (Camera, Particles, Particle, Projectile, FloatText,
                             SummonAlly, Trap)
 from src.world.map_renderer import MapRenderer
 from src.systems.map_ctrl import MapController
+from src.systems.physics import PhysicsSystem
 # ECS entity layer (Task 12): the adapter keeps a parallel World of entities
 # in sync with the legacy WorldCharacter/WorldEnemy objects. The legacy path
 # stays the source of truth this phase; the entity layer only tracks state.
@@ -669,6 +670,14 @@ class WorldScene:
         self.world = World()
         self._entity_for_hero = {}   # hero_id -> Entity (party)
         self._entity_for_enemy = {}  # id(legacy WorldEnemy) -> Entity
+        # PhysicsSystem (Phase 4, Task 15): the ECS movement/collision system.
+        # Runs IN PARALLEL with the legacy WorldCharacter.update movement path
+        # (the legacy path stays the source of truth this task; the adapter's
+        # _sync_entities still copies legacy wc.x/y onto entity Transform AFTER
+        # update, so the PhysicsSystem writes may be overwritten by the sync).
+        # The point is to PROVE the PhysicsSystem logic works in isolation.
+        # Full takeover of movement from the legacy object happens in Task 20.
+        self.physics = PhysicsSystem(self.world, self)
 
         # build the party of WorldCharacters
         self.party = []          # list of WorldCharacter (4 slots)

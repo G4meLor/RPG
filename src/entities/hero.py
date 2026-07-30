@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from src.entities.entity import Entity
 from src.entities.components import (Transform, Health, Combat, AI, Render,
-    Identity, Statuses, ChampionRef)
+    Identity, Statuses, ChampionRef, Movement)
 from src.entities.combatant import Hero
 from src.data.heroes import HERO_BY_ID
 
@@ -31,4 +31,10 @@ def spawn_hero(world: "World", hero_id: str, level: int = 1, ascension: int = 0,
     e.add(Render(sprite_id=hero_id, weapon=weapon))
     e.add(Statuses())
     e.add(ChampionRef(hero_id=hero_id, level=level, ascension=ascension))
+    # Movement component (Phase 4, Task 15): the PhysicsSystem reads/writes
+    # this instead of the legacy WorldCharacter's movement fields. Defaults
+    # match WorldCharacter.__init__ (max_speed=230, accel=2400, friction=1800,
+    # r=20). The legacy wc stays the source of truth this task; the entity's
+    # Movement is the parallel-prove path.
+    e.add(Movement())
     return e

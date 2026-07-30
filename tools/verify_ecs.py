@@ -157,6 +157,30 @@ def test_ai_pounce():
     assert d1 < d0, f"pounce did not close distance: d0={d0:.1f} d1={d1:.1f}"
     print("  ai pounce OK")
 
+def test_combat_basic_attack():
+    """Layer 2 (Task 17): CombatSystem.basic_attack mirrors the legacy
+    _do_attack damage formula on entities. A basic attack against an enemy
+    entity must: reduce target Health.hp, gain attacker Health.energy, and
+    set attacker Combat.atk_cd > 0. The legacy _do_attack/_do_skill/
+    _do_ultimate/_on_enemy_hit/_on_enemy_death STAY running (21-test suite);
+    CombatSystem runs IN PARALLEL (additive) on the entity layer. Full
+    takeover is Task 20."""
+    import main as M
+    g = M.Game()
+    from src.scenes.world import WorldScene
+    from src.entities.components import Health, Combat
+    sc = WorldScene(g); g.scene = sc
+    sc.enemies.clear(); sc._map_data["obstacles"] = []
+    hero_e = sc._entity_for_hero[sc.party[sc.active].hero.id]
+    en = spawn_enemy(sc.world, "Krugs", level=1)
+    hp0 = en.get(Health).hp
+    en0_energy = hero_e.get(Health).energy
+    sc.combat.basic_attack(hero_e.eid, en.eid)
+    assert en.get(Health).hp < hp0, "target hp did not drop"
+    assert hero_e.get(Health).energy > en0_energy, "attacker energy did not gain"
+    assert hero_e.get(Combat).atk_cd > 0, "attacker atk_cd not set"
+    print("  combat basic_attack OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

@@ -685,6 +685,16 @@ class WorldScene:
         from src.systems.ai import AISystem
         self.ai = AISystem(self.world, self)
 
+        # CombatSystem (Task 17): ECS combat on entities — basic_attack,
+        # use_skill, use_ultimate, on_hit, on_death. Runs IN PARALLEL with the
+        # legacy _do_attack/_do_skill/_do_ultimate/_on_enemy_hit/_on_enemy_death
+        # (additive) — the legacy path stays the source of truth until Task 20
+        # (full takeover). The system does NOT spawn projectiles/particles/drops
+        # (those are Task 20); it computes damage + energy + cooldowns on
+        # entities self-containedly.
+        from src.systems.combat import CombatSystem
+        self.combat = CombatSystem(self.world, None, self)
+
         # build the party of WorldCharacters
         self.party = []          # list of WorldCharacter (4 slots)
         self.active = 0

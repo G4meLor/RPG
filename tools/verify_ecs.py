@@ -266,6 +266,28 @@ def test_dialogue_talk():
         "first quest should not be active at boot"
     print("  dialogue talk OK")
 
+def test_render_one_frame():
+    """Layer 3 (Task 19): RenderSystem + HudSystem exist on WorldScene, and
+    one full WorldScene.update(dt,[]) + draw(surf) frame is exception-free
+    (the legacy draw STAYS the source of truth this task; the systems run IN
+    PARALLEL — additive — proving they can render to a surface without
+    raising). The test then calls sc.render.draw + sc.hud.draw directly
+    (the system draws — must not raise). Full takeover is Task 20."""
+    import main as M
+    g = M.Game()
+    from src.scenes.world import WorldScene
+    sc = WorldScene(g); g.scene = sc
+    # legacy update + draw — must not raise (same as the 21-test suite)
+    sc.update(0.016, [])
+    sc.draw(g.screen)
+    # the systems exist on the scene
+    assert sc.render is not None, "sc.render (RenderSystem) missing"
+    assert sc.hud is not None, "sc.hud (HudSystem) missing"
+    # the systems can render to the screen without raising (additive)
+    sc.render.draw(g.screen, sc.map_ctrl)
+    sc.hud.draw(g.screen)
+    print("  render one frame OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

@@ -723,6 +723,30 @@ class WorldScene:
         from src.systems.dialogue import DialogueSystem
         self.dialogue = DialogueSystem(self.world, self)
 
+        # RenderSystem (Task 19): ECS world renderer — draws the world layer
+        # (ground + entities + VFX + atmosphere) to a surface. Runs IN PARALLEL
+        # with the legacy WorldScene.draw (additive) — the legacy draw STAYS
+        # the source of truth this task; this system proves it can render
+        # entities to a surface without raising. Full takeover (moving all ~25
+        # _draw_* methods + atmosphere helpers verbatim into this system) is
+        # Task 20. The minimal draw iterates world.heroes()/enemies() and
+        # draws element-colored circles at each Transform (camera-offset).
+        from src.systems.render import RenderSystem
+        self.render = RenderSystem(self.world, self)
+
+        # HudSystem (Task 19): ECS HUD renderer — draws the HUD layer (skill
+        # bar + party + boss bar + minimap) to a surface. Runs IN PARALLEL
+        # with the legacy _draw_hud/_draw_skill_bar/_draw_minimap (additive)
+        # — the legacy HUD draw STAYS the source of truth this task; this
+        # system proves it can render a HUD to a surface without raising.
+        # Full takeover (moving all the _draw_hud/_draw_skill_bar/
+        # _draw_skill_tooltip/_draw_minimap/_draw_boss_banner/
+        # _draw_ascend_banner/_hud_portrait/_skill_icon methods verbatim into
+        # this system) is Task 20. The minimal draw renders the active hero's
+        # name + HP bar + energy bar via src.ui text/draw_bar.
+        from src.systems.hud import HudSystem
+        self.hud = HudSystem(self.world, self)
+
         # build the party of WorldCharacters
         self.party = []          # list of WorldCharacter (4 slots)
         self.active = 0

@@ -30,6 +30,8 @@ import src.world.data as WD
 from src.entities import (Camera, Particles, Particle, Projectile, FloatText,
                             WorldCharacter, WorldEnemy, WEAPON_STYLE, scratch,
                             SummonAlly, Trap)
+from src.world.map_renderer import MapRenderer
+from src.systems.map_ctrl import MapController
 # ECS entity layer (Task 12): the adapter keeps a parallel World of entities
 # in sync with the legacy WorldCharacter/WorldEnemy objects. The legacy path
 # stays the source of truth this phase; the entity layer only tracks state.
@@ -151,279 +153,6 @@ from src.ui import Button, draw_bar
 # "cached None" from "not yet cached"). Module-level so the id is stable.
 _VILLAGE_SENTINEL = object()
 
-
-# ---------------------------------------------------------------------------
-# Map renderer - bakes a map's ground + decorations to one Surface
-# ---------------------------------------------------------------------------
-class MapRenderer:
-    def __init__(self):
-        self.cache = {}       # "c,r" -> full map Surface
-        self._ground = {}     # biome -> base ground Surface (2000x1200), once
-
-    def get(self, c, r):
-        key = f"{c},{r}"
-        s = self.cache.get(key)
-        if s is None:
-            s = self._render(c, r)
-            self.cache[key] = s
-        return s
-
-    def get_locked(self, c, r, lock):
-        """Thread-safe get used by the main loop during the background pre-warm.
-        Tries to acquire the lock non-blocking: if free, render+cache the cell
-        under the lock (the authoritative cached copy). If the worker holds it,
-        we render a throwaway surface for this frame so the transition isn't
-        blocked — the next frame picks up the cached one the worker produces."""
-        key = f"{c},{r}"
-        s = self.cache.get(key)
-        if s is not None:
-            return s
-        if lock is None or lock.acquire(blocking=False):
-            try:
-                s = self.cache.get(key)
-                if s is None:
-                    s = self._render(c, r)
-                    self.cache[key] = s
-            finally:
-                if lock is not None:
-                    lock.release()
-            return s
-        # lock held by the worker: render a throwaway copy so the transition
-        # frame isn't blocked (the next frame will pick up the cached one)
-        return self._render(c, r)
-
-    def _ground_base(self, biome, pal):
-        """A per-biome ground surface (checker + speckles + vignette), rendered
-        once and .convert()-ed once. Per-cell maps copy this cheap base and add
-        their own winding path + portals + decorations — so the first visit to
-        any map is a fast memcpy + a few cheap draws instead of 1500 rects.
-
-        The pre-warm worker and the main thread can both reach here for the same
-        biome; use setdefault so the first one to finish wins and the second
-        build is discarded (no torn writes, no wasted cache slot)."""
-        if biome in self._ground:
-            return self._ground[biome]
-        surf = pygame.Surface((WD.MAP_W, WD.MAP_H)).convert()
-        g1 = pal["ground"]
-        g2 = pal["ground2"]
-        tile = WD.TILE
-        # checker via a 2x2-tile pattern blitted across (25x15 = 375 blits of an
-        # 80x80 surface, far cheaper than 1500 draw.rect calls)
-        pat = pygame.Surface((tile * 2, tile * 2)).convert()
-        pat.fill(g1)
-        pygame.draw.rect(pat, g2, (tile, 0, tile, tile))
-        pygame.draw.rect(pat, g2, (0, tile, tile, tile))
-        for ty in range(0, WD.MAP_H, tile * 2):
-            for tx in range(0, WD.MAP_W, tile * 2):
-                surf.blit(pat, (tx, ty))
-        # subtle shared speckles (deterministic by biome, not per-cell) so the
-        # floor isn't a flat checkerboard. Salt-free str hash (sum of ords) so
-        # the speckle layout is stable across reloads (Python's hash(str) is
-        # PYTHONHASHSEED-salted per process — mirrors generate_assets.py).
-        rng = random.Random(sum(ord(ch) for ch in biome) & 0xffff)
-        speck = (max(0, g1[0] - 18), max(0, g1[1] - 18), max(0, g1[2] - 18))
-        for _ in range(160):
-            sx = rng.randint(0, WD.MAP_W - 4)
-            sy = rng.randint(0, WD.MAP_H - 4)
-            pygame.draw.ellipse(surf, speck, (sx, sy, 5, 3))
-        light = (min(255, g1[0] + 22), min(255, g1[1] + 22), min(255, g1[2] + 22))
-        for _ in range(90):
-            sx = rng.randint(0, WD.MAP_W - 3)
-            sy = rng.randint(0, WD.MAP_H - 3)
-            pygame.draw.circle(surf, light, (sx, sy), 2)
-        # subtle vignette darkening at borders (the wall area)
-        dark = (max(0, g1[0] - 30), max(0, g1[1] - 30), max(0, g1[2] - 30))
-        for i in range(WD.TILE):
-            a = int(120 * (1 - i / WD.TILE))
-            band = pygame.Surface((WD.MAP_W, 1), pygame.SRCALPHA)
-            band.fill((*dark, a))
-            surf.blit(band, (0, i))
-            surf.blit(pygame.transform.flip(band, False, True), (0, WD.MAP_H - 1 - i))
-        # setdefault: if another thread already cached this biome while we were
-        # building, keep their (already-convert_alpha'd) surface and drop ours.
-        existing = self._ground.setdefault(biome, surf)
-        return existing
-
-    def _render(self, c, r):
-        m = WD.gen_map(c, r)
-        pal = m["pal"]
-        biome = m["biome"]
-        # start from the shared per-biome ground base (a fast copy — same pixel
-        # format, no .convert() needed) then layer the per-cell bits on top
-        base = self._ground_base(biome, pal)
-        surf = base.copy()
-        g1 = pal["ground"]
-        tile = WD.TILE
-        # a winding path through the map so the world reads like a place you
-        # walk through, not an empty field. The path shape varies per biome so
-        # a plains road and a void road aren't the same winding ribbon: plains
-        # = a wider brighter dirt road, forest = a narrow winding deer trail,
-        # castle = a straight paved road, void = a thin glowing accent line.
-        rng = random.Random(WD.cell_seed(c, r) + 99)
-        accent = pal["accent"]
-        if biome == "void":
-            # a thin glowing accent rift line down the map
-            px = WD.MAP_W // 2
-            for step in range(WD.MAP_TH + 2):
-                py = step * tile
-                pygame.draw.line(surf, accent, (px, py), (px, py + tile + 2), 3)
-                if rng.random() < 0.25:
-                    px += rng.choice([-tile, tile])
-                    px = max(tile, min(WD.MAP_W - tile, px))
-        elif biome == "castle":
-            # a straight paved road: alternating g1/g2 tiles down the middle
-            px = WD.MAP_W // 2
-            for step in range(WD.MAP_TH + 2):
-                py = step * tile
-                col = g1 if step % 2 == 0 else pal["ground2"]
-                pygame.draw.rect(surf, col, (px - tile, py, tile * 2, tile + 2),
-                                border_radius=4)
-        elif biome == "forest":
-            # a narrow winding deer trail, darker than the ground
-            dark = (max(0, g1[0] - 12), max(0, g1[1] - 12), max(0, g1[2] - 12))
-            px = rng.randint(4, WD.MAP_TW - 5) * tile
-            for step in range(WD.MAP_TH + 6):
-                py = step * tile - tile
-                pw = tile
-                pygame.draw.rect(surf, dark, (px - pw // 2, py, pw, tile + 2),
-                                 border_radius=4)
-                if rng.random() < 0.4:
-                    px += rng.choice([-tile, tile])
-                    px = max(tile, min(WD.MAP_W - tile, px))
-        else:
-            # plains / cave: the default wider winding road
-            path_col = (min(255, g1[0] + 30), min(255, g1[1] + 30),
-                        min(255, g1[2] + 26))
-            px = rng.randint(4, WD.MAP_TW - 5) * tile
-            for step in range(WD.MAP_TH + 6):
-                py = step * tile - tile
-                pw = tile * 2
-                pygame.draw.rect(surf, path_col, (px - pw // 2, py, pw, tile + 2),
-                                 border_radius=6)
-                if rng.random() < 0.35:
-                    px += rng.choice([-tile, tile])
-                    px = max(tile, min(WD.MAP_W - tile, px))
-        # left/right edge portals so the world reads as connected (a glowing
-        # arch where you walk through to the next map)
-        self._draw_edge_portal(surf, "left", pal)
-        self._draw_edge_portal(surf, "right", pal)
-        if r > 0:
-            self._draw_edge_portal(surf, "top", pal)
-        if r < WD.GRID_H - 1:
-            self._draw_edge_portal(surf, "bottom", pal)
-        # decorations
-        for (dx, dy, kind, size) in m["deco"]:
-            self._draw_deco(surf, dx, dy, kind, size, pal)
-        return surf
-
-    def _draw_edge_portal(self, surf, edge, pal):
-        """A glowing arch at a traversable edge so the world reads connected.
-        A biome-specific silhouette element is layered on the arch so a cave
-        portal and a castle portal aren't the same glowing arch in a different
-        hue (castle = iron portcullis bars, void = a spiral)."""
-        accent = pal["accent"]
-        obs = pal["obstacle"]
-        glow = pygame.Surface((120, 120), pygame.SRCALPHA)
-        for rr in range(54, 0, -4):
-            a = int(40 * (1 - rr / 54))
-            pygame.draw.circle(glow, (*accent, a), (60, 60), rr)
-        if edge == "left":
-            surf.blit(glow, (0, WD.MAP_H // 2 - 60))
-            pygame.draw.arc(surf, accent, (6, WD.MAP_H // 2 - 50, 60, 100), -1.2, 1.2, 4)
-        elif edge == "right":
-            surf.blit(glow, (WD.MAP_W - 120, WD.MAP_H // 2 - 60))
-            pygame.draw.arc(surf, accent, (WD.MAP_W - 66, WD.MAP_H // 2 - 50, 60, 100), 1.9, 4.4, 4)
-        elif edge == "top":
-            surf.blit(glow, (WD.MAP_W // 2 - 60, 0))
-            pygame.draw.arc(surf, accent, (WD.MAP_W // 2 - 50, 6, 100, 60), 0.2, 2.4, 4)
-        elif edge == "bottom":
-            surf.blit(glow, (WD.MAP_W // 2 - 60, WD.MAP_H - 120))
-            pygame.draw.arc(surf, accent, (WD.MAP_W // 2 - 50, WD.MAP_H - 66, 100, 60), 3.5, 6.0, 4)
-        # biome-specific portal motif on top of the arch
-        biome = pal.get("name", "")
-        if "Citadel" in biome and edge in ("left", "right"):
-            # castle: iron portcullis bars (vertical lines in obstacle color)
-            bx0 = 6 if edge == "left" else WD.MAP_W - 66
-            for k in range(4):
-                pygame.draw.line(surf, obs,
-                                 (bx0 + 8 + k * 12, WD.MAP_H // 2 - 40),
-                                 (bx0 + 8 + k * 12, WD.MAP_H // 2 + 40), 3)
-        elif "Void" in biome and edge in ("left", "right"):
-            # void: a small spiral around the arch center
-            cx0 = 30 if edge == "left" else WD.MAP_W - 30
-            cy0 = WD.MAP_H // 2
-            for k in range(5):
-                ang = k * 0.9
-                rr = 6 + k * 5
-                pygame.draw.circle(surf, accent,
-                                   (int(cx0 + math.cos(ang) * rr),
-                                    int(cy0 + math.sin(ang) * rr)), 2)
-
-    def _draw_deco(self, surf, x, y, kind, size, pal):
-        if kind == "tree":
-            # trunk — darkened from the biome's obstacle color so a cave tree
-            # reads as petrified/blue, not a plains brown trunk
-            obs = pal["obstacle"]
-            trunk = (max(0, obs[0] - 10), max(0, obs[1] - 8), max(0, obs[2] - 6))
-            trunk_d = (max(0, obs[0] - 18), max(0, obs[1] - 14), max(0, obs[2] - 12))
-            pygame.draw.rect(surf, trunk, (x - 5, y - 4, 10, 18))
-            pygame.draw.rect(surf, trunk_d, (x - 5, y - 4, 5, 18))
-            # canopy with layered shading
-            obs_dark = (max(0, obs[0] - 24), max(0, obs[1] - 24), max(0, obs[2] - 24))
-            for rr in range(size, 6, -4):
-                pygame.draw.circle(surf, obs, (x, y - 8), rr)
-            pygame.draw.circle(surf, obs_dark, (x + 6, y - 4), max(3, size // 2))
-            pygame.draw.circle(surf, pal["accent"], (x - 4, y - 12), max(3, size // 3))
-        elif kind == "rock":
-            obs = pal["obstacle"]
-            obs_dark = (max(0, obs[0] - 24), max(0, obs[1] - 24), max(0, obs[2] - 24))
-            pygame.draw.circle(surf, obs, (x, y), size // 2)
-            pygame.draw.circle(surf, obs_dark, (x + 3, y + 3), size // 3)
-            pygame.draw.circle(surf, obs, (x, y), size // 2, 2)
-            pygame.draw.circle(surf, pal["accent"], (x - 4, y - 4), max(2, size // 5))
-        elif kind == "pillar":
-            obs = pal["obstacle"]
-            obs_dark = (max(0, obs[0] - 25), max(0, obs[1] - 25), max(0, obs[2] - 25))
-            pygame.draw.rect(surf, obs, (x - size // 2, y - size, size, size * 2))
-            pygame.draw.rect(surf, obs_dark, (x - size // 2, y - size, size, size * 2), 2)
-            # capital + base
-            pygame.draw.rect(surf, pal["accent"], (x - size // 2 - 4, y - size - 4, size + 8, 6))
-            pygame.draw.rect(surf, pal["accent"], (x - size // 2 - 4, y + size - 2, size + 8, 6))
-        elif kind == "bush":
-            obs = pal["obstacle"]
-            pygame.draw.circle(surf, obs, (x, y), size // 2)
-            pygame.draw.circle(surf, obs, (x - size // 3, y - 2), size // 3)
-            pygame.draw.circle(surf, obs, (x + size // 3, y - 2), size // 3)
-            pygame.draw.circle(surf, pal["accent"], (x - 3, y - 3), max(2, size // 4))
-        elif kind == "crystal":
-            # cave signature: a faceted accent-colored crystal with a white core
-            acc = pal["accent"]
-            pts = [(x, y - size), (x + size // 2, y - size // 4),
-                   (x + size // 3, y + size // 2), (x - size // 3, y + size // 2),
-                   (x - size // 2, y - size // 4)]
-            pygame.draw.polygon(surf, acc, pts)
-            pygame.draw.polygon(surf, (255, 255, 255), pts, 1)
-            pygame.draw.circle(surf, (255, 255, 255), (x, y - size // 4),
-                               max(2, size // 4))
-        elif kind == "banner":
-            # castle signature: a tall accent-colored flag on a pole
-            obs = pal["obstacle"]
-            pygame.draw.rect(surf, obs, (x - 2, y - size, 4, size * 2))
-            pygame.draw.rect(surf, pal["accent"], (x + 2, y - size, size, size // 2 + 2))
-        elif kind == "torch":
-            # castle signature: a pillar + a flickering accent flame
-            obs = pal["obstacle"]
-            pygame.draw.rect(surf, obs, (x - 3, y - size, 6, size * 2))
-            pygame.draw.circle(surf, pal["accent"], (x, y - size - 2), max(3, size // 3))
-            pygame.draw.circle(surf, (255, 220, 120), (x, y - size - 2),
-                               max(2, size // 5))
-        elif kind == "rift":
-            # void signature: a jagged accent-colored diagonal crack
-            acc = pal["accent"]
-            pts = [(x - size, y - size), (x - size // 3, y - size // 4),
-                   (x + size // 3, y + size // 4), (x + size, y + size)]
-            pygame.draw.lines(surf, acc, False, pts, 3)
-            pygame.draw.circle(surf, acc, (x, y), max(2, size // 4))
 
 
 # ---------------------------------------------------------------------------
@@ -880,12 +609,16 @@ class WorldScene:
         # ensure a valid current cell
         if not p.ow_current:
             p.ow_current = [0, 0]
-        self.c, self.r = p.ow_current[0], p.ow_current[1]
-        # ensure discovered
-        if WD.cell_id(self.c, self.r) not in p.ow_discovered:
-            p.ow_discovered.append(WD.cell_id(self.c, self.r))
-
-        self.map_renderer = MapRenderer()
+        # MapController (Task 14, Phase 4) owns the map grid state (c, r,
+        # _map_data, map_renderer, _village, _landmark, _rift_*) + the
+        # load_map / transition / teleport_to / discover_neighbors methods.
+        # Constructed BEFORE the rift/village/landmark field inits below +
+        # BEFORE _load_map: the controller owns those fields now, but the rest
+        # of WorldScene reads them via the settable delegate properties at the
+        # bottom of this class (c / r / _map_data / map_renderer / _village /
+        # _landmark / _rift_*). The controller's __init__ reads p.ow_current
+        # + ensures discovered, so the legacy lines that did that are gone.
+        self.map_ctrl = MapController(self)
         self.particles = Particles(cap=260,
                                    quality=p.settings.get("particle_quality", 1.0))
         self.projectiles = []
@@ -901,10 +634,10 @@ class WorldScene:
         # (x, y, wave_level, wave_size) tuple from gen_map (or None).
         # Declared BEFORE _load_map (the same init-order trap as _world_time /
         # the boss intro timer — _load_map reads these on the first call).
-        self._rift_active = False
-        self._rift_done = False
-        self._rift_enemies = []     # list of WorldEnemy the rift spawned
-        self._rift_secret = None    # (x, y, wave_level, wave_size) or None
+        # NOTE: these are now owned by MapController; the lines below are kept
+        # as no-op comments for the init-order audit trail. The delegate
+        # properties at the bottom of this class read+write through to
+        # self.map_ctrl.
         self.camera = Camera(1280, 720)
         self.shake = 0
         self.flash = 0
@@ -991,10 +724,12 @@ class WorldScene:
         # are passable (NOT added to obstacles). Landmarks are decorative (no
         # collision); villages are decorative (no collision — buildings are drawn,
         # not walled; the NPC entity + interact is Task E1).
+        # NOTE: _landmark / _village are now owned by MapController (the
+        # delegate properties at the bottom of this class read+write through to
+        # self.map_ctrl). _water / _bridges stay on the scene (the draw loop +
+        # collision check read them here).
         self._water = []
         self._bridges = []
-        self._landmark = None
-        self._village = None
         # NPC + dialogue (Task E1) — the village NPC entity (spawned in _load_map
         # at the village's npc_spawn) + the active dialogue overlay state. The
         # dialogue is a UI overlay, NOT a pause: the world keeps simulating behind
@@ -1233,347 +968,26 @@ class WorldScene:
                 p.ow_party_state[wc.hero.id] = dict(hp=wc.hero.hp, energy=wc.hero.energy)
 
     # -----------------------------------------------------------------
-    # Map loading + transitions
+    # Map loading + transitions — delegated to MapController (Task 14, Phase 4).
+    # The bodies live in src/systems/map_ctrl.py; these one-line delegates keep
+    # the rest of WorldScene's legacy methods (which call self._load_map /
+    # self._transition / self.teleport_to / self._discover_neighbors) working
+    # unchanged. The controller owns c / r / _map_data / map_renderer / _village
+    # / _landmark / _rift_*; WorldScene reads/writes them via the settable
+    # delegate properties at the bottom of this class.
     # -----------------------------------------------------------------
     def _load_map(self, enter_edge=None, target_cell=None):
-        if target_cell:
-            self.c, self.r = target_cell
-        m = WD.gen_map(self.c, self.r)
-        self._map_data = m
-        self.enemies = []
-        # ECS adapter (Task 12): the legacy enemy list is rebuilt on every map
-        # enter, so the parallel enemy entities from the previous map must be
-        # destroyed + the id()->Entity map cleared. Otherwise the entity layer
-        # would keep stale entities for WorldEnemy objects that no longer exist
-        # (the old Python objects are gone, so id() may even recycle). The hero
-        # entities persist across maps (the party is not rebuilt by _load_map).
-        for ee_id in list(self._entity_for_enemy.values()):
-            self.world.destroy(ee_id.eid if hasattr(ee_id, "eid") else ee_id)
-        self._entity_for_enemy = {}
-        self.drops = []
-        # clear summon/trap entities on map enter so a stale summon from the last
-        # cell doesn't follow the player (Task A3).
-        self._summons = []
-        self._traps = []
-        # clear hold-to-aim state on map enter (Task B2) so a stale aim from the
-        # previous cell doesn't carry across the transition (the held key is
-        # released by the player, but the state is defensive-cleared anyway).
-        self._aim_skill = None
-        self._aim_held_key = None
-        self._aim_t = 0.0
-        # clear AA targets on map enter (Task B3) so a stale AA target from the
-        # previous cell's enemies doesn't carry across the transition (the
-        # target enemy belongs to the old map — a ref to it would be invalid).
-        for p in self.party:
-            if p is not None:
-                p.aa_target = None
-        # dynamic weather: re-evaluate the per-cell weather state from the current
-        # day phase on every map enter. Stored on the scene (NOT in gen_map — the
-        # MapRenderer cache is keyed on (c,r) only, and weather is a live overlay
-        # + combat modifier, not a baked map property). Reset the storm strike
-        # timer so a fresh map's storm cadence is independent of the last.
-        self._weather = WD.weather_for(self.c, self.r, self._world_time)
-        self._storm_strike_t = 6.0   # first storm strike ~6s after entering a storm map
-        # reset any stale boss intro/defeat banner timers on a non-boss map so a
-        # cinematic from a previous boss arena doesn't bleed onto the wrong map
-        if not m["is_boss"]:
-            self._boss_intro_t = 0.0
-            self._boss_intro_name = ""
-            self._boss_defeat_t = 0.0
-            self._boss_defeat_name = ""
-        # treasure chests on this map (open on walk-over): a reward pickup that
-        # gives exploration a point beyond killing enemies. Chests the player
-        # already opened on a prior visit are restored as opened (persisted in
-        # ow_chests_opened) so they can't be re-looted on revisit.
-        cid = WD.cell_id(self.c, self.r)
-        opened_idx = set(self.game.player.ow_chests_opened.get(cid, []))
-        self.chests = [dict(x=x, y=y, kind=kind, opened=(i in opened_idx))
-                       for i, (x, y, kind) in enumerate(m.get("chests", []))]
-        # breakable props on this map (shatter on attack/dash, drop loot). They
-        # are not persisted — a fresh map regenerates them, so a player can
-        # re-break them on revisit (the loot is small, so this is fine).
-        self.breakables = [dict(x=x, y=y, kind=kind, loot=loot, broken=False)
-                           for (x, y, kind, loot) in m.get("breakables", [])]
-        # water/bridges/landmark/village (Task C3) — read the STATIC gen_map
-        # features. Water rects are appended to the obstacles list so the existing
-        # collision check (self._map_data["obstacles"]) treats them as walls
-        # (impassable, like obstacles); bridges are passable (NOT appended). The
-        # water/bridge rects are also kept on the scene for the draw loop. A copy
-        # of the obstacles list is NOT needed — gen_map returns a fresh list per
-        # cell, so appending water to it doesn't mutate a cached map (the
-        # MapRenderer cache stores a rendered Surface, not the dict).
-        self._water = list(m.get("water", []))
-        self._bridges = list(m.get("bridges", []))
-        self._landmark = m.get("landmark")
-        self._village = m.get("village")
-        # NPC (Task E1) — spawn the village NPC at the village's npc_spawn (from
-        # C3's gen_map). The NPC is a simple entity: a name + quest_id + dialogue
-        # (from NPCS[biome]) + the x/y pos. Drawn in the drawables (a small sprite
-        # + a name tag); interact on walk-up + F (see the event loop in update).
-        # The dialogue is a UI overlay (NOT a pause — the world keeps updating
-        # behind it; the dialogue box just draws on top in draw).
-        self._npc = None
-        self._dialogue = None
-        if self._village is not None:
-            biome = self._village.get("biome", WD.cell_biome(self.c, self.r))
-            npc_data = NPCS.get(biome)
-            if npc_data is not None:
-                nx, ny = self._village["npc_spawn"]
-                self._npc = {"x": float(nx), "y": float(ny),
-                             "biome": biome,
-                             "name": npc_data["name"],
-                             "quest_id": npc_data["quest_id"],
-                             "dialogue": list(npc_data["dialogue"])}
-        # append the water rects to the obstacles list so the existing collision
-        # check treats them as walls (impassable). The bridges are passable, so
-        # they are NOT appended (the hero walks through them).
-        if self._water:
-            m["obstacles"].extend(self._water)
-        # lore float on the first visit to this cell's landmark — fired in
-        # _load_map (not in _draw_landmark) so the player sees it on cell entry
-        # even if the landmark is off-screen on the first draw frame (the float
-        # is at the landmark's world pos; if fired in draw, an off-screen
-        # landmark would spawn an off-screen float that fades unseen + the
-        # ow_landmarks_seen gate would prevent a re-fire). Tracked per cell id
-        # in ow_landmarks_seen so revisiting a cell doesn't re-show the lore.
-        if self._landmark is not None:
-            cid = WD.cell_id(self.c, self.r)
-            if cid not in self.game.player.ow_landmarks_seen:
-                self.game.player.ow_landmarks_seen.append(cid)
-                biome = self._landmark.get("biome", WD.cell_biome(self.c, self.r))
-                lore = LANDMARK_LORE.get(biome, "")
-                if lore:
-                    pal = WD.BIOMES.get(biome, {})
-                    col = pal.get("accent", (230, 220, 180))
-                    self.floats.append(FloatText(self._landmark["x"],
-                                                self._landmark["y"] - 50,
-                                                lore, col, size=18, life=2.5))
-        # hidden rift mini-dungeon: read the per-cell secret from gen_map. A
-        # cleared rift stays cleared (persisted in ow_secrets_done) so the
-        # player can't re-trigger the wave for infinite SR/SSR chests. Reset
-        # the active seal + wave state on every map enter so a stale seal from
-        # a previous map doesn't bleed onto the new one (the wipe-respawn
-        # teleport_to(0,0) hits this path too, so the seal breaks on a wipe).
-        self._rift_secret = m.get("secret")
-        cid = WD.cell_id(self.c, self.r)
-        if self._rift_secret is not None and cid in self.game.player.ow_secrets_done:
-            self._rift_done = True     # already cleared this visit
-        else:
-            self._rift_done = False
-        self._rift_active = False
-        self._rift_enemies = []
-        level = WD.cell_level(self.c, self.r, ng_cycle=self.game.player.ng_cycle)
-        # the active hero entry point (offset slightly inward from the edge so
-        # the hero slides into the new map instead of snapping)
-        ep = WD.entry_point(enter_edge) if enter_edge else (WD.MAP_W // 2, WD.MAP_H // 2)
-        # place the active hero
-        if self.party[self.active]:
-            self.party[self.active].x = ep[0]
-            self.party[self.active].y = ep[1]
-            self.party[self.active].vx = 0
-            self.party[self.active].vy = 0
-            # snap the camera onto the hero immediately so the transition is a
-            # clean slide rather than a flying pan from the previous map
-            self.camera.x = max(0, min(WD.MAP_W - self.camera.vw, ep[0] - self.camera.vw / 2))
-            self.camera.y = max(0, min(WD.MAP_H - self.camera.vh, ep[1] - self.camera.vh / 2))
-            self.map_enter_t = 0.45
-            # ensure the active hero starts a map with usable energy (the
-            # "skills don't recover" fix: a hero loaded from save with stale low
-            # energy should top up to ENERGY_START on map enter)
-            a = self.party[self.active]
-            if a and a.hero.energy < ENERGY_START:
-                a.hero.energy = min(ENERGY_START, a.hero.max_energy)
-        # pre-render the new map's surface on a background thread so the first
-        # visit doesn't stall the frame (the render is ~10ms but a fresh map's
-        # ground-base build can spike). We render synchronously here but the
-        # MapRenderer caches the result, so revisits are instant.
-        self._map_surf = self.map_renderer.get_locked(self.c, self.r,
-                                                      getattr(self, "_warm_lock", None))
-        self._map_cell = (self.c, self.r)
-        # spawn enemies
-        if not m["is_boss"]:
-            pool, _ = WD.ROW_ENEMIES[self.r]
-            # at night (day phase 0.4..0.95) enemies are tougher: +1 level so
-            # the world feels more dangerous after dark (better drops follow from
-            # the higher-level enemy gold/xp scaling). The window matches the
-            # _night_overlay visual-darkening window so the danger cue and the
-            # visual cue agree (was 0.5, leaving a 0.4-0.5 slice where the world
-            # looked dark but enemies weren't tougher).
-            night_bonus = 1 if 0.4 <= self._world_time <= 0.95 else 0
-            # Champion-as-enemy: ~16% of minions spawn as a random LoL champion
-            # (with its real kit + sprite) instead of a jungle mob. A rare,
-            # memorable encounter — the player meets the roster in the wild.
-            champ_pool, _ = _get_champion_enemy_pool()
-            for (sx, sy) in m["spawns"]:
-                if champ_pool and random.random() < 0.16:
-                    eid = random.choice(champ_pool)
-                else:
-                    eid = random.choice(pool)
-                en = WorldEnemy(eid, sx, sy, level + night_bonus, is_boss=False)
-                self.enemies.append(en)
-                # ECS adapter (Task 12): spawn a parallel enemy entity that
-                # tracks this WorldEnemy. Match the level/is_boss args used in
-                # the WorldEnemy(...) call above.
-                ee = spawn_enemy(self.world, en.id,
-                                 level=level + night_bonus, is_boss=False,
-                                 x=en.x, y=en.y)
-                self._entity_for_enemy[id(en)] = ee
-        else:
-            # Task E2: gate the boss on its story quest. A biome-boss quest is
-            # "active" when the player has accepted it from the NPC (the dialogue
-            # acceptance in _advance_dialogue sets story_progress[quest_id] to
-            # "active"). The final-boss quest (demon_king) is active only when
-            # all 5 biome-boss quests are complete (the chain - see
-            # _is_quest_active). Until the quest is active, the boss arena is
-            # SEALED: no boss spawns (the arena is empty - the player can still
-            # walk in + explore, just no boss to fight) + a "sealed" float at the
-            # arena center tells the player to seek the biome's NPC. The gate is
-            # on quest acceptance, NOT completion, so the boss spawns the moment
-            # the NPC gives the quest. The gate does NOT block exploration: the
-            # cell loads, the map renders, the player walks in - just no boss.
-            # This keeps the 20/20 suite green (it teleports into the boss cell
-            # without the quest; the gate seals the boss but doesn't crash).
-            biome = WD.cell_biome(self.c, self.r)
-            # Each row's boss cell (column 9) is gated by the row's biome-boss
-            # quest (STORY_BIOME_QUEST[biome]). The void row's boss (9,4) is the
-            # Demon King - the void_boss quest (the 5th biome-boss) gates it.
-            # The void_boss quest is available when castle_boss is complete (the
-            # chain), so the Demon King unseals only after the 4 biome bosses
-            # before it are cleared + the void NPC gives the void_boss quest.
-            # The demon_king quest (the 6th/final) is the chain's end marker -
-            # it completes when the Demon King dies (the same kill as the
-            # void_boss quest); see the boss-defeat handler. It is NOT a separate
-            # gate (the Demon King is the void row's boss, gated by void_boss).
-            quest_id = STORY_BIOME_QUEST.get(biome)
-            if quest_id is not None and not self._is_quest_active(quest_id):
-                # sealed - skip the boss spawn + show a "seek the NPC" float at
-                # the arena center (the boss spawn pos from gen_map). The float
-                # is short-lived (2.5s) so it doesn't linger on a long stay; the
-                # cell still loads (no return) so the player can explore the
-                # arena + read the seal message.
-                bx, by = m["boss"]
-                npc_name = NPCS.get(biome, {}).get("name", "the NPC")
-                self.floats.append(FloatText(
-                    bx, by - 40,
-                    f"SEALED - seek {npc_name} for the quest",
-                    (220, 180, 120), size=20, life=2.5))
-                self.set_message(
-                    f"The arena is sealed. Seek {npc_name} in the {biome} village.",
-                    3.0)
-            else:
-                _, boss_id = WD.ROW_ENEMIES[self.r]
-                # Champion-as-enemy: ~35% of bosses spawn as a random SSR/SR
-                # champion (boss-tier scaled, real kit + sprite) instead of the
-                # row's villain boss. The villain boss still anchors the story
-                # quest, so a champion boss only spawns when the quest is active
-                # AND the row's villain hasn't been cleared yet — on a rematch
-                # (cleared) the champion boss is the encounter. This keeps the
-                # story chain intact (the villain boss is the first-clear fight)
-                # while making boss arenas occasionally a champion duel.
-                _, champ_boss_pool = _get_champion_enemy_pool()
-                cid = WD.cell_id(self.c, self.r)
-                already_cleared = cid in set(self.game.player.ow_bosses_cleared)
-                if (champ_boss_pool and already_cleared
-                        and random.random() < 0.35):
-                    boss_id = random.choice(champ_boss_pool)
-                bx, by = m["boss"]
-                en = WorldEnemy(boss_id, bx, by, level + 6, is_boss=True)
-                self.enemies.append(en)
-                # ECS adapter (Task 12): spawn a parallel enemy entity that
-                # tracks this boss WorldEnemy. Match the level/is_boss args.
-                ee = spawn_enemy(self.world, en.id,
-                                 level=level + 6, is_boss=True,
-                                 x=en.x, y=en.y)
-                self._entity_for_enemy[id(en)] = ee
-                # boss intro cinematic: a name banner + a brief slow-mo the first time
-                # the player enters this boss arena. Skips on a revisit (re-entering a
-                # cleared arena shouldn't replay the intro).
-                boss_name = ENEMIES_DB.get(boss_id, {}).get("name", "Boss")
-                self._boss_intro_t = 1.6
-                self._boss_intro_name = boss_name
-                audio.play("boss_intro", 0.7)
-        # reset camera to the active hero (clamped; the edge-entry case already
-        # snapped it above, this covers teleport-to and initial load)
-        a = self.party[self.active]
-        if a:
-            self.camera.x = max(0, min(WD.MAP_W - self.camera.vw, a.x - self.camera.vw / 2))
-            self.camera.y = max(0, min(WD.MAP_H - self.camera.vh, a.y - self.camera.vh / 2))
-        # (map surface already rendered + cached above; keep the cell ref current)
-        self._map_surf = self.map_renderer.get_locked(self.c, self.r,
-                                                      getattr(self, "_warm_lock", None))
-        self._map_cell = (self.c, self.r)
-        # discover: a NEW cell advances the 'explore' quest; any map enter
-        # (walk or teleport) reveals the neighbors so the frontier grows and
-        # the teleport overlay shows reachable cells (was only run once in
-        # __init__, capping the discoverable world at ~3 cells).
-        cid = WD.cell_id(self.c, self.r)
-        if cid not in self.game.player.ow_discovered:
-            self.game.player.ow_discovered.append(cid)
-            self.game.player.quest_progress("explore", 1)
-        # 'explore' also counts revisits so the daily quest stays completable for
-        # a mid/late-game player who has already discovered all 50 maps
-        self.game.player.quest_progress("explore", 1)
-        # reveal the neighbors of the new cell so the minimap shows the
-        # reachable frontier (not just cells the player has physically stood in)
-        self._discover_neighbors()
-        self._persist_party()
-        self.game.player.ow_current = [self.c, self.r]
-        if self.game.player.settings.get("auto_save", True):
-            self.game.player.save()
-        # start the looping biome ambience on map enter (a quiet bed so the
-        # world isn't silent between hits). Respects the master sound toggle.
-        # When the weather is rain/storm, switch the ambience bed to the rain
-        # loop so the world sounds wet; thunder one-shots fire from the per-frame
-        # storm-strike path (see update).
-        if self.game.player.settings.get("sound", True):
-            biome = WD.cell_biome(self.c, self.r)
-            if self._weather == "rain" or self._weather == "storm":
-                audio.set_ambience(True, volume=0.30, biome=biome, weather="rain")
-            else:
-                audio.set_ambience(True, volume=0.22, biome=biome)
+        return self.map_ctrl.load_map(enter_edge=enter_edge,
+                                      target_cell=target_cell)
 
     def _discover_neighbors(self):
-        for (nc, nr) in WD.neighbors(self.c, self.r):
-            cid = WD.cell_id(nc, nr)
-            if cid not in self.game.player.ow_discovered:
-                self.game.player.ow_discovered.append(cid)
+        return self.map_ctrl.discover_neighbors()
 
     def _transition(self, edge):
-        # find the neighbor in that direction
-        c, r = self.c, self.r
-        if edge == "right" and c < WD.GRID_W - 1:   nc, nr = c + 1, r
-        elif edge == "left" and c > 0:              nc, nr = c - 1, r
-        elif edge == "bottom" and r < WD.GRID_H - 1: nc, nr = c, r + 1
-        elif edge == "top" and r > 0:               nc, nr = c, r - 1
-        else:
-            return  # walled edge
-        # opposite entry edge
-        opp = {"left": "right", "right": "left", "top": "bottom", "bottom": "top"}[edge]
-        # direction of travel — used to slide the fade in the same direction
-        self._enter_dir = edge
-        self._persist_party()
-        # pre-warm the destination map's surface so the transition frame doesn't
-        # stall on the first visit. Use the lock-aware get so we never block on
-        # the background pre-warm worker (worst case: a throwaway render this
-        # frame, cached one next frame).
-        self.map_renderer.get_locked(nc, nr, getattr(self, "_warm_lock", None))
-        self._load_map(enter_edge=opp, target_cell=(nc, nr))
-        # a soft whoosh on edge transitions so a map change has an audible cue
-        audio.play("skill", 0.25)
-        self.set_message(f"Entering {WD.cell_name(nc, nr)}")
+        return self.map_ctrl.transition(edge)
 
     def teleport_to(self, c, r):
-        self._persist_party()
-        self.teleport = None
-        self._enter_dir = None
-        self._load_map(enter_edge=None, target_cell=(c, r))
-        # center the hero
-        if self.party[self.active]:
-            self.party[self.active].x = WD.MAP_W // 2
-            self.party[self.active].y = WD.MAP_H // 2
-        # a UI warp-confirm cue so the teleport isn't silent
-        audio.play("menu_click", 0.4)
-        self.set_message(f"Teleported to {WD.cell_name(c, r)}")
+        return self.map_ctrl.teleport_to(c, r)
 
     # -----------------------------------------------------------------
     # Treasure chests
@@ -5550,6 +4964,97 @@ class WorldScene:
             text(s, line, 12, (180, 220, 200), (pad, y))
             y += 16
         return s
+
+    # -----------------------------------------------------------------
+    # MapController delegate properties (Task 14, Phase 4). The controller owns
+    # the map grid state (c, r, _map_data, map_renderer, _village, _landmark,
+    # _rift_*); these settable properties read+write through to self.map_ctrl so
+    # the rest of WorldScene's legacy methods (which read self.c / self._map_data
+    # / self.map_renderer / self._village / self._landmark / self._rift_*) keep
+    # working unchanged. Reads route to the controller; writes route to the
+    # controller too (load_map sets self.c / self._map_data / ... on the
+    # controller; the setter is defensive scaffolding in case a future path
+    # writes self.c = ... directly).
+    # -----------------------------------------------------------------
+    @property
+    def c(self):
+        return self.map_ctrl.c
+
+    @c.setter
+    def c(self, v):
+        self.map_ctrl.c = v
+
+    @property
+    def r(self):
+        return self.map_ctrl.r
+
+    @r.setter
+    def r(self, v):
+        self.map_ctrl.r = v
+
+    @property
+    def _map_data(self):
+        return self.map_ctrl._map_data
+
+    @_map_data.setter
+    def _map_data(self, v):
+        self.map_ctrl._map_data = v
+
+    @property
+    def map_renderer(self):
+        return self.map_ctrl.map_renderer
+
+    @map_renderer.setter
+    def map_renderer(self, v):
+        self.map_ctrl.map_renderer = v
+
+    @property
+    def _village(self):
+        return self.map_ctrl._village
+
+    @_village.setter
+    def _village(self, v):
+        self.map_ctrl._village = v
+
+    @property
+    def _landmark(self):
+        return self.map_ctrl._landmark
+
+    @_landmark.setter
+    def _landmark(self, v):
+        self.map_ctrl._landmark = v
+
+    @property
+    def _rift_active(self):
+        return self.map_ctrl._rift_active
+
+    @_rift_active.setter
+    def _rift_active(self, v):
+        self.map_ctrl._rift_active = v
+
+    @property
+    def _rift_done(self):
+        return self.map_ctrl._rift_done
+
+    @_rift_done.setter
+    def _rift_done(self, v):
+        self.map_ctrl._rift_done = v
+
+    @property
+    def _rift_enemies(self):
+        return self.map_ctrl._rift_enemies
+
+    @_rift_enemies.setter
+    def _rift_enemies(self, v):
+        self.map_ctrl._rift_enemies = v
+
+    @property
+    def _rift_secret(self):
+        return self.map_ctrl._rift_secret
+
+    @_rift_secret.setter
+    def _rift_secret(self, v):
+        self.map_ctrl._rift_secret = v
 
 
 # ---------------------------------------------------------------------------

@@ -94,6 +94,24 @@ def test_worldscene_entity_sync():
         f"entity enemies {len(sc.world.enemies())} != legacy {len(sc.enemies)}"
     print("  worldscene entity sync OK")
 
+def test_map_controller():
+    """Layer 2 (Task 14): MapController owns the map state. Edge transitions
+    + teleport update the controller's cell; WorldScene delegates."""
+    import main as M
+    g = M.Game()
+    g.player.ow_current = [0, 0]   # reset to origin (save may have a later cell)
+    from src.scenes.world import WorldScene
+    sc = WorldScene(g); g.scene = sc
+    mc = sc.map_ctrl
+    # edge right
+    mc.transition("right")
+    assert mc.cell == (1, 0), mc.cell
+    mc.transition("bottom")
+    assert mc.cell == (1, 1), mc.cell
+    mc.teleport_to(5, 2)
+    assert mc.cell == (5, 2), mc.cell
+    print("  map controller OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

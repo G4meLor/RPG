@@ -1,9 +1,9 @@
 # Aetheria — Open World 2D Gacha RPG
 
-A complete **open-world 2D** gacha RPG built with **pygame**, with **zero
-external art or audio dependencies**. All characters, enemies, skills, items,
-UI, backgrounds and sound effects are generated procedurally by
-`generate_assets.py` and `audio.py`.
+A complete **open-world 2D** gacha RPG built with **pygame**, featuring a
+roster of **170 League of Legends champions** with real splash art, ability
+icons, and ability names. World sprites are descriptor-driven (10 archetypes),
+and all sound effects are synthesized by `audio.py`.
 
 The game is **open-world first**: a 10×5 grid of **50 hand-styled maps** with
 real-time action combat, a 4-hero party you swap on the fly (Genshin-style),
@@ -12,13 +12,44 @@ campaign has been removed — the open world *is* the game.
 
 ## Run
 
+The shipped `assets/characters/*/` bundles (splash art, icons, ability icons,
+descriptor sprites) are already baked into the repo, so you can just play:
+
 ```bash
 pip install -r requirements.txt
-python3 generate_assets.py     # (re)generate all PNG assets into assets/
 python3 main.py                # play
 ```
 
+To regenerate the shared (non-champion) art — enemy sprites, boss-ult skill
+icons, backgrounds, items, UI, terrain, landmarks, villages, drops:
+
+```bash
+python3 generate_assets.py
+```
+
+To rebuild the champion roster from crawled LoL data (requires the
+`assets/champions/` JSON source, which is gitignored after the initial bake):
+
+```bash
+python3 build_champions.py --all
+```
+
 From the title screen, pick **Enter World** for the open-world 2D mode.
+
+## Module layout
+
+| Module | Role |
+|--------|------|
+| `main.py` | Game loop, scene manager, menu scenes |
+| `ui.py` | Shared UI primitives (fonts, text cache, Button, bars, color lookups) |
+| `fx.py` | Runtime VFX helpers (procedural draws called each frame) |
+| `world_scene.py` / `world_entities.py` / `world_data.py` | Open-world scene, entities, map gen |
+| `adventure_scene.py` | Wave-survival mode (subclass of WorldScene) |
+| `data.py` / `champions.py` | Static game data + the 170-champion bake |
+| `entities.py` / `player.py` / `gacha.py` | Runtime hero/enemy objects, save state, summoning |
+| `generate_assets.py` | Build-only art generator (shared art + descriptor sprites) |
+| `build_champions.py` | One-shot LoL roster builder (JSON → champions.py + art bundles) |
+| `audio.py` | Synthesized sound effects (numpy, no files) |
 
 ## Open World controls (LoL-style)
 

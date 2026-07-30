@@ -49,15 +49,18 @@ ràng buộc cứng cho toàn bộ agent làm việc trong repo:
 
 | File | Vai trò |
 |------|---------|
-| `main.py` | Game loop, scene manager (`Game`), các scene menu cũ (title, map, roster, gacha, shop, inventory, hero_detail, battle, tower, daily, codex, settings, stats). World scene được import lười qua `_get_world_scene_cls()`. |
+| `main.py` | Game loop, scene manager (`Game`), các scene menu (title, roster, gacha, shop, inventory, hero_detail, codex, settings, stats). World/adventure scene import lười qua `_get_world_scene_cls()` / `_get_adventure_scene_cls()`. |
+| `ui.py` | **UI primitives dùng chung**: font cache, rendered-text cache (`text`), `Button`/`draw_panel`/`draw_bar`/`draw_stars`, dim overlay, `element_color`/`rarity_color`, color + size constants. Tách ra khỏi `main.py` để cắt circular dep `main ↔ world_scene`. |
+| `fx.py` | **Runtime VFX helpers** (hiện chỉ có `draw_rift_portal`). Tách ra khỏi `generate_assets.py` để runtime không phải import module build 3500 dòng. |
 | `world_data.py` | Lưới 10×5, biome, sinh map xác định theo seed, đồ thị teleport (neighbors), entry points. |
 | `world_entities.py` | `Camera`, `Particles`, `Projectile`, `FloatText`, `WorldCharacter` (hero real-time), `WorldEnemy` (AI real-time). |
 | `world_scene.py` | `WorldScene` (scene chính open-world), `MapRenderer` (bake map), `TeleportOverlay`, `PauseHub`, `EvolveOverlay` (cây tiến hóa). |
-| `data.py` | Dữ liệu tĩnh: heroes, enemies, skills, equipment, consumables, gacha, achievements, tuning, **passives + evolution tree**. |
+| `data.py` | Dữ liệu tĩnh: heroes (170 LoL champ từ `champions.py`), enemies, skills, equipment, consumables, gacha, achievements, tuning, **passives + evolution tree**. |
+| `champions.py` | 170 champion bake từ `build_champions.py` (id/name/title/element/rarity/role/stats/skills/ultimate/weapon/archetype/descriptor/lore/skins/ability_names). |
+| `build_champions.py` | One-shot build pipeline: đọc crawled LoL JSON → `champions.py`, copy art thật vào bundle, sinh descriptor sprite. Chạy khi cần rebuild roster. |
 | `entities.py` | `Hero`/`Enemy` runtime, stats, leveling, ascension, equipment, effects, **passive + evo tree bonuses**, sprite loaders. |
-| `combat.py` | **Đã xóa** (engine turn-based cũ đã remove). |
 | `player.py` | Trạng thái người chơi + save/load (bao gồm `ow_*`, `evo_nodes`, settings đầy đủ). |
-| `generate_assets.py` | Sinh toàn bộ PNG (characters, enemies, portraits, skills, items, ui, backgrounds). |
+| `generate_assets.py` | **Build-only** art generator: enemy sprites, 4 boss-ult skill icons, backgrounds, item icons, UI frames, terrain tiles, landmarks, village buildings, ground-loot drops, + `generate_sprites()` (descriptor world sprite cho `build_champions`). Không còn sinh character bundles (lo đó là `build_champions.py`) hay runtime VFX (lo đó là `fx.py`). |
 | `audio.py` | Synth âm thanh (numpy, không cần file). |
 
 ## 4. Điều khiển (World Scene)

@@ -9,7 +9,7 @@ import random
 import pygame
 
 import data as D
-from entities import Hero, load_char_sprite, load_enemy_sprite
+from entities import Hero, Enemy, load_char_sprite, load_enemy_sprite
 
 
 # ---------------------------------------------------------------------------
@@ -912,7 +912,6 @@ class WorldCharacter:
 # ---------------------------------------------------------------------------
 class WorldEnemy:
     def __init__(self, enemy_id, x, y, level, is_boss=False):
-        from entities import Enemy
         self.enemy = Enemy(enemy_id, level, is_boss=is_boss)
         self.id = enemy_id
         # Champion-as-enemy: the def may come from champion_enemy_def (not in

@@ -1249,53 +1249,10 @@ CONSTELLATION_PERKS = {
 }
 
 # Hero-specific capstone overrides — a few heroes get a unique 6-perk list that
-# reflects their kit instead of the role template. Keyed by hero id.
+# reflects their kit instead of the role template. Keyed by hero id. (The
+# pre-LoL procedural heroes that had overrides here were removed with the
+# roster redesign; the table is kept for champion-specific overrides.)
 CONSTELLATION_PERK_OVERRIDES = {
-    # Kael: the ember warrior — his fire ult burns hotter.
-    "kael": [
-        dict(id="c1", name="Carnage", desc="Skill cooldowns -10%.",
-             effect="cd_reduction", val=0.10),
-        dict(id="c2", name="Bloodfeast", desc="Crit damage +15%.",
-             effect="crit_dmg_up", val=0.15),
-        dict(id="c3", name="Inner Fire", desc="Passive effect +10%.",
-             effect="passive_boost", val=0.10),
-        dict(id="c4", name="Last Blood", desc="Ultimate heals you for 15% max HP.",
-             effect="ult_extra", val=0.15, target="self_heal"),
-        dict(id="c5", name="Efficient Slaughter", desc="Skill energy cost -10%.",
-             effect="energy_cost_cut", val=0.10),
-        dict(id="c6", name="Meteor Lord", desc="Ultimate deals +40% ATK.",
-             effect="ult_extra", val=0.40, target="atk_buff"),
-    ],
-    # Lyra: the moon oracle — her heal ult overflows.
-    "lyra": [
-        dict(id="c1", name="Gentle Hands", desc="Skill cooldowns -12%.",
-             effect="cd_reduction", val=0.12),
-        dict(id="c2", name="Mana Spring", desc="Skill energy cost -10%.",
-             effect="energy_cost_cut", val=0.10),
-        dict(id="c3", name="Bountiful Mercy", desc="Passive effect +15%.",
-             effect="passive_boost", val=0.15),
-        dict(id="c4", name="Tide of Life", desc="Ultimate buffs party ATK +25%.",
-             effect="ult_extra", val=0.25, target="party_buff"),
-        dict(id="c5", name="Self Renewal", desc="Ultimate heals you for 15% max HP.",
-             effect="ult_extra", val=0.15, target="self_heal"),
-        dict(id="c6", name="Lunar Benediction", desc="Ultimate buffs party ATK +35%.",
-             effect="ult_extra", val=0.35, target="party_buff"),
-    ],
-    # Raven: the blood reaper — his dark ult crits harder.
-    "raven": [
-        dict(id="c1", name="Weak Point", desc="Crit damage +15%.",
-             effect="crit_dmg_up", val=0.15),
-        dict(id="c2", name="Relentless", desc="Skill cooldowns -10%.",
-             effect="cd_reduction", val=0.10),
-        dict(id="c3", name="Corrupting Touch", desc="Passive effect +10%.",
-             effect="passive_boost", val=0.10),
-        dict(id="c4", name="Soul Reaver", desc="Ultimate deals +25% ATK.",
-             effect="ult_extra", val=0.25, target="atk_buff"),
-        dict(id="c5", name="Efficient Curse", desc="Skill energy cost -10%.",
-             effect="energy_cost_cut", val=0.10),
-        dict(id="c6", name="Reaper's Coup", desc="Crit damage +30%.",
-             effect="crit_dmg_up", val=0.30),
-    ],
 }
 
 

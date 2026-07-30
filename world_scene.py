@@ -13,7 +13,7 @@ import data as D
 from entities import (load_char_sprite, load_skill_icon,
                       load_drop, load_terrain, load_landmark, load_village)
 import audio
-import generate_assets as GA
+import fx
 import world_data as WD
 from world_entities import (Camera, Particles, Particle, Projectile, FloatText,
                             WorldCharacter, WorldEnemy, WEAPON_STYLE, scratch,
@@ -121,9 +121,10 @@ _SIG_ATTACK = {"cleave": _sig_cleave}
 _SIG_ON_KILL = {"stacking_atk": _sig_stacking_atk}
 
 
-# Reuse the main.py Button + draw_bar by importing them. main.py is the entry
-# point so it is already loaded when the world scene is constructed.
-from main import Button, draw_bar
+# Button + draw_bar come from ui.py (the shared UI-primitives module). This
+# used to import from main, which forced a main <-> world_scene circular
+# dependency; ui.py has no such cycle.
+from ui import Button, draw_bar
 
 
 # Sentinel for the village-cell cache (None is a valid cached value — "no
@@ -699,7 +700,7 @@ class EvolveOverlay:
         text(surf, "EVOLVE  -  Soul Shard Ascension", 30, (220, 180, 255), (640, 50), center=True)
         text(surf, f"Shards: {self.game.player.shards}   |   Click a node to unlock | G/Esc close",
              15, (200, 200, 230), (640, 84), center=True)
-        from entities import load_char_sprite
+        # load_char_sprite is imported at module top (entities).
         # --- left: hero selector ---
         text(surf, "Heroes", 20, (255, 240, 180), (60, 120))
         for i, hid in enumerate(self.order):
@@ -833,62 +834,21 @@ class EvolveOverlay:
                  (panel.x + 16, by + 34))
 
 
-# Reusable dim overlay for modal screens (teleport/pause). Allocated once and
-# cached so we don't build a 1280x720 SRCALPHA surface every frame a modal is
-# open.
-_DIM_OVERLAY = None
+# Font + rendered-text + dim-overlay helpers live in ui.py now (one shared
+# cache instead of a per-module copy). Alias them under the names this module
+# already uses so the ~80 internal call sites stay unchanged.
+from ui import get_font as _font, text, dim_overlay
+from ui import _TEXT_CACHE  # noqa: F401 (shared cache; kept warm here too)
+
 def _overlay_dim():
-    global _DIM_OVERLAY
-    if _DIM_OVERLAY is None:
-        _DIM_OVERLAY = pygame.Surface((1280, 720), pygame.SRCALPHA)
-        _DIM_OVERLAY.fill((0, 0, 0, 170))
-    return _DIM_OVERLAY
+    """Back-compat wrapper: the world scene's modals want the fixed alpha-170
+    1280x720 overlay. ui.dim_overlay(alpha=170) returns exactly that (cached)."""
+    return dim_overlay(170)
 
-
-# Cached fonts so we never call SysFont in the hot path. SysFont construction
-# is the #1 cost in the profile (>half the frame time under load) because it
-# scans the system font list; cache one Font per size, reused forever.
-_FONT_CACHE = {}
-def _font(size):
-    f = _FONT_CACHE.get(size)
-    if f is None:
-        f = pygame.font.SysFont("dejavusans,arial", size, bold=True)
-        _FONT_CACHE[size] = f
-    return f
-
-# Rendered-text surface cache. font.render() is the #2 cost after SysFont; the
-# HUD draws ~40 text elements/frame, most static (hero names, slot numbers, key
-# hints, map name, controls hint). Cache the (text, shadow) Surfaces keyed by
-# (string, size, color) so a repeated string is one dict lookup + 2 blits, not
-# 2 font.render() calls. Capped; evicted wholesale when it grows too large so
-# dynamic strings (HP numbers, cooldown timers) don't balloon memory.
-_TEXT_CACHE = {}
-_TEXT_CACHE_CAP = 300
 # Cached "BROKEN — +50% DMG" label for the boss bar — rendered once and reused
 # so a broken boss doesn't re-render the string every frame (font.render is a
 # top profile cost). Lazily filled on first broken-boss draw.
 _BOKEN_DMG_LABEL_SURF = None
-def text(surf, txt, size, color, pos, center=False, shadow=True):
-    key = (str(txt), size, color)
-    cached = _TEXT_CACHE.get(key)
-    if cached is None:
-        f = _font(size)
-        t = f.render(str(txt), True, color)
-        sh = f.render(str(txt), True, (0, 0, 0)) if shadow else None
-        if len(_TEXT_CACHE) >= _TEXT_CACHE_CAP:
-            _TEXT_CACHE.clear()
-        _TEXT_CACHE[key] = (t, sh)
-        cached = (t, sh)
-    t, sh = cached
-    r = t.get_rect()
-    if center:
-        r.center = pos
-    else:
-        r.topleft = pos
-    if sh:
-        surf.blit(sh, (r.x + 2, r.y + 2))
-    surf.blit(t, r)
-    return r
 
 
 # ---------------------------------------------------------------------------
@@ -3966,15 +3926,15 @@ class WorldScene:
         # hidden rift portal — a pulsing violet vortex at the rift tile so the
         # player can see where the rift is (and, once triggered, where the wave
         # is coming from). Drawn inline (the same pattern as the chest/breakable
-        # draws) using the draw_rift_portal helper from generate_assets. Skipped
-        # once the rift is cleared (_rift_done) so a cleared rift doesn't keep
-        # glowing on the map (it's gone — the player solved it).
+        # draws) using the draw_rift_portal helper from fx. Skipped once the
+        # rift is cleared (_rift_done) so a cleared rift doesn't keep glowing
+        # on the map (it's gone — the player solved it).
         if self._rift_secret is not None and not self._rift_done:
             rx, ry, _, _ = self._rift_secret
             sx = int(rx - ox)
             sy = int(ry - oy)
             if -60 < sx < 1340 and -60 < sy < 780:
-                GA.draw_rift_portal(surf, sx, sy, float(pygame.time.get_ticks()))
+                fx.draw_rift_portal(surf, sx, sy, float(pygame.time.get_ticks()))
 
         # particles + floats
         self.particles.draw(surf, ox, oy)
@@ -5476,10 +5436,16 @@ class WorldScene:
 # ---------------------------------------------------------------------------
 # Weapon style lookup (champion id -> weapon) from the baked descriptor in
 # champions.py. The descriptor's `weapon` field drives the attack VFX style.
+# Cached per hero_id: the descriptor is static (baked at build time), and this
+# is called on every basic attack + skill + aim preview (3 hot-path call
+# sites), so a dict lookup beats re-walking CHAMPION_BY_KEY each time.
 # ---------------------------------------------------------------------------
+import champions as _CH
+_WEAPON_STYLE_CACHE = {}
 def WEAPON_STYLE_KEY(hero_id):
-    import champions as _CH
-    c = _CH.CHAMPION_BY_KEY.get(hero_id)
-    if c is not None:
-        return c["descriptor"]["weapon"]
-    return "sword"
+    w = _WEAPON_STYLE_CACHE.get(hero_id)
+    if w is None:
+        c = _CH.CHAMPION_BY_KEY.get(hero_id)
+        w = c["descriptor"]["weapon"] if c is not None else "sword"
+        _WEAPON_STYLE_CACHE[hero_id] = w
+    return w

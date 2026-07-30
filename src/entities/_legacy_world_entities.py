@@ -13,7 +13,7 @@ from src.data.heroes import hero_abilities
 from src.data.skills import SKILLS_DB, boss_patterns
 from src.data.tuning import ENERGY_REGEN_PCT, TOUGHNESS_BREAK_DAMAGE, TOUGHNESS_BREAK_MULT
 from src.build.champions import CHAMPION_BY_KEY
-from src.entities._legacy_entities import Hero, Enemy, load_char_sprite, load_enemy_sprite
+from src.entities.combatant import Hero, Enemy, load_char_sprite, load_enemy_sprite
 
 
 # ---------------------------------------------------------------------------

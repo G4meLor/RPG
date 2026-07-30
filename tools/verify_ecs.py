@@ -8,6 +8,9 @@ from src.entities.components import (Transform, Health, Combat, AI, Render,
     Identity, Statuses, ChampionRef)
 from src.entities.entity import Entity
 from src.core.world import World
+from src.entities.hero import spawn_hero
+from src.entities.enemy import spawn_enemy
+from src.data.heroes import HERO_BY_ID
 
 def test_entity_components():
     e = Entity(0)
@@ -38,6 +41,27 @@ def test_world_spawn_destroy_query():
     w.destroy(b.eid)
     assert b.eid not in w.entities
     assert {e.eid for e in w.enemies()} == set()
+
+def test_spawn_hero():
+    w = World()
+    e = spawn_hero(w, "Ahri")
+    assert e.has(Transform) and e.has(Health) and e.has(Combat) and e.has(AI) \
+        and e.has(Render) and e.has(Identity) and e.has(Statuses) and e.has(ChampionRef)
+    ident = e.get(Identity)
+    assert ident.is_hero is True and ident.name == "Ahri"
+    ref = e.get(ChampionRef)
+    assert ref.hero_id == "Ahri" and ref.level == 1
+    hp = e.get(Health)
+    h = HERO_BY_ID["Ahri"]["stats"]
+    assert hp.max_hp == h["hp"]  # level-1 base
+    assert e.get(Combat).element == HERO_BY_ID["Ahri"]["element"]
+
+def test_spawn_enemy():
+    w = World()
+    e = spawn_enemy(w, "Krugs", level=3)
+    assert e.get(Identity).is_hero is False
+    assert e.get(Combat).element is not None
+    assert e.get(Health).max_hp > 0
 
 def run():
     for name, fn in list(globals().items()):

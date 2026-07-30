@@ -4,6 +4,12 @@ os.environ["SDL_VIDEODRIVER"] = "dummy"
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pygame; pygame.init(); pygame.display.set_mode((1,1))
 
+# blow away any existing save so story_progress/gold/shards start at the
+# defaults (a stale save from a prior test run would make the dialogue
+# quest-gating assertions flaky — e.g. demacia_quest already "complete").
+if os.path.exists("saves/save.json"):
+    os.remove("saves/save.json")
+
 from src.entities.components import (Transform, Health, Combat, AI, Render,
     Identity, Statuses, ChampionRef)
 from src.entities.entity import Entity

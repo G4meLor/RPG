@@ -181,6 +181,85 @@ def test_combat_basic_attack():
     assert hero_e.get(Combat).atk_cd > 0, "attacker atk_cd not set"
     print("  combat basic_attack OK")
 
+def test_drop_pickup():
+    """Layer 2 (Task 18): DropSystem.spawn creates a drop; DropSystem.pickup
+    adds gold/shard/item to the player. The system mirrors the legacy
+    _spawn_drop/_pickup_drop logic (gold -> player.gold, hp_potion ->
+    inventory, shard -> player.shards, equipment -> equipment_inv) on the
+    entity/player layer. The legacy _spawn_drop/_pickup_drop STAY running
+    (21-test suite); DropSystem runs IN PARALLEL (additive). Full takeover
+    is Task 20."""
+    import main as M
+    g = M.Game()
+    from src.scenes.world import WorldScene
+    sc = WorldScene(g); g.scene = sc
+    gold0 = g.player.gold
+    # spawn a gold drop + pick it up directly
+    drop = sc.drops.spawn(100, 100, "gold", 50)
+    assert drop is not None, "spawn returned None"
+    assert drop["kind"] == "gold" and drop["value"] == 50
+    assert len(sc.drops.drops) == 1, "drop not appended to system list"
+    hero_e = sc._entity_for_hero[sc.party[sc.active].hero.id]
+    sc.drops.pickup(drop, hero_e)
+    assert g.player.gold == gold0 + 50, \
+        f"gold not incremented: {g.player.gold} != {gold0}+50"
+    # shard pickup increments player.shards
+    shards0 = g.player.shards
+    sdrop = sc.drops.spawn(100, 100, "shard", 3)
+    sc.drops.pickup(sdrop, hero_e)
+    assert g.player.shards == shards0 + 3, \
+        f"shards not incremented: {g.player.shards} != {shards0}+3"
+    print("  drop pickup OK")
+
+def test_rift_trigger():
+    """Layer 2 (Task 18): RiftSystem.trigger spawns a wave of enemy entities
+    into world.enemies(); RiftSystem.clear sets done. The system mirrors the
+    legacy _enter_rift/_clear_rift wave-spawn logic on the entity layer. The
+    legacy _enter_rift/_clear_rift STAY running (21-test suite); RiftSystem
+    runs IN PARALLEL (additive). Full takeover is Task 20."""
+    import main as M
+    g = M.Game()
+    from src.scenes.world import WorldScene
+    sc = WorldScene(g); g.scene = sc
+    sc.enemies.clear()
+    n0 = len(sc.world.enemies())
+    sc.rift.trigger(500, 400, wave_level=1, wave_size=3)
+    assert len(sc.world.enemies()) >= n0 + 3, \
+        f"rift did not spawn 3 enemies: now={len(sc.world.enemies())} was={n0}"
+    assert sc.rift.active is True, "rift.active not set after trigger"
+    sc.rift.clear()
+    assert sc.rift.done is True, "rift.done not set after clear"
+    print("  rift trigger OK")
+
+def test_dialogue_talk():
+    """Layer 2 (Task 18): DialogueSystem.talk opens a dialogue (sets
+    dialogue_npc + dialogue_lines + dialogue_idx=0); advance steps the index.
+    The system mirrors the legacy _handle_npc_talk/_advance_dialogue logic
+    on the entity/player layer. The legacy _handle_npc_talk/_advance_dialogue
+    STAY running (21-test suite); DialogueSystem runs IN PARALLEL (additive).
+    Full takeover is Task 20."""
+    import main as M
+    g = M.Game()
+    from src.scenes.world import WorldScene
+    from src.data.story import NPCS
+    sc = WorldScene(g); g.scene = sc
+    # pick the plains NPC (Sona) — talk by biome id
+    sc.dialogue.talk("plains")
+    assert sc.dialogue.dialogue_npc is not None, "dialogue_npc not set"
+    assert sc.dialogue.dialogue_lines, "dialogue_lines empty"
+    assert sc.dialogue.dialogue_idx == 0, "dialogue_idx not 0"
+    sc.dialogue.advance()
+    assert sc.dialogue.dialogue_idx == 1, \
+        f"advance did not step idx: {sc.dialogue.dialogue_idx}"
+    # is_quest_active / is_quest_available read player.story_progress
+    from src.data.story import STORY_QUEST_ORDER
+    first_qid = STORY_QUEST_ORDER[0]
+    assert sc.dialogue.is_quest_available(first_qid) is True, \
+        "first quest should be available"
+    assert sc.dialogue.is_quest_active(first_qid) is False, \
+        "first quest should not be active at boot"
+    print("  dialogue talk OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

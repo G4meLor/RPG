@@ -83,7 +83,7 @@ class MapController:
         for ee_id in list(self.scene._entity_for_enemy.values()):
             self.scene.world.destroy(ee_id.eid if hasattr(ee_id, "eid") else ee_id)
         self.scene._entity_for_enemy = {}
-        self.scene.drops = []
+        self.scene._drops_legacy = []
         # clear summon/trap entities on map enter so a stale summon from the last
         # cell doesn't follow the player (Task A3).
         self.scene._summons = []

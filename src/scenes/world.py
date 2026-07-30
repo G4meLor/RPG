@@ -695,6 +695,34 @@ class WorldScene:
         from src.systems.combat import CombatSystem
         self.combat = CombatSystem(self.world, None, self)
 
+        # DropSystem (Task 18): ECS ground-loot system — spawn / pickup /
+        # drift+expire. Runs IN PARALLEL with the legacy _spawn_drop/
+        # _pickup_drop path (additive) — the legacy path stays the source of
+        # truth until Task 20 (full takeover). The system owns its own
+        # self.drops.drops list; the legacy self._drops_legacy list is
+        # UNTOUCHED and keeps driving the 21-test suite + the draw loop.
+        from src.systems.drops import DropSystem
+        self.drops = DropSystem(self.world, self)
+
+        # RiftSystem (Task 18): ECS rift mini-dungeon — trigger / clear /
+        # update. Runs IN PARALLEL with the legacy _enter_rift/_clear_rift
+        # path (additive) — the legacy path stays the source of truth until
+        # Task 20 (full takeover). The system owns its own active/done/wave
+        # state; the legacy _rift_active/_rift_done/_rift_enemies (on
+        # MapController) are UNTOUCHED.
+        from src.systems.rift import RiftSystem
+        self.rift = RiftSystem(self.world, self)
+
+        # DialogueSystem (Task 18): ECS NPC dialogue + story-quest gating —
+        # talk / advance / is_quest_active / is_quest_available. Runs IN
+        # PARALLEL with the legacy _handle_npc_talk/_advance_dialogue/
+        # _is_quest_active/_is_quest_available path (additive) — the legacy
+        # path stays the source of truth until Task 20 (full takeover). The
+        # system owns its own dialogue/dialogue_npc/dialogue_lines/dialogue_idx
+        # state; the legacy _dialogue/_npc (on WorldScene) are UNTOUCHED.
+        from src.systems.dialogue import DialogueSystem
+        self.dialogue = DialogueSystem(self.world, self)
+
         # build the party of WorldCharacters
         self.party = []          # list of WorldCharacter (4 slots)
         self.active = 0
@@ -736,7 +764,10 @@ class WorldScene:
 
         # load map content
         self.enemies = []
-        self.drops = []          # list of {x,y,kind,value}
+        self._drops_legacy = []  # list of {x,y,kind,value} — the legacy drop
+        #   list (renamed from self.drops in Task 18 so self.drops can be the
+        #   DropSystem. The legacy _spawn_drop/_pickup_drop/update/draw paths
+        #   all use self._drops_legacy now; behavior is unchanged.)
         # summon/trap entities (Task A3): temporary, cleared on _load_map so they
         # don't persist across maps. Declared before _load_map (init-order).
         self._summons = []
@@ -2391,7 +2422,7 @@ class WorldScene:
         if kind == "gold":
             # gold aggregates into one drop carrying the total value (a 200g
             # drop is one coin sprite worth 200, not 200 coin sprites).
-            self.drops.append({"x": float(x), "y": float(y),
+            self._drops_legacy.append({"x": float(x), "y": float(y),
                                "kind": "gold", "value": int(value),
                                "t": 0.0, "sprite_id": "gold"})
             return
@@ -2399,13 +2430,13 @@ class WorldScene:
         for _ in range(n):
             ox = x + random.uniform(-10, 10)
             oy = y + random.uniform(-10, 10)
-            self.drops.append({"x": float(ox), "y": float(oy),
+            self._drops_legacy.append({"x": float(ox), "y": float(oy),
                                "kind": kind, "value": value,
                                "t": 0.0, "sprite_id": kind})
 
     def _pickup_drop(self, drop, wc):
         """Collect a ground loot drop: add its value to the player's inventory
-        by kind, a gold sparkle burst, and remove it from self.drops. Called
+        by kind, a gold sparkle burst, and remove it from self._drops_legacy. Called
         from the walk-over check in update when the active hero is within the
         pickup radius. gold -> player.gold; hp_potion -> inventory; shard ->
         player.shards; equipment -> equipment_inv (via add_equipment)."""
@@ -2730,11 +2761,11 @@ class WorldScene:
         # them within the pickup radius (40px). Collecting adds the drop's value
         # to the inventory by kind (gold/hp_potion/shard/equipment) + a gold
         # sparkle burst (see _pickup_drop). Iterate over a copy so we can mutate
-        # self.drops in place on pickup (the list comp filters the collected
+        # self._drops_legacy in place on pickup (the list comp filters the collected
         # ones out at the end so we don't skip a drop after a mid-loop removal).
-        if wc and self.drops:
+        if wc and self._drops_legacy:
             picked = []
-            for d in self.drops:
+            for d in self._drops_legacy:
                 dx = wc.x - d["x"]
                 dy = wc.y - d["y"]
                 dist = math.hypot(dx, dy)
@@ -2750,7 +2781,7 @@ class WorldScene:
                     d["x"] += dx * pull
                     d["y"] += dy * pull
             if picked:
-                self.drops = [d for d in self.drops if d not in picked]
+                self._drops_legacy = [d for d in self._drops_legacy if d not in picked]
 
         # events: attacks, skills, ult, switch, menus
         # Q/W/E use a hold-to-aim model (Task B2): KEYDOWN starts the hold timer
@@ -3039,10 +3070,10 @@ class WorldScene:
         # magnet + pickup are driven in the walk-over check above; here we just
         # age + expire, after the pickup so a drop picked up this frame isn't
         # aged (it's already gone).
-        if self.drops:
-            for d in self.drops:
+        if self._drops_legacy:
+            for d in self._drops_legacy:
                 d["t"] += sim_dt
-            self.drops = [d for d in self.drops if d["t"] < 30.0]
+            self._drops_legacy = [d for d in self._drops_legacy if d["t"] < 30.0]
 
         # particles + floats
         self.particles.update(sim_dt)
@@ -3370,7 +3401,7 @@ class WorldScene:
         # first). y-sort weight is the drop's y so they sit on the ground at
         # their actual position (a drop at the hero's feet is drawn before the
         # hero, a drop behind the hero is drawn first — same rule as breakables).
-        for d in self.drops:
+        for d in self._drops_legacy:
             drawables.append((d["y"], "drop", d))
         # landmark + village buildings (Task C3) — sorted with the rest so they
         # occlude correctly against the hero/enemies (a landmark behind the hero

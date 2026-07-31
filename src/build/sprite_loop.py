@@ -165,9 +165,15 @@ def _process_one(champ, skin_idx, vlm, max_iters, force):
         return {"id": champ["id"], "skin": skin_idx, "error": "missing ref splash"}
     fallback = champ.get("descriptor") or _default_descriptor()
     try:
+        # The bake passes `champ` (the CHAMPIONS_DB dict) to vlm_sprite_loop so
+        # describe/critique ground in the champ's canonical identity. `canon`
+        # is None here — the loop's describe/critique use `champ` for grounding
+        # (the separate canon dict is reserved for the canon_gate path; the
+        # honest gate, tools/verify_canon_gate.py, builds canon via a text-only
+        # VLM call). Task 9.
         best, hist = vlm_sprite_loop(champ["id"], skin_idx, ref_jpg, vlm,
                                      max_iters=max_iters, fallback=fallback,
-                                     champ=champ, canon=champ.get("canon"))
+                                     champ=champ, canon=None)
         # Use the BEST round (max canonical_match), not the last round, so a
         # late bad critique can't overwrite a good earlier sprite.
         # canonical_match_before is the first round's score (the describe()

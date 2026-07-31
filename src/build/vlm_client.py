@@ -131,6 +131,23 @@ _CANON_GATE_SYS = (
 ).format(stance=",".join(VOCAB["stance"]))
 
 
+_CANON_CLASSIFY_SYS = (
+    "You are a League of Legends expert. From YOUR KNOWLEDGE of the game, "
+    "describe the champion's CANONICAL visual identity (the iconic appearance "
+    "a player recognizes — the ORIGIN body, NOT any skin). Output JSON ONLY: "
+    "{\"stance\":<one of upright,quadruped,mounted,flying,floating — "
+    "upright=bipedal humanoid, quadruped=four-legged beast, mounted=rider "
+    "on a mount, flying=airborne with wings, floating=hovering with no "
+    "legs visible>,"
+    "\"body_shape\":<short description of the canonical body shape>,"
+    "\"signature_features\":[<3-6 most iconic visual features, short "
+    "strings>],"
+    "\"primary_colors\":[<2-4 dominant canonical colors as strings>],"
+    "\"weapon\":<the champion's canonical weapon, short string>}. "
+    "If you don't know the champion, body_shape=\"unknown\". JSON only."
+)
+
+
 def _champ_context(champ):
     """Build the canonical-identity context text for the VLM prompt.
 
@@ -421,7 +438,7 @@ class VLMClient:
         feats = canon.get("signature_features") or canon.get("features") or []
         if feats:
             lines.append("  canonical signature_features: " + ", ".join(feats))
-        colors = canon.get("colors") or canon.get("canonical_colors")
+        colors = canon.get("colors") or canon.get("canonical_colors") or canon.get("primary_colors")
         if colors:
             lines.append(f"  canonical colors: {colors}")
         weapon = canon.get("weapon") or canon.get("canonical_weapon")
@@ -432,3 +449,43 @@ class VLMClient:
         if len(lines) <= 1:
             return ""
         return "\n".join(lines)
+
+    def canon_identity(self, champ, max_tokens=300):
+        """One VLM call (text-only, NO image): classify the champ's canonical
+        ORIGIN visual identity from the champ's name/title/faction/role/
+        abilities/lore using the VLM's LoL knowledge.
+
+        Returns {stance, body_shape, signature_features, primary_colors,
+        weapon}. `stance` is validated against VOCAB["stance"] (clamped to
+        "upright" if missing/invalid). On garbage: returns a minimal canon
+        dict with stance="upright", body_shape="unknown", empty lists.
+        """
+        ctx = _champ_context(champ)
+        user_text = (
+            (ctx + "\n\n") if ctx else ""
+        ) + "Describe the champion's CANONICAL visual identity from your "
+        "knowledge of League of Legends. JSON only."
+        fallback = {
+            "stance": "upright", "body_shape": "unknown",
+            "signature_features": [], "primary_colors": [], "weapon": "",
+        }
+        for _ in range(2):  # retry once on parse failure
+            try:
+                content = self._chat([
+                    {"role": "system", "content": _CANON_CLASSIFY_SYS},
+                    {"role": "user", "content": user_text},
+                ], max_tokens=max_tokens)
+                d = json.loads(self._strip_json(content))
+                out = dict(fallback)
+                out["stance"] = d["stance"] if d.get("stance") in VOCAB["stance"] \
+                    else "upright"
+                out["body_shape"] = str(d.get("body_shape") or "unknown")
+                feats = d.get("signature_features") or []
+                out["signature_features"] = [str(f) for f in feats][:6]
+                colors = d.get("primary_colors") or d.get("colors") or []
+                out["primary_colors"] = [str(c) for c in colors][:4]
+                out["weapon"] = str(d.get("weapon") or "")
+                return out
+            except Exception:
+                continue
+        return fallback

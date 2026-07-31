@@ -929,7 +929,8 @@ def main():
                                   concurrency=args.concurrency,
                                   max_iters=args.max_iters, force=args.force)
             print(f"VLM bake: processed={rep['n_processed']} skipped={rep['n_skipped']} "
-                  f"ok={rep['n_ok']} mean_match {rep['mean_match_before']}->{rep['mean_match_after']}")
+                  f"ok={rep['n_ok']} mean_canonical_match "
+                  f"{rep['mean_canonical_match_before']}->{rep['mean_canonical_match_after']}")
         else:
             generate_sprites(champs)
 

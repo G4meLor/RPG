@@ -797,6 +797,47 @@ def _add_spikes(surf, cx, cy, w, h, color, outline):
                             [(sx, ty), (sx + 4, ty - 10), (sx + 8, ty)], 1)
 
 
+def _add_fox_tails(surf, cx, cy, w, h, color, outline):
+    """Multiple bushy tails behind the body (Ahri). A fan of curved block
+    chains, no AA. Distinct from the vastaya archetype's single tail."""
+    import math
+    tx0 = cx - int(w * 0.45)
+    ty0 = cy + int(h * 0.18)
+    for t in range(5):  # 5 tails fanned across the back
+        ang = -0.5 + t * 0.25
+        px, py = tx0, ty0
+        for i in range(6):
+            tt = i / 5.0
+            px = tx0 - int(tt * 18) + int(math.sin(ang) * tt * 10)
+            py = ty0 - int(math.sin(tt * math.pi) * (20 + t * 2))
+            r = 5 - i // 3
+            pygame.draw.circle(surf, shade(color, 0.95), (px, py), r)
+            pygame.draw.circle(surf, outline, (px, py), r, 1)
+
+def _add_animal_ears(surf, hx, hy, hr, color, outline):
+    """Two pointed animal ears on the head (generic, non-vastaya). No AA."""
+    for side in (-1, 1):
+        ex = hx + side * (hr - 4)
+        pygame.draw.polygon(surf, shade(color, 1.1),
+            [(ex - 6, hy - hr + 4), (ex + 6, hy - hr + 4), (ex, hy - hr - 16)])
+        pygame.draw.polygon(surf, outline,
+            [(ex - 6, hy - hr + 4), (ex + 6, hy - hr + 4), (ex, hy - hr - 16)], 2)
+        pygame.draw.polygon(surf, shade(color, 1.3),
+            [(ex - 2, hy - hr + 3), (ex + 2, hy - hr + 3), (ex, hy - hr - 8)])
+
+def _add_claws(surf, cx, cy, w, h, color, outline):
+    """Clawed hands: 3 short claw triangles at each arm end. No AA."""
+    aw = int(w * 0.13)
+    for side in (-1, 1):
+        ax = cx + side * int(w * 0.30)
+        ay = cy + int(h * 0.10)
+        for k in (-1, 0, 1):
+            pygame.draw.polygon(surf, shade(color, 1.2),
+                [(ax + k * 3, ay), (ax + k * 3 + 2, ay + 8), (ax + k * 3 - 2, ay + 8)])
+            pygame.draw.polygon(surf, outline,
+                [(ax + k * 3, ay), (ax + k * 3 + 2, ay + 8), (ax + k * 3 - 2, ay + 8)], 1)
+
+
 def _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline):
     """Apply 0-3 features from the descriptor."""
     sec = pal["secondary"]
@@ -818,6 +859,12 @@ def _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline):
             _add_halo(surf, hx, hy, hr, acc, outline)
         elif f == "spikes":
             _add_spikes(surf, cx, cy, w, h, shade(sec, 0.7), outline)
+        elif f == "fox_tails":
+            _add_fox_tails(surf, cx, cy, w, h, shade(sec, 0.9), outline)
+        elif f == "animal_ears":
+            _add_animal_ears(surf, hx, hy, hr, shade(sec, 1.1), outline)
+        elif f == "claws":
+            _add_claws(surf, cx, cy, w, h, shade(acc, 1.1), outline)
 
 
 # --- per-archetype silhouettes ---------------------------------------------

@@ -16,7 +16,8 @@ VOCAB = {
                   "yordle", "vastaya", "construct", "beast"],
     "weapon": ["sword", "bow", "staff", "orb", "scythe", "spear", "gauntlet",
                "dagger", "axe", "gun", "shield", "whip", "fists", "none"],
-    "features": ["cape", "hood", "horns", "wings", "mask", "halo", "spikes", "crown"],
+    "features": ["cape", "hood", "horns", "wings", "mask", "halo", "spikes",
+                 "crown", "fox_tails", "animal_ears", "claws"],
     "build": ["slender", "average", "bulky", "tall", "short"],
     "motif": ["flame", "ice", "wind", "lightning", "shadow", "light", "void", "nature"],
     # palette keys listed under "primary" (per test_vocab_complete)

@@ -875,12 +875,63 @@ def main():
     ap.add_argument("--images", action="store_true", help="rearrange images (Task 2)")
     ap.add_argument("--sprites", action="store_true", help="generate world sprites (Task 3)")
     ap.add_argument("--all", action="store_true", help="data + images + sprites")
+    ap.add_argument("--vlm-loop", action="store_true",
+                    help="use the VLM art-director loop to re-tune sprites (needs --sprites)")
+    ap.add_argument("--concurrency", type=int, default=1,
+                    help="max concurrent VLM calls (default 1 = serial)")
+    ap.add_argument("--max-iters", type=int, default=10,
+                    help="max critique rounds per skin (default 10)")
+    ap.add_argument("--champs", default="",
+                    help="comma-separated champ ids to process (default: all)")
+    ap.add_argument("--skins", default="0",
+                    help="comma-separated skin indices, or 'all' (P1: 0 only)")
+    ap.add_argument("--force", action="store_true",
+                    help="ignore the descriptor cache; re-bake every selected skin")
     args = ap.parse_args()
-    champs = build_data()
-    if args.all or args.images:
-        rearrange_images(champs)
+    if args.vlm_loop:
+        # VLM bake path: skip build_data() (which needs assets/champions/*.json
+        # that are not shipped) and load the already-baked CHAMPIONS_DB instead.
+        # The descriptors in CHAMPIONS_DB have tuple palettes; normalize to lists
+        # for sprite_loop's _validate.
+        from src.build.champions import CHAMPIONS_DB as _DB
+        champs = []
+        for c in _DB:
+            cc = dict(c)
+            if "descriptor" in cc:
+                pal = cc["descriptor"].get("palette", {})
+                cc["descriptor"] = {
+                    **cc["descriptor"],
+                    "palette": {k: list(v) for k, v in pal.items()},
+                }
+            champs.append(cc)
+    else:
+        champs = build_data()
+        if args.all or args.images:
+            rearrange_images(champs)
     if args.all or args.sprites:
-        generate_sprites(champs)
+        if args.vlm_loop:
+            from src.build.sprite_loop import run_sprite_bake
+            # filter champs
+            if args.champs:
+                want = set(s.strip() for s in args.champs.split(",") if s.strip())
+                champs = [c for c in champs if c["id"] in want]
+            # parse skins
+            if args.skins.strip().lower() == "all":
+                # enumerate every skins/{idx}.jpg present per champ (Phase 3).
+                # Sentinel: run_sprite_bake builds the per-champ skin lists from
+                # the skins/*.jpg files on disk (via _enumerate_skins).
+                skins = "all-enumerated"
+            else:
+                skins = [int(s.strip()) for s in args.skins.split(",") if s.strip()]
+            # The baked CHAMPIONS_DB descriptors (already palette-normalized
+            # above) are the fallback for the VLM describe call.
+            rep = run_sprite_bake(champs, skin_indices=skins,
+                                  concurrency=args.concurrency,
+                                  max_iters=args.max_iters, force=args.force)
+            print(f"VLM bake: processed={rep['n_processed']} skipped={rep['n_skipped']} "
+                  f"ok={rep['n_ok']} mean_match {rep['mean_match_before']}->{rep['mean_match_after']}")
+        else:
+            generate_sprites(champs)
 
 
 if __name__ == "__main__":

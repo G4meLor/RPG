@@ -432,7 +432,8 @@ class WorldCharacter:
 
     def _load_sprite(self):
         try:
-            self._sprite = load_char_sprite(self.hero.id, self.sprite_size)
+            self._sprite = load_char_sprite(self.hero.id, self.sprite_size,
+                                            skin_idx=getattr(self.hero, "skin", 0))
         except Exception:
             self._sprite = None
         self._sprite_face = self.facing

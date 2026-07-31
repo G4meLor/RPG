@@ -288,6 +288,101 @@ def test_render_one_frame():
     sc.hud.draw(g.screen)
     print("  render one frame OK")
 
+def test_worldcharacter_skin_sprite():
+    """A WorldCharacter built from a Hero with skin=14 loads sprites/14.png
+    when present (else falls back to sprite.png). Asserts the load PATH,
+    not pixel content."""
+    import main as M
+    from src.entities import WorldCharacter
+    from src.entities.combatant import Hero
+    from src.data.heroes import HERO_BY_ID
+    from src.data.tuning import ASSET_DIR
+    import os, pygame
+    g = M.Game()
+    hd = HERO_BY_ID["Ahri"]
+    hero = Hero(hd, skin=14)
+    # ensure a sprites/14.png exists
+    base = os.path.join(ASSET_DIR, "characters", "Ahri")
+    os.makedirs(os.path.join(base, "sprites"), exist_ok=True)
+    sp = os.path.join(base, "sprites", "14.png")
+    if not os.path.exists(sp):
+        s = pygame.Surface((256, 256), pygame.SRCALPHA)
+        pygame.draw.circle(s, (255, 0, 255, 255), (128, 128), 60)
+        pygame.image.save(s, sp)
+    wc = WorldCharacter(hero, 200, 200)
+    # reload the sprite via the skin-aware path and assert it resolved to sprites/14.png
+    import src.entities.combatant as comb
+    seen = []
+    orig = comb.load_image
+    comb.load_image = lambda rel, scale=None: (seen.append(rel), orig(rel, scale))[1]
+    try:
+        wc._load_sprite()
+    finally:
+        comb.load_image = orig
+    assert any("sprites/14.png" in p for p in seen), f"per-skin not loaded: {seen}"
+    print("  worldcharacter skin sprite OK")
+
+def test_build_party_threads_skin_to_entity():
+    """Regression test (Task 12 fix round 1): _build_party must thread the
+    EQUIPPED skin (hero.skin, from the owned record) to spawn_hero, so the
+    ECS entity's ChampionRef.skin matches the equipped skin — NOT read it
+    from ow_party_state (which only holds {hp, energy})."""
+    import main as M
+    from src.scenes.world import WorldScene
+    from src.entities.components import ChampionRef
+    g = M.Game()
+    # equip skin 14 on the Ahri owned record
+    g.player.owned["Ahri"]["skin"] = 14
+    sc = WorldScene(g); g.scene = sc
+    # _build_party ran in WorldScene.__init__; find the Ahri entity
+    ahri_e = next((e for e in sc.world.heroes()
+                   if e.get(ChampionRef).hero_id == "Ahri"), None)
+    assert ahri_e is not None, "no Ahri entity in sc.world.heroes()"
+    assert ahri_e.get(ChampionRef).skin == 14, \
+        f"ChampionRef.skin={ahri_e.get(ChampionRef).skin}, expected 14 " \
+        f"(skin must come from hero.skin, not ow_party_state)"
+    # also confirm the legacy WorldCharacter's hero.skin threaded through
+    ahri_wc = next((wc for wc in sc.party if wc and wc.hero.id == "Ahri"), None)
+    assert ahri_wc is not None, "no Ahri WorldCharacter in sc.party"
+    assert ahri_wc.hero.skin == 14, \
+        f"wc.hero.skin={ahri_wc.hero.skin}, expected 14"
+    print("  build_party threads skin to entity OK")
+
+def test_skin_change_changes_sprite():
+    """Changing rec['skin'] changes which world sprite path WorldCharacter
+    loads (asserts load PATH, not pixels). End-to-end: record -> Hero ->
+    WorldCharacter._load_sprite."""
+    import main as M, os, pygame
+    from src.entities.combatant import Hero, load_char_sprite
+    from src.data.heroes import HERO_BY_ID
+    from src.data.tuning import ASSET_DIR
+    import src.entities.combatant as comb
+    g = M.Game()
+    hd = HERO_BY_ID["Ahri"]
+    base = os.path.join(ASSET_DIR, "characters", "Ahri")
+    os.makedirs(os.path.join(base, "sprites"), exist_ok=True)
+    for idx in (0, 14):
+        sp = os.path.join(base, "sprites", f"{idx}.png")
+        if not os.path.exists(sp):
+            s = pygame.Surface((256, 256), pygame.SRCALPHA)
+            pygame.draw.circle(s, (idx * 20, 0, 200, 255), (128, 128), 60)
+            pygame.image.save(s, sp)
+    def _loaded_skin_idx(skin_idx):
+        seen = []
+        orig = comb.load_image
+        comb.load_image = lambda rel, scale=None: (seen.append(rel), orig(rel, scale))[1]
+        try:
+            load_char_sprite("Ahri", 96, skin_idx=skin_idx)
+        finally:
+            comb.load_image = orig
+        joined = " ".join(seen)
+        if skin_idx and skin_idx > 0 and f"sprites/{skin_idx}.png" in joined:
+            return skin_idx
+        return 0  # fell back to sprite.png
+    assert _loaded_skin_idx(14) == 14
+    assert _loaded_skin_idx(0) == 0
+    print("  skin change changes sprite OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

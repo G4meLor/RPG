@@ -52,13 +52,17 @@ def _load_first(paths, scale=None):
             return load_image(rel, scale)
     return load_image(paths[-1], scale)
 
-def load_char_sprite(hero_id, size=256):
+def load_char_sprite(hero_id, size=256, skin_idx=0):
     # per-character bundle: characters/{hero_id}/sprite.png (procedural world
-    # billboard). Fall back to the old flat path characters/{hero_id}.png.
-    return _load_first([
-        os.path.join("characters", hero_id, "sprite.png"),
-        os.path.join("characters", hero_id + ".png"),
-    ], (size, size))
+    # billboard) for the Original skin; characters/{hero_id}/sprites/{N}.png
+    # for an equipped skin N (Phase 3). Fall back to sprite.png (and the old
+    # flat path) for back-compat with saves/champs not yet per-skin-baked.
+    paths = []
+    if skin_idx and skin_idx > 0:
+        paths.append(os.path.join("characters", hero_id, "sprites", str(skin_idx) + ".png"))
+    paths.append(os.path.join("characters", hero_id, "sprite.png"))
+    paths.append(os.path.join("characters", hero_id + ".png"))
+    return _load_first(paths, (size, size))
 
 def load_portrait(hero_id, skin_idx=0, size=440):
     # per-champion bundle: the equipped skin's splash art.
@@ -305,12 +309,13 @@ class Combatant:
 
 class Hero(Combatant):
     def __init__(self, hero_def, level=1, ascension=0, equipment=None, evolve=0,
-                 evo_nodes=None):
+                 evo_nodes=None, skin=0):
         s = hero_def["stats"]
         self.def_dict = hero_def
         self.level = level
         self.xp = 0
         self.id = hero_def["id"]
+        self.skin = skin
         self.rarity = hero_def["rarity"]
         self.role = hero_def.get("role", "destruction")
         self.skills = list(hero_def["skills"])

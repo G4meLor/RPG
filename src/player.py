@@ -144,7 +144,8 @@ class Player:
         return Hero(hd, level=rec["level"], ascension=rec.get("ascension", 0),
                     equipment=rec.get("equipment", {}),
                     evolve=rec.get("evolve", 0),
-                    evo_nodes=rec.get("evo_nodes", []))
+                    evo_nodes=rec.get("evo_nodes", []),
+                    skin=rec.get("skin", 0))
 
     # --- evolve (soul-shard ascension to higher tiers) ---
     def evolve_cost(self, hid):

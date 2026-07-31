@@ -62,6 +62,21 @@ def test_quadruped_feature_mods_add_pixels():
         draw_chibi_descriptor(s, {**QUAD, "features": [feat]})
         assert _cov(s) > base_c + 0.003, f"quadruped feature {feat} didn't add pixels"
 
+def test_mounted_renders_rider_plus_mount():
+    s = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s, {**BASE, "stance": "mounted", "archetype": "knight", "mount_kind": "boar"})
+    s_u = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(s_u, {**BASE, "stance": "upright"})
+    assert s.get_size() == (256, 256) and _cov(s) > 0
+    assert _cov(s) > _cov(s_u) + 0.01, "mounted (rider+mount) should have more coverage than upright alone"
+
+def test_flying_bird_and_dragon_render_and_differ():
+    s_b = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s_b, {**BASE, "stance": "flying", "archetype": "flying_bird"})
+    s_d = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s_d, {**BASE, "stance": "flying", "archetype": "flying_dragon"})
+    assert _cov(s_b) > 0 and _cov(s_d) > 0
+    assert _cov(s_b) != _cov(s_d), "bird and dragon must differ"
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

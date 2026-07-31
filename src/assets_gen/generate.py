@@ -1489,12 +1489,154 @@ def _arch_quadruped(surf, cx, cy, pal, outline, build):
     return (hx, hy, hr, w, h)
 
 
+# --- mounted + flying stance drawers (Task 3) -----------------------------
+# _draw_mounted: wide low mount body at the bottom + a rider (upright
+# archetype) drawn offset up so it sits on the mount. mount_kind varies the
+# mount tint. Returns the rider's (hx,hy,hr,w,h) so features land on the rider.
+_MOUNT_TINT = {
+    "boar":   (120,  70,  50),   # brown
+    "yeti":   (220, 230, 240),   # icy white
+    "lizard": ( 80, 150,  70),   # green
+    "bird":   ( 90, 140, 200),   # blue
+    "wolf":   (130, 130, 140),   # gray
+    "plane":  (160, 160, 170),   # metallic
+}
+
+def _draw_mounted(surf, cx, cy, pal, outline, build, archetype, mount_kind):
+    """Mounted: a wide low mount body at the bottom + a rider (upright archetype)
+    drawn offset up so it sits on the mount. Pixel-art, no AA. Returns rider box."""
+    tint = _MOUNT_TINT.get(mount_kind, _MOUNT_TINT["boar"])
+    # ground shadow
+    sh = pygame.Surface((180, 16), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 80), sh.get_rect())
+    surf.blit(sh, (cx - 90, cy + 56))
+    # mount body — wide low rounded rect (no AA)
+    mw, mh = 150, 56
+    mx, my = cx - mw // 2, cy + 12
+    body = px_dither_surf(mw, mh, shade(tint, 1.1), shade(tint, 0.55))
+    clip_to_rect(body, pygame.Rect(0, 0, mw, mh), border_radius=14)
+    surf.blit(body, (mx, my))
+    pygame.draw.rect(surf, outline, (mx, my, mw, mh), 2, border_radius=14)
+    # 4 short legs (solid blocks, no AA)
+    lw, lh = 16, 24
+    ly = my + mh - 2
+    for lx in (mx + 10, mx + int(mw * 0.38), mx + int(mw * 0.62) - lw, mx + mw - lw - 10):
+        leg = px_dither_surf(lw, lh, shade(tint, 0.7), shade(tint, 0.45))
+        clip_to_rect(leg, pygame.Rect(0, 0, lw, lh), border_radius=3)
+        surf.blit(leg, (lx, ly))
+        pygame.draw.rect(surf, outline, (lx, ly, lw, lh), 2, border_radius=3)
+    # mount head at the front (right side) (no AA)
+    mr = 16
+    mhx, mhy = mx + mw - mr + 4, my + 6
+    head = px_dither_surf(mr * 2, mr * 2, shade(tint, 1.1), shade(tint, 0.6))
+    clip_to_circle(head, (mr, mr), mr - 1)
+    surf.blit(head, (mhx - mr, mhy - mr))
+    pygame.draw.circle(surf, outline, (mhx, mhy), mr, 2)
+    pygame.draw.rect(surf, (40, 40, 50), (mhx + 2, mhy - 2, 3, 3))  # eye
+    # mount tail at the back (left side) — curved block chain (no AA)
+    tx0 = mx - 2; ty0 = my + 8
+    for i in range(4):
+        t = i / 3.0
+        px_ = tx0 - int(t * 10)
+        py_ = ty0 - int((1 - (1 - t) ** 2) * 12)
+        r = 5 - i
+        pygame.draw.circle(surf, shade(tint, 0.9), (px_, py_), r)
+        pygame.draw.circle(surf, outline, (px_, py_), r, 1)
+    # rider — upright archetype drawn offset up so it sits on the mount
+    rider_fn = _ARCH_DRAW.get(archetype, _arch_knight)
+    hx, hy, hr, w, h = rider_fn(surf, cx, cy - 40, pal, outline, build)
+    return (hx, hy, hr, w, h)
+
+
+def _arch_flying_bird(surf, cx, cy, pal, outline, build):
+    """Flying bird: 2 spread wings, round body, beak, tail. Pixel-art, no AA."""
+    sx, sy = BUILD_SCALE.get(build, (1.0, 1.0))
+    w, h = int(130 * sx), int(90 * sy)
+    primary = pal["primary"]; sec = pal["secondary"]
+    # 2 spread wings — large triangles on either side (no AA)
+    wsp = int(w * 0.50); wh = int(h * 0.55)
+    for side in (-1, 1):
+        bx = cx + side * 6; tx = cx + side * (6 + wsp)
+        pts = [(bx, cy - wh // 2), (tx, cy), (bx, cy + wh // 2)]
+        pygame.draw.polygon(surf, shade(sec, 1.0), pts)
+        pygame.draw.polygon(surf, outline, pts, 2)
+    # round body — dithered disc (no AA)
+    br = int(h * 0.30)
+    body = px_dither_surf(br * 2, br * 2, shade(sec, 1.12), shade(primary, 0.55))
+    clip_to_circle(body, (br, br), br - 1)
+    surf.blit(body, (cx - br, cy - br))
+    pygame.draw.circle(surf, outline, (cx, cy), br, 2)
+    # beak — triangle at the front (right side) (no AA)
+    pygame.draw.polygon(surf, pal["accent"],
+        [(cx + br - 2, cy - 5), (cx + br + 14, cy), (cx + br - 2, cy + 5)])
+    pygame.draw.polygon(surf, outline,
+        [(cx + br - 2, cy - 5), (cx + br + 14, cy), (cx + br - 2, cy + 5)], 2)
+    # eye
+    pygame.draw.rect(surf, (40, 40, 50), (cx + 5, cy - 4, 3, 3))
+    # tail — fan of triangles at the back (left side) (no AA)
+    for i in range(3):
+        ty = cy - 6 + i * 6
+        pygame.draw.polygon(surf, shade(primary, 0.8),
+            [(cx - br + 2, ty), (cx - br - 16, ty + 3), (cx - br + 2, ty + 5)])
+        pygame.draw.polygon(surf, outline,
+            [(cx - br + 2, ty), (cx - br - 16, ty + 3), (cx - br + 2, ty + 5)], 1)
+    return (cx + 2, cy, br // 2, w, h)
+
+
+def _arch_flying_dragon(surf, cx, cy, pal, outline, build):
+    """Flying dragon: long sinuous body, 2 wings, 2 horns, snout. Pixel-art, no AA."""
+    sx, sy = BUILD_SCALE.get(build, (1.0, 1.0))
+    w, h = int(140 * sx), int(90 * sy)
+    primary = pal["primary"]; sec = pal["secondary"]
+    # 2 wings — bat-like quadrilaterals on either side (no AA)
+    wsp = int(w * 0.40); wh = int(h * 0.60)
+    for side in (-1, 1):
+        bx = cx + side * 10; tx = cx + side * (10 + wsp)
+        pts = [(bx, cy - wh // 2), (tx, cy - wh // 4), (tx, cy + wh // 4), (bx, cy + wh // 2)]
+        pygame.draw.polygon(surf, shade(sec, 1.0), pts)
+        pygame.draw.polygon(surf, outline, pts, 2)
+    # long sinuous body — a chain of overlapping circles (no AA)
+    seg_r = 13
+    body_pts = []
+    for i in range(8):
+        t = i / 7.0
+        bx = cx - int(w * 0.35) + int(t * w * 0.70)
+        by = cy + int(math.sin(t * math.pi * 1.5) * 12)
+        body_pts.append((bx, by))
+        pygame.draw.circle(surf, shade(sec, 1.0), (bx, by), seg_r)
+        pygame.draw.circle(surf, outline, (bx, by), seg_r, 2)
+    # head at the front (right end) — block with snout + horns (no AA)
+    hx, hy = body_pts[-1]
+    hr = seg_r + 2
+    pygame.draw.rect(surf, shade(sec, 1.1), (hx - hr, hy - hr, hr * 2 + 14, hr * 2), border_radius=5)
+    pygame.draw.rect(surf, outline, (hx - hr, hy - hr, hr * 2 + 14, hr * 2), 2, border_radius=5)
+    # snout (solid block, no AA)
+    pygame.draw.rect(surf, shade(primary, 0.7), (hx + hr + 2, hy - 4, 14, 10), border_radius=3)
+    pygame.draw.rect(surf, outline, (hx + hr + 2, hy - 4, 14, 10), 1, border_radius=3)
+    # 2 horns — swept-back triangles (no AA)
+    for side in (-1, 1):
+        pygame.draw.polygon(surf, shade(sec, 1.2),
+            [(hx + side * 4, hy - hr + 2), (hx + side * 2, hy - hr - 12), (hx + side * 10, hy - hr + 2)])
+        pygame.draw.polygon(surf, outline,
+            [(hx + side * 4, hy - hr + 2), (hx + side * 2, hy - hr - 12), (hx + side * 10, hy - hr + 2)], 2)
+    # eye
+    pygame.draw.rect(surf, pal["accent"], (hx + 4, hy - 3, 4, 4))
+    pygame.draw.rect(surf, (40, 40, 50), (hx + 5, hy - 2, 2, 2))
+    return (hx + 4, hy, hr, w, h)
+
+
 # archetype dispatcher
 _ARCH_DRAW = {
     "knight": _arch_knight, "mage": _arch_mage, "archer": _arch_archer,
     "brute": _arch_brute, "rogue": _arch_rogue, "undead": _arch_undead,
     "yordle": _arch_yordle, "vastaya": _arch_vastaya,
     "construct": _arch_construct, "beast": _arch_beast,
+}
+
+# flying-archetype dispatcher (used when stance == "flying")
+_FLY_DRAW = {
+    "flying_bird": _arch_flying_bird,
+    "flying_dragon": _arch_flying_dragon,
 }
 
 
@@ -1533,9 +1675,14 @@ def draw_chibi_descriptor(surf, descriptor):
             _floating_modifier(surf, cx, cy, w, h, pal, outline)
     elif stance == "quadruped":
         hx, hy, hr, w, h = _arch_quadruped(surf, cx, cy, pal, outline, build)
+    elif stance == "mounted":
+        hx, hy, hr, w, h = _draw_mounted(surf, cx, cy, pal, outline, build,
+                                         archetype, descriptor.get("mount_kind", "boar"))
+    elif stance == "flying":
+        fly_fn = _FLY_DRAW.get(archetype, _arch_flying_bird)
+        hx, hy, hr, w, h = fly_fn(surf, cx, cy, pal, outline, build)
     else:
-        # mounted / flying: stub falls back to an upright body until the real
-        # drawers land (Tasks 3-4). Still returns a valid box.
+        # unknown stance: fall back to an upright body so we still return a box.
         fn = _ARCH_DRAW.get(archetype, _arch_knight)
         hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
 

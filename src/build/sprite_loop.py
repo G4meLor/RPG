@@ -118,7 +118,8 @@ def _process_one(champ, skin_idx, vlm, max_iters, force):
         out_png = os.path.join(char_dir, "sprite.png")
         render_to_png(best, out_png)
         cache[key] = {"descriptor": best, "match": match,
-                      "iters": len(hist), "ok": ok}
+                      "iters": len(hist), "ok": ok,
+                      "match_before": hist[0]["match"] if hist else match}
         save_cache(char_dir, cache)
         return {"id": champ["id"], "skin": skin_idx, "skipped": False,
                 "match": match, "ok": ok, "iters": len(hist),

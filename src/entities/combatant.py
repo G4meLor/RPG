@@ -309,12 +309,13 @@ class Combatant:
 
 class Hero(Combatant):
     def __init__(self, hero_def, level=1, ascension=0, equipment=None, evolve=0,
-                 evo_nodes=None):
+                 evo_nodes=None, skin=0):
         s = hero_def["stats"]
         self.def_dict = hero_def
         self.level = level
         self.xp = 0
         self.id = hero_def["id"]
+        self.skin = skin
         self.rarity = hero_def["rarity"]
         self.role = hero_def.get("role", "destruction")
         self.skills = list(hero_def["skills"])

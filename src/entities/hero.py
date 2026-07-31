@@ -12,9 +12,9 @@ if TYPE_CHECKING:
 
 
 def spawn_hero(world: "World", hero_id: str, level: int = 1, ascension: int = 0,
-               evolve: int = 0, x: float = 0.0, y: float = 0.0) -> Entity:
+               evolve: int = 0, skin: int = 0, x: float = 0.0, y: float = 0.0) -> Entity:
     hdef = HERO_BY_ID[hero_id]
-    hero = Hero(hdef, level=level, ascension=ascension, evolve=evolve)
+    hero = Hero(hdef, level=level, ascension=ascension, evolve=evolve, skin=skin)
     e = world.spawn()
     e.add(Identity(e.eid, hero.name, is_hero=True))
     e.add(Transform(x, y))
@@ -30,7 +30,7 @@ def spawn_hero(world: "World", hero_id: str, level: int = 1, ascension: int = 0,
     weapon = c["descriptor"]["weapon"] if c else "sword"
     e.add(Render(sprite_id=hero_id, weapon=weapon))
     e.add(Statuses())
-    e.add(ChampionRef(hero_id=hero_id, level=level, ascension=ascension))
+    e.add(ChampionRef(hero_id=hero_id, level=level, ascension=ascension, skin=skin))
     # Movement component (Phase 4, Task 15): the PhysicsSystem reads/writes
     # this instead of the legacy WorldCharacter's movement fields. Defaults
     # match WorldCharacter.__init__ (max_speed=230, accel=2400, friction=1800,

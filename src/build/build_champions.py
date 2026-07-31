@@ -21,7 +21,11 @@ Run:
 import json
 import os
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+# Repo root = parent of src/ = two levels up from this file (src/build/build_champions.py).
+# Asset dirs + the output champions.py live at <repo-root> regardless of where
+# this module sits, so the path is repo-root-relative (not __file__-relative) to
+# stay correct after the move into src/build/ without a symlink.
+HERE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CHAMP_DIR = os.path.join(HERE, "assets", "champions")          # JSON source
 IMG_DIR = os.path.join(HERE, "assets", "champions_images")     # splash source
 ICON_DIR = os.path.join(HERE, "assets", "champions_ability_icons")  # ability icons
@@ -861,7 +865,7 @@ def rearrange_images(champs):
 # the descriptor system (10 archetypes + feature-adders + weapon-drawers).
 # ---------------------------------------------------------------------------
 def generate_sprites(champs):
-    import generate_assets as GA
+    import src.assets_gen.generate as GA
     GA.generate_sprites(champs)
 
 

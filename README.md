@@ -1,9 +1,9 @@
 # Aetheria — Open World 2D Gacha RPG
 
-A complete **open-world 2D** gacha RPG built with **pygame**, with **zero
-external art or audio dependencies**. All characters, enemies, skills, items,
-UI, backgrounds and sound effects are generated procedurally by
-`generate_assets.py` and `audio.py`.
+A complete **open-world 2D** gacha RPG built with **pygame**, featuring a
+roster of **170 League of Legends champions** with real splash art, ability
+icons, and ability names. World sprites are descriptor-driven (10 archetypes),
+and all sound effects are synthesized by `audio.py`.
 
 The game is **open-world first**: a 10×5 grid of **50 hand-styled maps** with
 real-time action combat, a 4-hero party you swap on the fly (Genshin-style),
@@ -12,13 +12,59 @@ campaign has been removed — the open world *is* the game.
 
 ## Run
 
+The shipped `assets/characters/*/` bundles (splash art, icons, ability icons,
+descriptor sprites) are already baked into the repo, so you can just play:
+
 ```bash
 pip install -r requirements.txt
-python3 generate_assets.py     # (re)generate all PNG assets into assets/
 python3 main.py                # play
 ```
 
+To regenerate the shared (non-champion) art — enemy sprites, boss-ult skill
+icons, backgrounds, items, UI, terrain, landmarks, villages, drops:
+
+```bash
+python3 generate_assets.py
+```
+
+To rebuild the champion roster from crawled LoL data (requires the
+`assets/champions/` JSON source, which is gitignored after the initial bake):
+
+```bash
+python3 build_champions.py --all
+```
+
 From the title screen, pick **Enter World** for the open-world 2D mode.
+
+## Module layout
+
+The codebase is a `src/` package with an ECS-lite architecture (entity =
+component data bag, system = processor). `main.py` at the repo root is a thin
+entry point.
+
+| Module | Role |
+|--------|------|
+| `main.py` | Thin entry point (bootstraps `src.core.main`) |
+| `src/core/` | `game.py` (Game loop + scene manager), `scene.py` (base Scene), `world.py` (entity container + query), `main.py` (bootstrap) |
+| `src/ui/` | `primitives.py` (fonts, text cache, Button, bars, dim overlay), `colors.py` (element/rarity colors), `widgets.py` (Toggle/Slider) |
+| `src/data/` | 16 per-concern data modules (tuning, elements, skills, heroes, enemies, gacha_data, equipment, story, etc.) — split from the old `data.py` |
+| `src/entities/` | `components.py` (ECS dataclasses), `entity.py` (Entity), `combatant.py` (Hero/Enemy stat classes), `hero.py`/`enemy.py` (entity factories), `world_actors.py` (WorldCharacter/WorldEnemy carriers + Particles/Projectile/FloatText/scratch) |
+| `src/systems/` | The 9 systems: `map_ctrl.py` (MapController), `physics.py` (PhysicsSystem + Camera), `ai.py` (AISystem), `combat.py` (CombatSystem), `render.py` (RenderSystem), `hud.py` (HudSystem), `drops.py` (DropSystem), `rift.py` (RiftSystem), `dialogue.py` (DialogueSystem) |
+| `src/scenes/` | `world.py` (WorldScene — thin coordinator delegating to systems), `adventure.py` (AdventureScene), `menu/` (9 menu scenes: title, roster, hero_detail, gacha_scene, shop, inventory, settings, stats, codex) |
+| `src/world/` | `data.py` (map grid + biome + gen_map), `map_renderer.py` (MapRenderer) |
+| `src/fx/` | `rift.py` (runtime VFX: draw_rift_portal) |
+| `src/build/` | `champions.py` (170-champion bake), `build_champions.py` (one-shot roster builder) |
+| `src/assets_gen/` | `generate.py` (build-only art generator) |
+| `src/audio.py` / `src/player.py` / `src/gacha.py` | Synth audio, save state, summoning |
+| `tools/` | `verify_assets.py` (headless asset check), `verify_ecs.py` (ECS acceptance suite) |
+
+**Architecture (ECS-lite, hybrid):** Entities are component data bags
+(Transform/Health/Combat/AI/Render/Identity/Statuses/ChampionRef/Movement).
+The 9 systems hold the game logic (ported verbatim from the old god-class).
+`WorldScene` is a thin coordinator that owns the systems + delegates
+`update`/`draw`. `WorldCharacter`/`WorldEnemy` remain as data carriers with
+thin `update` delegates to the systems (hybrid — a stable, scalable structure;
+a future full entity takeover is possible but not required).
 
 ## Open World controls (LoL-style)
 

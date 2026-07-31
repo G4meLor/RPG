@@ -1,7 +1,15 @@
 """
-Aetheria Gacha - Asset Generator
-Procedurally draws and saves all game assets (characters, enemies, skills,
-backgrounds, UI) as PNG files so the game never depends on external art.
+Aetheria Gacha - Asset Generator (build-only)
+
+Procedurally draws and saves the SHARED game art: enemy sprites, the 4 boss-ult
+skill icons, backgrounds, item icons, UI frames, terrain tiles, landmarks,
+village buildings, and ground-loot drops. Also exposes generate_sprites() for
+build_champions.py, which draws the descriptor-driven world sprite for each
+champion.
+
+Per-champion bundles (splash art, icons, ability icons, skins) are built by
+build_champions.py from crawled LoL data — NOT by this module. Runtime VFX
+(drawn every frame) live in fx.py.
 
 Run:  python3 generate_assets.py
 """
@@ -14,7 +22,12 @@ import pygame
 SEED = 1337
 random.seed(SEED)
 
-ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+# Repo root = parent of src/ = two levels up from this file (src/assets_gen/generate.py).
+# Assets live at <repo-root>/assets regardless of where this module sits, so the
+# path is repo-root-relative (not __file__-relative) to stay correct after the
+# move into src/assets_gen/ without a symlink.
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ASSET_DIR = os.path.join(_REPO_ROOT, "assets")
 for sub in ["characters", "enemies", "skills", "backgrounds", "ui",
             "items", "terrain", "landmarks", "villages", "drops"]:
     os.makedirs(os.path.join(ASSET_DIR, sub), exist_ok=True)
@@ -36,7 +49,7 @@ ELEMENT_COLORS = {
 # locked per element (base/light/shadow/outline/accent) so gradients dither
 # instead of smoothing. Re-exported from data.py so the rest of the codebase can
 # import a single source of truth.
-from data import PIXEL, PIXEL_PALETTE  # noqa: E402 (re-export; same values as data.py)
+from src.data.elements import PIXEL, PIXEL_PALETTE
 
 RARITY_COLORS = {
     "R":   (140, 150, 165),
@@ -198,420 +211,6 @@ def clip_to_polygon(surf, points):
     m = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
     pygame.draw.polygon(m, (255, 255, 255, 255), points)
     surf.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-
-# ---------------------------------------------------------------------------
-# Chibi character sprite
-# ---------------------------------------------------------------------------
-
-def draw_chibi(surf, element, body_color, hair_color, accent,
-               weapon="sword", hair_style="spiky", eye_color=(40, 40, 60),
-               expression="neutral", eye_shape="round", skin=None):
-    """Draw a pixel-art chibi hero centered on surf (256x256).
-
-    Pixel-art aesthetic: palette-locked fills + dithered gradients (2-color
-    checker, no smooth lerp_color ramps) + no anti-aliasing. Each "logical
-    pixel" is a PIXEL×PIXEL block so the art reads as chunky pixel-art at ~48
-    logical pixels (3x Stardew's 16x16). Per-hero parameter signature + 256x256
-    output size are unchanged so load_char_sprite and the scene caches keep
-    working."""
-    cx, cy = 128, 150
-    # pixel-art palette: lock to the per-element PIXEL_PALETTE so the dithering
-    # stays in-palette; body/hair/accent still take the per-hero colors but get a
-    # 2-tone dither for shading instead of smooth gradients.
-    pal = PIXEL_PALETTE[element]
-    outline = pal["outline"]
-    body_light = shade(body_color, 1.18)
-    body_dark = shade(body_color, 0.62)
-    body_vdark = shade(body_color, 0.42)
-    accent_dark = shade(accent, 0.65)
-    accent_light = shade(accent, 1.22)
-    hair_light = shade(hair_color, 1.22)
-    hair_dark = shade(hair_color, 0.58)
-    if skin is None:
-        skin = (255, 226, 200)
-        skin_light = (255, 240, 222)
-        skin_dark = (224, 178, 158)
-    else:
-        skin_light = shade(skin, 1.06)
-        skin_dark = shade(skin, 0.80)
-    main_el, light_el, dark_el = ELEMENT_COLORS[element]
-    el_base = pal["base"]
-    el_light = pal["light"]
-    el_shadow = pal["shadow"]
-    el_accent = pal["accent"]
-
-    # ground shadow (chunky ellipse, no AA)
-    shadow = pygame.Surface((190, 50), pygame.SRCALPHA)
-    pygame.draw.ellipse(shadow, (0, 0, 0, 70), shadow.get_rect())
-    surf.blit(shadow, (cx - 95, 234))
-
-    # element aura: a 2-tone dithered disc behind the body (no soft-glow AA).
-    # Outer ring = shadow, inner = light, both clipped to a circle so it reads
-    # as a chunky pixel halo.
-    aura_r = 100
-    aura = pygame.Surface((aura_r * 2, aura_r * 2), pygame.SRCALPHA)
-    pygame.draw.circle(aura, (*el_shadow, 90), (aura_r, aura_r), aura_r)
-    pygame.draw.circle(aura, (*el_base, 120), (aura_r, aura_r), aura_r - 25)
-    pygame.draw.circle(aura, (*el_light, 140), (aura_r, aura_r), aura_r - 50)
-    surf.blit(aura, (cx - aura_r, 62))
-
-    # element-specific particles in the aura (chunky blocks, no AA circles).
-    # NOTE: use a stable, salt-free hash so the particle layout is reproducible
-    # across runs (Python's built-in hash() is salted per process via PYTHONHASHSEED).
-    rng = random.Random(sum(ord(c) for c in element) * 1000003 + 17)
-    for _ in range(6 if element in ("fire", "light") else (5 if element == "dark" else 4)):
-        px = cx + rng.uniform(-50, 50)
-        py = cy + rng.uniform(-30, 60)
-        ps = rng.randint(2, 4) * PIXEL // 2  # block size on the pixel grid
-        if element == "fire":
-            pygame.draw.rect(surf, el_light, (px_snap(px), px_snap(py), ps, ps))
-        elif element == "water":
-            pygame.draw.rect(surf, el_light, (px_snap(px), px_snap(py), ps, ps))
-            pygame.draw.rect(surf, (255, 255, 255), (px_snap(px - ps // 4), px_snap(py - ps // 4), max(1, ps // 2), max(1, ps // 2)))
-        elif element == "wind":
-            lx = px + rng.uniform(-10, 10)
-            ly = py + rng.uniform(-5, 5)
-            pygame.draw.line(surf, el_light, (px_snap(px), px_snap(py)), (px_snap(lx), px_snap(ly)), max(1, ps // 2))
-        elif element == "light":
-            pygame.draw.rect(surf, (255, 255, 255), (px_snap(px), px_snap(py), ps, ps))
-            # 4-point star sparkle (chunky cross)
-            pygame.draw.line(surf, (255, 255, 255), (px_snap(px - ps), px_snap(py)), (px_snap(px + ps), px_snap(py)), 1)
-            pygame.draw.line(surf, (255, 255, 255), (px_snap(px), px_snap(py - ps)), (px_snap(px), px_snap(py + ps)), 1)
-        elif element == "dark":
-            pygame.draw.rect(surf, el_light, (px_snap(px), px_snap(py), ps, ps))
-
-    # cape/cloak flowing behind the body — palette-locked fill + 2-tone dither
-    # for the top->bottom shading (replaces the smooth vgrad_surf ramp).
-    cape_dark = shade(body_color, 0.48)
-    cape = [(cx - 34, 150), (cx - 60, 252), (cx - 44, 232),
-            (cx - 30, 248), (cx - 16, 236), (cx, 248),
-            (cx + 16, 236), (cx + 30, 248), (cx + 44, 232),
-            (cx + 60, 252), (cx + 34, 150)]
-    pygame.draw.polygon(surf, cape_dark, cape)
-    # dithered cape gradient (top lighter -> bottom darker) clipped to the cape
-    cg = px_dither_surf(120, 110, shade(body_color, 0.92), cape_dark)
-    cg2 = pygame.Surface((120, 110), pygame.SRCALPHA)
-    pygame.draw.polygon(cg2, (255, 255, 255, 255),
-                        [(p[0] - (cx - 60), p[1] - 142) for p in cape])
-    cg.blit(cg2, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-    surf.blit(cg, (cx - 60, 142))
-    pygame.draw.polygon(surf, outline, cape, 2)
-    # cape inner highlight streak (solid block, no AA)
-    cape_hi = [(cx - 8, 152), (cx - 6, 240), (cx + 6, 240), (cx + 8, 152)]
-    pygame.draw.polygon(surf, shade(body_color, 0.75), cape_hi)
-
-    # legs (palette-locked fill + 2-tone dither) + boots (solid accent blocks)
-    leg_y = 210
-    for sx in (-26, 6):
-        lg = px_dither_surf(20, 30, body_light, body_dark)
-        clip_to_rect(lg, pygame.Rect(0, 0, 20, 30))
-        surf.blit(lg, (cx + sx, leg_y))
-        pygame.draw.rect(surf, outline, (cx + sx, leg_y, 20, 30), 2, border_radius=8)
-    for sx in (-28, 4):
-        bg = px_dither_surf(24, 12, accent_light, accent_dark)
-        clip_to_rect(bg, pygame.Rect(0, 0, 24, 12))
-        surf.blit(bg, (cx + sx, leg_y + 22))
-        pygame.draw.rect(surf, outline, (cx + sx, leg_y + 22, 24, 12), 2, border_radius=6)
-        pygame.draw.rect(surf, accent_dark, (cx + sx, leg_y + 30, 24, 4), border_radius=3)
-
-    # body / torso — palette-locked fill + 2-tone diagonal dither (left-lit,
-    # right-shaded). Replaces the smooth diag_grad_surf ramp.
-    torso = pygame.Rect(cx - 36, 150, 72, 70)
-    bodyg = px_dither_surf(72, 70, body_light, body_dark)
-    clip_to_rect(bodyg, pygame.Rect(0, 0, 72, 70), border_radius=18)
-    surf.blit(bodyg, torso.topleft)
-    # fabric fold lines (solid vertical blocks, no AA)
-    for fx in (-16, -2, 12):
-        pygame.draw.rect(surf, body_vdark, (cx + fx, 154, 3, 62))
-    # collar (accent triangle at the neck, solid palette colors, no AA)
-    pygame.draw.polygon(surf, shade(accent, 0.8), [(cx - 14, 150), (cx + 14, 150), (cx, 170)])
-    pygame.draw.polygon(surf, accent, [(cx - 12, 151), (cx + 12, 151), (cx, 168)])
-    pygame.draw.polygon(surf, accent_light, [(cx - 10, 152), (cx - 2, 152), (cx - 6, 163)])
-    pygame.draw.polygon(surf, outline, [(cx - 14, 150), (cx + 14, 150), (cx, 170)], 2)
-    # right-side core shadow (solid block, no AA)
-    sh = pygame.Surface((28, 66), pygame.SRCALPHA)
-    pygame.draw.rect(sh, (*body_vdark, 130), sh.get_rect(), border_radius=14)
-    surf.blit(sh, (cx + 8, 152))
-    # left rim light (a vertical block, no soft-glow AA)
-    pygame.draw.rect(surf, body_light, (cx - 36, 152, 4, 66))
-    # subtle under-shadow (solid block, no AA)
-    us = pygame.Surface((64, 10), pygame.SRCALPHA)
-    pygame.draw.rect(us, (*body_vdark, 80), us.get_rect(), border_radius=6)
-    surf.blit(us, (cx - 32, 210))
-    pygame.draw.rect(surf, outline, torso, 3, border_radius=18)
-    # belt (solid accent fill, no gradient)
-    pygame.draw.rect(surf, accent_dark, (cx - 36, 198, 72, 10))
-    pygame.draw.rect(surf, outline, (cx - 36, 198, 72, 10), 2)
-    # belt buckle (solid block, no AA)
-    pygame.draw.rect(surf, accent_light, (cx - 6, 199, 12, 8), border_radius=2)
-    pygame.draw.rect(surf, outline, (cx - 6, 199, 12, 8), 1, border_radius=2)
-    # chest emblem (element gem: solid palette discs, dithered, no AA)
-    pygame.draw.circle(surf, el_base, (cx, 178), 13)
-    pygame.draw.circle(surf, el_light, (cx - 3, 175), 8)
-    pygame.draw.circle(surf, el_accent, (cx - 5, 173), 4)
-    pygame.draw.circle(surf, outline, (cx, 178), 13, 2)
-
-    # arms (palette-locked fill + 2-tone dither, no AA)
-    # back arm (darker)
-    bg_arm = px_dither_surf(18, 50, body_dark, body_vdark)
-    clip_to_rect(bg_arm, pygame.Rect(0, 0, 18, 50))
-    surf.blit(bg_arm, (cx - 50, 156))
-    pygame.draw.rect(surf, outline, (cx - 50, 156, 18, 50), 2, border_radius=9)
-    # front arm
-    fg_arm = px_dither_surf(18, 50, body_light, body_dark)
-    clip_to_rect(fg_arm, pygame.Rect(0, 0, 18, 50))
-    surf.blit(fg_arm, (cx + 32, 156))
-    pygame.draw.rect(surf, outline, (cx + 32, 156, 18, 50), 2, border_radius=9)
-    # hands (solid palette fill, no AA)
-    for hx, base in ((cx - 41, skin_dark), (cx + 41, skin)):
-        pygame.draw.circle(surf, skin, (hx, 208), 10)
-        pygame.draw.circle(surf, skin_light, (hx - 3, 205), 5)
-        pygame.draw.circle(surf, outline, (hx, 208), 10, 2)
-
-    # head — solid skin fill + 2-tone dither for the spherical shading (replaces
-    # the radial_grad_surf + soft_glow AA ramps). No anti-aliasing.
-    head_r = 46
-    # base skin disc (solid fill)
-    pygame.draw.circle(surf, skin, (cx, 110), head_r)
-    # dithered shading: a 2-tone checker clipped to the head circle (light
-    # upper-left, dark lower-right) — reads as chunky pixel shading.
-    headg = px_dither_surf(head_r * 2, head_r * 2, skin_light, skin_dark)
-    clip_to_circle(headg, (head_r, head_r), head_r)
-    surf.blit(headg, (cx - head_r, 110 - head_r))
-    # face core shadow (a solid darker disc offset to the right, no AA)
-    fshade = pygame.Surface((head_r * 2, head_r * 2), pygame.SRCALPHA)
-    pygame.draw.circle(fshade, (30, 40, 60, 30), (head_r, head_r), head_r)
-    pygame.draw.circle(fshade, (0, 0, 0, 0), (head_r - 16, head_r), head_r - 4)
-    surf.blit(fshade, (cx - head_r, 110 - head_r))
-    # warm nose/cheek tint (solid blocks, no AA)
-    pygame.draw.rect(surf, (255, 180, 160), (cx - 8, 118, 16, 8))
-    # cheek blush (solid blocks, on both sides)
-    pygame.draw.rect(surf, (255, 148, 165), (cx - 32, 120, 12, 8))
-    pygame.draw.rect(surf, (255, 148, 165), (cx + 20, 120, 12, 8))
-    # small nose dot (solid, no AA)
-    pygame.draw.rect(surf, (210, 160, 145), (cx - 2, 120, 4, 4))
-    pygame.draw.circle(surf, outline, (cx, 110), head_r, 3)
-
-    # hair
-    draw_hair(surf, cx, 110, head_r, hair_color, outline, hair_style, hair_light)
-
-    # eyes (per-hero expression + eye shape for facial variety)
-    draw_eyes(surf, cx, 112, eye_color, outline, element, expression, eye_shape)
-
-    # weapon
-    draw_weapon(surf, cx, cy, weapon, accent, outline, element)
-
-def draw_hair(surf, cx, cy, r, color, outline, style, highlight=None):
-    """Pixel-art hair: 2-tone dithered cap shading + solid specular blocks
-    (no smooth radial_grad/diag_grad ramps, no anti-aliased arcs). All 10 hair
-    styles preserved so per-hero variety stays intact."""
-    if highlight is None:
-        highlight = shade(color, 1.2)
-    shadow_col = shade(color, 0.65)
-    dark_col = shade(color, 0.45)
-    spec_col = shade(color, 1.45)  # bright specular for the hair shine block
-    if style == "spiky":
-        pts = []
-        for i in range(11):  # more points for the silhouette
-            ang = math.pi + math.pi * (i / 10)
-            rr = r + (14 if i % 2 == 0 else -1)
-            pts.append((cx + math.cos(ang) * rr, cy + math.sin(ang) * rr * 0.92))
-        pygame.draw.polygon(surf, color, pts)
-        pygame.draw.polygon(surf, outline, pts, 3)
-        # cap shading — 2-tone dithered fill clipped to the hair circle (no AA)
-        crown = px_dither_surf(2 * r, 2 * r, highlight, dark_col)
-        clip_to_circle(crown, (r, r), r - 1)
-        surf.blit(crown, (cx - r, cy - r))
-        # specular block (a bright solid block near the top-left of the hair,
-        # replacing the smooth arc band)
-        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 6, int(r * 0.6), 4))
-        pygame.draw.rect(surf, shade(spec_col, 0.85), (cx - r + 6, cy - r + 10, int(r * 0.45), 2))
-        # spiky strand highlights (solid lines, no AA)
-        for i in (1, 3, 5, 7):
-            ang = math.pi + math.pi * (i / 10)
-            ex = cx + math.cos(ang) * (r + 8)
-            ey = cy + math.sin(ang) * (r + 8) * 0.92
-            sx2 = cx + math.cos(ang) * (r - 12)
-            sy2 = cy + math.sin(ang) * (r - 12) * 0.92
-            pygame.draw.line(surf, highlight, (sx2, sy2), (ex, ey), 2)
-        # hairline fringe (a solid dark block at the hairline, no AA arc)
-        pygame.draw.rect(surf, dark_col, (cx - r + 4, cy + r - 6, 2 * r - 8, 3))
-        pygame.draw.rect(surf, outline, (cx - r + 4, cy + r - 6, 2 * r - 8, 2))
-    elif style == "long":
-        pygame.draw.circle(surf, color, (cx, cy - 6), r + 2)
-        pygame.draw.rect(surf, color, (cx - r, cy - 10, 2 * r, 70), border_radius=24)
-        # 2-tone dithered shading clipped to the long-hair rect (no AA)
-        lg = px_dither_surf(2 * r, 70, highlight, dark_col)
-        m = pygame.Surface((2 * r, 70), pygame.SRCALPHA)
-        pygame.draw.rect(m, (255, 255, 255, 255), m.get_rect(), border_radius=24)
-        lg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-        surf.blit(lg, (cx - r, cy - 10))
-        # specular block across the top/crown area (solid block, no AA arc)
-        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 4, int(r * 0.9), 5))
-        pygame.draw.rect(surf, shade(spec_col, 0.85), (cx - r + 6, cy - r + 9, int(r * 0.7), 2))
-        pygame.draw.circle(surf, outline, (cx, cy - 6), r + 2, 3)
-        pygame.draw.rect(surf, outline, (cx - r, cy - 10, 2 * r, 70), 3, border_radius=24)
-        # tips (solid dark block at the bottom, no AA gradient)
-        pygame.draw.rect(surf, dark_col, (cx - r, cy + 36, 2 * r, 10))
-        # strand lines (solid vertical blocks, no AA)
-        for dx in (-20, -12, -4, 4, 12):
-            pygame.draw.rect(surf, shade(color, 0.85), (cx + dx, cy - 4, 2, 56))
-    elif style == "short":
-        pygame.draw.circle(surf, color, (cx, cy - 8), r)
-        pygame.draw.rect(surf, color, (cx - r, cy - 8, 2 * r, 26), border_radius=18)
-        # cap shading — 2-tone dithered fill clipped to the cap circle (no AA)
-        cap = px_dither_surf(2 * r, 2 * r, highlight, dark_col)
-        clip_to_circle(cap, (r, r), r)
-        surf.blit(cap, (cx - r, cy - 8))
-        # specular shine block (solid block, no AA arc)
-        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 4, int(r * 0.8), 4))
-        # short strand lines (solid vertical blocks, no AA)
-        for dx2 in (-14, -4, 6):
-            pygame.draw.rect(surf, shade(color, 0.85), (cx + dx2, cy - 6, 1, 22))
-        # hairline shadow (solid block, no AA arc)
-        pygame.draw.rect(surf, dark_col, (cx - r + 4, cy + r - 8, 2 * r - 8, 3))
-        pygame.draw.circle(surf, outline, (cx, cy - 8), r, 3)
-    elif style == "twin":
-        pygame.draw.circle(surf, color, (cx, cy - 6), r)
-        # specular block on top (solid block, no AA arc)
-        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 2, int(r * 0.8), 4))
-        pygame.draw.circle(surf, highlight, (cx - 8, cy - 12), r // 3)
-        pygame.draw.circle(surf, outline, (cx, cy - 6), r, 3)
-        for sx in (-1, 1):
-            tx = cx + sx * (r + 6)
-            # tail — 2-tone dithered fill clipped to the tail ellipse (no AA)
-            tailg = px_dither_surf(24, 44, highlight, dark_col)
-            m = pygame.Surface((24, 44), pygame.SRCALPHA)
-            pygame.draw.ellipse(m, (255, 255, 255, 255), m.get_rect())
-            tailg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-            surf.blit(tailg, (tx - 12, cy))
-            # specular streak along the tail (solid line, no AA)
-            pygame.draw.line(surf, spec_col, (tx, cy + 4), (tx, cy + 36), 2)
-            pygame.draw.ellipse(surf, outline, (tx - 12, cy, 24, 44), 3)
-            pygame.draw.circle(surf, color, (tx, cy + 4), 16)
-            pygame.draw.circle(surf, outline, (tx, cy + 4), 16, 3)
-            # ribbon tie with specular (solid discs, no AA)
-            pygame.draw.circle(surf, shadow_col, (tx, cy + 2), 7)
-            pygame.draw.circle(surf, highlight, (tx - 2, cy), 3)
-            pygame.draw.rect(surf, (255, 255, 255), (tx - 4, cy - 2, 4, 4))
-            pygame.draw.circle(surf, outline, (tx, cy + 2), 7, 2)
-    elif style == "hood":
-        pygame.draw.circle(surf, color, (cx, cy - 4), r + 8)
-        pygame.draw.polygon(surf, color, [(cx - r - 10, cy - 4), (cx + r + 10, cy - 4),
-                                         (cx + r, cy + 40), (cx - r, cy + 40)])
-        pygame.draw.circle(surf, outline, (cx, cy - 4), r + 8, 3)
-        # hood shading — 2-tone dithered fill clipped to the hood shape (no AA)
-        hoodg = px_dither_surf(2 * r + 20, 2 * r + 10, highlight, dark_col)
-        m = pygame.Surface(hoodg.get_size(), pygame.SRCALPHA)
-        pygame.draw.circle(m, (255, 255, 255, 255), (r + 10, r + 4), r + 8)
-        pygame.draw.polygon(m, (255, 255, 255, 255),
-                            [(0, r), (2 * r + 20, r), (2 * r + 10, 2 * r + 4 + 6), (10, 2 * r + 4 + 6)])
-        hoodg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-        surf.blit(hoodg, (cx - r - 10, cy - r - 4))
-        # specular rim along the top of the hood (solid block, no AA arc)
-        pygame.draw.rect(surf, spec_col, (cx - r - 4, cy - r - 2, 2 * r + 8, 4))
-        # hood fold shading on the right (solid polygon, no AA)
-        pygame.draw.polygon(surf, shadow_col, [(cx + r - 6, cy - 4), (cx + r + 10, cy - 4),
-                                               (cx + r, cy + 40), (cx + r - 16, cy + 40)])
-        # hood fabric folds (solid vertical blocks, no AA)
-        for hfx in (-10, 0, 10):
-            pygame.draw.rect(surf, dark_col, (cx + hfx + 6, cy - 2, 3, 46))
-        # inner hood shadow on the face (solid block, no AA)
-        pygame.draw.rect(surf, (0, 0, 0), (cx - r, cy - 10, 2 * r, r // 2))
-    elif style == "ponytail":
-        # base cap + a single tail high on the back of the head
-        pygame.draw.circle(surf, color, (cx, cy - 6), r)
-        # cap shading — 2-tone dithered fill clipped to the cap circle (no AA)
-        cap = px_dither_surf(2 * r, 2 * r, highlight, dark_col)
-        clip_to_circle(cap, (r, r), r)
-        surf.blit(cap, (cx - r, cy - 6))
-        # specular block on top (solid block, no AA arc)
-        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 2, int(r * 0.8), 4))
-        # the tail (a rounded strand hanging from the top-back)
-        tx = cx + r - 6
-        ty = cy - r
-        # tail — 2-tone dithered fill clipped to the tail rect (no AA)
-        tailg = px_dither_surf(22, 64, highlight, dark_col)
-        m = pygame.Surface((22, 64), pygame.SRCALPHA)
-        pygame.draw.rect(m, (255, 255, 255, 255), m.get_rect(), border_radius=11)
-        tailg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-        surf.blit(tailg, (tx - 11, ty))
-        pygame.draw.rect(surf, outline, (tx - 11, ty, 22, 64), 3, border_radius=11)
-        # hair tie band (solid blocks, no AA)
-        pygame.draw.rect(surf, shadow_col, (tx - 13, ty + 4, 26, 8), border_radius=4)
-        pygame.draw.rect(surf, highlight, (tx - 12, ty + 5, 24, 3), border_radius=2)
-        pygame.draw.circle(surf, outline, (cx, cy - 6), r, 3)
-    elif style == "bob":
-        # rounded cap that frames the face, chin-length blunt cut
-        pygame.draw.circle(surf, color, (cx, cy - 4), r + 2)
-        pygame.draw.rect(surf, color, (cx - r - 2, cy - 6, 2 * r + 4, 40), border_radius=20)
-        # 2-tone dithered shading clipped to the bob rect (no AA)
-        bg = px_dither_surf(2 * r + 4, 40, highlight, dark_col)
-        m = pygame.Surface((2 * r + 4, 40), pygame.SRCALPHA)
-        pygame.draw.rect(m, (255, 255, 255, 255), m.get_rect(), border_radius=20)
-        bg.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-        surf.blit(bg, (cx - r - 2, cy - 6))
-        # specular block on top (solid block, no AA arc)
-        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r + 2, int(r * 0.8), 4))
-        # blunt-cut bottom edge highlight (solid line, no AA)
-        pygame.draw.line(surf, spec_col, (cx - r, cy + 32), (cx + r, cy + 32), 2)
-        for dx in (-r + 2, r - 4):
-            pygame.draw.rect(surf, shade(color, 0.85), (cx + dx, cy - 4, 3, 36))
-        pygame.draw.circle(surf, outline, (cx, cy - 4), r + 2, 3)
-        pygame.draw.rect(surf, outline, (cx - r - 2, cy - 6, 2 * r + 4, 40), 3, border_radius=20)
-    elif style == "curly":
-        # cloud-like rounded silhouette with curl bumps
-        pygame.draw.circle(surf, color, (cx, cy - 4), r + 2)
-        for bx, by, br in ((-r + 2, -r + 4, 14), (r - 4, -r + 6, 13),
-                           (-r + 14, -r - 4, 12), (r - 14, -r - 2, 13),
-                           (0, -r - 6, 13)):
-            pygame.draw.circle(surf, color, (cx + bx, cy + by), br)
-        # cap shading — 2-tone dithered fill clipped to the cap circle (no AA)
-        cap = px_dither_surf(2 * r, 2 * r, highlight, dark_col)
-        clip_to_circle(cap, (r, r), r)
-        surf.blit(cap, (cx - r, cy - 4))
-        # specular block on top (solid block, no AA arc)
-        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r, int(r * 0.8), 4))
-        pygame.draw.circle(surf, outline, (cx, cy - 4), r + 2, 3)
-    elif style == "mohawk":
-        # shaved sides + central spiky ridge
-        pygame.draw.circle(surf, shade(color, 0.72), (cx, cy - 2), r - 6)
-        pts = [(cx - 12, cy - 4)]
-        for i in range(7):
-            x = cx - 12 + i * 4
-            pts.append((x, cy - r - 4 if i % 2 == 0 else cy - 8))
-        pts.append((cx + 12, cy - 4))
-        pygame.draw.polygon(surf, color, pts)
-        # lighter band down the center of the ridge (solid polygon, no AA)
-        pygame.draw.polygon(surf, shade(color, 1.25), [(p[0], p[1] + 1) for p in pts])
-        # specular streaks (solid lines, no AA)
-        for i in range(7):
-            x = cx - 12 + i * 4
-            if i % 2 == 0:
-                pygame.draw.line(surf, spec_col, (x, cy - r - 4), (x, cy - 6), 1)
-        pygame.draw.polygon(surf, outline, pts, 2)
-        pygame.draw.circle(surf, outline, (cx, cy - 2), r - 6, 2)
-    elif style == "braided":
-        # base cap + two braids hanging on the sides
-        pygame.draw.circle(surf, color, (cx, cy - 6), r)
-        # cap shading — 2-tone dithered fill clipped to the cap circle (no AA)
-        cap = px_dither_surf(2 * r, 2 * r, highlight, dark_col)
-        clip_to_circle(cap, (r, r), r)
-        surf.blit(cap, (cx - r, cy - 6))
-        # specular block on top (solid block, no AA arc)
-        pygame.draw.rect(surf, spec_col, (cx - r + 6, cy - r, int(r * 0.8), 4))
-        pygame.draw.circle(surf, outline, (cx, cy - 6), r, 3)
-        # two side braids: a stack of rounded segments (solid discs, no AA)
-        for sx in (-1, 1):
-            bx = cx + sx * (r - 2)
-            for seg in range(4):
-                by = cy - 2 + seg * 12
-                pygame.draw.circle(surf, color, (bx, by), 8)
-                pygame.draw.line(surf, shade(color, 0.6), (bx - 7, by), (bx + 7, by), 2)
-            # tail tie + tip (solid discs, no AA)
-            pygame.draw.circle(surf, shadow_col, (bx, cy - 4), 6)
-            pygame.draw.circle(surf, highlight, (bx - 2, cy - 6), 3)
-            pygame.draw.circle(surf, outline, (bx, cy - 4), 6, 2)
 
 def draw_eyes(surf, cx, cy, color, outline, element, expression="neutral", eye_shape="round"):
     # Pixel-art anime eyes: 2-tone dithered sclera + iris, solid lid blocks,
@@ -1224,7 +823,7 @@ def _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline):
 # --- per-archetype silhouettes ---------------------------------------------
 # Each draws its distinct body onto surf (256x256), returns (hx, hy, hr, w, h)
 # so _apply_features + draw_weapon can place features/weapon consistently.
-# cx,cy = 128,150 (the same anchor as the legacy draw_chibi).
+# Anchor: cx,cy = 128,150.
 
 def _arch_knight(surf, cx, cy, pal, outline, build):
     """Armored knight: broad shoulders, plate torso, helmet."""
@@ -3801,187 +3400,9 @@ def draw_star(surf, cx, cy, r, points, color, inner_color):
     pygame.draw.polygon(surf, color, pts)
     pygame.draw.polygon(surf, (40, 30, 20), pts, 2)
 
-def draw_rift_portal(surf, cx, cy, t=0.0):
-    """A pulsing portal for the hidden rift mini-dungeon (task D4). A swirling
-    violet ring + a bright core + a few orbiting shards, drawn inline in
-    world_scene (the same pattern as the chest/breakable draws) so it reads
-    as a distinct place, not just another deco tile. The `t` arg is the
-    pulse phase (0..1) so the caller can animate it with pygame.time.get_ticks.
-    """
-    # pulse 0..1 -> radius/alpha breathe
-    pulse = 0.5 + 0.5 * math.sin(t * 0.006)
-    # outer glow (a soft violet halo, reused scratch-surface pattern)
-    gw = 56
-    g = pygame.Surface((gw, gw), pygame.SRCALPHA)
-    for rr in range(26, 6, -2):
-        a = int(80 * pulse * (1 - (rr - 6) / 20))
-        pygame.draw.circle(g, (180, 80, 220, a), (gw // 2, gw // 2), rr)
-    surf.blit(g, (cx - gw // 2, cy - gw // 2))
-    # the swirling ring (3 offset arcs so it reads as a spinning vortex, not a
-    # static circle)
-    for k in range(3):
-        ang = t * 0.004 + k * (math.pi * 2 / 3)
-        rx = int(cx + math.cos(ang) * 14)
-        ry = int(cy + math.sin(ang) * 14)
-        pygame.draw.circle(surf, (200, 120, 240), (rx, ry), 8, 2)
-    # bright core
-    pygame.draw.circle(surf, (220, 160, 255), (cx, cy), 6 + int(pulse * 3))
-    pygame.draw.circle(surf, (255, 240, 255), (cx, cy), 3)
-    # a few orbiting shards (jagged accent triangles around the rim)
-    for k in range(5):
-        ang = t * 0.005 + k * (math.pi * 2 / 5)
-        sx = int(cx + math.cos(ang) * 20)
-        sy = int(cy + math.sin(ang) * 20)
-        pygame.draw.circle(surf, (200, 120, 240), (sx, sy), 2)
-
-def draw_element_glyph(surf, cx, cy, element, color):
-    if element == "fire":
-        pygame.draw.polygon(surf, color, [(cx, cy - 14), (cx + 8, cy), (cx + 4, cy + 2), (cx + 12, cy + 12), (cx, cy + 6), (cx - 4, cy + 10), (cx - 8, cy), (cx - 4, cy - 4)])
-    elif element == "water":
-        pygame.draw.polygon(surf, color, [(cx, cy - 14), (cx + 12, cy + 6), (cx + 6, cy + 12), (cx - 6, cy + 12), (cx - 12, cy + 6)])
-    elif element == "wind":
-        for i, dy in enumerate([-10, 0, 10]):
-            pygame.draw.arc(surf, color, (cx - 14, cy + dy - 6, 28, 12), 0.1, math.pi - 0.1, 3)
-    elif element == "light":
-        for i in range(8):
-            a = math.pi * i / 4
-            pygame.draw.line(surf, color, (cx, cy), (cx + math.cos(a) * 14, cy + math.sin(a) * 14), 3)
-        pygame.draw.circle(surf, color, (cx, cy), 5)
-    elif element == "dark":
-        pygame.draw.circle(surf, color, (cx, cy), 12)
-        pygame.draw.circle(surf, (30, 20, 40), (cx, cy), 12, 2)
-        pygame.draw.circle(surf, (30, 20, 40), (cx + 4, cy - 4), 4)
-
-# ---------------------------------------------------------------------------
-# Portraits (larger, framed headshots)
-# ---------------------------------------------------------------------------
-def make_portrait(element, body, hair, accent, hair_style, weapon, path,
-                  eye=(40, 40, 60), expression="neutral", eye_shape="round", skin=None):
-    s = pygame.Surface((512, 512), pygame.SRCALPHA)
-    main, light, dark = ELEMENT_COLORS[element]
-    # bg: 2-tone dithered diagonal fill (pixel-art: no AA diagonal gradient).
-    # Element-tinted -> slightly darkened so the face reads at card size.
-    bg = px_dither_surf(512, 512, lerp_color(main, (0, 0, 0), 0.25),
-                        lerp_color(main, (0, 0, 0), 0.55))
-    s.blit(bg, (0, 0))
-    # large element-tinted glow behind the character (chunky block, no AA soft-glow)
-    pygame.draw.circle(s, (*light, 80), (256, 230), 280)
-    pygame.draw.circle(s, (*light, 60), (160, 200), 150)
-    # element particles / motes scattered in the bg (chunky blocks, no AA)
-    for i in range(26):
-        sx = 30 + (hash((element, i, "x")) % 452)
-        sy = 30 + (hash((element, i, "y")) % 452)
-        sr = 1 + (hash((element, i, "r")) % 3)
-        pygame.draw.rect(s, light, (px_snap(sx), px_snap(sy), sr * 2, sr * 2))
-        pygame.draw.rect(s, (255, 255, 255), (px_snap(sx), px_snap(sy), 2, 2))
-    # a few trailing wisps (element-tinted solid lines, no AA)
-    for i in range(4):
-        wx = 60 + (hash((element, i, "w")) % 392)
-        wy = 80 + (hash((element, i, "h")) % 300)
-        pygame.draw.line(s, light, (wx, wy), (wx + 120, wy + 30), 2)
-    # big character (scaled up) — rendered on an opaque-free surface, then
-    # nearest-neighbor scaled (pixel-art: no smoothscale AA).
-    big = pygame.Surface((256, 256), pygame.SRCALPHA)
-    draw_chibi(big, element, body, hair, accent, weapon, hair_style, eye,
-               expression, eye_shape, skin)
-    big = pygame.transform.scale(big, (470, 470))
-    # subtle ground glow under the character (chunky block, no AA)
-    pygame.draw.ellipse(s, (*light, 70), (76, 430, 360, 60))
-    s.blit(big, (21, 50))
-    # vignette (a chunky dark ring, no AA radial gradient)
-    vig = pygame.Surface((512, 512), pygame.SRCALPHA)
-    pygame.draw.circle(vig, (0, 0, 0, 0), (256, 256), 340)
-    pygame.draw.circle(vig, (0, 0, 0, 90), (256, 256), 340)
-    pygame.draw.circle(vig, (0, 0, 0, 0), (256, 256), 320)
-    s.blit(vig, (0, 0))
-    # frame: dark border + element-colored ring + thin inner highlight (no AA)
-    pygame.draw.rect(s, (18, 16, 28), s.get_rect(), 12, border_radius=30)
-    pygame.draw.rect(s, light, s.get_rect(), 6, border_radius=30)
-    pygame.draw.rect(s, (255, 255, 255), (24, 24, 464, 464), 2, border_radius=24)
-    # corner accents (element gems, solid discs, no AA)
-    for cx2, cy2 in ((34, 34), (478, 34), (34, 478), (478, 478)):
-        pygame.draw.circle(s, light, (cx2, cy2), 9)
-        pygame.draw.circle(s, dark, (cx2, cy2), 6)
-        pygame.draw.rect(s, (255, 255, 255), (cx2 - 4, cy2 - 4, 4, 4))
-    pygame.image.save(s, path)
-
 # ---------------------------------------------------------------------------
 # Master build
 # ---------------------------------------------------------------------------
-HEROES = [
-    # name, element, weapon, hair_style, hair_color, body_color, accent
-    # (per-hero eye color / expression / eye shape / skin tone live in the
-    #  HERO_EYE_COLORS / HERO_EXPRESSIONS / HERO_EYE_SHAPES / HERO_SKIN_TONES
-    #  dicts below, so this tuple stays 7 fields and existing unpacks work.)
-    ("aria",   "light", "sword",  "long",  (250, 230, 180), (240, 230, 250), (220, 180, 60)),
-    ("kael",   "fire",  "sword",  "spiky", (200, 60, 40),   (220, 90, 60),    (255, 180, 80)),
-    ("mira",   "water", "staff",  "long",  (90, 130, 220),  (120, 180, 230),  (180, 230, 255)),
-    ("zephyr", "wind",  "bow",    "twin",  (120, 200, 120), (140, 210, 150),  (200, 240, 180)),
-    ("luna",   "dark",  "dagger", "hood",  (160, 120, 200), (90, 70, 120),    (200, 160, 240)),
-    ("pyra",   "fire",  "staff",  "twin",  (220, 80, 60),   (200, 70, 60),    (255, 180, 120)),
-    ("lyra",   "light", "orb",    "long",  (240, 230, 200), (230, 220, 240),  (255, 240, 180)),
-    ("thorne", "wind",  "shield", "short", (90, 70, 50),    (120, 100, 80),   (180, 150, 110)),
-    ("sera",   "light", "staff",  "long",  (240, 220, 160), (240, 220, 200),  (255, 240, 180)),
-    ("rune",   "dark",  "orb",    "spiky", (140, 80, 180),  (90, 60, 130),    (200, 140, 240)),
-    ("blaze",  "fire",  "sword",  "curly", (220, 100, 40),  (200, 80, 50),    (255, 160, 60)),
-    ("nami",   "water", "orb",    "twin",  (120, 180, 220), (140, 200, 230),  (200, 240, 255)),
-    ("gale",   "wind",  "bow",    "short", (160, 200, 120), (140, 190, 130),  (200, 240, 160)),
-    ("vex",    "dark",  "dagger", "braided", (120, 90, 150),  (80, 60, 110),    (180, 140, 220)),
-    # --- new heroes (Phase B) ---
-    ("ember",  "fire",  "sword",  "mohawk", (180, 50, 40),  (200, 80, 60),    (255, 180, 80)),
-    ("tide",   "water", "shield", "short", (90, 150, 220), (120, 180, 220),  (200, 240, 255)),
-    ("zephyra","wind",  "bow",    "ponytail", (140, 220, 200), (150, 220, 200),  (220, 250, 230)),
-    ("selene", "light", "sword",  "ponytail", (250, 240, 200), (240, 230, 200), (255, 220, 120)),
-    ("nox",    "dark",  "orb",    "hood",  (140, 60, 200),  (90, 50, 130),    (200, 140, 255)),
-    ("cinder", "fire",  "sword",  "short", (200, 80, 40),   (190, 90, 60),    (255, 160, 80)),
-    ("mist",   "wind",  "dagger", "bob",  (160, 200, 200), (140, 190, 190),  (220, 250, 240)),
-    ("sol",    "light", "orb",    "bob",  (250, 230, 160), (240, 220, 180),  (255, 240, 180)),
-    # --- new heroes (Phase C) ---
-    ("gaia",  "wind",  "shield", "bob", (120, 160, 90),  (110, 150, 90),   (180, 220, 120)),
-    ("echo",  "water", "orb",    "twin",  (160, 200, 220), (150, 200, 220),  (220, 240, 255)),
-    ("raven", "dark",  "dagger", "hood",  (90, 30, 30),    (70, 30, 40),     (200, 60, 80)),
-]
-
-# Per-hero facial features (keyed by hero name). Together with the new hair
-# styles above, these give each of the 25 heroes a distinct face so heroes of
-# the same element are no longer near-identical clones. (Audit: chibi face
-# variety.) The HEROES tuple stays 7 fields; these are looked up by name in
-# main() so existing 7-field unpacks (e.g. verify_assets.py) keep working.
-HERO_EYE_COLORS = {
-    "aria": (180, 140, 60), "kael": (220, 80, 40), "mira": (120, 200, 230),
-    "zephyr": (120, 200, 120), "luna": (180, 120, 220), "pyra": (240, 120, 50),
-    "lyra": (220, 180, 90), "thorne": (90, 140, 80), "sera": (200, 170, 80),
-    "rune": (160, 90, 210), "blaze": (230, 100, 40), "nami": (100, 180, 240),
-    "gale": (140, 220, 110), "vex": (140, 80, 180), "ember": (210, 60, 50),
-    "tide": (80, 140, 220), "zephyra": (160, 220, 180), "selene": (160, 180, 220),
-    "nox": (120, 70, 200), "cinder": (180, 50, 40), "mist": (180, 220, 200),
-    "sol": (240, 200, 80), "gaia": (100, 170, 90), "echo": (140, 210, 230),
-    "raven": (200, 40, 60),
-}
-HERO_EXPRESSIONS = {
-    "aria": "stoic", "kael": "fierce", "mira": "gentle", "zephyr": "fierce",
-    "luna": "sad", "pyra": "fierce", "lyra": "gentle", "thorne": "stoic",
-    "sera": "gentle", "rune": "stoic", "blaze": "fierce", "nami": "gentle",
-    "gale": "fierce", "vex": "fierce", "ember": "fierce", "tide": "stoic",
-    "zephyra": "gentle", "selene": "stoic", "nox": "stoic", "cinder": "stoic",
-    "mist": "sad", "sol": "gentle", "gaia": "stoic", "echo": "gentle",
-    "raven": "fierce",
-}
-HERO_EYE_SHAPES = {
-    "aria": "half", "kael": "sharp", "mira": "wide", "zephyr": "sharp",
-    "luna": "round", "pyra": "sharp", "lyra": "wide", "thorne": "half",
-    "sera": "wide", "rune": "half", "blaze": "sharp", "nami": "wide",
-    "gale": "sharp", "vex": "sharp", "ember": "sharp", "tide": "half",
-    "zephyra": "wide", "selene": "half", "nox": "half", "cinder": "half",
-    "mist": "round", "sol": "wide", "gaia": "half", "echo": "wide",
-    "raven": "sharp",
-}
-HERO_SKIN_TONES = {
-    "raven": (230, 210, 215), "gaia": (210, 170, 130), "tide": (220, 210, 225),
-    "sol": (255, 215, 170), "luna": (235, 215, 220), "nox": (225, 210, 230),
-    "ember": (235, 200, 170), "cinder": (240, 210, 180),
-}
-
 ENEMIES = [
     # LoL jungle mobs (open-world trash) — palette = (main, accent, dark)
     ("Razorbeaks",    "wind",   ((120, 220, 140), (200, 255, 200), (40, 120, 60))),
@@ -4047,54 +3468,12 @@ SKILL_KIND = {name: kind for name, el, kind in SKILLS}
 
 def main():
     print("Generating Aetheria assets...")
-    # per-character bundles: assets/characters/{hero_id}/ with sprite.png +
-    # portrait.png + skills/{skill_id}.png. Each skill icon is per-skill
-    # distinct (a variant derived from the skill name) + per-hero accent-tinted
-    # so the same skill on two heroes looks different.
-    import data as D
-    n_skills = 0
-    for name, element, weapon, hair_style, hair, body, accent in HEROES:
-        # per-hero facial variety (eye color / expression / eye shape / skin)
-        eye = HERO_EYE_COLORS.get(name, (40, 40, 60))
-        expr = HERO_EXPRESSIONS.get(name, "neutral")
-        eshape = HERO_EYE_SHAPES.get(name, "round")
-        skin = HERO_SKIN_TONES.get(name)
-        hero_dir = os.path.join(ASSET_DIR, "characters", name)
-        skills_dir = os.path.join(hero_dir, "skills")
-        os.makedirs(hero_dir, exist_ok=True)
-        os.makedirs(skills_dir, exist_ok=True)
-        # sprite
-        s = pygame.Surface((256, 256), pygame.SRCALPHA)
-        draw_chibi(s, element, body, hair, accent, weapon, hair_style,
-                   eye, expr, eshape, skin)
-        pygame.image.save(s, os.path.join(hero_dir, "sprite.png"))
-        # portrait
-        make_portrait(element, body, hair, accent, hair_style, weapon,
-                      os.path.join(hero_dir, "portrait.png"),
-                      eye, expr, eshape, skin)
-        # per-hero skill icons (the hero's kit: 3 active + ult + basic_attack).
-        # Read the skill ids from data.py HEROES_DB (the source of truth) so the
-        # bundle matches what the game actually loads.
-        hdef = next((h for h in D.HEROES_DB if h["id"] == name), None)
-        if hdef is not None:
-            skill_ids = [sid for sid in hdef["skills"] if sid]
-            if hdef.get("ultimate"):
-                skill_ids.append(hdef["ultimate"])
-            for sid in skill_ids:
-                if sid not in D.SKILLS_DB:
-                    continue
-                sk = D.SKILLS_DB[sid]
-                el = sk["element"]
-                kind = SKILL_KIND.get(sid, "orb")
-                s = pygame.Surface((128, 128), pygame.SRCALPHA)
-                # pass the hero_id as the hero_tint so same-accent heroes still
-                # get a distinct per-hero tint (the accent palette has dupes).
-                draw_skill_icon(s, sid, el, kind, hero_accent=accent,
-                                hero_tint=name)
-                pygame.image.save(s, os.path.join(skills_dir, f"{sid}.png"))
-                n_skills += 1
-    print(f"  {len(HEROES)} characters + portraits + {n_skills} per-hero skill icons")
-
+    # NOTE: per-champion character bundles (sprite.png / portrait.jpg / icon.png
+    # / skills/*.png / skins/*.jpg) are built by build_champions.py from the
+    # crawled LoL data, NOT by this loop. This main() generates only the shared
+    # non-champion art: enemy sprites, the 4 boss-ult skill icons, backgrounds,
+    # item icons, UI frames, terrain tiles, landmarks, village buildings, and
+    # ground-loot drops.
     # enemies
     for name, el, pal in ENEMIES:
         s = pygame.Surface((256, 256), pygame.SRCALPHA)

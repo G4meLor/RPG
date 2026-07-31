@@ -47,18 +47,28 @@ ràng buộc cứng cho toàn bộ agent làm việc trong repo:
 
 ## 3. Kiến trúc hiện tại
 
-| File | Vai trò |
+Codebase là package `src/` với kiến trúc **ECS-lite** (entity = component data bag, system = processor). `main.py` ở root là entry mỏng. Hybrid: 9 systems giữ logic (port verbatim từ god-class cũ), `WorldCharacter`/`WorldEnemy` còn làm data carrier + delegate `update` mỏng sang systems.
+
+| Module | Vai trò |
 |------|---------|
-| `main.py` | Game loop, scene manager (`Game`), các scene menu cũ (title, map, roster, gacha, shop, inventory, hero_detail, battle, tower, daily, codex, settings, stats). World scene được import lười qua `_get_world_scene_cls()`. |
-| `world_data.py` | Lưới 10×5, biome, sinh map xác định theo seed, đồ thị teleport (neighbors), entry points. |
-| `world_entities.py` | `Camera`, `Particles`, `Projectile`, `FloatText`, `WorldCharacter` (hero real-time), `WorldEnemy` (AI real-time). |
-| `world_scene.py` | `WorldScene` (scene chính open-world), `MapRenderer` (bake map), `TeleportOverlay`, `PauseHub`, `EvolveOverlay` (cây tiến hóa). |
-| `data.py` | Dữ liệu tĩnh: heroes, enemies, skills, equipment, consumables, gacha, achievements, tuning, **passives + evolution tree**. |
-| `entities.py` | `Hero`/`Enemy` runtime, stats, leveling, ascension, equipment, effects, **passive + evo tree bonuses**, sprite loaders. |
-| `combat.py` | **Đã xóa** (engine turn-based cũ đã remove). |
-| `player.py` | Trạng thái người chơi + save/load (bao gồm `ow_*`, `evo_nodes`, settings đầy đủ). |
-| `generate_assets.py` | Sinh toàn bộ PNG (characters, enemies, portraits, skills, items, ui, backgrounds). |
-| `audio.py` | Synth âm thanh (numpy, không cần file). |
+| `main.py` | Entry mỏng (bootstrap `src.core.main`). |
+| `src/core/` | `game.py` (Game loop + scene manager), `scene.py` (base Scene), `world.py` (entity container + query), `main.py` (bootstrap). |
+| `src/ui/` | `primitives.py` (font/text cache, Button, bars, dim overlay), `colors.py` (element/rarity colors), `widgets.py` (Toggle/Slider). |
+| `src/data/` | **16 module per-concern** (tuning, elements, skills, heroes, enemies, gacha_data, equipment, story, resonance, passives, evolution, constellation, roles, shop, consumables, progression) — tách từ `data.py` cũ. |
+| `src/entities/` | `components.py` (ECS dataclass: Transform/Health/Combat/AI/Render/Identity/Statuses/ChampionRef/Movement), `entity.py` (Entity), `combatant.py` (Hero/Enemy stat class), `hero.py`/`enemy.py` (entity factories `spawn_hero`/`spawn_enemy`), `world_actors.py` (WorldCharacter/WorldEnemy carrier + Particles/Projectile/FloatText/scratch/WEAPON_STYLE). |
+| `src/systems/` | **9 systems**: `map_ctrl.py` (MapController), `physics.py` (PhysicsSystem + Camera), `ai.py` (AISystem), `combat.py` (CombatSystem), `render.py` (RenderSystem), `hud.py` (HudSystem), `drops.py` (DropSystem), `rift.py` (RiftSystem), `dialogue.py` (DialogueSystem). Mỗi system port verbatim từ god-class cũ. |
+| `src/scenes/` | `world.py` (WorldScene — thin coordinator, delegate sang systems), `adventure.py` (AdventureScene), `menu/` (9 menu scene: title/roster/hero_detail/gacha_scene/shop/inventory/settings/stats/codex). |
+| `src/world/` | `data.py` (map grid + biome + gen_map), `map_renderer.py` (MapRenderer). |
+| `src/fx/` | `rift.py` (runtime VFX: draw_rift_portal). |
+| `src/build/` | `champions.py` (170-champ bake), `build_champions.py` (one-shot roster builder). |
+| `src/assets_gen/` | `generate.py` (build-only art generator). |
+| `src/audio.py` / `src/player.py` / `src/gacha.py` | Synth audio, save state, summoning. |
+| `tools/` | `verify_assets.py` (headless asset check), `verify_ecs.py` (ECS acceptance suite). |
+
+**Verify (headless):**
+- `SDL_VIDEODRIVER=dummy python3 -m tools.verify_assets` — 170 bundles, archetype + per-skill distinctness, loaders, enemies/bosses.
+- `SDL_VIDEODRIVER=dummy python3 -m tools.verify_ecs` — ECS acceptance suite (entity/component/world + factories + systems).
+- `/tmp/verify_complete.py` — 21-test legacy acceptance suite (combat, edge transitions, teleport, save, gacha, boss).
 
 ## 4. Điều khiển (World Scene)
 
@@ -81,12 +91,13 @@ energy / passive.
 
 - **Luôn** chạy smoke-test headless sau khi sửa code world:
   ```bash
-  SDL_VIDEODRIVER=dummy python3 -c "import world_scene, world_entities, world_data; print('ok')"
+  SDL_VIDEODRIVER=dummy python3 -m tools.verify_assets
+  SDL_VIDEODRIVER=dummy python3 -m tools.verify_ecs
   # hoặc chạy vài frame:
-  SDL_VIDEODRIVER=dummy python3 -m <smoke test>
+  SDL_VIDEODRIVER=dummy python3 -c "import main; g=main.Game(); from src.scenes.world import WorldScene; sc=WorldScene(g); g.scene=sc; [sc.update(0.016,[]) or sc.draw(g.screen) for _ in range(120)]; print('ok')"
   ```
 - Scene turn-based cũ **đã xóa** — không còn "Adventure (Stages)".
-- Giữ backward-compat save (`player.py` đã có migration version 5 + merge
+- Giữ backward-compat save (`src/player.py` đã có migration version 5 + merge
   settings defaults + `evo_nodes` setdefault).
 - Code phải chạy được với `pygame 2.6.x` + `numpy` trên Python 3.11.
 - **Settings** ảnh hưởng runtime: `sound`, `sfx_volume` (audio.set_enabled /
@@ -94,3 +105,9 @@ energy / passive.
   `show_fps`, `screen_shake`, `reduce_motion`, `damage_numbers`, `show_hints`,
   `particle_quality`. Thêm option mới → thêm vào `Player.__init__` defaults
   VÀ vào merge block trong `Player.load`.
+- **Kiến trúc ECS-lite hybrid**: logic sống trong `src/systems/` (9 systems,
+  port verbatim). `WorldCharacter`/`WorldEnemy` (trong `src/entities/world_actors.py`)
+  còn làm data carrier + delegate `update` mỏng sang systems. Khi sửa combat/AI/
+  movement/render/HUD, sửa trong system tương ứng, KHÔNG sửa trong WorldScene
+  (chỉ là coordinator). Entity components (`src/entities/components.py`) + factories
+  (`spawn_hero`/`spawn_enemy`) sẵn sàng cho future full takeover.

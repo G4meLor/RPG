@@ -4,13 +4,13 @@
     {
       "id": 0,
       "subject": "Task 1: VLM client (`src/build/vlm_client.py`)",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** A thin OpenAI-compatible HTTP client for the VLM with `describe(ref_path) \u2192 descriptor` and `critique(ref_path, sprite_path) \u2192 {match, ok, problems, suggested_descriptor}`, JSON-validated against the fixed vocab.\n\n**Files:**\n- Create: `src/build/vlm_client.py`\n- Test: `tools/verify_vlm_client.py`\n\n**Acceptance Criteria:**\n- [ ] `VLMClient.describe(ref_jpg)` returns a dict with all 6 descriptor fields, each validated against the vocab (invalid value \u2192 clamped to a valid default, never raises).\n- [ ] `VLMClient.critique(ref_jpg, sprite_png)` returns `{\"match\": int 0-10, \"ok\": bool, \"problems\": list[str], \"suggested_descriptor\": dict}`; `match` is an int 0-10; `ok` is a bool.\n- [ ] JSON wrapped in ```json fences is stripped; invalid JSON retries once then falls back to a safe default (describe \u2192 the champ's existing baked descriptor passed in; critique \u2192 `{match:0, ok:False, problems:[\"parse error\"], suggested_descriptor: <last good>}`).\n- [ ] HTTP uses `ssl` with `verify_mode=CERT_NONE` (self-signed cert); endpoint/model/key overridable via env `VLM_BASE_URL` / `VLM_API_KEY` / `VLM_MODEL`.\n- [ ] `tools/verify_vlm_client.py` passes with a mocked HTTP layer (no network in the test): monkeypatch `urllib.request.urlopen` to return canned JSON, assert describe/critique parse + validate correctly, and that a fenced ```json response is stripped.\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_vlm_client.py` \u2192 prints `pass ...` lines ending in `VLM CLIENT OK`.\n\n```json:metadata\n{}\n```"
     },
     {
       "id": 1,
       "subject": "Task 2: Sprite loop core (`src/build/sprite_loop.py`)",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** The `vlm_sprite_loop(hero_id, skin_idx, ref_jpg, max_iters)` function: describe \u2192 draw \u2192 critique \u2192 revise, max 10 rounds, stop on `ok`, keep best-`match` round; plus the descriptor cache (`descriptors.json`) read/write and a render-lock.\n\n**Files:**\n- Create: `src/build/sprite_loop.py`\n- Test: `tools/verify_sprite_loop.py`\n\n**Acceptance Criteria:**\n- [ ] `vlm_sprite_loop` returns `(best_descriptor, history)` where `history` is a list of `{iter, match, ok}`; the loop stops as soon as a critique returns `ok=True`; if no round is `ok`, the descriptor with the highest `match` is chosen.\n- [ ] The loop never makes more than `max_iters` critique rounds (plus the initial describe).\n- [ ] Rendering is serialized under a module-level `threading.Lock` (pygame is not thread-safe); the VLM calls are NOT under the lock.\n- [ ] `load_cache(char_dir)` / `save_cache(char_dir, cache)` read/write `descriptors.json` as `{\"<idx>\": {descriptor, match, iters, ok}}`; a missing file \u2192 `{}`.\n- [ ] `tools/verify_sprite_loop.py` passes with a FAKE VLM (no network): a stub client whose `describe` returns a fixed descriptor and whose `critique` returns `ok=True` on round 2 \u2014 assert the loop stops at round 2, history length is 2, and best = the round-2 descriptor.\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_sprite_loop.py` \u2192 ends in `SPRITE LOOP OK`.\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         0
@@ -19,7 +19,7 @@
     {
       "id": 2,
       "subject": "Task 3: Concurrency runner (`run_sprite_bake`)",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** A `run_sprite_bake(champs, skin_indices, concurrency, max_iters, force, vlm_factory)` that processes (champ, skin) pairs in parallel via `ThreadPoolExecutor(max_workers=concurrency)`, skips cached-and-ok skins unless `force`, writes each result's PNG + cache entry, and returns an aggregate report.\n\n**Files:**\n- Modify: `src/build/sprite_loop.py` (append `run_sprite_bake`)\n- Test: `tools/verify_sprite_loop.py` (append tests)\n\n**Acceptance Criteria:**\n- [ ] `run_sprite_bake` processes N (champ, skin) pairs with at most `concurrency` in flight; default `concurrency=1` is serial.\n- [ ] A skin whose cache entry has `ok=True` is skipped unless `force=True`.\n- [ ] For each processed skin, the chosen descriptor's PNG is saved to `characters/{id}/sprite.png` (P1, skin 0) and the cache entry `{idx: {descriptor, match, iters, ok}}` is written.\n- [ ] Returns `{\"n_processed\", \"n_skipped\", \"n_ok\", \"mean_match_before\", \"mean_match_after\", \"per_skin\": [...]}`.\n- [ ] A VLM/IO error on one skin is caught and logged in `per_skin` as `{\"error\": str}`; it does not abort the batch.\n- [ ] `tools/verify_sprite_loop.py` new tests pass with a FakeVLM + a 3-champ/1-skin batch at concurrency 2: assert `n_processed==3`, `n_ok==3`, and that re-running with the cache skips all 3 (`n_skipped==3`), and `--force` re-processes.\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_sprite_loop.py` \u2192 all loop + bake tests pass, ends in `SPRITE LOOP OK`.\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         1
@@ -28,7 +28,7 @@
     {
       "id": 3,
       "subject": "Task 4: CLI wiring in `build_champions.py`",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** Add `--vlm-loop`, `--concurrency N`, `--max-iters N`, `--champs LIST`, `--skins LIST`, `--force` to `build_champions.py` so `python3 build_champions.py --sprites --vlm-loop --skins 0` runs the P1 bake.\n\n**Files:**\n- Modify: `src/build/build_champions.py:872-887` (the `main()` argparse + dispatch)\n- Test: `tools/verify_sprite_loop.py` (append a CLI smoke test)\n\n**Acceptance Criteria:**\n- [ ] `python3 -m src.build.build_champions --sprites --vlm-loop --skins 0 --champs Ahri --concurrency 1 --max-iters 3` runs the loop for Ahri skin 0 only and exits 0 (requires network; the test uses `--champs` on a FakeVLM-injected path \u2014 see step 1).\n- [ ] `--vlm-loop` without `--sprites` is a no-op error (prints a message, does not run the old non-VLM `generate_sprites`).\n- [ ] `--skins 0` default; `--skins all` is accepted but maps to `[0]` in P1 (full per-skin is P3 \u2014 print a note).\n- [ ] `--concurrency` defaults to 1; `--max-iters` defaults to 10; `--force` defaults False.\n- [ ] The CLI smoke test invokes the bake via the imported `run_sprite_bake` with a FakeVLM factory through a small `--dry-run`-style entry that the test monkeypatches, asserting the args parse and dispatch correctly (no network).\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_sprite_loop.py` \u2192 CLI test passes; plus a real (network) run for one champ: `SDL_VIDEODRIVER=dummy python3 -m src.build.build_champions --sprites --vlm-loop --champs Ahri --skins 0 --max-iters 3` \u2192 exits 0 and `assets/characters/Ahri/descriptors.json` has a `\"0\"` entry.\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         2
@@ -37,7 +37,7 @@
     {
       "id": 4,
       "subject": "Task 5: P1 bake + verify gate (all 170 Original skins)",
-      "status": "pending",
+      "status": "completed",
       "description": "**USER-ORDERED GATE \u2014 NON-SKIPPABLE.** This task was requested by the user in the current conversation. It MUST NOT be closed by walking around it, by declaring it \"verified inline\", or by substituting a cheaper check. Close only after every item in `acceptanceCriteria` has been re-validated independently, with output captured.\n\n**Goal:** Run the P1 VLM bake across all 170 champs' Original skin (index 0), commit the re-tuned `sprite.png` files + `descriptors.json`, and prove the improvement against the spec's P1 gate (mean match \u2265 6, no skin worse than its round 0).\n\n**Files:**\n- Modify: `assets/characters/*/sprite.png` (170 re-baked), `assets/characters/*/descriptors.json` (170 new)\n- Test: `tools/verify_assets.py` (must stay green), `tools/verify_sprite_loop.py` (aggregate gate check)\n\n**Acceptance Criteria:**\n- [ ] `SDL_VIDEODRIVER=dummy python3 -m src.build.build_champions --sprites --vlm-loop --skins 0 --max-iters 10` completes for all 170 champs and prints a report with `mean_match_after >= 6.0`.\n- [ ] No skin's final `match` is lower than its `match_before` (the loop only improves) \u2014 verified by a gate script that reads every `descriptors.json` and asserts `match >= match_before` for all 170.\n- [ ] `SDL_VIDEODRIVER=dummy python3 -m tools.verify_assets` still passes (every `sprite.png` is 256\u00d7256; archetype distinctness holds) \u2014 the re-bake must not break the asset verifier.\n- [ ] The 170 re-baked `sprite.png` + 170 `descriptors.json` are committed.\n- [ ] A before/after sample is captured: the Ahri `descriptors.json` shows `match_before` (round 0, the old baked descriptor) < `match` (final), proving the Ahri-green-robot mismatch is fixed.\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_p1_gate.py` \u2192 prints per-champ match-before/after + `P1 GATE OK (mean=X.XX, regressions=0)`.\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         3
@@ -46,7 +46,7 @@
     {
       "id": 5,
       "subject": "Task 6: Vocab gap-analysis script (`src/build/vocab_gap.py`)",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** A script that asks the VLM (free-form, NOT the fixed vocab) \"what 1-2 most distinct visual features must a pixel sprite capture for this skin?\" across a sample of splashes, aggregates feature/weapon frequency, and prints the top-N primitives the renderer lacks.\n\n**Files:**\n- Create: `src/build/vocab_gap.py`\n- Test: `tools/verify_vocab_gap.py`\n\n**Acceptance Criteria:**\n- [ ] `analyze(champs, sample_n, vlm_factory)` returns `{\"features\": {name: count}, \"weapons\": {name: count}}` aggregated across the sampled splashes.\n- [ ] `top_n-gap(report, renderer_features, renderer_weapons, n)` returns the top-N features + weapons that are NOT already in the renderer's vocab, sorted by count descending.\n- [ ] `tools/verify_vocab_gap.py` passes with a FakeVLM that returns canned free-form JSON for 3 champs; assert the aggregation counts correctly and that an already-known feature (`cape`) is excluded from the gap list while a new one (`fox_tails`) appears.\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_vocab_gap.py` \u2192 ends in `VOCAB GAP OK`.\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         4
@@ -55,7 +55,7 @@
     {
       "id": 6,
       "subject": "Task 7: New feature primitives + widen VLM vocab",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** Implement a concrete starter set of new feature primitives the gap-analysis surfaces for well-known champs (`fox_tails`, `animal_ears`, `claws`), wire them into `_apply_features`, and widen the VLM-facing vocab in `vlm_client.py` to include all primitives the renderer can actually draw (the 12 weapons + 8 existing features + the 3 new ones).\n\n**Files:**\n- Modify: `src/assets_gen/generate.py:800-820` (`_apply_features` branches) + add `_add_fox_tails`, `_add_animal_ears`, `_add_claws`\n- Modify: `src/build/vlm_client.py:23-31` (`VOCAB[\"features\"]` + `VOCAB[\"weapon\"]`)\n- Test: `tools/verify_new_primitives.py`\n\n**Acceptance Criteria:**\n- [ ] `draw_chibi_descriptor` with `features: [\"fox_tails\"]` renders without error and the resulting 256\u00d7256 surface has coverage > 0 (not blank); same for `animal_ears` and `claws`.\n- [ ] The new feature functions are pixel-art (use `shade`/`px_dither_surf`/`pygame.draw` blocks, no AA), stay within the 256\u00d7256 bound, and are distinct from existing features (coverage differs from `horns`/`wings`).\n- [ ] `VOCAB[\"features\"]` in `vlm_client.py` now includes `fox_tails`, `animal_ears`, `claws`; `VOCAB[\"weapon\"]` includes all 12 the renderer draws (sword/staff/bow/dagger/shield/orb/axe/spear/gun/fists/scythe/whip) + `gauntlet` + `none`.\n- [ ] `tools/verify_new_primitives.py` passes: renders each new feature on a knight body, asserts 256\u00d7256 + coverage > 0 + coverage differs from the no-feature baseline by a margin (the feature actually added pixels).\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_new_primitives.py` \u2192 ends in `NEW PRIMITIVES OK`.\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         5
@@ -116,5 +116,5 @@
       ]
     }
   ],
-  "lastUpdated": "2026-07-31"
+  "lastUpdated": "2026-07-31T17:00:00"
 }

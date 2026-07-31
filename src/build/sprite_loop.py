@@ -112,8 +112,11 @@ def _process_one(champ, skin_idx, vlm, max_iters, force):
     try:
         best, hist = vlm_sprite_loop(champ["id"], skin_idx, ref_jpg, vlm,
                                      max_iters=max_iters, fallback=fallback)
-        match = hist[-1]["match"] if hist else 0
-        ok = hist[-1]["ok"] if hist else False
+        # Use the BEST round (max match), not the last round, so a late bad
+        # critique can't overwrite a good earlier sprite. match_before is the
+        # first round's score (the describe() baseline before any revision).
+        match = max((h["match"] for h in hist), default=0)
+        ok = any(h["ok"] for h in hist) if hist else False
         # P1: skin 0 overwrites sprite.png (the Original world billboard)
         out_png = os.path.join(char_dir, "sprite.png")
         render_to_png(best, out_png)

@@ -2,7 +2,7 @@
   "0": {
     "descriptor": {
       "archetype": "yordle",
-      "weapon": "none",
+      "weapon": "fists",
       "palette": {
         "primary": [
           220,
@@ -15,20 +15,22 @@
           200
         ],
         "accent": [
-          180,
-          160,
-          120
+          255,
+          200,
+          100
         ]
       },
       "features": [
+        "animal_ears",
+        "claws",
         "horns"
       ],
       "build": "short",
-      "motif": "nature"
+      "motif": "flame"
     },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
+    "match": 6,
+    "iters": 1,
+    "ok": true,
+    "match_before": 6
   }
 }

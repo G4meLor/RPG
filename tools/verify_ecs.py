@@ -322,6 +322,32 @@ def test_worldcharacter_skin_sprite():
     assert any("sprites/14.png" in p for p in seen), f"per-skin not loaded: {seen}"
     print("  worldcharacter skin sprite OK")
 
+def test_build_party_threads_skin_to_entity():
+    """Regression test (Task 12 fix round 1): _build_party must thread the
+    EQUIPPED skin (hero.skin, from the owned record) to spawn_hero, so the
+    ECS entity's ChampionRef.skin matches the equipped skin — NOT read it
+    from ow_party_state (which only holds {hp, energy})."""
+    import main as M
+    from src.scenes.world import WorldScene
+    from src.entities.components import ChampionRef
+    g = M.Game()
+    # equip skin 14 on the Ahri owned record
+    g.player.owned["Ahri"]["skin"] = 14
+    sc = WorldScene(g); g.scene = sc
+    # _build_party ran in WorldScene.__init__; find the Ahri entity
+    ahri_e = next((e for e in sc.world.heroes()
+                   if e.get(ChampionRef).hero_id == "Ahri"), None)
+    assert ahri_e is not None, "no Ahri entity in sc.world.heroes()"
+    assert ahri_e.get(ChampionRef).skin == 14, \
+        f"ChampionRef.skin={ahri_e.get(ChampionRef).skin}, expected 14 " \
+        f"(skin must come from hero.skin, not ow_party_state)"
+    # also confirm the legacy WorldCharacter's hero.skin threaded through
+    ahri_wc = next((wc for wc in sc.party if wc and wc.hero.id == "Ahri"), None)
+    assert ahri_wc is not None, "no Ahri WorldCharacter in sc.party"
+    assert ahri_wc.hero.skin == 14, \
+        f"wc.hero.skin={ahri_wc.hero.skin}, expected 14"
+    print("  build_party threads skin to entity OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

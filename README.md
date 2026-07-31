@@ -38,18 +38,33 @@ From the title screen, pick **Enter World** for the open-world 2D mode.
 
 ## Module layout
 
+The codebase is a `src/` package with an ECS-lite architecture (entity =
+component data bag, system = processor). `main.py` at the repo root is a thin
+entry point.
+
 | Module | Role |
 |--------|------|
-| `main.py` | Game loop, scene manager, menu scenes |
-| `ui.py` | Shared UI primitives (fonts, text cache, Button, bars, color lookups) |
-| `fx.py` | Runtime VFX helpers (procedural draws called each frame) |
-| `world_scene.py` / `world_entities.py` / `world_data.py` | Open-world scene, entities, map gen |
-| `adventure_scene.py` | Wave-survival mode (subclass of WorldScene) |
-| `data.py` / `champions.py` | Static game data + the 170-champion bake |
-| `entities.py` / `player.py` / `gacha.py` | Runtime hero/enemy objects, save state, summoning |
-| `generate_assets.py` | Build-only art generator (shared art + descriptor sprites) |
-| `build_champions.py` | One-shot LoL roster builder (JSON → champions.py + art bundles) |
-| `audio.py` | Synthesized sound effects (numpy, no files) |
+| `main.py` | Thin entry point (bootstraps `src.core.main`) |
+| `src/core/` | `game.py` (Game loop + scene manager), `scene.py` (base Scene), `world.py` (entity container + query), `main.py` (bootstrap) |
+| `src/ui/` | `primitives.py` (fonts, text cache, Button, bars, dim overlay), `colors.py` (element/rarity colors), `widgets.py` (Toggle/Slider) |
+| `src/data/` | 16 per-concern data modules (tuning, elements, skills, heroes, enemies, gacha_data, equipment, story, etc.) — split from the old `data.py` |
+| `src/entities/` | `components.py` (ECS dataclasses), `entity.py` (Entity), `combatant.py` (Hero/Enemy stat classes), `hero.py`/`enemy.py` (entity factories), `world_actors.py` (WorldCharacter/WorldEnemy carriers + Particles/Projectile/FloatText/scratch) |
+| `src/systems/` | The 9 systems: `map_ctrl.py` (MapController), `physics.py` (PhysicsSystem + Camera), `ai.py` (AISystem), `combat.py` (CombatSystem), `render.py` (RenderSystem), `hud.py` (HudSystem), `drops.py` (DropSystem), `rift.py` (RiftSystem), `dialogue.py` (DialogueSystem) |
+| `src/scenes/` | `world.py` (WorldScene — thin coordinator delegating to systems), `adventure.py` (AdventureScene), `menu/` (9 menu scenes: title, roster, hero_detail, gacha_scene, shop, inventory, settings, stats, codex) |
+| `src/world/` | `data.py` (map grid + biome + gen_map), `map_renderer.py` (MapRenderer) |
+| `src/fx/` | `rift.py` (runtime VFX: draw_rift_portal) |
+| `src/build/` | `champions.py` (170-champion bake), `build_champions.py` (one-shot roster builder) |
+| `src/assets_gen/` | `generate.py` (build-only art generator) |
+| `src/audio.py` / `src/player.py` / `src/gacha.py` | Synth audio, save state, summoning |
+| `tools/` | `verify_assets.py` (headless asset check), `verify_ecs.py` (ECS acceptance suite) |
+
+**Architecture (ECS-lite, hybrid):** Entities are component data bags
+(Transform/Health/Combat/AI/Render/Identity/Statuses/ChampionRef/Movement).
+The 9 systems hold the game logic (ported verbatim from the old god-class).
+`WorldScene` is a thin coordinator that owns the systems + delegates
+`update`/`draw`. `WorldCharacter`/`WorldEnemy` remain as data carriers with
+thin `update` delegates to the systems (hybrid — a stable, scalable structure;
+a future full entity takeover is possible but not required).
 
 ## Open World controls (LoL-style)
 

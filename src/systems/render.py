@@ -13,10 +13,9 @@ suite keep working (the rendered output is pixel-identical — the port is
 verbatim).
 
 The HUD methods (``_draw_hud`` / ``_draw_skill_bar`` / ``_draw_skill_tooltip``
-``_draw_minimap`` / ``_hud_portrait`` / ``_skill_icon``) STAY in WorldScene —
-they are Task 20b (HudSystem). ``WorldScene.draw`` calls
-``self.scene._draw_hud(surf)`` for now (the delegate hops back into the scene
-for the HUD layer until 20b ports it).
+``_draw_minimap`` / ``_hud_portrait`` / ``_skill_icon``) were Task 20b
+(HudSystem) — they are now ported verbatim into ``HudSystem`` and
+``RenderSystem.draw`` delegates the HUD layer to ``self.scene.hud.draw(surf)``.
 
 ``_draw_tick`` (the per-frame particles/camera tick under overlays) STAYS in
 WorldScene — it mutates particles/floats/camera (simulation, not rendering),
@@ -308,7 +307,10 @@ class RenderSystem:
         self._draw_edge_hints(surf, ox, oy)
 
         # HUD on top of the world (party, skill bar, minimap, boss bar, etc.)
-        self.scene._draw_hud(surf)
+        # Task 20b: the verbatim HUD methods were ported into HudSystem; this
+        # delegates the HUD draw to self.scene.hud (the legacy
+        # WorldScene._draw_hud was removed in Task 20b).
+        self.scene.hud.draw(surf)
 
         # transient center message
         if self.scene.message_t > 0:

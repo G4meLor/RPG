@@ -1386,10 +1386,23 @@ _ARCH_DRAW = {
 }
 
 
+def _floating_modifier(surf, cx, cy, w, h, pal, outline):
+    """Floating stance: erase the lower legs (draw bg-colored blocks over them)
+    + add a hover disc beneath. Applied AFTER the upright body is drawn."""
+    # hover disc (a flat ellipse under the body)
+    disc = pygame.Surface((int(w * 1.4), 14), pygame.SRCALPHA)
+    pygame.draw.ellipse(disc, (255, 255, 255, 70), disc.get_rect())
+    pygame.draw.ellipse(disc, (*pal["accent"], 120), disc.get_rect(), 1)
+    surf.blit(disc, (cx - int(w * 0.7), cy + h // 2 - 4))
+    # erase the lower half of the legs (cover with transparent)
+    leg_eraser = pygame.Surface((int(w * 0.9), int(h * 0.18)), pygame.SRCALPHA)
+    surf.blit(leg_eraser, (cx - int(w * 0.45), cy + int(h * 0.32)))
+
+
 def draw_chibi_descriptor(surf, descriptor):
     """Draw a descriptor-driven world sprite onto surf (256x256, SRCALPHA).
-    descriptor fields: archetype, weapon, palette{primary,secondary,accent},
-    features[], build, motif. Dispatches to the per-archetype silhouette,
+    descriptor fields: stance, archetype, weapon, palette{primary,secondary,
+    accent}, features[], build, motif. Dispatches by stance, then archetype,
     applies features, then draws the weapon."""
     cx, cy = 128, 150
     pal = descriptor["palette"]
@@ -1397,13 +1410,25 @@ def draw_chibi_descriptor(surf, descriptor):
     outline = shade(primary, 0.3)
     archetype = descriptor["archetype"]
     build = descriptor.get("build", "average")
-    fn = _ARCH_DRAW.get(archetype, _arch_knight)
-    hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
-    # features (skip 'helmet' — the knight/construct archetypes already draw a helm)
+    stance = descriptor.get("stance", "upright")
+
+    if stance == "upright":
+        fn = _ARCH_DRAW.get(archetype, _arch_knight)
+        hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
+    elif stance == "floating":
+        fn = _ARCH_DRAW.get(archetype, _arch_knight)
+        hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
+        if w and h:
+            _floating_modifier(surf, cx, cy, w, h, pal, outline)
+    else:
+        # quadruped / mounted / flying: stub falls back to an upright body
+        # until the real drawers land (Tasks 2-4). Still returns a valid box.
+        fn = _ARCH_DRAW.get(archetype, _arch_knight)
+        hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
+
     features = [f for f in descriptor.get("features", []) if f != "helmet"]
     if w and h:
         _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline)
-    # weapon
     weapon = descriptor.get("weapon", "sword")
     if weapon and weapon != "none":
         draw_weapon(surf, cx, cy, weapon, pal["accent"], outline,

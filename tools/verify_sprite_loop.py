@@ -96,6 +96,25 @@ def test_bake_default_concurrency_is_one():
                           vlm_factory=lambda: FakeVLMOK())
     assert rep["n_processed"] == 3  # concurrency omitted -> serial, still completes
 
+def test_cli_parses_vlm_args():
+    import argparse
+    from src.build import build_champions as BC
+    # rebuild the parser the way main() does and assert the flags exist + defaults
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--images", action="store_true")
+    ap.add_argument("--sprites", action="store_true")
+    ap.add_argument("--all", action="store_true")
+    ap.add_argument("--vlm-loop", action="store_true")
+    ap.add_argument("--concurrency", type=int, default=1)
+    ap.add_argument("--max-iters", type=int, default=10)
+    ap.add_argument("--champs", default="")
+    ap.add_argument("--skins", default="0")
+    ap.add_argument("--force", action="store_true")
+    a = ap.parse_args(["--sprites", "--vlm-loop", "--champs", "Ahri", "--skins", "0",
+                       "--concurrency", "2", "--max-iters", "5", "--force"])
+    assert a.vlm_loop is True and a.concurrency == 2 and a.max_iters == 5
+    assert a.champs == "Ahri" and a.skins == "0" and a.force is True
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

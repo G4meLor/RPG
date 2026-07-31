@@ -5,6 +5,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pygame; pygame.init(); pygame.display.set_mode((1, 1))
 
 from src.build.sprite_loop import vlm_sprite_loop, load_cache, save_cache, RENDER_LOCK
+from src.build.sprite_loop import run_sprite_bake
+from src.build.champions import CHAMPIONS_DB
 
 D0 = {"archetype":"knight","weapon":"sword",
       "palette":{"primary":[10,10,10],"secondary":[0,0,0],"accent":[0,0,0]},
@@ -62,6 +64,37 @@ def test_cache_roundtrip():
 def test_render_lock_exists():
     import threading
     assert isinstance(RENDER_LOCK, type(threading.Lock()))
+
+class FakeVLMOK:
+    """describe -> D0; critique -> ok=True(match=7) immediately."""
+    def describe(self, ref, fallback): return D0
+    def critique(self, ref, sprite, last):
+        return {"match": 7, "ok": True, "problems": [], "suggested_descriptor": D1}
+
+def _three_champs():
+    ids = list(CHAMPIONS_DB.keys())[:3] if isinstance(CHAMPIONS_DB, dict) else [c["id"] for c in CHAMPIONS_DB[:3]]
+    return [{"id": cid, "descriptor": (CHAMPIONS_DB[cid]["descriptor"] if isinstance(CHAMPIONS_DB, dict) else next(c["descriptor"] for c in CHAMPIONS_DB if c["id"] == cid))} for cid in ids]
+
+def test_bake_processes_all_then_skips():
+    champs = _three_champs()
+    rep = run_sprite_bake(champs, skin_indices=[0], concurrency=2, max_iters=5,
+                          force=True, vlm_factory=lambda: FakeVLMOK())
+    assert rep["n_processed"] == 3, rep
+    assert rep["n_ok"] == 3, rep
+    # sprite.png written for each
+    from src.data.tuning import ASSET_DIR
+    for c in champs:
+        assert os.path.exists(os.path.join(ASSET_DIR, "characters", c["id"], "sprite.png"))
+    # re-run without force -> all skipped (cache ok)
+    rep2 = run_sprite_bake(champs, skin_indices=[0], concurrency=1, max_iters=5,
+                           force=False, vlm_factory=lambda: FakeVLMOK())
+    assert rep2["n_skipped"] == 3 and rep2["n_processed"] == 0, rep2
+
+def test_bake_default_concurrency_is_one():
+    champs = _three_champs()
+    rep = run_sprite_bake(champs, skin_indices=[0], max_iters=5, force=True,
+                          vlm_factory=lambda: FakeVLMOK())
+    assert rep["n_processed"] == 3  # concurrency omitted -> serial, still completes
 
 def run():
     for name, fn in list(globals().items()):

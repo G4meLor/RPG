@@ -47,7 +47,7 @@ def vlm_sprite_loop(hero_id, skin_idx, ref_jpg, vlm, max_iters=10, fallback=None
     descriptor = vlm.describe(ref_jpg, fallback)
     history = []
     best_desc, best_match = descriptor, -1
-    tmp = os.path.join(ASSET_DIR, "characters", hero_id, "_loop_tmp.png")
+    tmp = os.path.join(ASSET_DIR, "characters", hero_id, f"_loop_tmp_{skin_idx}.png")
     os.makedirs(os.path.dirname(tmp), exist_ok=True)
     for i in range(max_iters):
         render_to_png(descriptor, tmp)
@@ -90,3 +90,79 @@ def load_cache(char_dir):
 def save_cache(char_dir, cache):
     with open(_cache_path(char_dir), "w") as f:
         json.dump(cache, f, indent=2)
+
+
+import concurrent.futures
+
+from src.build.vlm_client import VLMClient
+
+
+def _process_one(champ, skin_idx, vlm, max_iters, force):
+    """Process a single (champ, skin). Returns a per-skin result dict."""
+    char_dir = os.path.join(ASSET_DIR, "characters", champ["id"])
+    os.makedirs(char_dir, exist_ok=True)
+    cache = load_cache(char_dir)
+    key = str(skin_idx)
+    if not force and key in cache and cache[key].get("ok"):
+        return {"id": champ["id"], "skin": skin_idx, "skipped": True}
+    ref_jpg = os.path.join(char_dir, "skins", str(skin_idx) + ".jpg")
+    if not os.path.exists(ref_jpg):
+        return {"id": champ["id"], "skin": skin_idx, "error": "missing ref splash"}
+    fallback = champ.get("descriptor") or _default_descriptor()
+    try:
+        best, hist = vlm_sprite_loop(champ["id"], skin_idx, ref_jpg, vlm,
+                                     max_iters=max_iters, fallback=fallback)
+        match = hist[-1]["match"] if hist else 0
+        ok = hist[-1]["ok"] if hist else False
+        # P1: skin 0 overwrites sprite.png (the Original world billboard)
+        out_png = os.path.join(char_dir, "sprite.png")
+        render_to_png(best, out_png)
+        cache[key] = {"descriptor": best, "match": match,
+                      "iters": len(hist), "ok": ok}
+        save_cache(char_dir, cache)
+        return {"id": champ["id"], "skin": skin_idx, "skipped": False,
+                "match": match, "ok": ok, "iters": len(hist),
+                "match_before": hist[0]["match"] if hist else match}
+    except Exception as e:
+        return {"id": champ["id"], "skin": skin_idx, "error": str(e)}
+
+
+def run_sprite_bake(champs, skin_indices, concurrency=1, max_iters=10,
+                    force=False, vlm_factory=None):
+    """Bake sprites for (champ, skin) pairs in parallel.
+
+    concurrency: max in-flight VLM loops (default 1 = serial).
+    vlm_factory: zero-arg callable returning a fresh VLM client per worker
+                 (default -> VLMClient()). One client per worker avoids sharing
+                 mutable HTTP state across threads.
+    Returns an aggregate report dict.
+    """
+    vlm_factory = vlm_factory or (lambda: VLMClient())
+    pairs = [(c, s) for c in champs for s in skin_indices]
+    results = [None] * len(pairs)
+
+    def worker(idx, champ, skin_idx):
+        vlm = vlm_factory()
+        return idx, _process_one(champ, skin_idx, vlm, max_iters, force)
+
+    if concurrency <= 1:
+        for i, (c, s) in enumerate(pairs):
+            results[i] = _process_one(c, s, vlm_factory(), max_iters, force)
+    else:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as ex:
+            futs = [ex.submit(worker, i, c, s) for i, (c, s) in enumerate(pairs)]
+            for fut in concurrent.futures.as_completed(futs):
+                i, res = fut.result()
+                results[i] = res
+
+    n_proc = sum(1 for r in results if r and not r.get("skipped") and not r.get("error"))
+    n_skip = sum(1 for r in results if r and r.get("skipped"))
+    n_ok = sum(1 for r in results if r and r.get("ok"))
+    before = [r["match_before"] for r in results if r and "match_before" in r]
+    after = [r["match"] for r in results if r and "match" in r]
+    return {
+        "n_processed": n_proc, "n_skipped": n_skip, "n_ok": n_ok,
+        "mean_match_before": round(sum(before) / len(before), 2) if before else 0,
+        "mean_match_after": round(sum(after) / len(after), 2) if after else 0,
+        "per_skin": results,
+    }

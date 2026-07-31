@@ -1625,12 +1625,358 @@ def _arch_flying_dragon(surf, cx, cy, pal, outline, build):
     return (hx + 4, hy, hr, w, h)
 
 
+# --- Task 4: 5 new upright body drawers ------------------------------------
+# Bodies that can't be feature-modded on existing archetypes. Each renders a
+# distinct silhouette, pixel-art (no AA), and returns (hx, hy, hr, w, h).
+
+def _arch_rock_giant(surf, cx, cy, pal, outline, build):
+    """Rock giant (Malphite/Galio/Ornn): massive craggy golem — bulky angular
+    body, boulder limbs, rocky head, jagged craggy texture. Pixel-art, no AA."""
+    sx, sy = BUILD_SCALE.get(build, (1.22, 0.96))
+    w, h = int(118 * sx), int(122 * sy)
+    primary = pal["primary"]; sec = pal["secondary"]
+    rock_l = shade(sec, 1.15); rock_d = shade(primary, 0.45)
+    sh = pygame.Surface((int(w * 1.6), 18), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 85), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.8), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "lightning")
+    # craggy torso — an irregular angular polygon (jagged edges, no AA)
+    tw, th = int(w * 0.66), int(h * 0.40)
+    tx, ty = cx - tw // 2, cy - th // 2 - int(h * 0.04)
+    pts = [(tx + 4, ty), (tx + tw // 3, ty - 6), (tx + tw - 8, ty - 3),
+           (tx + tw, ty + 8), (tx + tw - 4, ty + th - 8),
+           (tx + tw // 2, ty + th + 4), (tx + 6, ty + th - 6), (tx, ty + th // 2)]
+    torso = px_dither_surf(tw, th + 8, rock_l, rock_d)
+    m = pygame.Surface((tw, th + 8), pygame.SRCALPHA)
+    pygame.draw.polygon(m, (255, 255, 255, 255),
+                        [(p[0] - tx, p[1] - ty) for p in pts])
+    torso.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    surf.blit(torso, (tx, ty))
+    pygame.draw.polygon(surf, outline, pts, 2)
+    # craggy texture — a few jagged cracks (solid dark polylines, no AA)
+    pygame.draw.lines(surf, rock_d, False,
+                      [(tx + tw // 4, ty + 4), (tx + tw // 3, ty + th // 3),
+                       (tx + tw // 2, ty + th // 2)], 2)
+    pygame.draw.lines(surf, rock_d, False,
+                      [(tx + tw * 3 // 4, ty + 6), (tx + tw * 2 // 3, ty + th // 2)], 2)
+    # boulder arms — angular blocks with jagged edges (no AA)
+    aw, ah = int(tw * 0.30), int(th * 1.0)
+    ay = ty + 2
+    for side, ax in ((-1, tx - aw - 2), (1, tx + tw + 2)):
+        apts = [(ax, ay + 4), (ax + aw, ay), (ax + aw, ay + ah - 6),
+                (ax + aw - 4, ay + ah), (ax, ay + ah - 4)]
+        arm = px_dither_surf(aw, ah, shade(sec, 1.0), rock_d)
+        m2 = pygame.Surface((aw, ah), pygame.SRCALPHA)
+        pygame.draw.polygon(m2, (255, 255, 255, 255),
+                            [(p[0] - ax, p[1] - ay) for p in apts])
+        arm.blit(m2, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surf.blit(arm, (ax, ay))
+        pygame.draw.polygon(surf, outline, apts, 2)
+        # boulder fist — a jagged disc (no AA)
+        fr = 12
+        fx = ax + aw // 2; fy = ay + ah + 2
+        fist = px_dither_surf(fr * 2, fr * 2, rock_l, rock_d)
+        clip_to_circle(fist, (fr, fr), fr - 1)
+        surf.blit(fist, (fx - fr, fy - fr))
+        pygame.draw.circle(surf, outline, (fx, fy), fr, 2)
+    # boulder legs — thick angular stumps (no AA)
+    lw, lh = int(tw * 0.36), int(h * 0.28)
+    ly = ty + th - 2
+    for lx in (tx + 4, tx + tw - lw - 4):
+        leg = px_dither_surf(lw, lh, shade(sec, 0.95), rock_d)
+        clip_to_rect(leg, pygame.Rect(0, 0, lw, lh), border_radius=2)
+        surf.blit(leg, (lx, ly))
+        pygame.draw.rect(surf, outline, (lx, ly, lw, lh), 2, border_radius=2)
+        # jagged foot (a small triangle, no AA)
+        pygame.draw.polygon(surf, rock_d,
+            [(lx - 3, ly + lh), (lx + lw + 3, ly + lh), (lx + lw // 2, ly + lh + 6)])
+    # rocky head — an angular boulder block (no AA)
+    hr = int(w * 0.22)
+    hx, hy = cx, ty - hr - 2
+    hpts = [(hx - hr + 2, hy - hr + 4), (hx - hr // 3, hy - hr - 2),
+            (hx + hr // 2, hy - hr + 2), (hx + hr, hy - hr // 3),
+            (hx + hr - 3, hy + hr - 4), (hx, hy + hr),
+            (hx - hr + 4, hy + hr - 3)]
+    head = px_dither_surf(hr * 2, hr * 2, rock_l, rock_d)
+    m3 = pygame.Surface((hr * 2, hr * 2), pygame.SRCALPHA)
+    pygame.draw.polygon(m3, (255, 255, 255, 255),
+                        [(p[0] - (hx - hr), p[1] - (hy - hr)) for p in hpts])
+    head.blit(m3, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.polygon(surf, outline, hpts, 2)
+    # glowing eyes (two chunky accent blocks, no AA)
+    pygame.draw.rect(surf, pal["accent"], (hx - hr // 2 - 1, hy - 2, 4, 4))
+    pygame.draw.rect(surf, pal["accent"], (hx + hr // 2 - 3, hy - 2, 4, 4))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_treant(surf, cx, cy, pal, outline, build):
+    """Treant (Maokai/Ivern): a tree-person — bark-textured trunk body, branch
+    arms, foliage canopy head, root feet. Pixel-art, no AA."""
+    sx, sy = BUILD_SCALE.get(build, (1.10, 1.02))
+    w, h = int(104 * sx), int(126 * sy)
+    primary = pal["primary"]; sec = pal["secondary"]
+    bark_l = shade(sec, 1.05); bark_d = shade(primary, 0.42)
+    leaf_l = shade((140, 200, 110), 1.15); leaf_d = shade((90, 150, 70), 0.6)
+    sh = pygame.Surface((int(w * 1.5), 16), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 75), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.75), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "nature")
+    # trunk torso — a tapering bark-textured polygon (narrow top, wider base)
+    tw, th = int(w * 0.54), int(h * 0.42)
+    tx, ty = cx - tw // 2, cy - th // 2 - int(h * 0.02)
+    ttop = int(tw * 0.40); tbot = tw
+    pts = [(cx - ttop // 2, ty), (cx + ttop // 2, ty),
+           (cx + tbot // 2, ty + th), (cx - tbot // 2, ty + th)]
+    trunk = px_dither_surf(tbot, th, bark_l, bark_d)
+    m = pygame.Surface((tbot, th), pygame.SRCALPHA)
+    pygame.draw.polygon(m, (255, 255, 255, 255),
+                        [(p[0] - (cx - tbot // 2), p[1] - ty) for p in pts])
+    trunk.blit(m, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    surf.blit(trunk, (cx - tbot // 2, ty))
+    pygame.draw.polygon(surf, outline, pts, 2)
+    # bark texture — vertical crack lines (solid dark, no AA)
+    for bx in (cx - ttop // 4, cx + ttop // 4, cx):
+        pygame.draw.lines(surf, bark_d, False,
+                          [(bx, ty + 6), (bx, ty + th - 6)], 1)
+    # branch arms — two crooked stick polygons (no AA)
+    for side in (-1, 1):
+        bpts = [(cx + side * ttop // 2, ty + 4),
+                (cx + side * (ttop // 2 + 16), ty + 8),
+                (cx + side * (ttop // 2 + 20), ty + 24),
+                (cx + side * (ttop // 2 + 8), ty + 22),
+                (cx + side * ttop // 2, ty + 18)]
+        pygame.draw.polygon(surf, bark_l, bpts)
+        pygame.draw.polygon(surf, outline, bpts, 2)
+        # a few leaf clusters on the branch (dithered discs, no AA)
+        for ly_ in (ty + 6, ty + 20):
+            lr = 6
+            leaf = px_dither_surf(lr * 2, lr * 2, leaf_l, leaf_d)
+            clip_to_circle(leaf, (lr, lr), lr - 1)
+            surf.blit(leaf, (cx + side * (ttop // 2 + 18) - lr, ly_ - lr))
+            pygame.draw.circle(surf, outline, (cx + side * (ttop // 2 + 18), ly_), lr, 1)
+    # root feet — 3-4 splayed root triangles at the base (no AA)
+    ry = ty + th - 2
+    for i, rx in enumerate((cx - tbot // 3, cx - tbot // 8, cx + tbot // 8, cx + tbot // 3)):
+        pygame.draw.polygon(surf, bark_d,
+            [(rx - 5, ry), (rx + 5, ry), (rx + (i - 1) * 4, ry + 14)])
+        pygame.draw.polygon(surf, outline,
+            [(rx - 5, ry), (rx + 5, ry), (rx + (i - 1) * 4, ry + 14)], 1)
+    # foliage canopy head — a cluster of dithered discs (no AA)
+    hr = int(w * 0.20)
+    hx, hy = cx, ty - hr
+    for off in ((0, 0, hr), (-hr + 2, -4, hr - 4), (hr - 2, -4, hr - 4),
+                (-2, -hr + 2, hr - 5), (4, -hr + 4, hr - 6)):
+        ox, oy, rr = off
+        leaf = px_dither_surf(rr * 2, rr * 2, leaf_l, leaf_d)
+        clip_to_circle(leaf, (rr, rr), rr - 1)
+        surf.blit(leaf, (hx + ox - rr, hy + oy - rr))
+        pygame.draw.circle(surf, outline, (hx + ox, hy + oy), rr, 2)
+    # two glowing eyes (chunky blocks in the canopy, no AA)
+    pygame.draw.rect(surf, pal["accent"], (hx - hr // 2 - 1, hy - 1, 4, 4))
+    pygame.draw.rect(surf, pal["accent"], (hx + hr // 2 - 3, hy - 1, 4, 4))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_blob(surf, cx, cy, pal, outline, build):
+    """Blob (Zac): an amorphous slime body — rounded dripping blob with stubby
+    arms, no distinct head/legs, a glossy highlight. Pixel-art, no AA."""
+    sx, sy = BUILD_SCALE.get(build, (1.20, 0.92))
+    w, h = int(112 * sx), int(108 * sy)
+    primary = pal["primary"]; sec = pal["secondary"]
+    slime_l = shade(sec, 1.18); slime_d = shade(primary, 0.55)
+    sh = pygame.Surface((int(w * 1.5), 14), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 70), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.75), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "nature")
+    # main blob body — a wide rounded dome (dithered, clipped to a big ellipse)
+    bw, bh = int(w * 0.78), int(h * 0.62)
+    bx, by = cx - bw // 2, cy - bh // 2 + int(h * 0.06)
+    blob = px_dither_surf(bw, bh, slime_l, slime_d)
+    clip_to_circle(blob, (bw // 2, bh // 2), min(bw, bh) // 2 - 1)
+    surf.blit(blob, (bx, by))
+    pygame.draw.circle(surf, outline, (bx + bw // 2, by + bh // 2), min(bw, bh) // 2 - 1, 2)
+    # dripping bottom — 3 drip blobs hanging from the base (no AA)
+    base_y = by + bh - 4
+    for i, dx in enumerate((-bw // 4, 0, bw // 4)):
+        dr = 6 + (i % 2) * 2
+        drip = px_dither_surf(dr * 2, dr * 2 + 8, slime_l, slime_d)
+        clip_to_circle(drip, (dr, dr), dr - 1)
+        surf.blit(drip, (cx + dx - dr, base_y))
+        pygame.draw.circle(surf, outline, (cx + dx, base_y + dr), dr, 2)
+        pygame.draw.rect(surf, slime_l, (cx + dx - 2, base_y - 4, 4, 6))
+    # stubby arms — two small rounded blobs flanking the body (no AA)
+    for side in (-1, 1):
+        ar = 9
+        arm = px_dither_surf(ar * 2, ar * 2, slime_l, slime_d)
+        clip_to_circle(arm, (ar, ar), ar - 1)
+        surf.blit(arm, (cx + side * (bw // 2 + 2) - ar, by + bh // 3))
+        pygame.draw.circle(surf, outline, (cx + side * (bw // 2 + 2), by + bh // 3 + ar), ar, 2)
+    # glossy highlight — a small bright disc near the top-left (no AA)
+    hr_ = 8
+    hl = px_dither_surf(hr_ * 2, hr_ * 2, shade(sec, 1.35), slime_l)
+    clip_to_circle(hl, (hr_, hr_), hr_ - 1)
+    surf.blit(hl, (cx - bw // 4 - hr_, by + bh // 4 - hr_))
+    # two eyes (chunky blocks on the upper body, no AA) — head region
+    hr = int(w * 0.16)
+    hx, hy = cx, by + bh // 3
+    pygame.draw.rect(surf, (40, 40, 50), (hx - hr // 2 - 1, hy, 4, 4))
+    pygame.draw.rect(surf, (40, 40, 50), (hx + hr // 2 - 3, hy, 4, 4))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_naga(surf, cx, cy, pal, outline, build):
+    """Naga (Cassiopeia/Nami): humanoid upper body + a long coiled serpentine
+    tail instead of legs. Pixel-art, no AA."""
+    sx, sy = BUILD_SCALE.get(build, (1.0, 1.04))
+    w, h = int(100 * sx), int(130 * sy)
+    primary = pal["primary"]; sec = pal["secondary"]
+    skin_l = shade(sec, 1.12); skin_d = shade(primary, 0.5)
+    scale_l = shade(sec, 1.0); scale_d = shade(primary, 0.42)
+    sh = pygame.Surface((int(w * 1.6), 14), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 70), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.8), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "water")
+    # coiled serpentine tail — a chain of overlapping discs forming an S-curve
+    # at the lower half (no AA)
+    tail_top = cy + int(h * 0.04)
+    tail_bot = cy + int(h * 0.42)
+    seg_r = 14
+    body_pts = []
+    for i in range(9):
+        t = i / 8.0
+        tx_ = cx + int(math.sin(t * math.pi * 2.0) * int(w * 0.22))
+        ty_ = tail_top + int(t * (tail_bot - tail_top))
+        body_pts.append((tx_, ty_))
+        r = seg_r - int(t * 4)
+        seg = px_dither_surf(r * 2, r * 2, scale_l, scale_d)
+        clip_to_circle(seg, (r, r), r - 1)
+        surf.blit(seg, (tx_ - r, ty_ - r))
+        pygame.draw.circle(surf, outline, (tx_, ty_), r, 2)
+    # tail tip — a small pointed triangle at the bottom (no AA)
+    lx, ly = body_pts[-1]
+    pygame.draw.polygon(surf, scale_d,
+        [(lx - 6, ly), (lx + 6, ly), (lx + 14, ly + 16)])
+    pygame.draw.polygon(surf, outline,
+        [(lx - 6, ly), (lx + 6, ly), (lx + 14, ly + 16)], 2)
+    # humanoid torso — a dithered rounded rect at the upper half (no AA)
+    tw, th = int(w * 0.50), int(h * 0.30)
+    tx, ty = cx - tw // 2, cy - th // 2 - int(h * 0.18)
+    torso = px_dither_surf(tw, th, skin_l, skin_d)
+    clip_to_rect(torso, pygame.Rect(0, 0, tw, th), border_radius=8)
+    surf.blit(torso, (tx, ty))
+    pygame.draw.rect(surf, outline, (tx, ty, tw, th), 2, border_radius=8)
+    # scale texture on the lower torso (a few chevron lines, no AA)
+    for sy_ in (ty + th * 2 // 3, ty + th - 6):
+        pygame.draw.lines(surf, scale_d, False,
+                          [(tx + 4, sy_), (cx, sy_ - 4), (tx + tw - 4, sy_)], 1)
+    # arms — two slim blocks flanking the torso (no AA)
+    aw, ah = int(tw * 0.24), int(th * 0.9)
+    ay = ty + 4
+    for ax in (tx - aw - 1, tx + tw + 1):
+        arm = px_dither_surf(aw, ah, skin_l, skin_d)
+        clip_to_rect(arm, pygame.Rect(0, 0, aw, ah), border_radius=4)
+        surf.blit(arm, (ax, ay))
+        pygame.draw.rect(surf, outline, (ax, ay, aw, ah), 2, border_radius=4)
+    # head — a dithered disc with a fin-like crest (no AA)
+    hr = int(w * 0.19)
+    hx, hy = cx, ty - hr - 2
+    head = px_dither_surf(hr * 2, hr * 2, skin_l, skin_d)
+    clip_to_circle(head, (hr, hr), hr - 1)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.circle(surf, outline, (hx, hy), hr, 2)
+    # fin crest — a small triangle on top (no AA)
+    pygame.draw.polygon(surf, pal["accent"],
+        [(hx - 4, hy - hr + 2), (hx + 4, hy - hr + 2), (hx, hy - hr - 8)])
+    pygame.draw.polygon(surf, outline,
+        [(hx - 4, hy - hr + 2), (hx + 4, hy - hr + 2), (hx, hy - hr - 8)], 2)
+    # eyes (two chunky blocks, no AA)
+    pygame.draw.rect(surf, (40, 40, 60), (hx - hr // 2 - 1, hy - 1, 3, 3))
+    pygame.draw.rect(surf, (40, 40, 60), (hx + hr // 2 - 2, hy - 1, 3, 3))
+    return (hx, hy, hr, w, h)
+
+
+def _arch_scarecrow(surf, cx, cy, pal, outline, build):
+    """Scarecrow (Fiddlesticks): a gaunt thin figure — thin pole body, straw
+    protrusions, sack/cloth head, tattered hanging arms. Pixel-art, no AA."""
+    sx, sy = BUILD_SCALE.get(build, (0.92, 1.10))
+    w, h = int(84 * sx), int(132 * sy)
+    primary = pal["primary"]; sec = pal["secondary"]
+    cloth_l = shade(sec, 1.05); cloth_d = shade(primary, 0.5)
+    straw_l = shade((220, 190, 110), 1.1); straw_d = shade((160, 130, 60), 0.7)
+    sh = pygame.Surface((int(w * 1.4), 12), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 60), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.7), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "shadow")
+    # thin pole body — a narrow vertical dithered rect (no AA)
+    pw, ph = int(w * 0.22), int(h * 0.46)
+    px_, py_ = cx - pw // 2, cy - ph // 2 + int(h * 0.02)
+    pole = px_dither_surf(pw, ph, cloth_l, cloth_d)
+    clip_to_rect(pole, pygame.Rect(0, 0, pw, ph), border_radius=2)
+    surf.blit(pole, (px_, py_))
+    pygame.draw.rect(surf, outline, (px_, py_, pw, ph), 2, border_radius=2)
+    # crossbar — a horizontal pole through the upper body (no AA)
+    cb_w = int(w * 0.62); cb_h = 6
+    cb_y = py_ + int(ph * 0.18)
+    cb = px_dither_surf(cb_w, cb_h, cloth_l, cloth_d)
+    clip_to_rect(cb, pygame.Rect(0, 0, cb_w, cb_h), border_radius=2)
+    surf.blit(cb, (cx - cb_w // 2, cb_y))
+    pygame.draw.rect(surf, outline, (cx - cb_w // 2, cb_y, cb_w, cb_h), 2, border_radius=2)
+    # tattered hanging arms — two thin ragged strips from the crossbar ends (no AA)
+    for side in (-1, 1):
+        ax_ = cx + side * (cb_w // 2 - 2)
+        for j in range(3):
+            aw_ = 4; ah_ = 22 - j * 4
+            ay_ = cb_y + cb_h + j * 6
+            ax_off = ax_ + side * j * 2
+            pygame.draw.rect(surf, cloth_d, (ax_off, ay_, aw_, ah_))
+            pygame.draw.rect(surf, outline, (ax_off, ay_, aw_, ah_), 1)
+        # straw protrusion at the arm end (a few thin triangles, no AA)
+        ey_ = cb_y + cb_h + 22
+        for k in range(3):
+            pygame.draw.polygon(surf, straw_l,
+                [(ax_ - 3 + k * 3, ey_), (ax_ - 3 + k * 3 + 2, ey_ + 8),
+                 (ax_ + 1 + k * 3, ey_)])
+    # straw protrusions at the bottom of the pole (legs area) (no AA)
+    base_y = py_ + ph
+    for i in range(5):
+        sx_ = px_ - 4 + i * (pw // 4) + 2
+        pygame.draw.polygon(surf, straw_l,
+            [(sx_ - 2, base_y), (sx_ + 2, base_y), (sx_, base_y + 12 - i)])
+        pygame.draw.polygon(surf, straw_d,
+            [(sx_ - 2, base_y), (sx_ + 2, base_y), (sx_, base_y + 12 - i)], 1)
+    # sack/cloth head — a dithered rounded rect with stitch texture (no AA)
+    hr = int(w * 0.22)
+    hx, hy = cx, py_ - hr - 2
+    head = px_dither_surf(hr * 2, int(hr * 2.2), shade(sec, 1.0), cloth_d)
+    clip_to_rect(head, pygame.Rect(0, 0, hr * 2, int(hr * 2.2)), border_radius=6)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.rect(surf, outline, (hx - hr, hy - hr, hr * 2, int(hr * 2.2)), 2, border_radius=6)
+    # stitch lines across the sack (cross-pattern, no AA)
+    pygame.draw.line(surf, cloth_d, (hx - hr + 3, hy), (hx + hr - 3, hy), 1)
+    pygame.draw.line(surf, cloth_d, (hx, hy - hr + 3), (hx, hy + hr - 3), 1)
+    # stitched eyes — two X marks (solid dark blocks, no AA)
+    for ex in (hx - hr // 2, hx + hr // 2):
+        pygame.draw.line(surf, (30, 30, 40), (ex - 2, hy + 2), (ex + 2, hy + 6), 1)
+        pygame.draw.line(surf, (30, 30, 40), (ex - 2, hy + 6), (ex + 2, hy + 2), 1)
+    # straw protruding from the top of the sack (no AA)
+    for i in range(4):
+        sx_ = hx - hr + 4 + i * (hr // 2)
+        pygame.draw.polygon(surf, straw_l,
+            [(sx_ - 2, hy - hr + 2), (sx_ + 2, hy - hr + 2), (sx_, hy - hr - 8)])
+        pygame.draw.polygon(surf, straw_d,
+            [(sx_ - 2, hy - hr + 2), (sx_ + 2, hy - hr + 2), (sx_, hy - hr - 8)], 1)
+    return (hx, hy, hr, w, h)
+
+
 # archetype dispatcher
 _ARCH_DRAW = {
     "knight": _arch_knight, "mage": _arch_mage, "archer": _arch_archer,
     "brute": _arch_brute, "rogue": _arch_rogue, "undead": _arch_undead,
     "yordle": _arch_yordle, "vastaya": _arch_vastaya,
     "construct": _arch_construct, "beast": _arch_beast,
+    "rock_giant": _arch_rock_giant, "treant": _arch_treant,
+    "blob": _arch_blob, "naga": _arch_naga, "scarecrow": _arch_scarecrow,
 }
 
 # flying-archetype dispatcher (used when stance == "flying")

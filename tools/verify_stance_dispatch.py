@@ -77,6 +77,41 @@ def test_flying_bird_and_dragon_render_and_differ():
     assert _cov(s_b) > 0 and _cov(s_d) > 0
     assert _cov(s_b) != _cov(s_d), "bird and dragon must differ"
 
+def test_rock_giant_renders_and_differs():
+    s = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s, {**BASE, "stance": "upright", "archetype": "rock_giant"})
+    s_k = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(s_k, {**BASE, "stance": "upright", "archetype": "knight"})
+    assert s.get_size() == (256, 256) and _cov(s) > 0
+    assert _cov(s) != _cov(s_k), "rock_giant must differ from knight"
+
+def test_treant_renders_and_differs():
+    s = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s, {**BASE, "stance": "upright", "archetype": "treant"})
+    s_k = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(s_k, {**BASE, "stance": "upright", "archetype": "knight"})
+    assert s.get_size() == (256, 256) and _cov(s) > 0
+    assert _cov(s) != _cov(s_k), "treant must differ from knight"
+
+def test_blob_renders_and_differs():
+    s = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s, {**BASE, "stance": "upright", "archetype": "blob"})
+    s_k = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(s_k, {**BASE, "stance": "upright", "archetype": "knight"})
+    assert s.get_size() == (256, 256) and _cov(s) > 0
+    assert _cov(s) != _cov(s_k), "blob must differ from knight"
+
+def test_naga_renders_and_differs():
+    s = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s, {**BASE, "stance": "upright", "archetype": "naga"})
+    s_k = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(s_k, {**BASE, "stance": "upright", "archetype": "knight"})
+    assert s.get_size() == (256, 256) and _cov(s) > 0
+    assert _cov(s) != _cov(s_k), "naga must differ from knight"
+
+def test_scarecrow_renders_and_differs():
+    s = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s, {**BASE, "stance": "upright", "archetype": "scarecrow"})
+    s_k = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(s_k, {**BASE, "stance": "upright", "archetype": "knight"})
+    assert s.get_size() == (256, 256) and _cov(s) > 0
+    assert _cov(s) != _cov(s_k), "scarecrow must differ from knight"
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

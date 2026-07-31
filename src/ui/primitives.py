@@ -28,7 +28,7 @@ import src.audio as audio
 # scratch surface factory needs a display mode set; under headless verify it
 # would otherwise hard-fail at import time).
 try:
-    from src.entities._legacy_world_entities import scratch as _scratch
+    from src.entities.world_actors import scratch as _scratch
 except Exception:  # pragma: no cover - world_entities needs an init'd pygame
     _scratch = None
 scratch = _scratch

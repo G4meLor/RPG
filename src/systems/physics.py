@@ -1,7 +1,7 @@
 """PhysicsSystem (Phase 4, Task 15 of the ECS restructure) — movement,
 collision, and camera.
 
-The Camera class was moved here from `src/entities/_legacy_world_entities.py`
+The Camera class was moved here from `src/entities/world_actors.py`
 (re-exported there for backward compatibility). The PhysicsSystem mirrors the
 legacy `WorldCharacter.update` movement body, but operates on the ECS entity
 components (`Transform` + `Movement`) instead of `self.x`/`self.vx`/`self.dash_t`.
@@ -101,7 +101,7 @@ class PhysicsSystem:
         """
         # Imported lazily inside the method to avoid a circular import at
         # module load time: src.entities.__init__ eagerly imports
-        # _legacy_world_entities, which re-exports Camera from this module, so
+        # world_actors, which re-exports Camera from this module, so
         # top-level `from src.entities.components import ...` would run before
         # src.entities is fully initialized.
         from src.entities.components import Transform, Movement
@@ -237,13 +237,13 @@ class PhysicsSystem:
 
     # -----------------------------------------------------------------------
     # Task 20d — full-fidelity verbatim port of WorldCharacter.update.
-    # The body below is copied verbatim from src/entities/_legacy_world_entities.py
+    # The body below is copied verbatim from src/entities/world_actors.py
     # (the `update` method on WorldCharacter, starting at line 622). The only
     # rewire is `self` (the WorldCharacter) -> `wc` (the WorldCharacter passed
     # as the first arg). The method operates on the wc's OWN fields (x, vx,
     # atk_cd, hero, etc.); there is no scene state to rewire. WorldCharacter
     # .update becomes a 1-line delegate to this staticmethod (see
-    # _legacy_world_entities.py). The signature passive update handlers
+    # world_actors.py). The signature passive update handlers
     # (_SIG_UPDATE) are imported lazily from the legacy module to avoid a
     # circular import at module load time (this module is imported by the
     # legacy module via `from src.systems.physics import Camera`).
@@ -368,7 +368,7 @@ class PhysicsSystem:
         # decays by 1 every 3s out of combat so a stale streak doesn't persist.
         # Imported lazily to avoid a circular import (this module is imported by
         # the legacy module at load time).
-        from src.entities._legacy_world_entities import _SIG_UPDATE
+        from src.entities.world_actors import _SIG_UPDATE
         _sig_upd = _SIG_UPDATE.get(wc._signature_kind)
         if _sig_upd:
             _sig_upd(wc, dt)

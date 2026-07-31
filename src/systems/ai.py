@@ -158,7 +158,7 @@ class AISystem:
 
     # -----------------------------------------------------------------------
     # Task 20d — full-fidelity verbatim port of WorldEnemy.update.
-    # The body below is copied verbatim from src/entities/_legacy_world_entities.py
+    # The body below is copied verbatim from src/entities/world_actors.py
     # (the `update` method on WorldEnemy, starting at line 1027). The only
     # rewire is `self` (the WorldEnemy) -> `en` (the WorldEnemy passed as the
     # first arg). The method operates on the en's OWN fields (x, vx, state,
@@ -166,7 +166,7 @@ class AISystem:
     # on_attack). Helper method calls `self._do_attack`/`self._collide`/
     # `self.take_damage` -> `en._do_attack`/`en._collide`/`en.take_damage`
     # (WorldEnemy methods, unchanged). WorldEnemy.update becomes a 1-line
-    # delegate to this staticmethod (see _legacy_world_entities.py). The
+    # delegate to this staticmethod (see world_actors.py). The
     # Projectile class is imported lazily from the legacy module to avoid a
     # circular import at module load time (the legacy module imports Camera
     # from this module's sibling physics.py).

@@ -888,9 +888,26 @@ def main():
     ap.add_argument("--force", action="store_true",
                     help="ignore the descriptor cache; re-bake every selected skin")
     args = ap.parse_args()
-    champs = build_data()
-    if args.all or args.images:
-        rearrange_images(champs)
+    if args.vlm_loop:
+        # VLM bake path: skip build_data() (which needs assets/champions/*.json
+        # that are not shipped) and load the already-baked CHAMPIONS_DB instead.
+        # The descriptors in CHAMPIONS_DB have tuple palettes; normalize to lists
+        # for sprite_loop's _validate.
+        from src.build.champions import CHAMPIONS_DB as _DB
+        champs = []
+        for c in _DB:
+            cc = dict(c)
+            if "descriptor" in cc:
+                pal = cc["descriptor"].get("palette", {})
+                cc["descriptor"] = {
+                    **cc["descriptor"],
+                    "palette": {k: list(v) for k, v in pal.items()},
+                }
+            champs.append(cc)
+    else:
+        champs = build_data()
+        if args.all or args.images:
+            rearrange_images(champs)
     if args.all or args.sprites:
         if args.vlm_loop:
             from src.build.sprite_loop import run_sprite_bake
@@ -904,8 +921,8 @@ def main():
                 skins = [0]
             else:
                 skins = [int(s.strip()) for s in args.skins.split(",") if s.strip()]
-            # build_data returns the in-memory champ list; the bake needs the
-            # baked CHAMPIONS_DB descriptors as fallback, which match by id.
+            # The baked CHAMPIONS_DB descriptors (already palette-normalized
+            # above) are the fallback for the VLM describe call.
             rep = run_sprite_bake(champs, skin_indices=skins,
                                   concurrency=args.concurrency,
                                   max_iters=args.max_iters, force=args.force)

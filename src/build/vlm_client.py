@@ -30,16 +30,22 @@ _DESCRIBE_SYS = (
     "Fields: archetype (one of {arche}), weapon (one of {weap}), palette "
     "{{\"primary\":[r,g,b],\"secondary\":[r,g,b],\"accent\":[r,g,b]}} (0-255), "
     "features (list from {feat}, max 3), build (one of {build}), motif (one of {motif}). "
-    "Output JSON only, no prose."
+    "CRITICAL: extract the 3 MOST DOMINANT colors from the splash. "
+    "primary = main clothing/body color, secondary = hair/secondary clothing, "
+    "accent = magic/weapon/glow color. Output JSON only, no prose."
 ).format(arche=",".join(VOCAB["archetype"]), weap=",".join(VOCAB["weapon"]),
          feat=",".join(VOCAB["features"]), build=",".join(VOCAB["build"]),
          motif=",".join(VOCAB["motif"]))
 
 _CRITIQUE_SYS = (
     "You are an art director comparing a REFERENCE skin splash (image 1) to a "
-    "PROCEDURAL PIXEL SPRITE (image 2) that should represent the same character's "
-    "world appearance. Output JSON ONLY: "
-    "{{\"match\":<0-10 integer>,\"ok\":<true if the sprite is good enough>,"
+    "CHIBI PIXEL SPRITE (image 2). The sprite is intentionally simplified (256px, "
+    "blocky) — it is NOT meant to be a realistic replica. Score based on: "
+    "(1) dominant color family match (red/blue/green/etc), (2) weapon type, "
+    "(3) general class. A reasonable chibi with the right color family scores 6+. "
+    "Good match 7-8. Excellent 9-10. Below 6 only if colors are completely wrong. "
+    "Output JSON ONLY: "
+    "{{\"match\":<0-10 integer>,\"ok\":<true if the sprite is good enough (match>=6)>,"
     "\"problems\":[<short strings>],\"suggested_descriptor\":{{<full descriptor in "
     "the renderer vocab>}}}}. Renderer vocabulary: archetype {arche}; weapon {weap}; "
     "features {feat} (max 3); build {build}; motif {motif}; palette 3x[r,g,b]. "

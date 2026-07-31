@@ -288,6 +288,40 @@ def test_render_one_frame():
     sc.hud.draw(g.screen)
     print("  render one frame OK")
 
+def test_worldcharacter_skin_sprite():
+    """A WorldCharacter built from a Hero with skin=14 loads sprites/14.png
+    when present (else falls back to sprite.png). Asserts the load PATH,
+    not pixel content."""
+    import main as M
+    from src.entities import WorldCharacter
+    from src.entities.combatant import Hero
+    from src.data.heroes import HERO_BY_ID
+    from src.data.tuning import ASSET_DIR
+    import os, pygame
+    g = M.Game()
+    hd = HERO_BY_ID["Ahri"]
+    hero = Hero(hd, skin=14)
+    # ensure a sprites/14.png exists
+    base = os.path.join(ASSET_DIR, "characters", "Ahri")
+    os.makedirs(os.path.join(base, "sprites"), exist_ok=True)
+    sp = os.path.join(base, "sprites", "14.png")
+    if not os.path.exists(sp):
+        s = pygame.Surface((256, 256), pygame.SRCALPHA)
+        pygame.draw.circle(s, (255, 0, 255, 255), (128, 128), 60)
+        pygame.image.save(s, sp)
+    wc = WorldCharacter(hero, 200, 200)
+    # reload the sprite via the skin-aware path and assert it resolved to sprites/14.png
+    import src.entities.combatant as comb
+    seen = []
+    orig = comb.load_image
+    comb.load_image = lambda rel, scale=None: (seen.append(rel), orig(rel, scale))[1]
+    try:
+        wc._load_sprite()
+    finally:
+        comb.load_image = orig
+    assert any("sprites/14.png" in p for p in seen), f"per-skin not loaded: {seen}"
+    print("  worldcharacter skin sprite OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

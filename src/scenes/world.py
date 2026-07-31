@@ -972,6 +972,7 @@ class WorldScene:
                                level=rec.get("level", 1) if rec else 1,
                                ascension=rec.get("ascension", 0) if rec else 0,
                                evolve=rec.get("evolve", 0) if rec else 0,
+                               skin=rec.get("skin", 0) if rec else 0,
                                x=wc.x, y=wc.y)
                 self._entity_for_hero[hid] = e
             else:
@@ -989,7 +990,7 @@ class WorldScene:
                 # the entity layer tracks it (mirrors the main-loop branch above).
                 if hid not in self._entity_for_hero:
                     self._entity_for_hero[hid] = spawn_hero(
-                        self.world, hid, x=wc.x, y=wc.y)
+                        self.world, hid, skin=0, x=wc.x, y=wc.y)
                 break
         # active index
         self.active = 0

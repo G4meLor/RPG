@@ -1,285 +1,232 @@
-# VLM-in-the-Loop Pixel Sprite Improvement — Design Spec
+# VLM Canonical Sprite Overhaul — Design Spec
 
-**Date:** 2026-07-31
-**Status:** Approved (brainstorm sections 1-5)
+**Date:** 2026-07-31 (supersedes the 2026-07-31 VLM-in-the-loop spec; that feature
+shipped but a strict canonical audit proved 0/170 sprites recognizable — the
+calibrated gate was dishonest. This spec is the real fix.)
+**Status:** Approved (brainstorm sections 1-3)
 **Author:** design session
 
 ## Goal
 
-Drastically improve the quality of the procedural per-champion **world sprite**
-(`assets/characters/{id}/sprite.png`) by putting a **VLM (vision-language
-model) in the loop as an art director** at build time. The renderer stays
-pixel-art; the VLM only *describes* and *critiques*, never draws. Extend the
-system to **per-skin sprites** so changing a hero's equipped skin in-game also
-changes their world sprite.
+Make the per-champion world sprites **actually recognizable** as their champion.
+The honest target: canonical mean match ≥ 6.0, recognizable ≥ 70%, stance
+captured ≥ 90% (from today's 1.18 / 0% / 46%). Accept that pixel-art at 256px
+cannot depict specific faces — recognizability comes from **stance + body
+silhouette + signature features + colors** (a white bear with lightning =
+Volibear; a 9-tailed red fox-girl = Ahri), not from a face.
 
-## Background — what exists today
+## Background — what the audit proved
 
-- `assets/characters/{id}/sprite.png` is a 256×256 procedural pixel sprite,
-  drawn by `src/assets_gen/generate.py:draw_chibi_descriptor` from a
-  **descriptor** baked into `src/build/champions.py` (one per champion, for the
-  Original skin only). The descriptor drives: archetype (10), weapon (8),
-  palette (3 RGB), features (≤3 from 7), build (5), motif/element-aura (8).
-- `WorldCharacter._load_sprite` (`src/entities/world_actors.py`) calls
-  `load_char_sprite(self.hero.id, size)` (`src/entities/combatant.py`), which
-  loads `characters/{id}/sprite.png` and **ignores the equipped skin entirely**.
-- Skins already exist as data: `rec["skin"]` (index, default 0) is persisted on
-  the player's hero record, switched in `hero_detail.py`, and used by
-  `load_portrait(hero_id, skin_idx)` to pick `skins/{idx}.jpg`. But the *world
-  sprite* never changes with skin — that is the gap this spec closes.
-- Skin splash references live at `assets/characters/{id}/skins/{idx}.jpg`
-  (~1780 total, ~10.5/champ). These are the VLM's reference images.
-- The VLM endpoint is an OpenAI-compatible chat/completions API (vLLM,
-  misa-gemma-4-31b-it), reachable with a self-signed cert (`verify=False`),
-  ~0.8s / ~1000 tokens per vision critique. Verified working for both
-  describe-from-image and critique-two-images tasks.
+A strict canonical gate (VLM LoL knowledge as ground truth, NOT splash
+similarity) scored the 170 baked sprites: **mean 1.18/10, 0/170 recognizable,
+46% stance captured, 8% colors captured, 169/170 ≤ 3/10.** The earlier
+"6.18/6.24 gate pass" was a calibrated prompt scoring "right color family" as
+6+ — dishonest. Root causes (three independent layers, all broken):
 
-## Architecture
+1. **Gate** was splash-similarity + calibrated (fake). Must become canonical
+   (VLM LoL knowledge, strict, multi-axis).
+2. **Descriptor** was VLM-flying-blind (only the splash image, no champ
+   identity). Grounding prototypes proved that feeding name/title/lore/abilities
+   makes the VLM pick the right archetype/weapon/features/colors (Ahri →
+   vastaya/orb/fox_tails/red).
+3. **Renderer** is the ceiling: 10 archetypes, ALL humanoid-upright. 92/170
+   champs need a different body shape (39 non-upright: quadruped/mounted/flying/
+   floating; 51 upright-but-wrong-body: minotaur/rock-golem/spider/primate...).
+   No prompt/loop fix can make a knight-body look like Volibear (a bear).
 
-**Core idea:** the VLM is a build-time art director; the existing pixel
-renderer is the brush; runtime only loads baked PNGs. The VLM never runs while
-playing.
+Surveys that drove this spec (raw in /tmp):
+- `body_type_survey.json` — VLM text-classified 170 champs → 5 stances
+  (upright-biped 139, quadruped 14, floating 9, mounted 6, flying 2).
+- `canon_survey_full.json` — per-champ canonical identity (stance, body_shape,
+  signature_features, colors, weapon) + canonical gate scores, proving 0%
+  recognizable and the 92-champ stance gap.
 
-```
-BUILD TIME (offline, run once)                  RUNTIME (game)
-┌──────────────────────────────────────┐      ┌───────────────────────────┐
-│ ref: characters/{id}/skins/{idx}.jpg │      │ load_char_sprite(          │
-│            ↓                         │      │   hero_id, size, skin_idx) │
-│  VLM.describe(ref) → descriptor      │      │   → sprites/{idx}.png      │
-│            ↓                         │ bake │     (or sprite.png fallback)│
-│  renderer.draw(descriptor) → PNG     │ ───▶ │                           │
-│            ↓                         │ PNGs │ WorldCharacter blit +      │
-│  VLM.critique(ref, PNG) → {ok?}      │      │ squash/tilt/lunge/walk-bob │
-│   ├─ ok   → SAVE PNG + descriptor    │      └───────────────────────────┘
-│   └─ !ok  → descriptor = suggested   │
-│             → loop (max 10)          │
-└──────────────────────────────────────┘
-```
+## Architecture — stance-driven 2-level dispatch
 
-**Fixed renderer vocabulary** (the VLM only adjusts within this; it cannot
-invent drawing primitives — that is Phase 2):
-
-| Field | Values |
-|-------|--------|
-| archetype | knight, mage, archer, brute, rogue, undead, yordle, vastaya, construct, beast |
-| weapon | sword, bow, staff, orb, scythe, spear, gauntlet, none |
-| features | cape, hood, horns, wings, mask, halo, spikes (≤3) |
-| build | slender, average, bulky, tall, short |
-| motif | flame, ice, wind, lightning, shadow, light, void, nature |
-| palette | {primary, secondary, accent} each [r,g,b] 0-255 |
-
-## The VLM loop
+Add a `stance` field to the descriptor; `draw_chibi_descriptor` dispatches by
+stance, then by archetype within stance, then applies features + weapon.
 
 ```
-def vlm_sprite_loop(hero_id, skin_idx, ref_jpg, max_iters=10):
-    desc = VLM.describe(ref_jpg)              # round 0: initial description
-    history = []                              # (descriptor, match, ok) per round
-    for i in range(max_iters):
-        png = renderer.draw(desc)             # pixel render (under render-lock)
-        crit = VLM.critique(ref_jpg, png)     # {match:0-10, ok:bool, problems:[], suggested_descriptor:{}}
-        history.append((desc, crit.match, crit.ok))
-        if crit.ok: break                     # VLM says good → stop
-        desc = crit.suggested_descriptor      # not good → take suggested
-    best_desc = max(history, key=lambda h: h[1])[0]  # never converged → best-scoring desc
-    best_png = renderer.draw(best_desc)       # re-render the chosen descriptor once
-    return best_desc, best_png, history
+descriptor = {stance, archetype, weapon, palette, features, build, motif}  # +stance
+
+draw_chibi_descriptor(surf, desc):
+  stance = desc["stance"]
+  upright   → _ARCH_DRAW[archetype](...)                 # 10 existing + 5 new bodies
+  quadruped → _QUAD_DRAW[archetype](...)                 # 1-2 new + feature mods
+  mounted   → _draw_mounted(rider_archetype, mount_kind) # 1 new (rider + mount)
+  flying    → _FLY_DRAW[archetype](...)                  # 2 new (bird/dragon)
+  floating  → _ARCH_DRAW[archetype] + _floating_modifier # modifier on humanoid + 1 unique (eye)
+  _apply_features(...)   # ~15 new feature primitives
+  draw_weapon(...)
 ```
 
-- **Convergence:** the VLM's own `ok` field is `true` (the VLM decides "ảnh đã
-  ổn"; it typically returns `ok` when `match ≥ 7`, but we trust its `ok`, not a
-  hardcoded threshold). **Cap:** 10 critique rounds. If it never converges,
-  keep the highest-`match` descriptor and re-render it once — the loop can only
-  improve, never make a sprite worse than round 0.
-- **Per round cost:** round 0 = 1 describe + 1 critique; rounds 1+ = 1 critique
-  each. Typical convergence ~3-5 rounds → ~4-6 VLM calls per skin.
+`stance` and the new `archetype`/`features` values are VLM-facing vocab. The
+VLM picks them from the champ's canonical identity + splash.
 
-### Concurrency (configurable, default 1)
+## Renderer primitives — data-shaped (Section 2)
 
-- Config: `--concurrency N` CLI flag (default **1 = serial**) plus a default in
-  the config module. Env-var override for the endpoint/key.
-- **Parallelism granularity = skin:** N skins processed concurrently, each
-  running its own sequential loop (round N depends on round N-1).
-- **Render lock:** pygame `Surface.draw` is not thread-safe, so rendering is
-  serialized under one `threading.Lock`. Rendering is ~ms (not the bottleneck);
-  the VLM HTTP call is ~1s (the bottleneck) → parallelize VLM, serialize render.
-- Implementation: `concurrent.futures.ThreadPoolExecutor(max_workers=N)` for
-  skins + `threading.Lock` around `renderer.draw`. VLM calls are plain HTTP,
-  thread-safe by nature.
+Body clusters from the survey (21 clusters → ~10 drawers + feature mods):
 
-### Caching & resumability (essential for ~1780 skins)
+### New stance/body drawers (8)
+| Drawer | Stance | Champs | Notes |
+|--------|--------|--------|-------|
+| `quadruped` | quadruped | 14 | one drawer + feature mods: `shell` (Rammus), `stinger` (Skarner), `fur` (Volibear/Warwick), `insect_carapace` (Khazix/Belveth), `void_fins` (KogMaw/Chogath) |
+| `mounted` | mounted | 6 | rider (reuses an upright archetype) + a mount body (boar/yeti/lizard/bird/wolf/plane) chosen by a `mount_kind` field |
+| `flying_bird` | flying | 1 (Anivia) | winged bird body |
+| `flying_dragon` | flying | 1 (AurelionSol) | serpentine dragon body |
+| `rock_giant` | upright | 2 (Malphite, Galio; +Ornn) | massive rocky humanoid, craggy texture |
+| `treant` | upright | 2 (Maokai, Ivern) | tree-bark humanoid |
+| `blob` | upright | 1 (Zac) | amorphous slime body with arms |
+| `naga` | floating/upright | 2 (Cassiopeia, Nami) | humanoid upper + serpentine/fish lower |
 
-- Sidecar `assets/characters/{id}/descriptors.json`:
-  `{"0": {descriptor, match, iters, ok}, "14": {...}, ...}`.
-- Re-run skips any skin already cached with `ok == true` (or match ≥ threshold)
-  unless `--force`. A crash mid-bake → re-run resumes without redoing finished
-  skins.
-- Baked PNGs are committed → deterministic runtime regardless of VLM
-  stochasticity. Re-bake only on `--force`.
+### Stance modifiers (2)
+- `floating_modifier` — applied to an existing humanoid archetype (mage/rogue/
+  knight): no legs, hover aura disc. Covers 17 float-humanoid champs
+  (Janna/Karthus/Sona/Syndra/Thresh/Orianna/Seraphine/Karma/Lissandra/Morgana/
+  Kayle/Bard/Vex/Xerath/Zilean/Zoe/Evelynn).
+- `float_eye` — 1 unique body (Velkoz): central eye + floating tentacles.
 
-### Vocab contract & output validation
+### Upright bodies via feature-mod on existing archetypes (no new drawer)
+- minotaur (Alistar) = brute + `large_horns` + `bovine_head`
+- scarecrow (Fiddlesticks) = mage + `mask` + gaunt build
+- avian_humanoid (Rakan, Xayah) = vastaya + `feathered_wings`
+- arachnid (Elise) = humanoid + `spider_legs`
+- dragon_humanoid (Shyvana) = humanoid + `dragon_horns` + `dragon_wings`
+- small_beast (Gnar, Twitch, Kennen) = yordle + `tail` + `animal_ears`
+- crocodilian (Renekton), jackal (Nasus), feline (Rengar) = beast-upright
+  variant + `snout`/`fur`/`tail`
 
-- The VLM returns JSON (gemma sometimes wraps it in ```json fences → strip).
-- Validate every field against the fixed vocab above. On invalid JSON: retry
-  once, then fall back to the last valid descriptor. An invalid descriptor
-  never reaches the renderer.
+### New feature primitives (15, frequency-shaped)
+| Feature | Champs | Existing? |
+|---------|--------|-----------|
+| `tail` (generic, multi-tail via count) | 26 | new (vastaya has 1; generalize) |
+| `long_hair` / `mane` | 40 | new (build handles proportion; this adds visible hair) |
+| `pointed_ears` (merge with animal_ears) | 30 | animal_ears exists; add pointed variant |
+| `large_horns` | 10 | horns exists; add large/curved variant |
+| `feathered_wings` | 8 | wings exists; add feathered variant |
+| `dragon_wings` | 3 | new (bat/scale wing) |
+| `fur` | 20 | new (body texture overlay) |
+| `scales` | 2 | new (body texture overlay) |
+| `hat` / `plumed_helmet` | 20 | new (headgear) |
+| `beard` | 6 | new |
+| `chains` | 3 | new (Thresh/Sylas) |
+| `dual_pistols` (weapon variant) | 3 | new weapon drawer |
+| `spider_legs` | 1 (Elise) | new |
+| `bovine_head` / `snout` | 2 | new (animal head) |
+| `glowing_eyes` | 32 | new (small eye-glow modifier) |
 
-### Config surface
+Existing features kept: cape, hood, horns, wings, mask, halo, spikes, crown,
+fox_tails, animal_ears, claws.
 
-```python
-# src/build/vlm_client.py — defaults, env override
-DEFAULT_MODEL    = "misa-gemma-4-31b-it"
-DEFAULT_BASE_URL = "https://runai.misaonline.vpnlocal/prod-llm/misa-gemma4-31b-it-api/v1"
-DEFAULT_API_KEY  = "sk-proj-..."   # or env VLM_API_KEY
+**Total new primitives: ~8 body drawers + 2 stance modifiers + 15 features + 1
+weapon variant = ~26 new draw functions (~1800 lines of pixel-art).**
+
+## VLM pipeline — grounding + canonical gate (Section 3)
+
+### describe (champ context + canon identity + splash → descriptor)
 ```
-CLI:
-- `--concurrency N` — max concurrent VLM calls (default 1).
-- `--max-iters N` — round cap (default 10).
-- `--champs Ahri,Garen` / `--skins 0,14` — incremental filter.
-- `--force` — ignore cache.
-
-### Cost estimate
-
-- P1 (170 Original) × ~5 rounds × ~1000 tokens ≈ 850k tokens, ~15 min at
-  concurrency 1.
-- P3 (~1780 skins) ≈ 9M tokens, ~3-5 h at concurrency 1; concurrency 4 → ~1 h
-  (GPU-dependent).
-
-## Per-skin file layout & game wiring
-
-### File layout (Phase 3)
-
-```
-assets/characters/{id}/
-├── sprite.png              # Original fallback (back-compat; P1 overwrites)
-├── skins/                  # splash references — UNTOUCHED (jpg)
-│   ├── 0.jpg
-│   └── 14.jpg
-├── sprites/                # NEW: per-skin world sprites (png)
-│   ├── 0.png               # == sprite.png (Original)
-│   └── 14.png
-└── descriptors.json        # NEW: {idx: {descriptor, match, iters, ok}}
+system: "art director, FIXED vocab (stance + archetype + features + weapon +
+         palette + build + motif). Given the champ's IDENTITY (name, title,
+         faction, role, abilities, lore) AND CANONICAL body (from LoL knowledge)
+         AND the splash, produce the descriptor that best captures the canonical
+         identity within the fixed vocab."
+user:   "Champion: Ahri — the Nine-Tailed Fox. Faction ionia, role hunt.
+         Abilities: Orb of Deception, Fox-Fire, Charm, Spirit Rush.
+         CANONICAL: fox-girl vastaya, 9 fluffy white tails, fox ears,
+         red & white kimono, floating orb, upright-biped.
+         [splash image]. Produce best descriptor. JSON only."
+output: {stance, archetype, weapon, palette, features, build, motif}
 ```
 
-- `skins/` = splash references (jpg); `sprites/` = rendered world sprites (png).
-  Clean separation — a new dir, no rename of existing splash files.
-- Naming inside `sprites/` = `{idx}.png` (no `.sprite` infix; the dir name
-  already says sprites).
+### critique (champ context + canon + splash + sprite → canonical match + suggested)
+```
+system: "STRICT critic. Judge whether the sprite captures the champion's
+         CANONICAL identity (stance + body shape + signature features + colors),
+         NOT splash-similarity. Be strict."
+output: {canonical_match:0-10, stance_captured:bool, body_shape_score:0-10,
+         features_missing:[...], colors_captured:bool, recognizable:bool,
+         suggested_descriptor:{...}}
+```
 
-### Runtime wiring (3 small edits)
+### canonical gate (canon + sprite, NO splash — measures against the origin)
+```
+output: {canonical_match:0-10, stance_captured, body_shape_score,
+         features_captured:[...], features_missing:[...], colors_captured,
+         recognizable, verdict}
+```
+This is the HONEST gate (VLM LoL knowledge as ground truth). It replaces the
+calibrated splash-similarity gate.
 
-1. **`Hero` carries skin** — `Hero.__init__` gains `skin=0`, stores
-   `self.skin`. `player.get_hero_instance` passes `rec.get("skin", 0)`.
-2. **`load_char_sprite(hero_id, size, skin_idx=0)`** — if `skin_idx > 0` and
-   `sprites/{skin_idx}.png` exists → load it; else fall back to `sprite.png`
-   (back-compat for old saves + champs not yet per-skin-baked).
-3. **`WorldCharacter._load_sprite`** — call
-   `load_char_sprite(self.hero.id, self.sprite_size, skin_idx=getattr(self.hero, "skin", 0))`.
+### Loop
+describe → draw → critique → revise, max 10 rounds, stop when
+`canonical_match ≥ 7` (canonical, not splash). Keep best-`canonical_match`
+round if never converges.
 
-### Skin change → sprite change
+### Canonical gate script (`tools/verify_canon_gate.py`)
+Reads every `descriptors.json` + sends sprite + canon identity to the VLM →
+canonical_match. Pass conditions:
+- mean canonical_match ≥ 6.0
+- recognizable ≥ 70% (≥119/170)
+- stance_captured ≥ 90% (≥153/170)
 
-`hero_detail.py` sets `rec["skin"]` and saves. Returning to the world,
-`_build_party` rebuilds `WorldCharacter` via `get_hero_instance` (now passing
-the new skin) → loads the correct skin's sprite. No mid-scene hot-swap needed
-(kept simple).
+## Phasing
 
-### Backward compatibility
-
-- Old saves: `rec["skin"]` defaults to 0 (migration already exists at
-  `player.py:474`). `Hero.skin` defaults to 0.
-- Champs not yet per-skin-baked: `sprites/{idx}.png` absent → fall back to
-  `sprite.png`. Game still runs; skin just doesn't change the world sprite for
-  that champ — no crash.
-- `verify_assets.py` + the 21-test acceptance suite must stay green (only an
-  optional file + a defaulted arg are added; no game-logic change).
-
-## Phase plan (each phase ships independently)
-
-| Phase | What | Output | Risk |
+| Phase | What | Output | Gate |
 |-------|------|--------|------|
-| **P1: Re-tune Original** | VLM loop on skin index 0 for all 170 champs, current vocab. Fixes obvious mismatches (e.g. Ahri rendered as a green robot). | Better `sprite.png` for 170 champs. Game unchanged. | Low — asset-only, logic untouched. |
-| **P2: Expand vocab** | Gap-analysis: ask the VLM "what distinct visual feature can the renderer NOT express?" across skins. Implement top-N new primitives (fox_ears, nine_tails, shield, dual_pistols, huge_hammer, scythe, gun, …). Re-run P1 loop. | Wider renderer vocab + better P1 sprites. | Medium — new draw code, must test pixel coverage. |
-| **P3: Per-skin + switching** | Extend loop to ~1780 skins. Save `sprites/{idx}.png` + `descriptors.json`. Wire `skin_idx` through Hero → WorldCharacter → `load_char_sprite`. | Each skin has its own sprite; changing skin changes the world sprite in-game. | Highest — 1780 sprites + runtime wiring, but combat logic untouched. |
+| **P1: Renderer overhaul** | Implement ~26 new primitives (8 body drawers + 2 stance mods + 15 features + 1 weapon) in `src/assets_gen/generate.py`; add `stance` to the descriptor + dispatch; widen the VLM vocab. | Renderer can draw all 5 stances + new bodies + features. | `tools/verify_primitives.py` — each new primitive renders 256×256, coverage > 0, in-bounds, distinct from siblings. |
+| **P2: VLM pipeline rewrite** | Rewrite `vlm_client.py` prompts (grounding + canon); add canonical gate; rewrite `sprite_loop.py` to use canonical_match (not splash match) + stop at 7. | Pipeline drives the new renderer with canon-grounded descriptors. | `tools/verify_vlm_client.py` + `tools/verify_sprite_loop.py` updated; FakeVLM tests pass. |
+| **P3: Re-bake 170 Original** | Bake all 170 Original skins with the new renderer + canon-grounded pipeline. | 170 re-tuned `sprite.png` + `descriptors.json` with canonical_match. | `verify_canon_gate.py`: mean ≥ 6, recognizable ≥ 70%, stance ≥ 90%. + `verify_assets` + 21-test. |
+| **P4: Re-bake 1780 per-skin** | Extend to all ~1780 skins (resumable). | 1780 per-skin `sprites/{idx}.png`. | `verify_assets` (per-skin coverage) + canon gate sample + 21-test. |
 
-**Ordering rationale:** validate the loop cheaply (170) → expand vocab so P3
-bakes only once with the full vocabulary → scale to 1780. Baking P3 before P2
-would force re-baking 1780 sprites twice.
-
-### P2 — vocab expansion detail
-
-**Gap-analysis (cheap, no rendering):** one different VLM prompt over a sample
-of splash refs:
-> "Look at this splash. Name the 1-2 MOST distinct visual features of this
-> character's world appearance that a pixel sprite MUST capture (e.g. 'nine
-> tails', 'shield', 'dual pistols', 'huge hammer', 'fox ears'). Output JSON
-> {features:[...], weapon:[...]} — free-form, not from a fixed vocab."
-
-Aggregate across champs → count frequency of features/weapons the renderer
-lacks. Pick top-N (~8-12) most common + most important → implement.
-
-**Implement new primitives** in `src/assets_gen/generate.py`: each is one new
-draw function + an entry in the dispatch map (`_FEATURE_DRAW`, `_WEAPON_DRAW`).
-Pixel-art, scaled to 256×256, coverage-tested via `verify_assets.py`. Update
-the vocab list in `vlm_client.py` + the system prompt so the VLM can request
-the new primitives. Re-run the P1 loop and compare match scores before/after.
-
-**Risk control:** each new primitive is small (~30-60 lines). Implement + test
-pixel coverage one at a time before re-running the loop. A broken primitive is
-dropped — it cannot corrupt already-baked sprites (committed PNGs don't depend
-on runtime vocab).
+P1+P2 are code; P3+P4 are bakes. P3 is the proof point (must hit the canonical
+gate targets before P4 scales).
 
 ## Verification strategy
 
-Three layers; each phase must be green before the next.
-
-**1. Build-time — VLM match-score log.** Every skin writes
-`{match, iters, ok}` into `descriptors.json`. End-of-run aggregate: mean match
-before (round 0) vs after (best), % converged < 10 rounds, # skins ok.
-- **P1 gate:** mean match ≥ 6 and no skin worse than its round 0 (loop only
-  improves). (Convergence itself is gated on the VLM's own `ok`; the match
-  threshold is an aggregate quality bar, not a per-skin stop condition.)
-- **P2 gate:** mean match after-expand > before-expand (new vocab must help).
-
-**2. Asset verify (`tools/verify_assets.py`, headless, no image reading).**
-Currently checks `sprite.png` exists + 256×256 + archetype distinctness (mean
-coverage differs). P1 overwrites `sprite.png` → must still pass. P3 extends
-the checker: `sprites/{idx}.png` (if present) = 256×256 + alpha-bbox in bounds
-+ coverage > 0 (not blank); `descriptors.json` parseable.
-Run: `SDL_VIDEODRIVER=dummy python3 -m tools.verify_assets`.
-
-**3. Game acceptance (`/tmp/verify_complete.py`, 21 tests).** Game logic is
-untouched (only assets + 3 small wiring edits). Must stay green: boot, 9 scene
-renders, combat, edge transitions, teleport, save, gacha, audio, boss, 600-frame
-long-run. **P3 adds a test:** set `rec["skin"]` → `get_hero_instance` →
-`WorldCharacter._sprite` loads the right `sprites/{idx}.png` (assert the load
-path, not pixels). Add to `tools/verify_ecs.py` or a dedicated suite.
-
-**Per-phase smoke:**
-```bash
-SDL_VIDEODRIVER=dummy python3 -c "
-import main; from src.scenes.world import WorldScene
-g=main.Game(); g.goto('world'); sc=g.scene
-[sc.update(0.016,[]) or sc.draw(g.screen) for _ in range(120)]
-print('boot+play ok')"
-```
+1. **Primitive tests** (P1): each new drawer/feature renders 256×256, coverage
+   > 0, in-bounds, distinct coverage from siblings. Headless, no image Read.
+2. **VLM client/loop tests** (P2): FakeVLM (no network) — describe/critique/gate
+   parse + validate; loop stops at canonical_match ≥ 7; cache round-trips.
+3. **Canonical gate** (P3/P4): `verify_canon_gate.py` — real VLM, mean ≥ 6,
+   recognizable ≥ 70%, stance ≥ 90%. The honest metric.
+4. **Asset verify** (`tools/verify_assets.py`): every sprite 256×256, coverage
+   > 0, archetype distinctness (updated for new archetypes), descriptors.json
+   per skin.
+5. **Game acceptance** (`/tmp/verify_complete.py`, 21 tests): no game-logic
+   regression (renderer is build-time only; runtime loads PNGs — combat/AI/
+   physics untouched).
 
 ## Risk fences
 
-- **Stochastic loop** → baked PNGs committed (deterministic runtime). Re-bake
-  only on `--force`.
-- **VLM endpoint down** → build fails gracefully (skip that skin, keep old
-  sprite, log error). Never crashes the game.
-- **Broken new primitive** → `verify_assets` catches it (coverage 0 / wrong
-  size) before merge.
-- **HARD CONSTRAINT preserved:** never Read a PNG/JPG via the Read tool. The
-  VLM reads images over HTTP base64 (outside the Claude session); the build
-  script uses headless `pygame.image.load`. The session-crash constraint from
-  `AGENTS.md` / memory `gacha-no-image-reading` is not violated.
+- **Stochastic VLM** → baked PNGs committed (deterministic runtime). Re-bake
+  only on `--force`. Canonical gate re-runnable on committed assets.
+- **VLM endpoint down** → build fails gracefully (skip skin, keep old sprite,
+  log error). Never crashes the game.
+- **Renderer primitive broken** → `verify_primitives` catches (coverage 0 /
+  out-of-bounds) before bake.
+- **Scope** — ~26 primitives is large; P1 implements + tests each before P3
+  bakes. If a primitive can't depict its champs (canon gate < 6 for that
+  cluster), iterate the primitive before scaling.
+- **HARD CONSTRAINT preserved**: never Read a PNG/JPG via the Read tool. VLM
+  reads images over HTTP base64 (outside the session); build uses headless
+  `pygame.image.load`. Tests assert load-path/size/coverage, never pixel Read.
 
 ## Out of scope
 
-- Replacing the pixel renderer with the VLM drawing directly (the VLM cannot
-  draw; it only describes/critiques).
-- Mid-scene hot-swap of the world sprite on skin change (deferred — re-entering
-  the world is sufficient and simpler).
-- Re-baking non-sprite assets (portraits/icons/skill icons are real LoL art;
-  unchanged).
+- Specific faces (pixel-art at 256px can't depict a specific face; recognizability
+  via silhouette + features + colors).
+- Mid-scene hot-swap of the world sprite on skin change (re-entering the world
+  suffices — already wired).
+- Re-baking non-sprite assets (portraits/icons are real LoL art; unchanged).
+- The latent `ow_party_state` level/ascension/evolve ECS-mirror bug (out-of-scope
+  from the sprite work; does not affect sprites/combat).
+
+## Relationship to the shipped (broken) feature
+
+The merged `vlm-sprite-loop` branch (commits 08c7c42..eb9292c) shipped the
+plumbing: VLM client, sprite loop, concurrent bake, CLI, per-skin `sprites/`
+output, skin-switch runtime wiring, `descriptors.json` cache. That plumbing is
+REUSED — this overhaul rewrites the renderer primitives, the VLM prompts
+(grounding + canonical), and the gate (canonical, strict), then re-bakes. The
+runtime wiring (load_char_sprite skin_idx, Hero.skin, WorldCharacter._load_sprite)
+is unchanged and correct.

@@ -73,7 +73,7 @@
     {
       "id": 8,
       "subject": "Task 9: Per-skin sprite output (`sprites/{idx}.png`)",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** Extend the bake to write a world sprite per skin to `assets/characters/{id}/sprites/{idx}.png` (in addition to `sprite.png` for index 0), keyed by the skin's splash ref at `skins/{idx}.jpg`, with a `descriptors.json` entry per skin index.\n\n**Files:**\n- Modify: `src/build/sprite_loop.py` (`_process_one` \u2014 write `sprites/{idx}.png`; generalize the cache key)\n- Test: `tools/verify_sprite_loop.py` (append per-skin test)\n\n**Acceptance Criteria:**\n- [ ] `_process_one` for `skin_idx=0` writes BOTH `sprite.png` (back-compat) and `sprites/0.png`.\n- [ ] `_process_one` for `skin_idx=14` writes `sprites/14.png` (and does NOT touch `sprite.png`).\n- [ ] `descriptors.json` keys are the skin index strings (`\"0\"`, `\"14\"`).\n- [ ] A skin whose `skins/{idx}.jpg` ref is missing is skipped with `{\"error\": \"missing ref splash\"}` (no crash).\n- [ ] `tools/verify_sprite_loop.py` new test: bake `--skins 0,14` for a champ that has `skins/14.jpg` (e.g. Ahri) with a FakeVLM, assert `sprites/0.png` + `sprites/14.png` exist and are 256\u00d7256, and `descriptors.json` has both keys.\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_sprite_loop.py` \u2192 per-skin test passes, ends in `SPRITE LOOP OK`.\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         7
@@ -82,7 +82,7 @@
     {
       "id": 9,
       "subject": "Task 10: `load_char_sprite` skin-aware loader",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** `load_char_sprite(hero_id, size, skin_idx=0)` loads `sprites/{skin_idx}.png` when it exists, else falls back to `sprite.png` (back-compat for old saves + champs not yet per-skin-baked).\n\n**Files:**\n- Modify: `src/entities/combatant.py:55-61` (`load_char_sprite`)\n- Test: `tools/verify_skin_loader.py`\n\n**Acceptance Criteria:**\n- [ ] `load_char_sprite(\"Ahri\", 96, skin_idx=14)` returns the `sprites/14.png` surface (when it exists), scaled to 96\u00d796.\n- [ ] `load_char_sprite(\"Ahri\", 96, skin_idx=14)` falls back to `sprite.png` when `sprites/14.png` is absent (no exception).\n- [ ] `load_char_sprite(\"Ahri\", 96)` (no skin_idx) defaults to skin 0 = `sprite.png` (existing behavior preserved).\n- [ ] `tools/verify_skin_loader.py` passes: with a fake `sprites/14.png` present, assert the loaded surface's source path resolves to the per-skin file (via the `_load_first` cache key / a monkeypatch on `load_image` capturing the path); with it absent, assert the fallback path is used.\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_skin_loader.py` \u2192 ends in `SKIN LOADER OK`.\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         8
@@ -91,7 +91,7 @@
     {
       "id": 10,
       "subject": "Task 11: `Hero.skin` + thread through `get_hero_instance` + `spawn_hero`",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** `Hero.__init__` gains `skin=0` and stores `self.skin`; `get_hero_instance` passes `rec.get(\"skin\", 0)`; `spawn_hero` threads skin into the `ChampionRef` entity component (the ECS adapter mirrors it).\n\n**Files:**\n- Modify: `src/entities/combatant.py:307-309` (`Hero.__init__` sig + body)\n- Modify: `src/player.py:144-147` (`get_hero_instance`)\n- Modify: `src/entities/hero.py:33` (`spawn_hero` \u2014 `ChampionRef(..., skin=skin)`)\n- Test: `tools/verify_skin_thread.py`\n\n**Acceptance Criteria:**\n- [ ] `Hero(hd, skin=14).skin == 14`; default `Hero(hd).skin == 0`.\n- [ ] `player.get_hero_instance(\"Ahri\")` with `rec[\"skin\"]=14` returns a `Hero` with `.skin == 14`.\n- [ ] `spawn_hero(world, \"Ahri\", skin=14, ...)` produces an entity whose `ChampionRef.skin == 14`; default `spawn_hero(world, \"Ahri\")` \u2192 `ChampionRef.skin == 0`.\n- [ ] `tools/verify_skin_thread.py` passes all three assertions.\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_skin_thread.py` \u2192 ends in `SKIN THREAD OK`.\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         9
@@ -100,7 +100,7 @@
     {
       "id": 11,
       "subject": "Task 12: `WorldCharacter._load_sprite` passes `skin_idx`",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** `WorldCharacter._load_sprite` calls `load_char_sprite(self.hero.id, self.sprite_size, skin_idx=getattr(self.hero, \"skin\", 0))` so the equipped skin's sprite is loaded; and `_build_party` passes the equipped skin to `spawn_hero` (ECS adapter mirrors it).\n\n**Files:**\n- Modify: `src/entities/world_actors.py:433-438` (`_load_sprite`)\n- Modify: `src/scenes/world.py:962` and `:984` (`spawn_hero` calls in `_build_party` \u2014 add `skin=rec.get(\"skin\",0)` / `skin=0`)\n- Test: `tools/verify_ecs.py` (append `test_worldcharacter_skin_sprite`)\n\n**Acceptance Criteria:**\n- [ ] A `WorldCharacter` built from a `Hero` with `skin=14` loads `sprites/14.png` when present (assert via the load path captured by a `load_image` spy), else falls back to `sprite.png`.\n- [ ] `_build_party` passes the equipped skin to `spawn_hero`, so the hero entity's `ChampionRef.skin` matches the record.\n- [ ] `tools/verify_ecs.py` new test passes; existing 14 tests still pass.\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 -m tools.verify_ecs` \u2192 `Layer 1 OK` (15 tests).\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         10
@@ -109,12 +109,12 @@
     {
       "id": 12,
       "subject": "Task 13: P3 full per-skin bake + extended verify",
-      "status": "pending",
+      "status": "completed",
       "description": "**USER-ORDERED GATE \u2014 NON-SKIPPABLE.** This task was requested by the user in the current conversation. It MUST NOT be closed by walking around it, by declaring it \"verified inline\", or by substituting a cheaper check. Close only after every item in `acceptanceCriteria` has been re-validated independently, with output captured.\n\n**Goal:** Bake per-skin sprites for all ~1780 skins (`--skins all`), extend `verify_assets.py` to check the `sprites/` dir + `descriptors.json`, add a `verify_ecs` end-to-end test that changing `rec[\"skin\"]` changes the loaded world sprite, and run the full 21-test acceptance suite to prove no game-logic regression.\n\n**Files:**\n- Modify: `src/build/build_champions.py` (`--skins all` \u2192 enumerate every `skins/{idx}.jpg`)\n- Modify: `tools/verify_assets.py` (check `sprites/{idx}.png` + `descriptors.json`)\n- Modify: `tools/verify_ecs.py` (append `test_skin_change_changes_sprite`)\n- Modify: `assets/characters/*/sprites/*.png` + `descriptors.json` (the bake output)\n- Test: the 21-test `/tmp/verify_complete.py` suite (must stay green)\n\n**Acceptance Criteria:**\n- [ ] `--skins all` enumerates every `skins/{idx}.jpg` per champ and bakes a `sprites/{idx}.png` for each (resumable via cache; the run completes for all ~1780).\n- [ ] `tools/verify_assets.py` extended: for each champ, every `skins/{idx}.jpg` has a matching `sprites/{idx}.png` that is 256\u00d7256 with coverage > 0; `descriptors.json` parses and has a key per skin index present.\n- [ ] `tools/verify_ecs.py` `test_skin_change_changes_sprite`: set `rec[\"skin\"]=14` \u2192 `get_hero_instance` \u2192 `WorldCharacter._load_sprite` resolves to `sprites/14.png`; set `rec[\"skin\"]=0` \u2192 resolves to `sprite.png`/`sprites/0.png`. Both asserted via load-path.\n- [ ] The 21-test acceptance suite (`/tmp/verify_complete.py`) passes: `RESULT: 21 passed, 0 failed` (boot, 9 scenes, combat, edge transitions, teleport, save, gacha, audio, boss, long-run).\n- [ ] The per-skin sprites + descriptors are committed.\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 -m tools.verify_assets` \u2192 `OK`; `SDL_VIDEODRIVER=dummy python3 -m tools.verify_ecs` \u2192 `Layer 1 OK`; `SDL_VIDEODRIVER=dummy python3 /tmp/verify_complete.py` \u2192 `21 passed, 0 failed`.\n\n```json:metadata\n{}\n```",
       "blockedBy": [
         11
       ]
     }
   ],
-  "lastUpdated": "2026-07-31T17:00:00"
+  "lastUpdated": "2026-07-31T20:00:00"
 }

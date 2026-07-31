@@ -601,6 +601,32 @@ def draw_weapon(surf, cx, cy, weapon, accent, outline, element):
         # handle (solid block, no AA)
         pygame.draw.rect(surf, (110, 80, 50), (bx - 2, by - 4, 8, 14))
         pygame.draw.rect(surf, outline, (bx - 2, by - 4, 8, 14), 1)
+    elif weapon == "dual_pistols":
+        # two pistols — one in each hand, flanking the body (solid blocks, no AA).
+        # Distinct from the single `gun`: symmetric pair, shorter barrels.
+        for side in (-1, 1):
+            px_ = cx + side * int(60)
+            py_ = 168
+            # barrel — 2-tone dithered metal (solid block, no AA)
+            barrel = px_dither_surf(20, 8, (90, 95, 115), (50, 55, 70))
+            clip_to_rect(barrel, pygame.Rect(0, 0, 20, 8))
+            # left gun points left, right gun points right
+            surf.blit(barrel, (px_ - 18, py_ - 4) if side < 0 else (px_ - 2, py_ - 4))
+            pygame.draw.rect(surf, outline,
+                (px_ - 18, py_ - 4, 20, 8) if side < 0 else (px_ - 2, py_ - 4, 20, 8), 2)
+            # muzzle (solid block, no AA) at the outer end
+            mx = px_ - 18 if side < 0 else px_ + 16
+            pygame.draw.rect(surf, (40, 45, 60), (mx - (2 if side < 0 else 0), py_ - 5, 4, 10))
+            # grip/stock — 2-tone dithered fill (solid block, no AA)
+            stock = px_dither_surf(10, 22, shade(accent, 0.8), shade(accent, 0.4))
+            clip_to_rect(stock, pygame.Rect(0, 0, 10, 22))
+            surf.blit(stock, (px_ - 5, py_ + 2))
+            pygame.draw.rect(surf, outline, (px_ - 5, py_ + 2, 10, 22), 2)
+            # trigger guard (solid arc-line, no AA)
+            pygame.draw.arc(surf, outline,
+                (px_ - 1, py_ + 4, 8, 10), math.pi, 2 * math.pi, 2)
+            # sight (solid block, no AA)
+            pygame.draw.rect(surf, (60, 65, 80), (px_ - 2, py_ - 9, 4, 6))
     # weapon == "none": draw nothing (the archetype's bare hands/body)
 
 
@@ -887,7 +913,292 @@ def _add_void_fins(surf, cx, cy, w, h, color, outline):
         pygame.draw.polygon(surf, outline, pts, 1)
 
 
-def _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline):
+# --- Task 5: 14 new feature primitives --------------------------------------
+# Each draws on top of any body via _apply_features. Placed so part of the
+# feature extends OUTSIDE the motif-aura disc (centered (cx, cy-50) r=46) and
+# outside the body silhouette, so it adds coverage on a knight base.
+# Arg conventions: body-box features take (cx,cy,w,h); head-circle features
+# take (hx,hy,hr); wing features take (cx,cy,w,h).
+
+def _add_tail(surf, cx, cy, w, h, color, outline):
+    """A generic tail at the back-bottom — a curved block chain going down and
+    out. Distinct from fox_tails (multi-tail). Pixel-art, no AA."""
+    tx0 = cx - int(w * 0.32)
+    ty0 = cy + int(h * 0.22)
+    for i in range(7):
+        t = i / 6.0
+        px_ = tx0 - int(t * 18)
+        py_ = ty0 + int((1 - (1 - t) ** 2) * 26)
+        r = 5 - i // 3
+        pygame.draw.circle(surf, shade(color, 0.95), (px_, py_), r)
+        pygame.draw.circle(surf, outline, (px_, py_), r, 1)
+
+
+def _add_long_hair(surf, hx, hy, hr, color, outline):
+    """Flowing hair behind/around the head — curved block strands going down
+    past the shoulders and OUT past the aura sides. Pixel-art, no AA."""
+    for side in (-1, 1):
+        bx = hx + side * (hr + 2)
+        for i in range(10):
+            t = i / 9.0
+            # spread wide enough to clear the aura (x past hx±50) + long below
+            px_ = bx + side * int(t * 34)
+            py_ = hy - 4 + int(t * 86)
+            r = 7 - i // 3
+            pygame.draw.circle(surf, shade(color, 1.05), (px_, py_), r)
+            pygame.draw.circle(surf, outline, (px_, py_), r, 1)
+
+
+def _add_pointed_ears(surf, hx, hy, hr, color, outline):
+    """Two tall pointed ears on the head — sharper/taller than animal_ears.
+    Tips extend above the aura AND poke out beyond the head sides. Pixel-art,
+    no AA."""
+    for side in (-1, 1):
+        ex = hx + side * (hr + 8)  # base pushed out past the head edge
+        # tall pointed ear (tip well above the head, base past the side)
+        pts = [(ex - side * 6, hy - hr + 6),
+               (ex - side * 1, hy - hr + 6),
+               (ex + side * 6, hy - hr - 42)]
+        pygame.draw.polygon(surf, shade(color, 1.1), pts)
+        pygame.draw.polygon(surf, outline, pts, 2)
+        # inner ear (lighter wedge)
+        ipts = [(ex - side * 3, hy - hr + 5),
+                (ex, hy - hr + 5),
+                (ex + side * 3, hy - hr - 26)]
+        pygame.draw.polygon(surf, shade(color, 1.35), ipts)
+        # ear tuft tip (solid block, no AA) — extra height to clear the aura
+        pygame.draw.rect(surf, shade(color, 0.95),
+            (ex + side * 5, hy - hr - 44, 4, 8))
+
+
+def _add_large_horns(surf, hx, hy, hr, color, outline):
+    """Large curved horns — bigger/wider than _add_horns, curving out and up so
+    they clear the aura. Pixel-art, no AA."""
+    for side in (-1, 1):
+        bx = hx + side * (hr - 2)
+        for i in range(7):
+            t = i / 6.0
+            # curve out to the side then up
+            x = bx + side * int(t * 24)
+            y = hy - hr - int(t * 30) + int(t * t * 10)
+            r = 6 - i // 2
+            pygame.draw.circle(surf, shade(color, 0.9), (x, y), r)
+            pygame.draw.circle(surf, outline, (x, y), r, 1)
+        # horn tip (sharp block)
+        tip_x = bx + side * 24
+        tip_y = hy - hr - 30 + 10
+        pygame.draw.polygon(surf, shade(color, 0.8),
+            [(tip_x - 3, tip_y), (tip_x + 3, tip_y), (tip_x + side * 6, tip_y - 10)])
+        pygame.draw.polygon(surf, outline,
+            [(tip_x - 3, tip_y), (tip_x + 3, tip_y), (tip_x + side * 6, tip_y - 10)], 1)
+
+
+def _add_feathered_wings(surf, cx, cy, w, h, color, outline):
+    """Feathered wings — rows of feather blocks (distinct from the bat wings in
+    _add_wings). Extend out beyond the arms. Pixel-art, no AA."""
+    for side in (-1, 1):
+        wx = cx + side * int(w * 0.30)
+        wy = cy - int(h * 0.14)
+        # wing base (dithered, no AA)
+        wing = px_dither_surf(int(w * 0.42), int(h * 0.42), shade(color, 1.1), shade(color, 0.5))
+        clip_to_polygon(wing, [(0, 0), (int(w * 0.42), 4),
+                               (int(w * 0.42), int(h * 0.42) - 4), (0, int(h * 0.42))])
+        surf.blit(wing, (wx, wy) if side < 0 else (wx - int(w * 0.42), wy))
+        # feather rows (solid blocks, no AA) — 3 rows of overlapping feathers
+        for row in range(3):
+            fy = wy + 4 + row * int(h * 0.10)
+            for f in range(5):
+                fx = (wx + f * int(w * 0.08)) if side < 0 else (wx - int(w * 0.42) + f * int(w * 0.08))
+                pygame.draw.polygon(surf, shade(color, 1.2 if f % 2 else 0.95),
+                    [(fx, fy + 8), (fx + int(w * 0.07), fy + 4), (fx + int(w * 0.07), fy + 12)])
+                pygame.draw.polygon(surf, outline,
+                    [(fx, fy + 8), (fx + int(w * 0.07), fy + 4), (fx + int(w * 0.07), fy + 12)], 1)
+
+
+def _add_dragon_wings(surf, cx, cy, w, h, color, outline):
+    """Dragon/bat wings — membrane stretched between finger bones (distinct
+    from feathered_wings). Extend out beyond the arms. Pixel-art, no AA."""
+    for side in (-1, 1):
+        base_x = cx + side * int(w * 0.28)
+        base_y = cy - int(h * 0.16)
+        tip_x = cx + side * int(w * 0.62)
+        # membrane (dithered, no AA) — a triangular fan
+        for i in range(4):
+            t = (i + 1) / 4.0
+            mx = base_x + side * int(t * int(w * 0.36))
+            my = base_y - int(t * int(h * 0.30)) + i * int(h * 0.10)
+            pts = [(base_x, base_y + i * int(h * 0.08)),
+                   (mx, my),
+                   (base_x, base_y + (i + 1) * int(h * 0.08))]
+            pygame.draw.polygon(surf, shade(color, 1.0 if i % 2 else 0.8), pts)
+            pygame.draw.polygon(surf, outline, pts, 1)
+        # finger bones (solid lines, no AA)
+        for i in range(4):
+            t = (i + 1) / 4.0
+            mx = base_x + side * int(t * int(w * 0.36))
+            my = base_y - int(t * int(h * 0.30)) + i * int(h * 0.10)
+            pygame.draw.line(surf, outline, (base_x, base_y), (mx, my), 2)
+
+
+def _add_fur_body(surf, cx, cy, w, h, color, outline):
+    """Fur tufts along the body edges for upright bodies — small triangles
+    poking out beyond the arms/torso. Distinct from the quadruped _add_fur
+    (which crests the back). Pixel-art, no AA."""
+    for side in (-1, 1):
+        ex = cx + side * int(w * 0.56)
+        for i in range(6):
+            fy = cy - int(h * 0.10) + i * int(h * 0.08)
+            pygame.draw.polygon(surf, shade(color, 0.9),
+                [(ex - side * 2, fy + 5), (ex - side * 2, fy - 5), (ex - side * 12, fy)])
+            pygame.draw.polygon(surf, outline,
+                [(ex - side * 2, fy + 5), (ex - side * 2, fy - 5), (ex - side * 12, fy)], 1)
+
+
+def _add_scales(surf, cx, cy, w, h, color, outline):
+    """Scale texture — overlapping arc rows in a patch on the lower back/side,
+    extending below the torso. Pixel-art, no AA."""
+    sx0 = cx - int(w * 0.40)
+    sy0 = cy + int(h * 0.24)
+    for row in range(4):
+        ry = sy0 + row * 8
+        for col in range(5):
+            sx = sx0 + col * 9 + (row % 2) * 4
+            # scale = a small arc approximated by a stacked block (no AA arc)
+            pygame.draw.rect(surf, shade(color, 1.1 if col % 2 else 0.9), (sx, ry, 7, 5))
+            pygame.draw.rect(surf, outline, (sx, ry, 7, 5), 1)
+            pygame.draw.rect(surf, shade(color, 1.3), (sx + 1, ry + 1, 2, 2))
+
+
+def _add_hat(surf, hx, hy, hr, color, outline):
+    """A hat/headgear — a tricorne with a wide brim and a crown poking above the
+    aura. Pixel-art, no AA."""
+    # wide brim (solid block, no AA) — pokes out to the sides
+    pygame.draw.rect(surf, shade(color, 0.85), (hx - hr - 10, hy - hr + 2, hr * 2 + 20, 5))
+    pygame.draw.rect(surf, outline, (hx - hr - 10, hy - hr + 2, hr * 2 + 20, 5), 1)
+    # crown (dithered, no AA) — tall block above the head
+    cw, ch = hr * 2 + 6, hr + 14
+    crown = px_dither_surf(cw, ch, shade(color, 1.15), shade(color, 0.55))
+    clip_to_polygon(crown, [(0, ch), (cw, ch), (cw - 4, 0), (4, 0)])
+    surf.blit(crown, (hx - cw // 2, hy - hr - ch + 4))
+    pygame.draw.polygon(surf, outline,
+        [(hx - cw // 2, hy - hr + 4), (hx + cw // 2, hy - hr + 4),
+         (hx + cw // 2 - 4, hy - hr - ch + 4), (hx - cw // 2 + 4, hy - hr - ch + 4)], 1)
+    # hat band (solid accent block, no AA)
+    pygame.draw.rect(surf, shade(color, 0.6), (hx - cw // 2 + 2, hy - hr - 2, cw - 4, 4))
+
+
+def _add_beard(surf, hx, hy, hr, color, outline):
+    """A beard below the head — flowing blocks spreading wide past the chin so
+    they clear the aura/torso and extend down past the body. Pixel-art, no AA."""
+    # beard top (under the chin)
+    bx = hx
+    by = hy + hr - 2
+    for i in range(8):
+        t = i / 7.0
+        # spread wider toward the bottom (past hx±50 to clear the aura)
+        spread = int(t * 44)
+        py_ = by + int(t * 60)
+        pygame.draw.rect(surf, shade(color, 0.95),
+            (bx - spread, py_, spread * 2, 8))
+        pygame.draw.rect(surf, outline, (bx - spread, py_, spread * 2, 8), 1)
+    # hanging tufts (solid triangles, no AA) — extend further down
+    for side in (-1, 0, 1):
+        tx = bx + side * 18
+        pygame.draw.polygon(surf, shade(color, 0.85),
+            [(tx - 4, by + 56), (tx + 4, by + 56), (tx, by + 74)])
+        pygame.draw.polygon(surf, outline,
+            [(tx - 4, by + 56), (tx + 4, by + 56), (tx, by + 74)], 1)
+
+
+def _add_chains(surf, cx, cy, w, h, color, outline):
+    """Chains hanging from the body — a few chain links below the torso.
+    Pixel-art, no AA."""
+    for side in (-1, 1):
+        chx = cx + side * int(w * 0.30)
+        chy = cy + int(h * 0.20)
+        for i in range(5):
+            t = i / 4.0
+            ly = chy + int(t * 34)
+            # chain link = small oval (solid block, no AA)
+            pygame.draw.rect(surf, shade(color, 1.1 if i % 2 else 0.85),
+                (chx - 3, ly, 6, 8), border_radius=2)
+            pygame.draw.rect(surf, outline, (chx - 3, ly, 6, 8), 1, border_radius=2)
+
+
+def _add_spider_legs(surf, cx, cy, w, h, color, outline):
+    """Spider legs emerging from the back — 4 angled legs each side, poking out
+    beyond the arms. Pixel-art, no AA."""
+    for side in (-1, 1):
+        bx = cx + side * int(w * 0.20)
+        by = cy - int(h * 0.10)
+        for i in range(4):
+            t = (i + 1) / 4.0
+            # angled out and down (segmented: 2 solid blocks per leg)
+            mx = bx + side * int(t * int(w * 0.50))
+            my = by - int(t * int(h * 0.18)) + i * 3
+            ex = mx + side * 8
+            ey = my + 14
+            pygame.draw.line(surf, shade(color, 0.95), (bx, by + i * 4), (mx, my), 3)
+            pygame.draw.line(surf, shade(color, 0.95), (mx, my), (ex, ey), 3)
+            pygame.draw.circle(surf, outline, (mx, my), 2)
+
+
+def _add_bovine_head(surf, hx, hy, hr, color, outline):
+    """A bovine/animal snout head overlay (minotaur) — wider lower head + snout
+    + prominent horns that clear the aura. Pixel-art, no AA."""
+    # horns (curve out and up, clearing the aura) — wide spread
+    for side in (-1, 1):
+        bx = hx + side * (hr - 2)
+        for i in range(7):
+            t = i / 6.0
+            x = bx + side * int(t * 36)
+            y = hy - hr - int(t * 30) + int(t * t * 12)
+            r = 6 - i // 2
+            pygame.draw.circle(surf, shade(color, 0.85), (x, y), r)
+            pygame.draw.circle(surf, outline, (x, y), r, 1)
+        # horn tip
+        tx = bx + side * 36
+        ty = hy - hr - 30 + 12
+        pygame.draw.polygon(surf, shade(color, 0.75),
+            [(tx - 3, ty), (tx + 3, ty), (tx + side * 8, ty - 12)])
+        pygame.draw.polygon(surf, outline,
+            [(tx - 3, ty), (tx + 3, ty), (tx + side * 8, ty - 12)], 1)
+    # wider snout (solid block, no AA) — pokes below the head
+    sw = hr * 2 + 10
+    sh = hr + 10
+    snout = px_dither_surf(sw, sh, shade(color, 1.05), shade(color, 0.6))
+    clip_to_polygon(snout, [(0, sh), (sw, sh), (sw - 4, 0), (4, 0)])
+    surf.blit(snout, (hx - sw // 2, hy + 2))
+    pygame.draw.polygon(surf, outline,
+        [(hx - sw // 2, hy + 2 + sh), (hx + sw // 2, hy + 2 + sh),
+         (hx + sw // 2 - 4, hy + 2), (hx - sw // 2 + 4, hy + 2)], 1)
+    # nostrils (solid dark blocks, no AA)
+    pygame.draw.rect(surf, (30, 30, 40), (hx - 6, hy + sh - 4, 3, 3))
+    pygame.draw.rect(surf, (30, 30, 40), (hx + 3, hy + sh - 4, 3, 3))
+
+
+def _add_glowing_eyes(surf, hx, hy, hr, color, outline):
+    """A glow overlay on the eyes — bright cores + light beams extending out
+    beyond the head/aura. Pixel-art, no AA."""
+    glow = shade(color, 1.3)
+    for side in (-1, 1):
+        ex = hx + side * (hr // 2)
+        ey = hy - 1
+        # bright core (solid block, no AA)
+        pygame.draw.rect(surf, (255, 255, 255), (ex - 3, ey - 3, 6, 6))
+        pygame.draw.rect(surf, glow, (ex - 5, ey - 5, 10, 10))
+        # light beams (solid lines, no AA) — extend out and up/down past the aura
+        pygame.draw.line(surf, glow, (ex, ey), (ex + side * 60, ey - 34), 3)
+        pygame.draw.line(surf, glow, (ex, ey), (ex + side * 60, ey + 34), 3)
+        pygame.draw.line(surf, (255, 255, 255), (ex, ey), (ex + side * 60, ey - 34), 1)
+        pygame.draw.line(surf, (255, 255, 255), (ex, ey), (ex + side * 60, ey + 34), 1)
+        # outer burst (solid block, no AA) at the beam ends
+        bx = ex + side * 60
+        pygame.draw.rect(surf, glow, (bx - 3, ey - 37, 6, 6))
+        pygame.draw.rect(surf, glow, (bx - 3, ey + 31, 6, 6))
+
+
+def _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline, stance="upright"):
     """Apply 0-3 features from the descriptor."""
     sec = pal["secondary"]
     acc = pal["accent"]
@@ -920,11 +1231,44 @@ def _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline):
         elif f == "stinger":
             _add_stinger(surf, cx, cy, w, h, shade(sec, 1.1), outline)
         elif f == "fur":
-            _add_fur(surf, cx, cy, w, h, shade(primary, 0.9), outline)
+            # `fur` is the shared vocab key. Quadruped uses the back-crest
+            # _add_fur (Task 2); upright bodies use _add_fur_body (Task 5),
+            # which pokes tufts out beyond the arms so they clear the aura.
+            if stance == "quadruped":
+                _add_fur(surf, cx, cy, w, h, shade(primary, 0.9), outline)
+            else:
+                _add_fur_body(surf, cx, cy, w, h, shade(primary, 0.9), outline)
         elif f == "insect_carapace":
             _add_insect_carapace(surf, cx, cy, w, h, shade(sec, 0.95), outline)
         elif f == "void_fins":
             _add_void_fins(surf, cx, cy, w, h, shade(sec, 1.15), outline)
+        # --- Task 5: 14 new feature primitives ---
+        elif f == "tail":
+            _add_tail(surf, cx, cy, w, h, shade(sec, 0.9), outline)
+        elif f == "long_hair":
+            _add_long_hair(surf, hx, hy, hr, shade(sec, 1.0), outline)
+        elif f == "pointed_ears":
+            _add_pointed_ears(surf, hx, hy, hr, shade(sec, 1.1), outline)
+        elif f == "large_horns":
+            _add_large_horns(surf, hx, hy, hr, shade(acc, 0.85), outline)
+        elif f == "feathered_wings":
+            _add_feathered_wings(surf, cx, cy, w, h, shade(sec, 0.85), outline)
+        elif f == "dragon_wings":
+            _add_dragon_wings(surf, cx, cy, w, h, shade(sec, 0.8), outline)
+        elif f == "scales":
+            _add_scales(surf, cx, cy, w, h, shade(sec, 0.95), outline)
+        elif f == "hat":
+            _add_hat(surf, hx, hy, hr, shade(sec, 0.9), outline)
+        elif f == "beard":
+            _add_beard(surf, hx, hy, hr, shade(acc, 1.0), outline)
+        elif f == "chains":
+            _add_chains(surf, cx, cy, w, h, shade(acc, 1.1), outline)
+        elif f == "spider_legs":
+            _add_spider_legs(surf, cx, cy, w, h, shade(sec, 0.9), outline)
+        elif f == "bovine_head":
+            _add_bovine_head(surf, hx, hy, hr, shade(primary, 1.0), outline)
+        elif f == "glowing_eyes":
+            _add_glowing_eyes(surf, hx, hy, hr, shade(acc, 1.2), outline)
 
 
 # --- per-archetype silhouettes ---------------------------------------------
@@ -2034,7 +2378,7 @@ def draw_chibi_descriptor(surf, descriptor):
 
     features = [f for f in descriptor.get("features", []) if f != "helmet"]
     if w and h:
-        _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline)
+        _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline, stance)
     weapon = descriptor.get("weapon", "sword")
     if weapon and weapon != "none":
         draw_weapon(surf, cx, cy, weapon, pal["accent"], outline,

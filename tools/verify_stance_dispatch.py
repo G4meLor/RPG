@@ -112,6 +112,87 @@ def test_scarecrow_renders_and_differs():
     assert s.get_size() == (256, 256) and _cov(s) > 0
     assert _cov(s) != _cov(s_k), "scarecrow must differ from knight"
 
+# --- Task 5: 14 new feature primitives + dual_pistols weapon ---------------
+# Each feature must add visible pixels on top of a knight base (which draws
+# the motif aura) — the feature must extend OUTSIDE the aura disc so it adds
+# new opaque coverage (delta > 0.003). dual_pistols adds two pistol shapes.
+
+def _knight_base_cov():
+    b = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(b, {**BASE, "stance": "upright", "archetype": "knight", "weapon": "none"})
+    return _cov(b)
+
+def _feat_cov(feat):
+    s = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s, {**BASE, "stance": "upright", "archetype": "knight",
+                              "weapon": "none", "features": [feat]})
+    return _cov(s)
+
+def _weapon_cov(weapon):
+    s = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s, {**BASE, "stance": "upright", "archetype": "knight", "weapon": weapon})
+    return _cov(s)
+
+def test_feature_tail_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("tail") > bc + 0.003, "tail didn't add pixels"
+
+def test_feature_long_hair_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("long_hair") > bc + 0.003, "long_hair didn't add pixels"
+
+def test_feature_pointed_ears_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("pointed_ears") > bc + 0.003, "pointed_ears didn't add pixels"
+
+def test_feature_large_horns_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("large_horns") > bc + 0.003, "large_horns didn't add pixels"
+
+def test_feature_feathered_wings_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("feathered_wings") > bc + 0.003, "feathered_wings didn't add pixels"
+
+def test_feature_dragon_wings_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("dragon_wings") > bc + 0.003, "dragon_wings didn't add pixels"
+
+def test_feature_fur_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("fur") > bc + 0.003, "fur didn't add pixels"
+
+def test_feature_scales_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("scales") > bc + 0.003, "scales didn't add pixels"
+
+def test_feature_hat_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("hat") > bc + 0.003, "hat didn't add pixels"
+
+def test_feature_beard_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("beard") > bc + 0.003, "beard didn't add pixels"
+
+def test_feature_chains_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("chains") > bc + 0.003, "chains didn't add pixels"
+
+def test_feature_spider_legs_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("spider_legs") > bc + 0.003, "spider_legs didn't add pixels"
+
+def test_feature_bovine_head_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("bovine_head") > bc + 0.003, "bovine_head didn't add pixels"
+
+def test_feature_glowing_eyes_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("glowing_eyes") > bc + 0.003, "glowing_eyes didn't add pixels"
+
+def test_weapon_dual_pistols_adds_pixels():
+    bc = _knight_base_cov()
+    assert _weapon_cov("dual_pistols") > bc + 0.003, "dual_pistols didn't add pixels"
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

@@ -193,6 +193,30 @@ def test_weapon_dual_pistols_adds_pixels():
     bc = _knight_base_cov()
     assert _weapon_cov("dual_pistols") > bc + 0.003, "dual_pistols didn't add pixels"
 
+# --- Task 6: float_eye unique body + RENDERER_VOCAB single source of truth --
+
+def test_float_eye_renders_and_differs():
+    s = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s, {**BASE, "stance": "floating", "archetype": "float_eye"})
+    s_f = pygame.Surface((256, 256), pygame.SRCALPHA)
+    draw_chibi_descriptor(s_f, {**BASE, "stance": "floating", "archetype": "knight"})
+    assert s.get_size() == (256, 256) and _cov(s) > 0
+    assert _cov(s) != _cov(s_f), "float_eye must differ from floating humanoid"
+
+def test_renderer_vocab_exists_and_complete():
+    from src.assets_gen.generate import RENDERER_VOCAB
+    for k in ("stance", "archetype", "features", "weapon", "build", "motif"):
+        assert k in RENDERER_VOCAB and len(RENDERER_VOCAB[k]) > 0, f"RENDERER_VOCAB missing {k}"
+    assert "float_eye" in RENDERER_VOCAB["archetype"]
+    assert "quadruped" in RENDERER_VOCAB["archetype"]
+    assert "dual_pistols" in RENDERER_VOCAB["weapon"]
+
+def test_vlm_vocab_matches_renderer():
+    from src.assets_gen.generate import RENDERER_VOCAB
+    from src.build.vlm_client import VOCAB
+    for k in ("stance", "archetype", "features", "weapon", "build", "motif"):
+        assert set(RENDERER_VOCAB[k]) <= set(VOCAB.get(k, [])), f"VLM VOCAB missing renderer {k} values"
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

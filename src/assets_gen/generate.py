@@ -2313,6 +2313,63 @@ def _arch_scarecrow(surf, cx, cy, pal, outline, build):
     return (hx, hy, hr, w, h)
 
 
+# --- Task 6: float_eye unique body (Velkoz) ---------------------------------
+# A large central eye (dithered disc + bright pupil) + floating tentacles
+# (angled block chains) around/below it. No legs, no humanoid body. Reads as
+# "a floating eye with tentacles", not a humanoid. Returns (hx,hy,hr,w,h) with
+# the eye center as the "head" so features land on the eye.
+
+def _arch_float_eye(surf, cx, cy, pal, outline, build):
+    """Float eye (Velkoz): a large central eye + floating tentacles around/below
+    it. No legs, no humanoid body. Pixel-art, no AA. Returns (hx, hy, hr, w, h)
+    where (hx, hy) is the eye center (the 'head')."""
+    sx, sy = BUILD_SCALE.get(build, (1.0, 1.0))
+    w, h = int(100 * sx), int(110 * sy)
+    primary = pal["primary"]; sec = pal["secondary"]
+    # faint ground shadow (it floats, so the shadow is light)
+    sh = pygame.Surface((int(w * 1.2), 10), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 35), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.6), cy + h // 2 + 4))
+    _motif_aura(surf, cx, cy, "void")
+    # central eye — a large dithered disc (no AA)
+    eye_r = int(min(w, h) * 0.36)
+    hx, hy = cx, cy - 16  # eye center above the body anchor
+    eye = px_dither_surf(eye_r * 2, eye_r * 2, shade(sec, 1.15), shade(primary, 0.5))
+    clip_to_circle(eye, (eye_r, eye_r), eye_r - 1)
+    surf.blit(eye, (hx - eye_r, hy - eye_r))
+    pygame.draw.circle(surf, outline, (hx, hy), eye_r, 2)
+    # iris ring (solid circle outline, no AA)
+    pygame.draw.circle(surf, shade(pal["accent"], 1.15), (hx, hy), int(eye_r * 0.58), 2)
+    # pupil — a vertical slit (solid block, no AA)
+    pup_w = max(4, eye_r // 5)
+    pup_h = int(eye_r * 0.65)
+    pygame.draw.rect(surf, (35, 35, 45),
+        (hx - pup_w // 2, hy - pup_h // 2, pup_w, pup_h), border_radius=2)
+    pygame.draw.rect(surf, pal["accent"],
+        (hx - pup_w // 2 + 1, hy - pup_h // 2 + 2, max(1, pup_w - 2), pup_h - 4))
+    # bright specular (solid block, no AA)
+    pygame.draw.rect(surf, (255, 255, 255), (hx - eye_r // 3, hy - eye_r // 3, 5, 5))
+    # floating tentacles — 5 angled block chains fanning below the eye (no AA)
+    tent_l = shade(sec, 1.0)
+    tent_d = shade(primary, 0.45)
+    n_tent = 5
+    for i in range(n_tent):
+        t = i / (n_tent - 1)
+        ang = math.pi * (0.20 + t * 0.60)  # lower arc: 36° to 144°
+        tx = hx + int(math.cos(ang) * eye_r * 0.70)
+        ty = hy + int(math.sin(ang) * eye_r * 0.70)
+        for j in range(5):
+            tt = j / 4.0
+            px_ = tx + int(math.cos(ang) * tt * 16)
+            py_ = ty + int(math.sin(ang) * tt * 16) + int(tt * tt * 12)
+            r = 6 - j // 2
+            pygame.draw.circle(surf, tent_l if j % 2 else tent_d, (px_, py_), r)
+            pygame.draw.circle(surf, outline, (px_, py_), r, 1)
+    # hr = eye_r so _apply_features places head-circle features on the eye
+    hr = eye_r
+    return (hx, hy, hr, w, h)
+
+
 # archetype dispatcher
 _ARCH_DRAW = {
     "knight": _arch_knight, "mage": _arch_mage, "archer": _arch_archer,
@@ -2359,10 +2416,15 @@ def draw_chibi_descriptor(surf, descriptor):
         fn = _ARCH_DRAW.get(archetype, _arch_knight)
         hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
     elif stance == "floating":
-        fn = _ARCH_DRAW.get(archetype, _arch_knight)
-        hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
-        if w and h:
-            _floating_modifier(surf, cx, cy, w, h, pal, outline)
+        if archetype == "float_eye":
+            # float_eye is its own unique body (Velkoz) — not an upright body
+            # + the floating modifier. Draw it directly.
+            hx, hy, hr, w, h = _arch_float_eye(surf, cx, cy, pal, outline, build)
+        else:
+            fn = _ARCH_DRAW.get(archetype, _arch_knight)
+            hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
+            if w and h:
+                _floating_modifier(surf, cx, cy, w, h, pal, outline)
     elif stance == "quadruped":
         hx, hy, hr, w, h = _arch_quadruped(surf, cx, cy, pal, outline, build)
     elif stance == "mounted":
@@ -2384,6 +2446,46 @@ def draw_chibi_descriptor(surf, descriptor):
         draw_weapon(surf, cx, cy, weapon, pal["accent"], outline,
                     {"fire": "fire", "water": "water", "wind": "wind",
                      "light": "light", "dark": "dark"}.get(descriptor.get("motif"), "fire"))
+
+
+# ---------------------------------------------------------------------------
+# RENDERER_VOCAB — the single source of truth for the descriptor vocabulary.
+# Both the renderer (this module) and the VLM client (src/build/vlm_client.py)
+# import this dict so the VLM-facing vocab matches the renderer exactly and
+# can never drift. Lists EVERY stance/archetype/feature/weapon/build/motif the
+# renderer actually dispatches. Tests assert RENDERER_VOCAB is complete (every
+# dispatched value is listed) and that vlm_client.VOCAB derives from it.
+# ---------------------------------------------------------------------------
+RENDERER_VOCAB = {
+    "stance": ["upright", "quadruped", "mounted", "flying", "floating"],
+    # upright archetypes (the 10 original + 5 Task-4 bodies) + quadruped +
+    # flying_bird/flying_dragon + float_eye. (mounted reuses upright
+    # archetypes for the rider, so no separate mounted archetype list.)
+    "archetype": [
+        "knight", "mage", "archer", "brute", "rogue", "undead",
+        "yordle", "vastaya", "construct", "beast",
+        "rock_giant", "treant", "blob", "naga", "scarecrow",
+        "quadruped", "flying_bird", "flying_dragon", "float_eye",
+    ],
+    # all feature keys _apply_features dispatches (11 original + 14 Task-5 +
+    # 5 quadruped-only features that are still valid upright-body features).
+    "features": [
+        "cape", "hood", "horns", "wings", "mask", "halo", "spikes",
+        "crown", "fox_tails", "animal_ears", "claws",
+        "shell", "stinger", "fur", "insect_carapace", "void_fins",
+        "tail", "long_hair", "pointed_ears", "large_horns",
+        "feathered_wings", "dragon_wings", "scales", "hat", "beard",
+        "chains", "spider_legs", "bovine_head", "glowing_eyes",
+    ],
+    # all weapon keys draw_weapon handles (12 original + dual_pistols + none).
+    "weapon": [
+        "sword", "bow", "staff", "orb", "scythe", "spear", "gauntlet",
+        "dagger", "axe", "gun", "shield", "whip", "fists",
+        "dual_pistols", "none",
+    ],
+    "build": ["slender", "average", "bulky", "tall", "short"],
+    "motif": ["flame", "ice", "wind", "lightning", "shadow", "light", "void", "nature"],
+}
 
 
 def generate_sprites(champs):

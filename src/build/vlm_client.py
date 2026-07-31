@@ -11,32 +11,29 @@ DEFAULT_MODEL    = "misa-gemma-4-31b-it"
 DEFAULT_BASE_URL = "https://runai.misaonline.vpnlocal/prod-llm/misa-gemma4-31b-it-api/v1"
 DEFAULT_API_KEY  = "sk-proj-runai-8p33H3qYneIaWOwjX5bsae3I1CIJhUjvKG0nTis6dJ1mzkJqHW"
 
-VOCAB = {
-    "archetype": ["knight", "mage", "archer", "brute", "rogue", "undead",
-                  "yordle", "vastaya", "construct", "beast"],
-    "weapon": ["sword", "bow", "staff", "orb", "scythe", "spear", "gauntlet",
-               "dagger", "axe", "gun", "shield", "whip", "fists", "none"],
-    "features": ["cape", "hood", "horns", "wings", "mask", "halo", "spikes",
-                 "crown", "fox_tails", "animal_ears", "claws"],
-    "build": ["slender", "average", "bulky", "tall", "short"],
-    "motif": ["flame", "ice", "wind", "lightning", "shadow", "light", "void", "nature"],
-    # palette keys listed under "primary" (per test_vocab_complete)
-    "primary": ["primary", "secondary", "accent"],
-}
+# VOCAB is derived from RENDERER_VOCAB (the single source of truth in the
+# renderer) so the VLM-facing vocabulary can never drift from what the
+# renderer actually dispatches. `stance` is included so describe()/critique()
+# can validate it; `primary` lists the palette sub-keys (kept for back-compat
+# with test_vocab_complete, which asserts "primary" in VOCAB).
+from src.assets_gen.generate import RENDERER_VOCAB
+
+VOCAB = dict(RENDERER_VOCAB)
+VOCAB["primary"] = ["primary", "secondary", "accent"]
 _PALETTE_KEYS = ("primary", "secondary", "accent")
 
 _DESCRIBE_SYS = (
     "You are an art director for a pixel-art world-sprite renderer with a FIXED "
     "vocabulary. Look at the champion skin splash and output a JSON descriptor ONLY. "
-    "Fields: archetype (one of {arche}), weapon (one of {weap}), palette "
+    "Fields: stance (one of {stance}), archetype (one of {arche}), weapon (one of {weap}), palette "
     "{{\"primary\":[r,g,b],\"secondary\":[r,g,b],\"accent\":[r,g,b]}} (0-255), "
     "features (list from {feat}, max 3), build (one of {build}), motif (one of {motif}). "
     "CRITICAL: extract the 3 MOST DOMINANT colors from the splash. "
     "primary = main clothing/body color, secondary = hair/secondary clothing, "
     "accent = magic/weapon/glow color. Output JSON only, no prose."
-).format(arche=",".join(VOCAB["archetype"]), weap=",".join(VOCAB["weapon"]),
-         feat=",".join(VOCAB["features"]), build=",".join(VOCAB["build"]),
-         motif=",".join(VOCAB["motif"]))
+).format(stance=",".join(VOCAB["stance"]), arche=",".join(VOCAB["archetype"]),
+         weap=",".join(VOCAB["weapon"]), feat=",".join(VOCAB["features"]),
+         build=",".join(VOCAB["build"]), motif=",".join(VOCAB["motif"]))
 
 _CRITIQUE_SYS = (
     "You are an art director comparing a REFERENCE skin splash (image 1) to a "
@@ -48,12 +45,12 @@ _CRITIQUE_SYS = (
     "Output JSON ONLY: "
     "{{\"match\":<0-10 integer>,\"ok\":<true if the sprite is good enough (match>=6)>,"
     "\"problems\":[<short strings>],\"suggested_descriptor\":{{<full descriptor in "
-    "the renderer vocab>}}}}. Renderer vocabulary: archetype {arche}; weapon {weap}; "
-    "features {feat} (max 3); build {build}; motif {motif}; palette 3x[r,g,b]. "
+    "the renderer vocab>}}}}. Renderer vocabulary: stance {stance}; archetype {arche}; "
+    "weapon {weap}; features {feat} (max 3); build {build}; motif {motif}; palette 3x[r,g,b]. "
     "Output JSON only, no prose."
-).format(arche=",".join(VOCAB["archetype"]), weap=",".join(VOCAB["weapon"]),
-         feat=",".join(VOCAB["features"]), build=",".join(VOCAB["build"]),
-         motif=",".join(VOCAB["motif"]))
+).format(stance=",".join(VOCAB["stance"]), arche=",".join(VOCAB["archetype"]),
+         weap=",".join(VOCAB["weapon"]), feat=",".join(VOCAB["features"]),
+         build=",".join(VOCAB["build"]), motif=",".join(VOCAB["motif"]))
 
 
 class VLMClient:
@@ -108,6 +105,8 @@ class VLMClient:
         """Clamp every field into VOCAB; on any structural problem return fallback."""
         try:
             out = {}
+            out["stance"] = d["stance"] if d.get("stance") in VOCAB["stance"] \
+                else fallback.get("stance", "upright")
             out["archetype"] = d["archetype"] if d.get("archetype") in VOCAB["archetype"] \
                 else fallback["archetype"]
             out["weapon"] = d["weapon"] if d.get("weapon") in VOCAB["weapon"] \

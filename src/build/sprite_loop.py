@@ -1,10 +1,17 @@
 """The VLM-in-the-loop sprite generator (build-time only).
 
-vlm_sprite_loop(hero_id, skin_idx, ref_jpg, vlm, max_iters, fallback) ->
-(best_descriptor, history). describe -> draw -> critique -> revise; stop when the
-VLM says ok; else keep the highest-match round. Rendering is serialized under
-RENDER_LOCK (pygame is not thread-safe); VLM calls are not. The descriptor cache
-(descriptors.json) makes the bake resumable.
+vlm_sprite_loop(hero_id, skin_idx, ref_jpg, vlm, max_iters, fallback, champ, canon)
+-> (best_descriptor, history). describe -> draw -> critique -> revise; stop when
+the VLM's canonical_match >= 7; else keep the highest-canonical_match round.
+Rendering is serialized under RENDER_LOCK (pygame is not thread-safe); VLM calls
+are not. The descriptor cache (descriptors.json) makes the bake resumable.
+
+The loop is canon-grounded: `champ` (the CHAMPIONS_DB dict) + `canon` (the
+champ's canonical origin identity dict) are threaded into describe/critique so
+the VLM judges against the champ's canonical body/features/colors, NOT mere
+splash similarity. The critique returns {canonical_match, stance_captured, ...,
+suggested_descriptor}; the loop stops at canonical_match >= 7 (NOT the old
+splash `match`/`ok`).
 """
 import json, os, threading
 
@@ -40,28 +47,43 @@ def render_to_bytes(descriptor):
     return pygame.image.tostring(s, "PNG")  # not used directly; see render_to_png
 
 
-def vlm_sprite_loop(hero_id, skin_idx, ref_jpg, vlm, max_iters=10, fallback=None):
+def vlm_sprite_loop(hero_id, skin_idx, ref_jpg, vlm, max_iters=10, fallback=None,
+                    champ=None, canon=None):
     """Run the describe->draw->critique->revise loop for one skin.
 
-    vlm: an object with describe(ref, fallback)->descriptor and
-         critique(ref, sprite_png_path, last_good_descriptor)->{match, ok, ...}.
+    vlm: an object with describe(ref, fallback, champ)->descriptor and
+         critique(ref, sprite_png_path, last_good_descriptor, champ)->
+         {canonical_match, stance_captured, ..., suggested_descriptor}.
     fallback: the starting descriptor if describe fails (the champ's baked one).
-    Returns (best_descriptor, history) where history = [{iter, match, ok}, ...].
+    champ: the champ dict from CHAMPIONS_DB (id/name/title/faction/role/
+           ability_names/lore) — threaded into describe/critique for canon
+           grounding. None = back-compat (no canon context; loses grounding).
+    canon: the champ's canonical origin identity dict (stance/body_shape/
+           signature_features/colors/weapon) — reserved for the canon_gate
+           path (Task 9 wires the real canon through); the loop's describe/
+           critique use `champ` for grounding. None = back-compat.
+    Returns (best_descriptor, history) where history =
+        [{iter, canonical_match, stance_captured}, ...].
+    Stops when canonical_match >= 7; keeps the best-canonical_match round
+    (strict `>` tie-break: the FIRST round wins on ties so a late equally-good
+    round can't displace an earlier one) if never converges.
     """
     fallback = fallback or _default_descriptor()
-    descriptor = vlm.describe(ref_jpg, fallback)
+    descriptor = vlm.describe(ref_jpg, fallback, champ)
     history = []
     best_desc, best_match = descriptor, -1
     tmp = os.path.join(ASSET_DIR, "characters", hero_id, f"_loop_tmp_{skin_idx}.png")
     os.makedirs(os.path.dirname(tmp), exist_ok=True)
     for i in range(max_iters):
         render_to_png(descriptor, tmp)
-        crit = vlm.critique(ref_jpg, tmp, descriptor)
-        match, ok = crit["match"], crit["ok"]
-        history.append({"iter": i, "match": match, "ok": ok})
-        if match > best_match:
-            best_match, best_desc = match, descriptor
-        if ok:
+        crit = vlm.critique(ref_jpg, tmp, descriptor, champ)
+        canonical_match = crit["canonical_match"]
+        stance_captured = crit.get("stance_captured", False)
+        history.append({"iter": i, "canonical_match": canonical_match,
+                        "stance_captured": stance_captured})
+        if canonical_match > best_match:
+            best_match, best_desc = canonical_match, descriptor
+        if canonical_match >= 7:
             break
         descriptor = crit["suggested_descriptor"]
     # cleanup the temp file
@@ -144,12 +166,14 @@ def _process_one(champ, skin_idx, vlm, max_iters, force):
     fallback = champ.get("descriptor") or _default_descriptor()
     try:
         best, hist = vlm_sprite_loop(champ["id"], skin_idx, ref_jpg, vlm,
-                                     max_iters=max_iters, fallback=fallback)
-        # Use the BEST round (max match), not the last round, so a late bad
-        # critique can't overwrite a good earlier sprite. match_before is the
-        # first round's score (the describe() baseline before any revision).
-        match = max((h["match"] for h in hist), default=0)
-        ok = any(h["ok"] for h in hist) if hist else False
+                                     max_iters=max_iters, fallback=fallback,
+                                     champ=champ, canon=champ.get("canon"))
+        # Use the BEST round (max canonical_match), not the last round, so a
+        # late bad critique can't overwrite a good earlier sprite.
+        # canonical_match_before is the first round's score (the describe()
+        # baseline before any revision).
+        canonical_match = max((h["canonical_match"] for h in hist), default=0)
+        ok = any(h["canonical_match"] >= 7 for h in hist) if hist else False
         # P3: per-skin sprite in sprites/{idx}.png (always) ...
         sprites_dir = os.path.join(char_dir, "sprites")
         os.makedirs(sprites_dir, exist_ok=True)
@@ -165,13 +189,16 @@ def _process_one(champ, skin_idx, vlm, max_iters, force):
         # cache entry.
         with CACHE_LOCK:
             cache = load_cache(char_dir)
-            cache[key] = {"descriptor": best, "match": match,
+            cache[key] = {"descriptor": best, "canonical_match": canonical_match,
                           "iters": len(hist), "ok": ok,
-                          "match_before": hist[0]["match"] if hist else match}
+                          "canonical_match_before": hist[0]["canonical_match"]
+                                                    if hist else canonical_match}
             save_cache(char_dir, cache)
         return {"id": champ["id"], "skin": skin_idx, "skipped": False,
-                "match": match, "ok": ok, "iters": len(hist),
-                "match_before": hist[0]["match"] if hist else match}
+                "canonical_match": canonical_match, "ok": ok,
+                "iters": len(hist),
+                "canonical_match_before": hist[0]["canonical_match"]
+                                          if hist else canonical_match}
     except Exception as e:
         return {"id": champ["id"], "skin": skin_idx, "error": str(e)}
 
@@ -216,11 +243,13 @@ def run_sprite_bake(champs, skin_indices, concurrency=1, max_iters=10,
     n_proc = sum(1 for r in results if r and not r.get("skipped") and not r.get("error"))
     n_skip = sum(1 for r in results if r and r.get("skipped"))
     n_ok = sum(1 for r in results if r and r.get("ok"))
-    before = [r["match_before"] for r in results if r and "match_before" in r]
-    after = [r["match"] for r in results if r and "match" in r]
+    before = [r["canonical_match_before"] for r in results
+              if r and "canonical_match_before" in r]
+    after = [r["canonical_match"] for r in results
+             if r and "canonical_match" in r]
     return {
         "n_processed": n_proc, "n_skipped": n_skip, "n_ok": n_ok,
-        "mean_match_before": round(sum(before) / len(before), 2) if before else 0,
-        "mean_match_after": round(sum(after) / len(after), 2) if after else 0,
+        "mean_canonical_match_before": round(sum(before) / len(before), 2) if before else 0,
+        "mean_canonical_match_after": round(sum(after) / len(after), 2) if after else 0,
         "per_skin": results,
     }

@@ -13,6 +13,12 @@ critique(ref, sprite, last_good, champ)
                                     suggested_descriptor}. STRICT judge of
                                     canonical identity capture (NOT splash
                                     similarity).
+canon_gate(sprite, champ, canon) -> {canonical_match, stance_captured,
+                                     body_shape_score, features_captured,
+                                     features_missing, colors_captured,
+                                     recognizable, verdict}. The HONEST gate:
+                                     judges the sprite against the champ's
+                                     canonical ORIGIN identity (NO splash).
 
 All output is JSON-validated against VOCAB (derived from RENDERER_VOCAB, the
 single source of truth) and clamped; garbage -> the caller-supplied fallback,
@@ -92,6 +98,37 @@ _CRITIQUE_SYS = (
 ).format(stance=",".join(VOCAB["stance"]), arche=",".join(VOCAB["archetype"]),
          weap=",".join(VOCAB["weapon"]), feat=",".join(VOCAB["features"]),
          build=",".join(VOCAB["build"]), motif=",".join(VOCAB["motif"]))
+
+_CANON_GATE_SYS = (
+    "You are the HONEST canonical gate — a STRICT judge that measures a chibi "
+    "pixel sprite against a champion's CANONICAL ORIGIN IDENTITY (the champ's "
+    "canonical body, NOT any skin splash). You will be given the champion's "
+    "canonical identity (name, title, faction, role, abilities, lore) PLUS a "
+    "CANON descriptor (canonical stance, body_shape, signature_features, "
+    "colors, weapon) AND a CHIBI PIXEL SPRITE (the only image). NO splash is "
+    "provided — judge against the ORIGIN, not a skin. The sprite is "
+    "intentionally simplified (256px, blocky) — judge canonical identity "
+    "capture, not photorealism. Be STRICT and HONEST: do not inflate the "
+    "score. Output JSON ONLY: "
+    "{{\"canonical_match\":<0-10 integer, how well the sprite captures the "
+    "champion's canonical ORIGIN identity>,"
+    "\"stance_captured\":<true if the sprite's stance matches the canonical "
+    "stance (upright/quadruped/mounted/flying/floating)>,"
+    "\"body_shape_score\":<0-10 integer, how well the body shape matches the "
+    "canonical body_shape>,"
+    "\"features_captured\":[<canonical signature_features the sprite DOES "
+    "capture, short strings>],"
+    "\"features_missing\":[<canonical signature_features the sprite is "
+    "missing, short strings>],"
+    "\"colors_captured\":<true if the dominant color family matches the "
+    "canonical colors>,"
+    "\"recognizable\":<true if a League of Legends player would recognize the "
+    "champion from the sprite alone (against the ORIGIN, not a skin)>,"
+    "\"verdict\":<one of \"pass\",\"fail\",\"borderline\" — pass if "
+    "canonical_match >= 7 AND recognizable, fail if canonical_match < 4 or "
+    "not recognizable, borderline otherwise>}}. "
+    "Renderer vocabulary: stance {stance}. Output JSON only, no prose."
+).format(stance=",".join(VOCAB["stance"]))
 
 
 def _champ_context(champ):
@@ -297,3 +334,101 @@ class VLMClient:
             "recognizable": False,
             "suggested_descriptor": last_good_descriptor,
         }
+
+    def canon_gate(self, sprite_path, champ=None, canon=None, max_tokens=400):
+        """The HONEST canonical gate (NO splash — measures against the origin).
+
+        Judges a chibi pixel sprite against the champion's canonical ORIGIN
+        identity (the canonical body, NOT any skin splash). Returns
+        {canonical_match, stance_captured, body_shape_score, features_captured,
+        features_missing, colors_captured, recognizable, verdict}.
+        `champ` is the champ dict from CHAMPIONS_DB (name/title/faction/role/
+        abilities/lore) and `canon` is the canon identity dict (canonical
+        stance/body_shape/signature_features/colors/weapon). Both are sent as
+        text context; the sprite is the ONLY image. On garbage:
+        canonical_match=0, recognizable=False, verdict="fail".
+        """
+        ctx = _champ_context(champ)
+        canon_text = self._canon_text(canon)
+        parts = [p for p in (ctx, canon_text) if p]
+        prefix = ("\n\n".join(parts) + "\n\n") if parts else ""
+        user_text = prefix + (
+            "Image = the chibi pixel sprite to judge. NO splash is provided — "
+            "judge the sprite against the champion's CANONICAL ORIGIN identity "
+            "above (canonical stance + body_shape + signature_features + "
+            "colors + weapon), NOT against any skin. Be STRICT and HONEST. "
+            "JSON only."
+        )
+        for _ in range(2):
+            try:
+                content = self._chat([
+                    {"role": "system", "content": _CANON_GATE_SYS},
+                    {"role": "user", "content": [
+                        {"type": "text", "text": user_text},
+                        {"type": "image_url", "image_url": {"url": "data:image/png;base64," + self._b64(sprite_path)}},
+                    ]},
+                ], max_tokens=max_tokens)
+                c = json.loads(self._strip_json(content))
+                canonical_match = max(0, min(10, int(c.get("canonical_match", 0))))
+                stance_captured = bool(c.get("stance_captured", False))
+                body_shape_score = max(0, min(10, int(c.get("body_shape_score", 0))))
+                features_captured = list(c.get("features_captured", []))
+                features_missing = list(c.get("features_missing", []))
+                colors_captured = bool(c.get("colors_captured", False))
+                recognizable = bool(c.get("recognizable", False))
+                verdict = c.get("verdict", "fail")
+                if verdict not in ("pass", "fail", "borderline"):
+                    verdict = "fail" if canonical_match < 4 else (
+                        "pass" if canonical_match >= 7 and recognizable
+                        else "borderline")
+                return {
+                    "canonical_match": canonical_match,
+                    "stance_captured": stance_captured,
+                    "body_shape_score": body_shape_score,
+                    "features_captured": features_captured,
+                    "features_missing": features_missing,
+                    "colors_captured": colors_captured,
+                    "recognizable": recognizable,
+                    "verdict": verdict,
+                }
+            except Exception:
+                continue
+        return {
+            "canonical_match": 0,
+            "stance_captured": False,
+            "body_shape_score": 0,
+            "features_captured": [],
+            "features_missing": ["parse error"],
+            "colors_captured": False,
+            "recognizable": False,
+            "verdict": "fail",
+        }
+
+    @staticmethod
+    def _canon_text(canon):
+        """Build the canon-identity text block from the canon dict (the
+        canonical ORIGIN identity: stance/body_shape/signature_features/
+        colors/weapon). Tolerates missing keys (returns '' for None/{})."""
+        if not canon:
+            return ""
+        lines = ["CANONICAL ORIGIN IDENTITY:"]
+        stance = canon.get("stance") or canon.get("canonical_stance")
+        if stance:
+            lines.append(f"  canonical stance: {stance}")
+        body = canon.get("body_shape") or canon.get("canonical_body_shape")
+        if body:
+            lines.append(f"  canonical body_shape: {body}")
+        feats = canon.get("signature_features") or canon.get("features") or []
+        if feats:
+            lines.append("  canonical signature_features: " + ", ".join(feats))
+        colors = canon.get("colors") or canon.get("canonical_colors")
+        if colors:
+            lines.append(f"  canonical colors: {colors}")
+        weapon = canon.get("weapon") or canon.get("canonical_weapon")
+        if weapon:
+            lines.append(f"  canonical weapon: {weapon}")
+        # Only emit the block if we found at least one canonical field beyond
+        # the header (avoids a bare "CANONICAL ORIGIN IDENTITY:" line).
+        if len(lines) <= 1:
+            return ""
+        return "\n".join(lines)

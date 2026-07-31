@@ -182,6 +182,78 @@ def test_critique_no_champ_still_works():
     assert c["canonical_match"] == 6 and c["recognizable"] is True
 
 
+# A canonical-origin identity dict (the canon arg to canon_gate).
+_CANON = {
+    "stance": "upright", "body_shape": "fox-girl vastaya",
+    "signature_features": ["fox_tails", "fox_ears"],
+    "colors": "red & white", "weapon": "orb",
+}
+
+
+def test_canon_gate_parses():
+    """canon_gate returns the 8-field shape with features_captured + verdict."""
+    cl = VLMClient()
+    j = ('{"canonical_match":8,"stance_captured":true,"body_shape_score":7,'
+         '"features_captured":["fox_tails","fox_ears"],"features_missing":[],'
+         '"colors_captured":true,"recognizable":true,"verdict":"pass"}')
+    cl._post = lambda body: _FakeResp({"choices": [{"message": {"content": j}}]})
+    g = cl.canon_gate("sprite.png", champ=_AHRI, canon=_CANON)
+    assert g["canonical_match"] == 8
+    assert g["stance_captured"] is True
+    assert g["body_shape_score"] == 7
+    assert g["features_captured"] == ["fox_tails", "fox_ears"]
+    assert g["features_missing"] == []
+    assert g["colors_captured"] is True
+    assert g["recognizable"] is True
+    assert g["verdict"] == "pass"
+
+
+def test_canon_gate_clamps_and_bad_verdict():
+    """canon_match/body_shape_score clamped to 0-10; an unknown verdict is
+    coerced to pass/fail/borderline from the score."""
+    cl = VLMClient()
+    j = ('{"canonical_match":999,"stance_captured":"yes","body_shape_score":-3,'
+         '"features_captured":"oops","features_missing":"oops",'
+         '"colors_captured":1,"recognizable":"y","verdict":"MEH"}')
+    cl._post = lambda body: _FakeResp({"choices": [{"message": {"content": j}}]})
+    g = cl.canon_gate("sprite.png", champ=_AHRI, canon=_CANON)
+    assert g["canonical_match"] == 10          # clamped to 0-10
+    assert g["body_shape_score"] == 0          # clamped to 0-10
+    assert g["stance_captured"] is True        # truthy -> bool
+    assert g["colors_captured"] is True
+    assert g["recognizable"] is True
+    # features_captured/features_missing coerced to list
+    assert isinstance(g["features_captured"], list)
+    assert isinstance(g["features_missing"], list)
+    # unknown verdict "MEH" + canonical_match=10 + recognizable -> "pass"
+    assert g["verdict"] == "pass"
+
+
+def test_canon_gate_fallback():
+    """garbage -> canonical_match=0, recognizable=False, verdict='fail'."""
+    cl = VLMClient()
+    cl._post = lambda body: _FakeResp({"choices": [{"message": {"content": "::garbage::"}}]})
+    g = cl.canon_gate("sprite.png", champ=_AHRI, canon=_CANON)
+    assert g["canonical_match"] == 0
+    assert g["stance_captured"] is False
+    assert g["recognizable"] is False
+    assert g["verdict"] == "fail"
+    assert g["features_missing"] == ["parse error"]
+
+
+def test_canon_gate_no_champ_no_canon_still_works():
+    """canon_gate with champ=None/canon=None must still function (back-compat)."""
+    cl = VLMClient()
+    j = ('{"canonical_match":5,"stance_captured":true,"body_shape_score":5,'
+         '"features_captured":[],"features_missing":["fox_tails"],'
+         '"colors_captured":true,"recognizable":false,"verdict":"borderline"}')
+    cl._post = lambda body: _FakeResp({"choices": [{"message": {"content": j}}]})
+    g = cl.canon_gate("sprite.png", champ=None, canon=None)
+    assert g["canonical_match"] == 5
+    assert g["verdict"] == "borderline"
+    assert g["recognizable"] is False
+
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

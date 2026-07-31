@@ -122,9 +122,10 @@ def main():
                 if fn.endswith(".jpg"):
                     n_skins += 1
         # sprites/{N}.png (per-skin world sprite, Phase 3) — one per skin splash.
-        # Each must be 256x256 (coverage checked separately below). A missing
-        # or wrong-size sprites/{idx}.png for a present skins/{idx}.jpg is a
-        # failure (the P3 bake must have produced it).
+        # Each must be 256x256 with coverage > 0 (a blank/fully-transparent
+        # sprite would indicate a degenerate bake). A missing or wrong-size
+        # sprites/{idx}.png for a present skins/{idx}.jpg is a failure (the P3
+        # bake must have produced it).
         sprites_dir = os.path.join(base, "sprites")
         if os.path.isdir(sprites_dir):
             for fn in os.listdir(sprites_dir):
@@ -133,6 +134,10 @@ def main():
                     s = pygame.image.load(spath)
                     if s.get_size() != EXPECT["sprite"]:
                         failures.append(f"characters/{key}/sprites/{fn}: {s.get_size()} != {EXPECT['sprite']}")
+                    else:
+                        st = _stats(s)
+                        if st["coverage_pct"] == 0:
+                            failures.append(f"characters/{key}/sprites/{fn}: blank (coverage 0%)")
         # descriptors.json (per-skin descriptor cache, Phase 3) — parseable +
         # has a key per skin index present (every skins/{idx}.jpg should have a
         # matching descriptor entry so the bake is resumable + complete).

@@ -838,10 +838,60 @@ def _add_claws(surf, cx, cy, w, h, color, outline):
                 [(ax + k * 3, ay), (ax + k * 3 + 2, ay + 8), (ax + k * 3 - 2, ay + 8)], 1)
 
 
+def _add_shell(surf, cx, cy, w, h, color, outline):
+    """Rounded shell on the back (Rammus). Sits atop the torso and rises above
+    the motif aura so it reads as a distinct shell dome. Pixel-art, no AA."""
+    sx, sy = cx, cy - int(h * 0.55)
+    rect = (sx - int(w * 0.48), sy - int(h * 0.45), int(w * 0.96), int(h * 0.90))
+    pygame.draw.ellipse(surf, shade(color, 1.1), rect)
+    pygame.draw.ellipse(surf, outline, rect, 2)
+    for i in range(3):
+        pygame.draw.line(surf, shade(color, 0.7),
+            (sx, sy - int(h * 0.35) + i * 8), (sx, sy + int(h * 0.35) + i * 8), 1)
+
+def _add_stinger(surf, cx, cy, w, h, color, outline):
+    """Tail stinger (Skarner). Extends back and up from the tail end so it
+    clears the aura. Pixel-art, no AA."""
+    pts = [(cx - int(w * 0.42), cy - int(h * 0.05)),
+           (cx - int(w * 0.62), cy - int(h * 0.90)),
+           (cx - int(w * 0.38), cy - int(h * 0.40))]
+    pygame.draw.polygon(surf, shade(color, 1.2), pts)
+    pygame.draw.polygon(surf, outline, pts, 2)
+
+def _add_fur(surf, cx, cy, w, h, color, outline):
+    """Fur tufts along the back (Volibear/Warwick). Tall enough to crest above
+    the aura. Pixel-art, no AA."""
+    tx = cx - int(w * 0.42)
+    for i in range(9):
+        fx = tx + i * int(w * 0.10)
+        pygame.draw.polygon(surf, shade(color, 0.85),
+            [(fx, cy - int(h * 0.18)), (fx + 4, cy - int(h * 0.95)), (fx + 8, cy - int(h * 0.18))])
+
+def _add_insect_carapace(surf, cx, cy, w, h, color, outline):
+    """Segmented chitinous plates (Khazix/Belveth). Stacked plates that rise
+    above the aura. Pixel-art, no AA."""
+    for i in range(5):
+        py = cy - int(h * 0.60) + i * int(h * 0.14)
+        rect = (cx - int(w * 0.45), py, int(w * 0.90), int(h * 0.10))
+        pygame.draw.rect(surf, shade(color, 0.9), rect, border_radius=2)
+        pygame.draw.rect(surf, outline, rect, 1, border_radius=2)
+
+def _add_void_fins(surf, cx, cy, w, h, color, outline):
+    """Void fins along the back (KogMaw/Chogath). Tall fins that crest above
+    the aura. Pixel-art, no AA."""
+    tx = cx - int(w * 0.45)
+    for i in range(7):
+        fx = tx + i * int(w * 0.13)
+        pts = [(fx, cy - int(h * 0.16)), (fx + 5, cy - int(h * 1.05)), (fx + 11, cy - int(h * 0.16))]
+        pygame.draw.polygon(surf, shade(color, 1.15), pts)
+        pygame.draw.polygon(surf, outline, pts, 1)
+
+
 def _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline):
     """Apply 0-3 features from the descriptor."""
     sec = pal["secondary"]
     acc = pal["accent"]
+    primary = pal["primary"]
     for f in features:
         if f == "cape":
             _add_cape(surf, cx, cy, w, h, sec, outline)
@@ -865,6 +915,16 @@ def _apply_features(surf, cx, cy, w, h, hx, hy, hr, features, pal, outline):
             _add_animal_ears(surf, hx, hy, hr, shade(sec, 1.1), outline)
         elif f == "claws":
             _add_claws(surf, cx, cy, w, h, shade(acc, 1.1), outline)
+        elif f == "shell":
+            _add_shell(surf, cx, cy, w, h, shade(sec, 1.0), outline)
+        elif f == "stinger":
+            _add_stinger(surf, cx, cy, w, h, shade(sec, 1.1), outline)
+        elif f == "fur":
+            _add_fur(surf, cx, cy, w, h, shade(primary, 0.9), outline)
+        elif f == "insect_carapace":
+            _add_insect_carapace(surf, cx, cy, w, h, shade(sec, 0.95), outline)
+        elif f == "void_fins":
+            _add_void_fins(surf, cx, cy, w, h, shade(sec, 1.15), outline)
 
 
 # --- per-archetype silhouettes ---------------------------------------------
@@ -1377,6 +1437,58 @@ def _arch_beast(surf, cx, cy, pal, outline, build):
     return (hx, hy, hr, w, h)
 
 
+def _arch_quadruped(surf, cx, cy, pal, outline, build):
+    """Quadruped: 4-legged beast body (bear/wolf/cat/hound base). Horizontal
+    torso on 4 legs + head at the front + tail at the back. Pixel-art, no AA."""
+    sx, sy = BUILD_SCALE.get(build, (1.18, 0.92))
+    w, h = int(120 * sx), int(78 * sy)  # wider than tall (quadruped)
+    primary = pal["primary"]; sec = pal["secondary"]
+    # shadow
+    sh = pygame.Surface((int(w * 1.4), 14), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 70), sh.get_rect())
+    surf.blit(sh, (cx - int(w * 0.7), cy + h // 2 - 2))
+    _motif_aura(surf, cx, cy, "nature")
+    # horizontal torso (dithered, rounded rect)
+    tw, th = int(w * 0.78), int(h * 0.52)
+    tx, ty = cx - tw // 2, cy - th // 2 + 6
+    torso = px_dither_surf(tw, th, shade(sec, 1.05), shade(primary, 0.45))
+    clip_to_rect(torso, pygame.Rect(0, 0, tw, th), border_radius=10)
+    surf.blit(torso, (tx, ty))
+    pygame.draw.rect(surf, outline, (tx, ty, tw, th), 2, border_radius=10)
+    # 4 legs (angled blocks under the torso)
+    lw, lh = int(tw * 0.16), int(h * 0.42)
+    ly = ty + th - 2
+    for i, lx in enumerate((tx + 6, tx + tw * 0.32, tx + tw * 0.62, tx + tw - lw - 6)):
+        leg = px_dither_surf(lw, lh, shade(primary, 0.7), shade(primary, 0.42))
+        clip_to_rect(leg, pygame.Rect(0, 0, lw, lh), border_radius=3)
+        surf.blit(leg, (lx, ly))
+        pygame.draw.rect(surf, outline, (lx, ly, lw, lh), 2, border_radius=3)
+    # head at the front (right side) — circle + 2 ears + eye
+    hr = int(h * 0.26)
+    hx, hy = tx + tw - hr + 4, ty + 2
+    head = px_dither_surf(hr * 2, hr * 2, shade(primary, 1.1), shade(primary, 0.6))
+    clip_to_circle(head, (hr, hr), hr - 1)
+    surf.blit(head, (hx - hr, hy - hr))
+    pygame.draw.circle(surf, outline, (hx, hy), hr, 2)
+    for side in (-1, 1):
+        ex = hx + side * (hr - 2)
+        pygame.draw.polygon(surf, shade(sec, 1.1),
+            [(ex - 5, hy - hr + 2), (ex + 5, hy - hr + 2), (ex, hy - hr - 10)])
+        pygame.draw.polygon(surf, outline,
+            [(ex - 5, hy - hr + 2), (ex + 5, hy - hr + 2), (ex, hy - hr - 10)], 2)
+    pygame.draw.rect(surf, (40, 40, 60), (hx + 2, hy - 2, 3, 3))  # eye
+    # tail at the back (left side) — a curved block chain
+    tx0 = tx - 4; ty0 = ty + 4
+    for i in range(5):
+        t = i / 4.0
+        px_ = tx0 - int(t * 10)
+        py_ = ty0 - int((1 - (1 - t) ** 2) * 14)
+        r = 4 - i // 2
+        pygame.draw.circle(surf, shade(sec, 0.9), (px_, py_), r)
+        pygame.draw.circle(surf, outline, (px_, py_), r, 1)
+    return (hx, hy, hr, w, h)
+
+
 # archetype dispatcher
 _ARCH_DRAW = {
     "knight": _arch_knight, "mage": _arch_mage, "archer": _arch_archer,
@@ -1419,9 +1531,11 @@ def draw_chibi_descriptor(surf, descriptor):
         hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
         if w and h:
             _floating_modifier(surf, cx, cy, w, h, pal, outline)
+    elif stance == "quadruped":
+        hx, hy, hr, w, h = _arch_quadruped(surf, cx, cy, pal, outline, build)
     else:
-        # quadruped / mounted / flying: stub falls back to an upright body
-        # until the real drawers land (Tasks 2-4). Still returns a valid box.
+        # mounted / flying: stub falls back to an upright body until the real
+        # drawers land (Tasks 3-4). Still returns a valid box.
         fn = _ARCH_DRAW.get(archetype, _arch_knight)
         hx, hy, hr, w, h = fn(surf, cx, cy, pal, outline, build)
 

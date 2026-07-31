@@ -46,6 +46,22 @@ def test_floating_has_no_legs_modifier():
     fl_legs = int((fl_arr[lx0:lx1, ly0:ly1] > 8).sum())
     assert fl_legs < up_legs, f"floating lower-leg region must have fewer opaque pixels (fl={fl_legs}, up={up_legs})"
 
+QUAD = {**BASE, "stance": "quadruped", "archetype": "quadruped"}
+
+def test_quadruped_renders_and_differs_from_upright():
+    s_q = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(s_q, QUAD)
+    s_u = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(s_u, {**BASE, "stance": "upright"})
+    assert s_q.get_size() == (256, 256) and _cov(s_q) > 0
+    assert _cov(s_q) != _cov(s_u), "quadruped must differ from upright knight"
+
+def test_quadruped_feature_mods_add_pixels():
+    base = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(base, QUAD)
+    base_c = _cov(base)
+    for feat in ("shell", "stinger", "fur", "insect_carapace", "void_fins"):
+        s = pygame.Surface((256, 256), pygame.SRCALPHA)
+        draw_chibi_descriptor(s, {**QUAD, "features": [feat]})
+        assert _cov(s) > base_c + 0.003, f"quadruped feature {feat} didn't add pixels"
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

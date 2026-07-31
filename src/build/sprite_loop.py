@@ -14,6 +14,11 @@ from src.assets_gen.generate import draw_chibi_descriptor
 from src.data.tuning import ASSET_DIR
 
 RENDER_LOCK = threading.Lock()
+# Serializes the descriptors.json read-modify-write so concurrent workers baking
+# different skins of the SAME champ don't clobber each other's cache keys
+# (load -> mutate -> save race -> lost entry -> silent re-bake on resume).
+# Cache I/O is fast; a single global lock is simpler than a per-char-dir map.
+CACHE_LOCK = threading.Lock()
 
 
 def render_to_png(descriptor, path):
@@ -117,13 +122,25 @@ def _process_one(champ, skin_idx, vlm, max_iters, force):
         # first round's score (the describe() baseline before any revision).
         match = max((h["match"] for h in hist), default=0)
         ok = any(h["ok"] for h in hist) if hist else False
-        # P1: skin 0 overwrites sprite.png (the Original world billboard)
-        out_png = os.path.join(char_dir, "sprite.png")
-        render_to_png(best, out_png)
-        cache[key] = {"descriptor": best, "match": match,
-                      "iters": len(hist), "ok": ok,
-                      "match_before": hist[0]["match"] if hist else match}
-        save_cache(char_dir, cache)
+        # P3: per-skin sprite in sprites/{idx}.png (always) ...
+        sprites_dir = os.path.join(char_dir, "sprites")
+        os.makedirs(sprites_dir, exist_ok=True)
+        render_to_png(best, os.path.join(sprites_dir, str(skin_idx) + ".png"))
+        # ... and sprite.png for the Original (index 0) for back-compat
+        if skin_idx == 0:
+            render_to_png(best, os.path.join(char_dir, "sprite.png"))
+        # Cache update under CACHE_LOCK: render_to_png above is already under
+        # RENDER_LOCK; the lock is released before we touch the cache, so the
+        # two locks are NEVER nested (no deadlock risk). This makes the
+        # load_cache -> mutate -> save_cache atomic per char dir, so two workers
+        # baking skin 0 and skin 14 of the same champ can't lose each other's
+        # cache entry.
+        with CACHE_LOCK:
+            cache = load_cache(char_dir)
+            cache[key] = {"descriptor": best, "match": match,
+                          "iters": len(hist), "ok": ok,
+                          "match_before": hist[0]["match"] if hist else match}
+            save_cache(char_dir, cache)
         return {"id": champ["id"], "skin": skin_idx, "skipped": False,
                 "match": match, "ok": ok, "iters": len(hist),
                 "match_before": hist[0]["match"] if hist else match}

@@ -115,6 +115,39 @@ def test_cli_parses_vlm_args():
     assert a.vlm_loop is True and a.concurrency == 2 and a.max_iters == 5
     assert a.champs == "Ahri" and a.skins == "0" and a.force is True
 
+def _ahri_descriptor():
+    # CHAMPIONS_DB is a list of dicts; pull Ahri's baked descriptor.
+    return next(c["descriptor"] for c in CHAMPIONS_DB if c["id"] == "Ahri")
+
+def test_per_skin_writes_sprites_dir():
+    from src.build.sprite_loop import run_sprite_bake
+    from src.data.tuning import ASSET_DIR
+    champs = [{"id": "Ahri", "descriptor": _ahri_descriptor()}]
+    # only run skins that actually have a ref splash
+    have = []
+    for s in (0, 14):
+        if os.path.exists(os.path.join(ASSET_DIR, "characters", "Ahri", "skins", f"{s}.jpg")):
+            have.append(s)
+    rep = run_sprite_bake(champs, skin_indices=have, concurrency=1, max_iters=5,
+                          force=True, vlm_factory=lambda: FakeVLMOK())
+    base = os.path.join(ASSET_DIR, "characters", "Ahri")
+    for s in have:
+        p = os.path.join(base, "sprites", f"{s}.png")
+        assert os.path.exists(p), f"missing {p}"
+        im = pygame.image.load(p); assert im.get_size() == (256, 256)
+    import json
+    c = json.load(open(os.path.join(base, "descriptors.json")))
+    for s in have:
+        assert str(s) in c, f"descriptors.json missing key {s}"
+
+def test_missing_skin_ref_skipped():
+    from src.build.sprite_loop import run_sprite_bake
+    champs = [{"id": "Ahri", "descriptor": _ahri_descriptor()}]
+    rep = run_sprite_bake(champs, skin_indices=[9999], concurrency=1, max_iters=5,
+                          force=True, vlm_factory=lambda: FakeVLMOK())
+    r = rep["per_skin"][0]
+    assert r.get("error") == "missing ref splash"
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

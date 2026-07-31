@@ -34,6 +34,17 @@ def test_floating_has_no_legs_modifier():
     s_up = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(s_up, {**BASE, "stance": "upright"})
     s_fl = pygame.Surface((256, 256), pygame.SRCALPHA); draw_chibi_descriptor(s_fl, {**BASE, "stance": "floating"})
     assert _cov(s_fl) != _cov(s_up), "floating modifier must change the sprite"
+    # the lower-leg region must have fewer opaque pixels than upright
+    # (the eraser must actually clear pixels, not be a no-op blit)
+    cx, cy = 128, 150
+    w, h = 96, 120  # knight average build box
+    lx0 = max(0, cx - int(w * 0.45)); lx1 = min(256, cx + int(w * 0.45))
+    ly0 = max(0, cy + int(h * 0.32)); ly1 = min(256, ly0 + int(h * 0.18))
+    up_a = pygame.surfarray.pixels_alpha(s_up); up_arr = up_a.__array__(); del up_a
+    fl_a = pygame.surfarray.pixels_alpha(s_fl); fl_arr = fl_a.__array__(); del fl_a
+    up_legs = int((up_arr[lx0:lx1, ly0:ly1] > 8).sum())
+    fl_legs = int((fl_arr[lx0:lx1, ly0:ly1] > 8).sum())
+    assert fl_legs < up_legs, f"floating lower-leg region must have fewer opaque pixels (fl={fl_legs}, up={up_legs})"
 
 def run():
     for name, fn in list(globals().items()):

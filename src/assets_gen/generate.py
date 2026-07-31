@@ -1394,9 +1394,8 @@ def _floating_modifier(surf, cx, cy, w, h, pal, outline):
     pygame.draw.ellipse(disc, (255, 255, 255, 70), disc.get_rect())
     pygame.draw.ellipse(disc, (*pal["accent"], 120), disc.get_rect(), 1)
     surf.blit(disc, (cx - int(w * 0.7), cy + h // 2 - 4))
-    # erase the lower half of the legs (cover with transparent)
-    leg_eraser = pygame.Surface((int(w * 0.9), int(h * 0.18)), pygame.SRCALPHA)
-    surf.blit(leg_eraser, (cx - int(w * 0.45), cy + int(h * 0.32)))
+    # erase the lower half of the legs (zero those pixels directly)
+    surf.fill((0, 0, 0, 0), (cx - int(w * 0.45), cy + int(h * 0.32), int(w * 0.9), int(h * 0.18)))
 
 
 def draw_chibi_descriptor(surf, descriptor):

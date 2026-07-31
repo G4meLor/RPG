@@ -917,8 +917,10 @@ def main():
                 champs = [c for c in champs if c["id"] in want]
             # parse skins
             if args.skins.strip().lower() == "all":
-                print("note: --skins all maps to [0] in Phase 1 (per-skin is Phase 3)")
-                skins = [0]
+                # enumerate every skins/{idx}.jpg present per champ (Phase 3).
+                # Sentinel: run_sprite_bake builds the per-champ skin lists from
+                # the skins/*.jpg files on disk (via _enumerate_skins).
+                skins = "all-enumerated"
             else:
                 skins = [int(s.strip()) for s in args.skins.split(",") if s.strip()]
             # The baked CHAMPIONS_DB descriptors (already palette-normalized

@@ -15,7 +15,7 @@
           120
         ],
         "accent": [
-          140,
+          150,
           40,
           40
         ]
@@ -28,5 +28,101 @@
     "iters": 10,
     "ok": false,
     "match_before": 3
+  },
+  "1": {
+    "descriptor": {
+      "archetype": "knight",
+      "weapon": "sword",
+      "palette": {
+        "primary": [
+          30,
+          40,
+          80
+        ],
+        "secondary": [
+          230,
+          230,
+          240
+        ],
+        "accent": [
+          100,
+          150,
+          220
+        ]
+      },
+      "features": [],
+      "build": "average",
+      "motif": "light"
+    },
+    "match": 6,
+    "iters": 1,
+    "ok": true,
+    "match_before": 6
+  },
+  "20": {
+    "descriptor": {
+      "archetype": "knight",
+      "weapon": "sword",
+      "palette": {
+        "primary": [
+          40,
+          40,
+          45
+        ],
+        "secondary": [
+          255,
+          165,
+          0
+        ],
+        "accent": [
+          255,
+          215,
+          0
+        ]
+      },
+      "features": [
+        "crown",
+        "spikes"
+      ],
+      "build": "average",
+      "motif": "flame"
+    },
+    "match": 7,
+    "iters": 1,
+    "ok": true,
+    "match_before": 7
+  },
+  "10": {
+    "descriptor": {
+      "archetype": "knight",
+      "weapon": "spear",
+      "palette": {
+        "primary": [
+          220,
+          225,
+          255
+        ],
+        "secondary": [
+          138,
+          43,
+          226
+        ],
+        "accent": [
+          218,
+          165,
+          32
+        ]
+      },
+      "features": [
+        "crown",
+        "cape"
+      ],
+      "build": "slender",
+      "motif": "light"
+    },
+    "match": 7,
+    "iters": 1,
+    "ok": true,
+    "match_before": 7
   }
 }

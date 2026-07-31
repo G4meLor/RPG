@@ -121,6 +121,36 @@ def main():
             for fn in os.listdir(skins_dir):
                 if fn.endswith(".jpg"):
                     n_skins += 1
+        # sprites/{N}.png (per-skin world sprite, Phase 3) — one per skin splash.
+        # Each must be 256x256 (coverage checked separately below). A missing
+        # or wrong-size sprites/{idx}.png for a present skins/{idx}.jpg is a
+        # failure (the P3 bake must have produced it).
+        sprites_dir = os.path.join(base, "sprites")
+        if os.path.isdir(sprites_dir):
+            for fn in os.listdir(sprites_dir):
+                if fn.endswith(".png"):
+                    spath = os.path.join(sprites_dir, fn)
+                    s = pygame.image.load(spath)
+                    if s.get_size() != EXPECT["sprite"]:
+                        failures.append(f"characters/{key}/sprites/{fn}: {s.get_size()} != {EXPECT['sprite']}")
+        # descriptors.json (per-skin descriptor cache, Phase 3) — parseable +
+        # has a key per skin index present (every skins/{idx}.jpg should have a
+        # matching descriptor entry so the bake is resumable + complete).
+        dpath = os.path.join(base, "descriptors.json")
+        if os.path.exists(dpath):
+            import json
+            try:
+                with open(dpath) as fh:
+                    dc = json.load(fh)
+                skins_dir2 = os.path.join(base, "skins")
+                if os.path.isdir(skins_dir2):
+                    for sfn in os.listdir(skins_dir2):
+                        if sfn.endswith(".jpg"):
+                            idx = sfn[:-4]
+                            if idx not in dc:
+                                failures.append(f"characters/{key}: descriptors.json missing skin {idx}")
+            except Exception as ex:
+                failures.append(f"characters/{key}/descriptors.json: parse error {ex}")
         # skills/{skill_id}.png (real ability icons) for each kit skill
         hdef = HERO_BY_ID.get(key)
         if hdef is None:

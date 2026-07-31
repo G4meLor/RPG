@@ -10,14 +10,14 @@
           60
         ],
         "secondary": [
-          160,
-          40,
-          40
+          180,
+          180,
+          180
         ],
         "accent": [
-          130,
-          210,
-          230
+          0,
+          191,
+          255
         ]
       },
       "features": [
@@ -27,9 +27,309 @@
       "build": "slender",
       "motif": "shadow"
     },
-    "match": 5,
+    "match": 6,
+    "iters": 2,
+    "ok": true,
+    "match_before": 5
+  },
+  "16": {
+    "descriptor": {
+      "archetype": "construct",
+      "weapon": "gauntlet",
+      "palette": {
+        "primary": [
+          45,
+          55,
+          80
+        ],
+        "secondary": [
+          80,
+          85,
+          110
+        ],
+        "accent": [
+          255,
+          100,
+          20
+        ]
+      },
+      "features": [
+        "mask",
+        "cape"
+      ],
+      "build": "bulky",
+      "motif": "void"
+    },
+    "match": 6,
+    "iters": 1,
+    "ok": true,
+    "match_before": 6
+  },
+  "25": {
+    "descriptor": {
+      "archetype": "undead",
+      "weapon": "scythe",
+      "palette": {
+        "primary": [
+          30,
+          30,
+          40
+        ],
+        "secondary": [
+          120,
+          120,
+          130
+        ],
+        "accent": [
+          0,
+          150,
+          255
+        ]
+      },
+      "features": [
+        "hood",
+        "mask",
+        "spikes"
+      ],
+      "build": "tall",
+      "motif": "shadow"
+    },
+    "match": 7,
+    "iters": 1,
+    "ok": true,
+    "match_before": 7
+  },
+  "34": {
+    "descriptor": {
+      "archetype": "rogue",
+      "weapon": "sword",
+      "palette": {
+        "primary": [
+          220,
+          220,
+          220
+        ],
+        "secondary": [
+          40,
+          45,
+          55
+        ],
+        "accent": [
+          255,
+          200,
+          50
+        ]
+      },
+      "features": [
+        "hood",
+        "mask",
+        "cape"
+      ],
+      "build": "slender",
+      "motif": "light"
+    },
+    "match": 7,
+    "iters": 1,
+    "ok": true,
+    "match_before": 7
+  },
+  "44": {
+    "descriptor": {
+      "archetype": "mage",
+      "weapon": "staff",
+      "palette": {
+        "primary": [
+          45,
+          60,
+          85
+        ],
+        "secondary": [
+          160,
+          180,
+          210
+        ],
+        "accent": [
+          180,
+          50,
+          255
+        ]
+      },
+      "features": [
+        "hood",
+        "mask"
+      ],
+      "build": "average",
+      "motif": "void"
+    },
+    "match": 7,
+    "iters": 1,
+    "ok": true,
+    "match_before": 7
+  },
+  "1": {
+    "descriptor": {
+      "archetype": "rogue",
+      "weapon": "dagger",
+      "palette": {
+        "primary": [
+          139,
+          0,
+          0
+        ],
+        "secondary": [
+          184,
+          134,
+          11
+        ],
+        "accent": [
+          64,
+          224,
+          208
+        ]
+      },
+      "features": [
+        "hood",
+        "mask",
+        "claws"
+      ],
+      "build": "slender",
+      "motif": "shadow"
+    },
+    "match": 4,
     "iters": 10,
     "ok": false,
-    "match_before": 5
+    "match_before": 4
+  },
+  "45": {
+    "descriptor": {
+      "archetype": "rogue",
+      "weapon": "dagger",
+      "palette": {
+        "primary": [
+          20,
+          20,
+          30
+        ],
+        "secondary": [
+          180,
+          50,
+          200
+        ],
+        "accent": [
+          255,
+          200,
+          0
+        ]
+      },
+      "features": [
+        "mask",
+        "cape"
+      ],
+      "build": "slender",
+      "motif": "void"
+    },
+    "match": 7,
+    "iters": 1,
+    "ok": true,
+    "match_before": 7
+  },
+  "9": {
+    "descriptor": {
+      "archetype": "brute",
+      "weapon": "gauntlet",
+      "palette": {
+        "primary": [
+          180,
+          30,
+          30
+        ],
+        "secondary": [
+          220,
+          220,
+          220
+        ],
+        "accent": [
+          255,
+          200,
+          0
+        ]
+      },
+      "features": [
+        "horns",
+        "mask",
+        "cape"
+      ],
+      "build": "bulky",
+      "motif": "flame"
+    },
+    "match": 3,
+    "iters": 10,
+    "ok": false,
+    "match_before": 3
+  },
+  "53": {
+    "descriptor": {
+      "archetype": "brute",
+      "weapon": "fists",
+      "palette": {
+        "primary": [
+          45,
+          30,
+          80
+        ],
+        "secondary": [
+          65,
+          105,
+          225
+        ],
+        "accent": [
+          210,
+          40,
+          160
+        ]
+      },
+      "features": [
+        "cape"
+      ],
+      "build": "bulky",
+      "motif": "shadow"
+    },
+    "match": 6,
+    "iters": 1,
+    "ok": true,
+    "match_before": 6
+  },
+  "54": {
+    "descriptor": {
+      "archetype": "rogue",
+      "weapon": "dagger",
+      "palette": {
+        "primary": [
+          30,
+          30,
+          60
+        ],
+        "secondary": [
+          180,
+          180,
+          180
+        ],
+        "accent": [
+          255,
+          190,
+          50
+        ]
+      },
+      "features": [
+        "mask",
+        "spikes"
+      ],
+      "build": "average",
+      "motif": "light"
+    },
+    "match": 4,
+    "iters": 10,
+    "ok": false,
+    "match_before": 4
   }
 }

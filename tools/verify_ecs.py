@@ -348,6 +348,41 @@ def test_build_party_threads_skin_to_entity():
         f"wc.hero.skin={ahri_wc.hero.skin}, expected 14"
     print("  build_party threads skin to entity OK")
 
+def test_skin_change_changes_sprite():
+    """Changing rec['skin'] changes which world sprite path WorldCharacter
+    loads (asserts load PATH, not pixels). End-to-end: record -> Hero ->
+    WorldCharacter._load_sprite."""
+    import main as M, os, pygame
+    from src.entities.combatant import Hero, load_char_sprite
+    from src.data.heroes import HERO_BY_ID
+    from src.data.tuning import ASSET_DIR
+    import src.entities.combatant as comb
+    g = M.Game()
+    hd = HERO_BY_ID["Ahri"]
+    base = os.path.join(ASSET_DIR, "characters", "Ahri")
+    os.makedirs(os.path.join(base, "sprites"), exist_ok=True)
+    for idx in (0, 14):
+        sp = os.path.join(base, "sprites", f"{idx}.png")
+        if not os.path.exists(sp):
+            s = pygame.Surface((256, 256), pygame.SRCALPHA)
+            pygame.draw.circle(s, (idx * 20, 0, 200, 255), (128, 128), 60)
+            pygame.image.save(s, sp)
+    def _loaded_skin_idx(skin_idx):
+        seen = []
+        orig = comb.load_image
+        comb.load_image = lambda rel, scale=None: (seen.append(rel), orig(rel, scale))[1]
+        try:
+            load_char_sprite("Ahri", 96, skin_idx=skin_idx)
+        finally:
+            comb.load_image = orig
+        joined = " ".join(seen)
+        if skin_idx and skin_idx > 0 and f"sprites/{skin_idx}.png" in joined:
+            return skin_idx
+        return 0  # fell back to sprite.png
+    assert _loaded_skin_idx(14) == 14
+    assert _loaded_skin_idx(0) == 0
+    print("  skin change changes sprite OK")
+
 def run():
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

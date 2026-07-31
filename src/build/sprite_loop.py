@@ -102,6 +102,23 @@ import concurrent.futures
 from src.build.vlm_client import VLMClient
 
 
+def _enumerate_skins(char_dir):
+    """Phase 3: enumerate every skins/{idx}.jpg present for a champ. Returns
+    a sorted list of skin indices (e.g. [0, 1, 7, 14]); falls back to [0] if
+    the skins dir is missing or has no .jpg files."""
+    sd = os.path.join(char_dir, "skins")
+    if not os.path.isdir(sd):
+        return [0]
+    out = []
+    for fn in os.listdir(sd):
+        if fn.endswith(".jpg"):
+            try:
+                out.append(int(fn[:-4]))
+            except ValueError:
+                pass
+    return sorted(out) or [0]
+
+
 def _process_one(champ, skin_idx, vlm, max_iters, force):
     """Process a single (champ, skin). Returns a per-skin result dict."""
     char_dir = os.path.join(ASSET_DIR, "characters", champ["id"])
@@ -109,6 +126,17 @@ def _process_one(champ, skin_idx, vlm, max_iters, force):
     cache = load_cache(char_dir)
     key = str(skin_idx)
     if not force and key in cache and cache[key].get("ok"):
+        # Cache-skip: still ensure the per-skin sprite PNG exists on disk so the
+        # verify_assets gate (every skins/{idx}.jpg has a sprites/{idx}.png)
+        # passes for skins baked in an earlier phase that only wrote sprite.png
+        # for index 0. Re-render from the cached descriptor (fast, no VLM call).
+        sprites_dir = os.path.join(char_dir, "sprites")
+        os.makedirs(sprites_dir, exist_ok=True)
+        sp_path = os.path.join(sprites_dir, str(skin_idx) + ".png")
+        if not os.path.exists(sp_path):
+            cached_desc = cache[key].get("descriptor")
+            if cached_desc:
+                render_to_png(cached_desc, sp_path)
         return {"id": champ["id"], "skin": skin_idx, "skipped": True}
     ref_jpg = os.path.join(char_dir, "skins", str(skin_idx) + ".jpg")
     if not os.path.exists(ref_jpg):
@@ -159,7 +187,16 @@ def run_sprite_bake(champs, skin_indices, concurrency=1, max_iters=10,
     Returns an aggregate report dict.
     """
     vlm_factory = vlm_factory or (lambda: VLMClient())
-    pairs = [(c, s) for c in champs for s in skin_indices]
+    if skin_indices == "all-enumerated":
+        # Phase 3: build per-champ (champ, skin) pairs from the skins/*.jpg
+        # files actually on disk for each champ (every skin splash present).
+        pairs = []
+        for c in champs:
+            char_dir = os.path.join(ASSET_DIR, "characters", c["id"])
+            for s in _enumerate_skins(char_dir):
+                pairs.append((c, s))
+    else:
+        pairs = [(c, s) for c in champs for s in skin_indices]
     results = [None] * len(pairs)
 
     def worker(idx, champ, skin_idx):

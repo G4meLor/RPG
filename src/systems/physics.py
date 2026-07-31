@@ -19,6 +19,8 @@ import math
 
 import pygame
 
+from src.data.tuning import ENERGY_REGEN_PCT
+
 
 # ---------------------------------------------------------------------------
 # Camera
@@ -232,3 +234,181 @@ class PhysicsSystem:
                 t.vy = 0
                 r.y = int(t.y - m.r)
         # keep inside map bounds (caller passes border walls as obstacles too)
+
+    # -----------------------------------------------------------------------
+    # Task 20d — full-fidelity verbatim port of WorldCharacter.update.
+    # The body below is copied verbatim from src/entities/_legacy_world_entities.py
+    # (the `update` method on WorldCharacter, starting at line 622). The only
+    # rewire is `self` (the WorldCharacter) -> `wc` (the WorldCharacter passed
+    # as the first arg). The method operates on the wc's OWN fields (x, vx,
+    # atk_cd, hero, etc.); there is no scene state to rewire. WorldCharacter
+    # .update becomes a 1-line delegate to this staticmethod (see
+    # _legacy_world_entities.py). The signature passive update handlers
+    # (_SIG_UPDATE) are imported lazily from the legacy module to avoid a
+    # circular import at module load time (this module is imported by the
+    # legacy module via `from src.systems.physics import Camera`).
+    # -----------------------------------------------------------------------
+    @staticmethod
+    def update_hero(wc, dt, input_dir, obstacles, want_dash):
+        # knockback decays
+        if abs(wc.kb_x) > 1 or abs(wc.kb_y) > 1:
+            wc.x += wc.kb_x * dt
+            wc.y += wc.kb_y * dt
+            wc.kb_x *= 0.8
+            wc.kb_y *= 0.8
+
+        # LoL-style click-to-move: if the player isn't pressing WASD, the hero
+        # auto-walks toward the RMB-set move_target until it reaches it. Any
+        # WASD press overrides + clears the target (keyboard has priority).
+        if input_dir[0] or input_dir[1]:
+            wc.move_target = None
+        elif wc.move_target is not None:
+            tx, ty = wc.move_target
+            dx = tx - wc.x
+            dy = ty - wc.y
+            d = math.hypot(dx, dy)
+            wc.move_target_t += dt
+            if d < 8:
+                # reached the target — stop auto-moving
+                wc.move_target = None
+            else:
+                # stall detection: if the hero isn't getting closer (blocked by a
+                # wall), clear the target after 0.3s so the reticle doesn't hang
+                # on a wall forever (the "stray white circle" fix)
+                if d >= wc._last_mt_dist - 1:
+                    wc._mt_stall_t += dt
+                    if wc._mt_stall_t > 0.3:
+                        wc.move_target = None
+                else:
+                    wc._mt_stall_t = 0
+                wc._last_mt_dist = d
+                if wc.move_target is not None:
+                    # synthesize a normalized input toward the target so the
+                    # existing accel/friction movement handles it (no special-case path)
+                    input_dir = (dx / d, dy / d)
+                    # face the direction we're walking
+                    wc.facing = 1 if dx > 0 else -1
+                    wc.moving = True
+
+        # dash
+        if want_dash and wc.dash_cd <= 0 and (input_dir[0] or input_dir[1]):
+            wc.dash_t = 0.16
+            wc.iframes = 0.22
+            wc.dash_cd = 0.7
+            n = math.hypot(*input_dir) or 1
+            wc.dash_dir = (input_dir[0] / n, input_dir[1] / n)
+        if wc.dash_t > 0:
+            wc.dash_t -= dt
+            ds = 520
+            wc.x += wc.dash_dir[0] * ds * dt
+            wc.y += wc.dash_dir[1] * ds * dt
+            wc.moving = True
+        else:
+            # normal movement with accel + friction
+            ix, iy = input_dir
+            n = math.hypot(ix, iy)
+            if n > 0:
+                ix /= n; iy /= n
+                wc.vx += ix * wc.accel * dt
+                wc.vy += iy * wc.accel * dt
+                if ix != 0:
+                    wc.facing = 1 if ix > 0 else -1
+                wc.moving = True
+            else:
+                # friction
+                f = wc.friction * dt
+                if abs(wc.vx) <= f: wc.vx = 0
+                else: wc.vx -= f * (1 if wc.vx > 0 else -1)
+                if abs(wc.vy) <= f: wc.vy = 0
+                else: wc.vy -= f * (1 if wc.vy > 0 else -1)
+                wc.moving = False
+            # clamp speed (with swift passive)
+            ms = wc.move_speed
+            sp = math.hypot(wc.vx, wc.vy)
+            if sp > ms:
+                wc.vx = wc.vx / sp * ms
+                wc.vy = wc.vy / sp * ms
+            wc.x += wc.vx * dt
+            wc.y += wc.vy * dt
+
+        # collide with obstacles (axis separated)
+        wc._collide(obstacles)
+
+        # timers
+        wc.dash_cd = max(0, wc.dash_cd - dt)
+        wc.iframes = max(0, wc.iframes - dt)
+        wc.invuln_t = max(0, wc.invuln_t - dt)
+        wc.atk_cd = max(0, wc.atk_cd - dt)
+        wc.atk_anim = max(0, wc.atk_anim - dt)
+        wc.hit_flash = max(0, wc.hit_flash - dt)
+        wc._shield_cd = max(0, wc._shield_cd - dt)
+        # perfect-dodge window opens right after a dash ends (the i-frames are
+        # the dodge itself; this is the "just-dodged" reward window) and counts
+        # down. The damage buff from a successful perfect dodge decays too.
+        # Track the previous dash state so we detect the dash->no-dash edge and
+        # open the window exactly once when it ends.
+        was_dashing = getattr(wc, "_was_dashing", False)
+        is_dashing = wc.dash_t > 0 or wc.iframes > 0
+        if was_dashing and not is_dashing and wc.dash_cd > 0.3:
+            wc._perfect_dodge_t = 0.15
+        wc._was_dashing = is_dashing
+        wc._perfect_dodge_t = max(0, wc._perfect_dodge_t - dt)
+        wc._dmg_buff_t = max(0, wc._dmg_buff_t - dt)
+        for i in range(3):
+            wc.skill_cd[i] = max(0, wc.skill_cd[i] - dt)
+        wc.ult_cd = max(0, wc.ult_cd - dt)
+        # out-of-combat regen passive
+        wc._last_combat_t += dt
+        if (wc.hero.passive and wc.hero.passive.get("kind") == "regen"
+                and wc._last_combat_t > 2.0 and wc.alive
+                and wc.hero.hp < wc.hero.max_hp):
+            wc.hero.hp = min(wc.hero.max_hp,
+                               wc.hero.hp + wc.hero.max_hp * wc.hero.passive.get("val", 0.02) * dt)
+        # signature passive update handlers (dict-lookup dispatch). stacking_atk
+        # decays by 1 every 3s out of combat so a stale streak doesn't persist.
+        # Imported lazily to avoid a circular import (this module is imported by
+        # the legacy module at load time).
+        from src.entities._legacy_world_entities import _SIG_UPDATE
+        _sig_upd = _SIG_UPDATE.get(wc._signature_kind)
+        if _sig_upd:
+            _sig_upd(wc, dt)
+        # passive energy regen: recover energy over time so a hero with low
+        # energy can use skills again without landing a hit (the "skills don't
+        # recover / mana doesn't increase" fix). Slower in combat. The light
+        # elemental resonance (energy_regen) boosts the rate additively (a 2-light
+        # party regens 15% faster); the p_energy (Flow State) passive only applies
+        # to discrete energy gains from hits/skills, not to this passive trickle,
+        # so there's no double-apply to guard here.
+        if wc.alive and wc.hero.energy < wc.hero.max_energy:
+            rate = ENERGY_REGEN_PCT * (0.5 if wc._last_combat_t < 1.5 else 1.0)
+            rate *= (1 + wc._res_energy_regen)
+            wc.hero.energy = min(wc.hero.max_energy,
+                                   wc.hero.energy + wc.hero.max_energy * rate * dt)
+
+        # walk anim + idle breathing + squash/stretch
+        if wc.moving:
+            wc.walk_t += dt * 11
+            # landing/squash from vertical bob of the walk cycle
+            phase = math.sin(wc.walk_t)
+            wc.scale_y = 1.0 + phase * 0.04
+            wc.scale_x = 1.0 - phase * 0.03
+        else:
+            wc.walk_t *= 0.85
+            wc.idle_t += dt * 2.2
+            # gentle breathing
+            br = math.sin(wc.idle_t) * 0.025
+            wc.scale_y = 1.0 + br
+            wc.scale_x = 1.0 - br * 0.6
+        # attack lunge: forward lean that eases back (drive from atk_anim)
+        if wc.atk_anim > 0:
+            # 0.2s swing -> lunge peaks early then returns
+            t = 1 - (wc.atk_anim / 0.2)
+            wc.lunge = math.sin(min(1, t) * math.pi) * 14 * wc.facing
+            wc.scale_x = 1.0 + 0.10 * math.sin(min(1, t) * math.pi)
+        else:
+            wc.lunge *= 0.8
+
+        # reload sprite if facing changed (flip cache)
+        if wc._sprite is not None and wc._sprite_face != wc.facing:
+            wc._sprite = pygame.transform.flip(wc._sprite, True, False)
+            wc._sprite_face = wc.facing

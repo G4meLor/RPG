@@ -30,42 +30,52 @@ def jarvaniv_prims():
     OUT = (25, 22, 30)
 
     # --- White flowing cape (BIG, behind, spread wide — THE feature) ---
-    P.append({"type":"polygon","points":[(82,90),(174,90),(190,220),(66,220)],
+    P.append({"type":"polygon","points":[(70,88),(186,88),(200,225),(56,225)],
               "color":WHITE,"outline":OUT,"outline_w":2})
     # cape inner shadow (depth)
-    P.append({"type":"polygon","points":[(96,96),(160,96),(172,210),(84,210)],
+    P.append({"type":"polygon","points":[(88,94),(168,94),(180,215),(76,215)],
               "color":WHITE_DARK,"outline":OUT,"outline_w":1})
-    # blue cape lining (Demacian blue — inner)
-    P.append({"type":"polygon","points":[(104,100),(152,100),(160,200),(96,200)],
+    # blue cape lining (Demacian blue — inner, visible)
+    P.append({"type":"polygon","points":[(100,100),(156,100),(164,205),(92,205)],
               "color":BLUE,"outline":OUT,"outline_w":1})
-    # gold trim on cape edge
-    P.append({"type":"line","start":[82,90],"end":[66,220],"color":GOLD,"width":3})
-    P.append({"type":"line","start":[174,90],"end":[190,220],"color":GOLD,"width":3})
+    # gold trim on cape edges (THICK, visible)
+    P.append({"type":"line","start":[70,88],"end":[56,225],"color":GOLD,"width":4})
+    P.append({"type":"line","start":[186,88],"end":[200,225],"color":GOLD,"width":4})
+    # Demacian royal insignia on cape (winged eagle emblem, BIG — THE missing feature)
+    P.append({"type":"circle","cx":128,"cy":150,"r":14,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
+    # winged eagle on cape (spread wings — THE Demacian insignia)
+    P.append({"type":"polygon","points":[(108,148),(128,142),(148,148),(144,154),(128,150),(112,154)],
+              "color":GOLD_DARK,"outline":OUT,"outline_w":1})
+    # eagle wing feathers (left and right)
+    P.append({"type":"line","start":[112,146],"end":[108,152],"color":GOLD_DARK,"width":1})
+    P.append({"type":"line","start":[144,146],"end":[148,152],"color":GOLD_DARK,"width":1})
+    # blue gem center
+    P.append({"type":"circle","cx":128,"cy":150,"r":5,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
 
     # --- BIG LANCE / CATAPHRACT STANDARD (right side, tall, THE feature) ---
-    # lance shaft (long, diagonal — held upright to the right, THICKER)
-    P.append({"type":"line","start":[186,215],"end":[200,20],"color":(120,90,50),"width":9})
+    # lance shaft (long, vertical to the right, THICK)
+    P.append({"type":"line","start":[196,225],"end":[210,15],"color":(120,90,50),"width":10})
     # lance shaft highlight
-    P.append({"type":"line","start":[186,215],"end":[200,20],"color":(160,120,70),"width":3})
+    P.append({"type":"line","start":[196,225],"end":[210,15],"color":(160,120,70),"width":3})
     # lance tip (spearhead, BIG — leaf-shaped, the iconic cataphract lance)
-    P.append({"type":"polygon","points":[(200,20),(190,36),(210,36)],
-              "color":SILVER_J,"outline":STEEL_DARK,"outline_w":2})
-    P.append({"type":"polygon","points":[(200,20),(194,32),(206,32)],
-              "color":(230,230,240),"outline":STEEL_DARK,"outline_w":1})
-    # lance banner (Demacian flag — blue with gold crest, hanging from lance, BIGGER)
-    P.append({"type":"polygon","points":[(190,44),(216,44),(212,96),(194,96)],
+    P.append({"type":"polygon","points":[(210,15),(198,36),(222,36)],
+              "color":SILVER_J,"outline":STEEL_DARK,"outline_w":3})
+    P.append({"type":"polygon","points":[(210,15),(202,30),(218,30)],
+              "color":(235,235,245),"outline":STEEL_DARK,"outline_w":1})
+    # lance banner (Demacian flag — blue with gold crest, hanging from lance, BIG)
+    P.append({"type":"polygon","points":[(198,40),(228,40),(224,100),(202,100)],
               "color":BLUE,"outline":GOLD_DARK,"outline_w":2})
     # gold crest on banner (winged eagle, BIG)
-    P.append({"type":"circle","cx":203,"cy":68,"r":9,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":213,"cy":68,"r":11,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
     # winged eagle on banner
-    P.append({"type":"polygon","points":[(193,66),(203,62),(213,66),(209,70),(203,68),(197,70)],
+    P.append({"type":"polygon","points":[(200,66),(213,60),(226,66),(222,72),(213,69),(204,72)],
               "color":GOLD_DARK,"outline":OUT,"outline_w":1})
     # banner fringe (gold)
-    P.append({"type":"line","start":[194,96],"end":[212,96],"color":GOLD,"width":3})
+    P.append({"type":"line","start":[202,100],"end":[224,100],"color":GOLD,"width":3})
     # lance grip wrap
-    P.append({"type":"line","start":[188,100],"end":[194,180],"color":GOLD_DARK,"width":3})
+    P.append({"type":"line","start":[198,110],"end":[206,190],"color":GOLD_DARK,"width":3})
     # lance pommel
-    P.append({"type":"circle","cx":186,"cy":215,"r":7,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":196,"cy":225,"r":8,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
 
     # --- Legs (armored greaves) ---
     P.append({"type":"rect","x":108,"y":170,"w":18,"h":44,"color":STEEL,"outline":OUT,"outline_w":1,"radius":3})

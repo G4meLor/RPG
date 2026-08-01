@@ -311,15 +311,18 @@ def viktor_prims():
     P.append({"type":"circle","cx":56,"cy":74,"r":6,"color":HEXCORE,"outline":OUT,"outline_w":1})
     P.append({"type":"circle","cx":56,"cy":74,"r":3,"color":HEXCORE_GLOW})
 
-    # --- Mechanical third arm (THE feature -- extra arm from shoulder) ---
-    # third arm extending from right shoulder, mechanical
-    P.append({"type":"rect","x":168,"y":86,"w":14,"h":40,"color":STEEL_DARK,"outline":OUT,"outline_w":2,"radius":3})
-    P.append({"type":"circle","cx":175,"cy":88,"r":8,"color":STEEL,"outline":OUT,"outline_w":1})
-    # third arm joint
-    P.append({"type":"circle","cx":175,"cy":126,"r":6,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    # third hand (mechanical claw)
-    P.append({"type":"rect","x":170,"y":130,"w":10,"h":16,"color":STEEL,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(172,146),(178,146),(170,154)],"color":STEEL_DARK,"outline":OUT,"outline_w":1})
+    # --- Mechanical third arm (THE feature #2 -- extra arm from shoulder, BIG) ---
+    # third arm extending from right shoulder, mechanical, BIG and obvious
+    P.append({"type":"rect","x":166,"y":82,"w":18,"h":50,"color":STEEL_DARK,"outline":OUT,"outline_w":2,"radius":3})
+    P.append({"type":"circle","cx":175,"cy":86,"r":10,"color":STEEL,"outline":OUT,"outline_w":2})
+    # third arm joint (gold, mechanical)
+    P.append({"type":"circle","cx":175,"cy":132,"r":8,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
+    # third hand (mechanical claw, BIG)
+    P.append({"type":"rect","x":168,"y":136,"w":14,"h":20,"color":STEEL,"outline":OUT,"outline_w":2})
+    P.append({"type":"polygon","points":[(168,156),(176,156),(164,166)],"color":STEEL_DARK,"outline":OUT,"outline_w":2})
+    P.append({"type":"polygon","points":[(168,156),(176,156),(180,166)],"color":STEEL_DARK,"outline":OUT,"outline_w":2})
+    # gold joint on third arm
+    P.append({"type":"circle","cx":175,"cy":110,"r":5,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
     P.append({"type":"polygon","points":[(172,146),(178,146),(180,154)],"color":STEEL_DARK,"outline":OUT,"outline_w":1})
 
     # --- Legs (metallic, mechanical) ---
@@ -342,23 +345,25 @@ def viktor_prims():
     P.append({"type":"polygon","points":[(114,140),(142,140),(146,168),(110,168)],
               "color":PURPLE,"outline":OUT,"outline_w":1})
 
-    # --- GLOWING HEXCORE CHEST PIECE (THE feature -- HUGE glowing core) ---
-    # hexcore housing (big, metallic ring)
-    P.append({"type":"circle","cx":128,"cy":128,"r":22,"color":STEEL_DARK,"outline":OUT,"outline_w":3})
-    # hexcore inner ring (gold)
-    P.append({"type":"circle","cx":128,"cy":128,"r":18,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
-    # hexcore GLOWING CORE (bright -- THE icon, 30%+ of chest)
-    P.append({"type":"circle","cx":128,"cy":128,"r":14,"color":HEXCORE,"outline":OUT,"outline_w":1})
-    # hex pattern (hexcore signature)
-    P.append({"type":"circle","cx":128,"cy":128,"r":9,"color":HEXCORE_GLOW})
-    # hexcore rays (glowing lines emanating)
+    # --- GLOWING HEXCORE CHEST PIECE (THE feature -- HUGE, dominates torso) ---
+    # hexcore housing (BIG metallic ring, 40% of torso)
+    P.append({"type":"circle","cx":128,"cy":130,"r":30,"color":STEEL_DARK,"outline":OUT,"outline_w":4})
+    # hexcore inner ring (gold, thick)
+    P.append({"type":"circle","cx":128,"cy":130,"r":24,"color":GOLD,"outline":GOLD_DARK,"outline_w":3})
+    # hexcore GLOWING CORE (BIG bright -- THE icon)
+    P.append({"type":"circle","cx":128,"cy":130,"r":18,"color":HEXCORE,"outline":OUT,"outline_w":2})
+    # hex pattern (hexcore signature -- bright)
+    P.append({"type":"circle","cx":128,"cy":130,"r":12,"color":HEXCORE_GLOW})
+    # hexcore rays (glowing lines emanating outward -- BIG)
+    import math
     for ang in (0, 60, 120, 180, 240, 300):
-        import math
-        x2 = 128 + int(20 * math.cos(math.radians(ang)))
-        y2 = 128 + int(20 * math.sin(math.radians(ang)))
-        P.append({"type":"line","start":[128,128],"end":[x2,y2],"color":HEXCORE_GLOW,"width":1})
-    # hexcore center bright spot
-    P.append({"type":"circle","cx":128,"cy":128,"r":5,"color":(220,255,240)})
+        x2 = 128 + int(28 * math.cos(math.radians(ang)))
+        y2 = 130 + int(28 * math.sin(math.radians(ang)))
+        P.append({"type":"line","start":[128,130],"end":[x2,y2],"color":HEXCORE_GLOW,"width":2})
+    # hexcore center bright spot (blinding)
+    P.append({"type":"circle","cx":128,"cy":130,"r":7,"color":(240,255,250)})
+    # hexcore outer glow (aura around the core)
+    P.append({"type":"circle","cx":128,"cy":130,"r":34,"color":(120,220,180,40) if False else (80,180,150),"outline":HEXCORE,"outline_w":1})
 
     # --- Arms (mechanical, both sides) ---
     P.append({"type":"rect","x":84,"y":108,"w":16,"h":50,"color":STEEL,"outline":OUT,"outline_w":2,"radius":4})
@@ -407,30 +412,33 @@ def xayah_prims():
     EYE = (180, 80, 160)
     OUT = (25, 20, 30)
 
-    # --- LARGE PURPLE FEATHERED WINGS ON HIPS (THE feature -- HUGE, both sides) ---
-    # LEFT WING (big feather-blade, sweeping out from hip)
-    P.append({"type":"polygon","points":[(92,150),(40,120),(32,150),(44,176),(88,168)],
-              "color":FEATHER,"outline":OUT,"outline_w":2})
-    # left wing feather blades (individual feathers)
-    for fy in (130, 145, 160):
-        P.append({"type":"polygon","points":[(88,150),(44,fy-8),(36,fy),(48,fy+6),(86,162)],
+    # --- LARGE PURPLE FEATHERED WINGS ON HIPS (THE feature -- HUGE, dominates) ---
+    # LEFT WING (big feather-blade, sweeping out from hip, 40% of sprite)
+    P.append({"type":"polygon","points":[(96,150),(24,100),(16,150),(28,196),(92,172)],
+              "color":FEATHER,"outline":OUT,"outline_w":3})
+    # left wing feather blades (individual big feathers)
+    for fy in (116, 135, 155, 175):
+        P.append({"type":"polygon","points":[(92,150),(32,fy-10),(22,fy),(36,fy+8),(88,168)],
                   "color":FEATHER_DARK,"outline":OUT,"outline_w":1})
-    # left wing top feather (big, sweeping)
-    P.append({"type":"polygon","points":[(88,150),(48,112),(36,118),(44,130),(84,146)],
-              "color":FEATHER_LIGHT,"outline":OUT,"outline_w":1})
+    # left wing top feather (big, sweeping up)
+    P.append({"type":"polygon","points":[(92,150),(36,92),(22,102),(32,120),(84,146)],
+              "color":FEATHER_LIGHT,"outline":OUT,"outline_w":2})
 
-    # RIGHT WING (mirrored)
-    P.append({"type":"polygon","points":[(164,150),(216,120),(224,150),(212,176),(168,168)],
-              "color":FEATHER,"outline":OUT,"outline_w":2})
-    for fy in (130, 145, 160):
-        P.append({"type":"polygon","points":[(168,150),(212,fy-8),(220,fy),(208,fy+6),(170,162)],
+    # RIGHT WING (mirrored, big)
+    P.append({"type":"polygon","points":[(160,150),(232,100),(240,150),(228,196),(164,172)],
+              "color":FEATHER,"outline":OUT,"outline_w":3})
+    for fy in (116, 135, 155, 175):
+        P.append({"type":"polygon","points":[(164,150),(224,fy-10),(234,fy),(220,fy+8),(168,168)],
                   "color":FEATHER_DARK,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(168,150),(208,112),(220,118),(212,130),(172,146)],
-              "color":FEATHER_LIGHT,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(164,150),(220,92),(234,102),(224,120),(172,146)],
+              "color":FEATHER_LIGHT,"outline":OUT,"outline_w":2})
 
-    # feather highlights (magenta tips)
-    P.append({"type":"circle","cx":40,"cy":122,"r":5,"color":MAGENTA,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":216,"cy":122,"r":5,"color":MAGENTA,"outline":OUT,"outline_w":1})
+    # feather highlights (magenta tips -- bright, on wing tips)
+    P.append({"type":"circle","cx":24,"cy":100,"r":7,"color":MAGENTA,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":232,"cy":100,"r":7,"color":MAGENTA,"outline":OUT,"outline_w":1})
+    # additional magenta feather tips
+    P.append({"type":"circle","cx":16,"cy":150,"r":5,"color":MAGENTA,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":240,"cy":150,"r":5,"color":MAGENTA,"outline":OUT,"outline_w":1})
 
     # --- Legs (bird-like talons for feet) ---
     P.append({"type":"rect","x":108,"y":170,"w":16,"h":36,"color":CLOTH,"outline":OUT,"outline_w":1,"radius":3})

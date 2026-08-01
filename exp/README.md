@@ -168,3 +168,33 @@ pixel primitives cannot carry for humanoid champs. Non-humanoid champs
 (Bard, Cassiopeia, Velkoz, Malphite, Zac, Chogath) score high because
 their silhouette IS the feature. Humanoid champs need a higher-res or
 non-pixel-art approach to break 70%.
+
+## Batch 3 hand-author results (2026-08-01)
+
+Added 7 non-humanoid/creature champs (30 total hand-authored).
+
+| Champ | Result | Saved? |
+|-------|--------|--------|
+| Fiddlesticks | 5→8 | ✅ scarecrow cross-pole + sack head + crows |
+| Twitch | 4→4 | ❌ tie |
+| Volibear | 4→4 | ❌ tie |
+| RekSai | 5→4 | ❌ |
+| Khazix | 5→4 | ❌ |
+| Hecarim | 5→3 | ❌ |
+
+**1 new win.** Refined pattern: being non-humanoid is NECESSARY but not
+SUFFICIENT. The non-humanoid SHAPE must itself be a unique icon:
+- WINS: scarecrow-cross (Fiddle), floating-mask (Bard), mermaid-tail
+  (Cass/Nami-shape), 9-tail-fox (Ahri), cat-on-book (Yuumi), giant-hammer
+  (Poppy), gambler-hat (TF).
+- LOSSES: generic-beast shapes (bear, void-bug, rat, centaur) — the gate
+  reads "creature" but not "THIS creature" because the pixel primitives
+  can't carry the species-specific anatomy detail.
+
+## Final honest state (8 hand-author wins)
+
+- mean: 5.86/10 (target 6.0 — 0.14 short)
+- recognizable: 99/170 = 58% (target 70%)
+- stance: 159/170 = 94% (target 90% ✅)
+- 8 hand-author wins: Ahri/Annie/Yuumi/TF/Poppy/Bard/Cass/Fiddle (8-9/10)
+- verify_assets: OK

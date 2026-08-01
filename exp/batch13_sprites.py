@@ -262,103 +262,101 @@ def jayce_prims():
 # ============================================================
 def kaisa_prims():
     P = []
-    CARAPACE = (140, 60, 160)       # purple-magenta void carapace
-    CARAPACE_DARK = (90, 30, 110)
+    CARAPACE = (150, 50, 170)       # bright purple-magenta void carapace
+    CARAPACE_DARK = (90, 25, 110)
     CARAPACE_LIGHT = (200, 100, 200)
-    VOID_BLUE = (40, 30, 80)        # dark void blue
-    SKIN = (200, 170, 150)          # skin tone (face)
-    GLOW = (180, 220, 255)          # void glow (cyan-white)
-    GLOW_DARK = (100, 160, 220)
+    VOID_BLUE = (30, 20, 70)
+    SKIN = (205, 175, 155)
+    GLOW = (160, 210, 250)          # void glow (cyan-white)
+    GLOW_DARK = (80, 150, 210)
     SILVER = (180, 185, 195)
     OUT = (20, 15, 25)
 
-    # --- VOID SHOULDER CANNONS (THE feature — big but clearly ON shoulders, pointing up) ---
-    # LEFT shoulder cannon (organic, mounted on shoulder, points up-out)
-    P.append({"type":"polygon","points":[(80,72),(104,78),(100,108),(76,100)],
-              "color":CARAPACE,"outline":CARAPACE_DARK,"outline_w":2})
-    # cannon barrel opening (dark void hole)
-    P.append({"type":"circle","cx":84,"cy":82,"r":8,"color":VOID_BLUE,"outline":CARAPACE_DARK,"outline_w":2})
-    P.append({"type":"circle","cx":84,"cy":82,"r":4,"color":GLOW_DARK,"outline":None,"outline_w":0})
-    # carapace plates on cannon (organic ridges)
-    P.append({"type":"line","start":[80,90],"end":[100,96],"color":CARAPACE_DARK,"width":2})
-    # RIGHT shoulder cannon
-    P.append({"type":"polygon","points":[(176,72),(152,78),(156,108),(180,100)],
-              "color":CARAPACE,"outline":CARAPACE_DARK,"outline_w":2})
-    P.append({"type":"circle","cx":172,"cy":82,"r":8,"color":VOID_BLUE,"outline":CARAPACE_DARK,"outline_w":2})
-    P.append({"type":"circle","cx":172,"cy":82,"r":4,"color":GLOW_DARK,"outline":None,"outline_w":0})
-    P.append({"type":"line","start":[176,90],"end":[156,96],"color":CARAPACE_DARK,"width":2})
-
-    # --- VOID GLOW AURA (behind body, BIG) ---
-    P.append({"type":"circle","cx":128,"cy":130,"r":60,"color":(50,25,80),"outline":None,"outline_w":0})
-
     # --- Legs (sleek void carapace leggings — athletic female, tapered) ---
-    P.append({"type":"polygon","points":[(108,160),(124,160),(122,214),(110,214)],
-              "color":CARAPACE_DARK,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(132,160),(148,160),(146,214),(134,214)],
-              "color":CARAPACE_DARK,"outline":OUT,"outline_w":1})
-    # carapace leg plates (organic ridges)
-    for ly in (172, 186, 200):
-        P.append({"type":"line","start":[110,ly],"end":[122,ly],"color":CARAPACE,"width":1})
-        P.append({"type":"line","start":[134,ly],"end":[146,ly],"color":CARAPACE,"width":1})
-    # void glow on legs (bright)
-    P.append({"type":"line","start":[116,162],"end":[116,212],"color":GLOW_DARK,"width":2})
-    P.append({"type":"line","start":[140,162],"end":[140,212],"color":GLOW_DARK,"width":2})
-
-    # --- Torso (living void carapace — bio-organic suit, sleek feminine) ---
-    # tapered waist (female silhouette — wider shoulders, narrower waist)
-    P.append({"type":"polygon","points":[(96,100),(160,100),(150,165),(106,165)],
+    # LEFT leg
+    P.append({"type":"polygon","points":[(106,160),(126,160),(124,214),(108,214)],
               "color":CARAPACE,"outline":OUT,"outline_w":2})
-    # carapace chest plates (organic segmented armor)
-    P.append({"type":"polygon","points":[(102,106),(154,106),(146,155),(110,155)],
+    # RIGHT leg
+    P.append({"type":"polygon","points":[(130,160),(150,160),(148,214),(132,214)],
+              "color":CARAPACE,"outline":OUT,"outline_w":2})
+    # void glow on legs (bright lines down the shins)
+    P.append({"type":"line","start":[116,162],"end":[116,212],"color":GLOW,"width":2})
+    P.append({"type":"line","start":[140,162],"end":[140,212],"color":GLOW,"width":2})
+    # carapace knee plates
+    P.append({"type":"circle","cx":116,"cy":186,"r":5,"color":CARAPACE_LIGHT,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":140,"cy":186,"r":5,"color":CARAPACE_LIGHT,"outline":OUT,"outline_w":1})
+
+    # --- Torso (living void carapace — bio-organic suit, clear female hourglass) ---
+    # hourglass female silhouette (wider shoulders, narrow waist, wider hips)
+    P.append({"type":"polygon","points":[(92,100),(164,100),(156,135),(160,165),(96,165),(100,135)],
+              "color":CARAPACE,"outline":OUT,"outline_w":2})
+    # carapace chest plates (organic segmented armor — darker purple)
+    P.append({"type":"polygon","points":[(98,106),(158,106),(150,155),(106,155)],
               "color":CARAPACE_DARK,"outline":OUT,"outline_w":1})
     # center seam (bio-organic, glowing)
     P.append({"type":"line","start":[128,106],"end":[128,155],"color":GLOW,"width":3})
     # void glow lines (the living void energy)
-    P.append({"type":"line","start":[112,110],"end":[112,150],"color":GLOW_DARK,"width":1})
-    P.append({"type":"line","start":[144,110],"end":[144,150],"color":GLOW_DARK,"width":1})
+    P.append({"type":"line","start":[110,110],"end":[110,150],"color":GLOW_DARK,"width":1})
+    P.append({"type":"line","start":[146,110],"end":[146,150],"color":GLOW_DARK,"width":1})
     # void core (glowing center on chest, BIG)
-    P.append({"type":"circle","cx":128,"cy":128,"r":8,"color":GLOW,"outline":CARAPACE_DARK,"outline_w":2})
-    P.append({"type":"circle","cx":128,"cy":128,"r":4,"color":(230,245,255),"outline":None,"outline_w":0})
-    # carapace ridges (organic plates on torso)
+    P.append({"type":"circle","cx":128,"cy":128,"r":9,"color":GLOW,"outline":CARAPACE_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":128,"cy":128,"r":5,"color":(230,245,255),"outline":None,"outline_w":0})
+    # carapace organic plate texture (horizontal segment lines)
     for ry in (114, 124, 134, 144):
-        P.append({"type":"line","start":[108,ry],"end":[148,ry],"color":CARAPACE_LIGHT,"width":1})
+        P.append({"type":"line","start":[106,ry],"end":[150,ry],"color":CARAPACE_LIGHT,"width":1})
 
-    # --- Arms (sleek carapace) ---
-    P.append({"type":"rect","x":88,"y":110,"w":14,"h":46,"color":CARAPACE,"outline":OUT,"outline_w":1,"radius":4})
-    P.append({"type":"rect","x":154,"y":110,"w":14,"h":46,"color":CARAPACE,"outline":OUT,"outline_w":1,"radius":4})
+    # --- Arms (sleek carapace, at sides) ---
+    P.append({"type":"rect","x":84,"y":108,"w":16,"h":50,"color":CARAPACE,"outline":OUT,"outline_w":1,"radius":5})
+    P.append({"type":"rect","x":156,"y":108,"w":16,"h":50,"color":CARAPACE,"outline":OUT,"outline_w":1,"radius":5})
     # void glow on arms
-    P.append({"type":"line","start":[95,112],"end":[95,154],"color":GLOW_DARK,"width":1})
-    P.append({"type":"line","start":[161,112],"end":[161,154],"color":GLOW_DARK,"width":1})
+    P.append({"type":"line","start":[92,112],"end":[92,154],"color":GLOW_DARK,"width":1})
+    P.append({"type":"line","start":[164,112],"end":[164,154],"color":GLOW_DARK,"width":1})
     # hands
-    P.append({"type":"circle","cx":95,"cy":158,"r":5,"color":CARAPACE_DARK,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":161,"cy":158,"r":5,"color":CARAPACE_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":92,"cy":160,"r":6,"color":CARAPACE_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":164,"cy":160,"r":6,"color":CARAPACE_DARK,"outline":OUT,"outline_w":1})
+
+    # --- VOID SHOULDER CANNONS (THE feature — BIG organic gun barrels on shoulders) ---
+    # LEFT shoulder cannon (BIG cylinder, pointing up from shoulder)
+    P.append({"type":"rect","x":78,"y":78,"w":24,"h":30,"color":CARAPACE_DARK,"outline":OUT,"outline_w":2,"radius":4})
+    # cannon barrel opening (dark void hole, on top — THE feature)
+    P.append({"type":"circle","cx":90,"cy":82,"r":9,"color":VOID_BLUE,"outline":CARAPACE_DARK,"outline_w":3})
+    P.append({"type":"circle","cx":90,"cy":82,"r":5,"color":GLOW_DARK,"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":90,"cy":81,"r":2,"color":GLOW,"outline":None,"outline_w":0})
+    # organic ridges on cannon
+    P.append({"type":"line","start":[78,92],"end":[102,92],"color":CARAPACE,"width":2})
+    P.append({"type":"line","start":[78,100],"end":[102,100],"color":CARAPACE_LIGHT,"width":1})
+    # RIGHT shoulder cannon
+    P.append({"type":"rect","x":154,"y":78,"w":24,"h":30,"color":CARAPACE_DARK,"outline":OUT,"outline_w":2,"radius":4})
+    P.append({"type":"circle","cx":166,"cy":82,"r":9,"color":VOID_BLUE,"outline":CARAPACE_DARK,"outline_w":3})
+    P.append({"type":"circle","cx":166,"cy":82,"r":5,"color":GLOW_DARK,"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":166,"cy":81,"r":2,"color":GLOW,"outline":None,"outline_w":0})
+    P.append({"type":"line","start":[154,92],"end":[178,92],"color":CARAPACE,"width":2})
+    P.append({"type":"line","start":[154,100],"end":[178,100],"color":CARAPACE_LIGHT,"width":1})
 
     # --- HEAD: void helmet (THE feature — sleek helmet with BIG pointed void ears) ---
     # helmet base
-    P.append({"type":"circle","cx":128,"cy":80,"r":16,"color":CARAPACE,"outline":OUT,"outline_w":2})
+    P.append({"type":"circle","cx":128,"cy":80,"r":18,"color":CARAPACE,"outline":OUT,"outline_w":2})
     # helmet visor (dark void)
-    P.append({"type":"polygon","points":[(114,78),(142,78),(138,92),(118,92)],
+    P.append({"type":"polygon","points":[(112,76),(144,76),(140,94),(116,94)],
               "color":VOID_BLUE,"outline":OUT,"outline_w":1})
-    # pointed void-like ears (THE missing feature — BIG pointed ear fins, extend far out)
-    P.append({"type":"polygon","points":[(112,68),(90,48),(94,78),(114,80)],
+    # pointed void-like ears (THE missing feature — BIG pointed ear fins, extend far out from helmet)
+    P.append({"type":"polygon","points":[(110,66),(82,44),(90,78),(114,80)],
               "color":CARAPACE,"outline":CARAPACE_DARK,"outline_w":2})
-    P.append({"type":"polygon","points":[(144,68),(166,48),(162,78),(142,80)],
+    P.append({"type":"polygon","points":[(146,66),(174,44),(166,78),(142,80)],
               "color":CARAPACE,"outline":CARAPACE_DARK,"outline_w":2})
-    # ear glow lines
-    P.append({"type":"line","start":[100,56],"end":[108,72],"color":GLOW_DARK,"width":1})
-    P.append({"type":"line","start":[156,56],"end":[148,72],"color":GLOW_DARK,"width":1})
+    # ear inner glow
+    P.append({"type":"line","start":[92,56],"end":[106,74],"color":GLOW_DARK,"width":1})
+    P.append({"type":"line","start":[164,56],"end":[150,74],"color":GLOW_DARK,"width":1})
     # void glow eyes (through visor, BIG)
-    P.append({"type":"circle","cx":122,"cy":85,"r":4,"color":GLOW,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":134,"cy":85,"r":4,"color":GLOW,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":122,"cy":84,"r":2,"color":(240,250,255),"outline":None,"outline_w":0})
-    P.append({"type":"circle","cx":134,"cy":84,"r":2,"color":(240,250,255),"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":121,"cy":85,"r":4,"color":GLOW,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":135,"cy":85,"r":4,"color":GLOW,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":121,"cy":84,"r":2,"color":(240,250,255),"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":135,"cy":84,"r":2,"color":(240,250,255),"outline":None,"outline_w":0})
     # helmet crest (organic ridge on top, BIG)
-    P.append({"type":"polygon","points":[(118,64),(138,64),(128,48)],
+    P.append({"type":"polygon","points":[(116,62),(140,62),(128,42)],
               "color":CARAPACE_DARK,"outline":OUT,"outline_w":2})
     # crest glow line
-    P.append({"type":"line","start":[128,64],"end":[128,76],"color":GLOW,"width":2})
-    # void glow line on helmet
-    P.append({"type":"line","start":[128,64],"end":[128,76],"color":GLOW,"width":2})
+    P.append({"type":"line","start":[128,62],"end":[128,76],"color":GLOW,"width":2})
     return P
 
 

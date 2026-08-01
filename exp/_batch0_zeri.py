@@ -49,59 +49,95 @@ def zeri_prims():
     P.append({"type":"polygon","points":[(138,68),(146,68),(148,90),(142,100)],
               "color":HAIR,"outline":OUT,"outline_w":1})
 
-    # --- Head (youthful face) ---
-    P.append({"type":"circle","cx":128,"cy":82,"r":16,"color":SKIN,"outline":OUT,"outline_w":1})
-    # bangs
-    P.append({"type":"polygon","points":[(112,70),(144,70),(140,80),(116,80)],
+    # --- Head (youthful face — BIG head relative to body = young teen) ---
+    P.append({"type":"circle","cx":128,"cy":84,"r":20,"color":SKIN,"outline":OUT,"outline_w":1})
+    # bangs (spiky, over forehead)
+    P.append({"type":"polygon","points":[(110,72),(146,72),(142,84),(114,84)],
               "color":HAIR,"outline":OUT,"outline_w":1})
-    # big youthful electric-blue eyes
-    P.append({"type":"circle","cx":121,"cy":82,"r":4,"color":(255,255,255),"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":135,"cy":82,"r":4,"color":(255,255,255),"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":121,"cy":83,"r":2,"color":EYE})
-    P.append({"type":"circle","cx":135,"cy":83,"r":2,"color":EYE})
-    # confident youthful smile
-    P.append({"type":"line","start":[122,90],"end":[134,90],"color":(140,70,60),"width":1})
+    # BIG youthful electric-blue eyes (very big = youthful teen)
+    P.append({"type":"circle","cx":120,"cy":84,"r":6,"color":(255,255,255),"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":136,"cy":84,"r":6,"color":(255,255,255),"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":121,"cy":85,"r":4,"color":EYE})
+    P.append({"type":"circle","cx":137,"cy":85,"r":4,"color":EYE})
+    P.append({"type":"circle","cx":122,"cy":83,"r":2,"color":(255,255,255)})
+    P.append({"type":"circle","cx":138,"cy":83,"r":2,"color":(255,255,255)})
+    # small button nose (youthful)
+    P.append({"type":"circle","cx":128,"cy":92,"r":2,"color":(190,150,130)})
+    # big youthful grin (expressive, teen)
+    P.append({"type":"polygon","points":[(120,96),(136,96),(132,102),(124,102)],
+              "color":(220,130,110),"outline":OUT,"outline_w":1})
+    P.append({"type":"line","start":[124,98],"end":[132,98],"color":(255,255,255),"width":1})
+    # round rosy cheeks (youthful)
+    P.append({"type":"circle","cx":112,"cy":94,"r":4,"color":(240,170,150)})
+    P.append({"type":"circle","cx":144,"cy":94,"r":4,"color":(240,170,150)})
+    # eyebrows (raised, youthful expressive)
+    P.append({"type":"line","start":[114,76],"end":[124,74],"color":HAIR_DARK,"width":2})
+    P.append({"type":"line","start":[132,74],"end":[142,76],"color":HAIR_DARK,"width":2})
 
-    # --- Zaunite streetwear jacket (blue, cropped) ---
-    P.append({"type":"polygon","points":[(108,100),(148,100),(152,170),(104,170)],
+    # --- Zaunite streetwear hoodie (blue, hood DOWN, visible jacket) ---
+    # hood DOWN (behind neck, visible as collar fold)
+    P.append({"type":"polygon","points":[(108,88),(148,88),(152,108),(104,108)],
+              "color":JACKET_DARK,"outline":OUT,"outline_w":1})
+    # jacket body (hoodie, slim athletic)
+    P.append({"type":"polygon","points":[(106,100),(150,100),(156,176),(100,176)],
               "color":JACKET,"outline":OUT,"outline_w":1})
-    # jacket collar (teal)
-    P.append({"type":"polygon","points":[(114,100),(142,100),(138,114),(118,114)],
+    # jacket collar (teal, visible V-neck)
+    P.append({"type":"polygon","points":[(116,100),(140,100),(134,116),(122,116)],
               "color":TEAL,"outline":OUT,"outline_w":1})
-    # jacket center stripe (electric)
-    P.append({"type":"line","start":[128,114],"end":[128,170],"color":GLOVE_BLUE,"width":3})
+    # t-shirt under jacket (white, streetwear layering)
+    P.append({"type":"polygon","points":[(120,100),(136,100),(134,130),(122,130)],
+              "color":(235,235,240),"outline":OUT,"outline_w":1})
+    # jacket center zipper (electric)
+    P.append({"type":"line","start":[128,116],"end":[128,176],"color":GLOVE_BLUE,"width":2})
+    P.append({"type":"line","start":[128,116],"end":[128,176],"color":(200,200,210),"width":1})
     # jacket side panels (darker)
-    P.append({"type":"polygon","points":[(108,100),(128,100),(120,170),(104,170)],
+    P.append({"type":"polygon","points":[(106,100),(128,100),(122,176),(100,176)],
               "color":JACKET_DARK,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(128,100),(148,100),(152,170),(136,170)],
+    P.append({"type":"polygon","points":[(128,100),(150,100),(156,176),(134,176)],
               "color":JACKET_DARK,"outline":OUT,"outline_w":1})
-    # jacket hem trim (teal)
-    P.append({"type":"rect","x":104,"y":166,"w":48,"h":6,"color":TEAL,"outline":OUT,"outline_w":1})
+    # jacket hem trim (teal, streetwear)
+    P.append({"type":"rect","x":100,"y":172,"w":56,"h":6,"color":TEAL,"outline":OUT,"outline_w":1})
+    # jacket kangaroo pocket (streetwear)
+    P.append({"type":"rect","x":108,"y":142,"w":40,"h":16,"color":JACKET_DARK,"outline":OUT,"outline_w":1,"radius":3})
+    # teal chest logo (streetwear brand mark, lightning bolt)
+    P.append({"type":"polygon","points":[(122,124),(134,124),(128,136)],
+              "color":TEAL,"outline":OUT,"outline_w":1})
 
-    # --- HUGE OVERSIZED MECHANICAL GAUNTLETS (THE feature — bigger than head) ---
-    # LEFT gauntlet (big, mechanical, glowing blue)
-    P.append({"type":"rect","x":78,"y":118,"w":30,"h":40,"color":GLOVE,"outline":OUT,"outline_w":2,"radius":6})
-    # gauntlet blue energy core
-    P.append({"type":"circle","cx":93,"cy":138,"r":8,"color":GLOVE_BLUE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":93,"cy":138,"r":4,"color":ELEC_BRIGHT})
-    # gauntlet knuckle plates
-    for kx in (82, 90, 98):
-        P.append({"type":"rect","x":kx,"y":156,"w":8,"h":8,"color":GLOVE_DARK,"outline":OUT,"outline_w":1,"radius":2})
+    # --- HUGE OVERSIZED MECHANICAL GAUNTLETS (THE feature — MASSIVE, bigger than head) ---
+    # LEFT gauntlet (HUGE, mechanical, glowing blue — bigger than torso)
+    P.append({"type":"rect","x":70,"y":112,"w":38,"h":50,"color":GLOVE,"outline":OUT,"outline_w":2,"radius":8})
+    # gauntlet blue energy core (BIG glowing)
+    P.append({"type":"circle","cx":89,"cy":138,"r":12,"color":GLOVE_BLUE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":89,"cy":138,"r":7,"color":ELEC_BRIGHT})
+    P.append({"type":"circle","cx":89,"cy":138,"r":3,"color":(255,255,255)})
+    # gauntlet knuckle plates (BIG)
+    for kx in (74, 84, 94):
+        P.append({"type":"rect","x":kx,"y":160,"w":10,"h":10,"color":GLOVE_DARK,"outline":OUT,"outline_w":1,"radius":2})
     # gauntlet tech details (lines)
-    P.append({"type":"line","start":[80,124],"end":[106,124],"color":GLOVE_DARK,"width":1})
-    P.append({"type":"line","start":[80,150],"end":[106,150],"color":GLOVE_DARK,"width":1})
-    # gold/teal accent on gauntlet
-    P.append({"type":"rect","x":78,"y":130,"w":30,"h":4,"color":TEAL,"outline":OUT,"outline_w":1})
+    P.append({"type":"line","start":[72,120],"end":[106,120],"color":GLOVE_DARK,"width":1})
+    P.append({"type":"line","start":[72,148],"end":[106,148],"color":GLOVE_DARK,"width":1})
+    # teal accent bands on gauntlet
+    P.append({"type":"rect","x":70,"y":128,"w":38,"h":5,"color":TEAL,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":70,"y":154,"w":38,"h":3,"color":TEAL,"outline":OUT,"outline_w":1})
+    # gauntlet bolts (tech detail)
+    for bx in (74, 104):
+        P.append({"type":"circle","cx":bx,"cy":116,"r":2,"color":GLOVE_DARK,"outline":OUT,"outline_w":1})
+        P.append({"type":"circle","cx":bx,"cy":156,"r":2,"color":GLOVE_DARK,"outline":OUT,"outline_w":1})
 
-    # RIGHT gauntlet (big, mechanical, glowing blue) — raised, aiming
-    P.append({"type":"rect","x":148,"y":110,"w":30,"h":40,"color":GLOVE,"outline":OUT,"outline_w":2,"radius":6})
-    P.append({"type":"circle","cx":163,"cy":130,"r":8,"color":GLOVE_BLUE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":163,"cy":130,"r":4,"color":ELEC_BRIGHT})
-    for kx in (152, 160, 168):
-        P.append({"type":"rect","x":kx,"y":148,"w":8,"h":8,"color":GLOVE_DARK,"outline":OUT,"outline_w":1,"radius":2})
-    P.append({"type":"line","start":[150,116],"end":[176,116],"color":GLOVE_DARK,"width":1})
-    P.append({"type":"line","start":[150,142],"end":[176,142],"color":GLOVE_DARK,"width":1})
-    P.append({"type":"rect","x":148,"y":122,"w":30,"h":4,"color":TEAL,"outline":OUT,"outline_w":1})
+    # RIGHT gauntlet (HUGE, raised, aiming — MASSIVE)
+    P.append({"type":"rect","x":148,"y":104,"w":38,"h":50,"color":GLOVE,"outline":OUT,"outline_w":2,"radius":8})
+    P.append({"type":"circle","cx":167,"cy":130,"r":12,"color":GLOVE_BLUE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":167,"cy":130,"r":7,"color":ELEC_BRIGHT})
+    P.append({"type":"circle","cx":167,"cy":130,"r":3,"color":(255,255,255)})
+    for kx in (152, 162, 172):
+        P.append({"type":"rect","x":kx,"y":152,"w":10,"h":10,"color":GLOVE_DARK,"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"line","start":[150,112],"end":[184,112],"color":GLOVE_DARK,"width":1})
+    P.append({"type":"line","start":[150,140],"end":[184,140],"color":GLOVE_DARK,"width":1})
+    P.append({"type":"rect","x":148,"y":120,"w":38,"h":5,"color":TEAL,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":148,"y":146,"w":38,"h":3,"color":TEAL,"outline":OUT,"outline_w":1})
+    for bx in (152, 182):
+        P.append({"type":"circle","cx":bx,"cy":108,"r":2,"color":GLOVE_DARK,"outline":OUT,"outline_w":1})
+        P.append({"type":"circle","cx":bx,"cy":148,"r":2,"color":GLOVE_DARK,"outline":OUT,"outline_w":1})
 
     # --- LIGHTNING / electric sparks (THE electric feature) ---
     # lightning bolts from right gauntlet (firing)

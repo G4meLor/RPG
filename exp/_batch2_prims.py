@@ -67,39 +67,56 @@ def rell_prims():
     for hx in (60, 90, 150, 178):
         P.append({"type":"rect","x":hx-3,"y":224,"w":24,"h":8,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
 
-    # --- Armor plating on horse body (ferromancy -- deep blue + steel) ---
-    P.append({"type":"ellipse","x":70,"y":146,"w":110,"h":28,"color":DEEP_BLUE,"outline":OUT,"outline_w":1})
-    # armor studs (metallic shards)
-    for sx in (88, 108, 128, 148, 168):
-        P.append({"type":"circle","cx":sx,"cy":158,"r":4,"color":METAL_SHARD,"outline":OUT,"outline_w":1})
-    # gold trim band
-    P.append({"type":"rect","x":72,"y":144,"w":108,"h":5,"color":GOLD,"outline":OUT,"outline_w":1})
+    # --- Armor plating on horse body (ferromancy -- BIG distinct steel plates) ---
+    # 3 big overlapping steel plates (ferromancy metal plating -- THE missing feature)
+    P.append({"type":"polygon","points":[(70,148),(110,144),(108,168),(72,170)],
+              "color":STEEL_LIGHT,"outline":OUT,"outline_w":2})
+    P.append({"type":"polygon","points":[(108,144),(148,144),(148,168),(108,168)],
+              "color":STEEL,"outline":OUT,"outline_w":2})
+    P.append({"type":"polygon","points":[(148,144),(182,148),(180,170),(148,168)],
+              "color":STEEL_LIGHT,"outline":OUT,"outline_w":2})
+    # BIG gold studs on each plate (metallic shards -- obvious)
+    for sx in (84, 96):
+        P.append({"type":"circle","cx":sx,"cy":156,"r":5,"color":GOLD,"outline":OUT,"outline_w":1})
+    for sx in (118, 130, 138):
+        P.append({"type":"circle","cx":sx,"cy":156,"r":5,"color":GOLD,"outline":OUT,"outline_w":1})
+    for sx in (160, 172):
+        P.append({"type":"circle","cx":sx,"cy":158,"r":5,"color":GOLD,"outline":OUT,"outline_w":1})
+    # gold trim band (top of plates)
+    P.append({"type":"rect","x":70,"y":142,"w":114,"h":5,"color":GOLD,"outline":OUT,"outline_w":1})
+    # deep blue under-armor visible between plates
+    P.append({"type":"rect","x":70,"y":168,"w":114,"h":6,"color":DEEP_BLUE,"outline":OUT,"outline_w":1})
 
-    # --- Floating ferromancy metal shards (around horse -- THE magic) ---
-    for sx, sy in [(30,140),(20,160),(210,150),(220,170),(100,130)]:
-        P.append({"type":"polygon","points":[(sx-4,sy),(sx,sy-7),(sx+4,sy),(sx,sy+5)],
-                  "color":METAL_SHARD,"outline":OUT,"outline_w":1})
+    # --- Floating ferromancy metal shards (around horse -- BIG, obvious magic) ---
+    for sx, sy, sz in [(28,138,7),(18,160,6),(212,148,7),(222,168,6),(96,128,7)]:
+        P.append({"type":"polygon","points":[(sx-sz,sy),(sx,sy-sz*2),(sx+sz,sy),(sx,sy+sz)],
+                  "color":METAL_SHARD,"outline":OUT,"outline_w":2})
 
     # --- Rider: Rell (on top of horse, small relative to mount) ---
-    # rider torso (deep blue coat with steel plate)
+    # rider torso (deep blue coat with BIG steel chest plate)
     P.append({"type":"polygon","points":[(112,96),(146,96),(150,140),(108,140)],
               "color":DEEP_BLUE,"outline":OUT,"outline_w":1})
-    # steel chest plate
-    P.append({"type":"polygon","points":[(116,100),(142,100),(140,130),(118,130)],
-              "color":STEEL_LIGHT,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":128,"cy":112,"r":4,"color":GOLD,"outline":OUT,"outline_w":1})
+    # BIG steel chest plate (heavy plate armor -- THE missing feature, obvious)
+    P.append({"type":"polygon","points":[(114,98),(144,98),(142,134),(116,134)],
+              "color":STEEL_LIGHT,"outline":OUT,"outline_w":2})
+    # gold crest on chest plate
+    P.append({"type":"circle","cx":128,"cy":112,"r":6,"color":GOLD,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":128,"cy":112,"r":3,"color":DEEP_BLUE,"outline":OUT,"outline_w":1})
     # gold belt
     P.append({"type":"rect","x":108,"y":134,"w":42,"h":6,"color":GOLD,"outline":OUT,"outline_w":1})
-    # flowing hair (long, white-silver, behind head + flowing back)
-    P.append({"type":"polygon","points":[(110,72),(146,72),(160,96),(150,110),(100,110),(96,96)],
+    # flowing hair (long, white-silver, BIG + flowing back -- THE missing feature)
+    P.append({"type":"polygon","points":[(108,70),(148,70),(176,96),(168,118),(100,118),(88,96)],
               "color":HAIR,"outline":OUT,"outline_w":1})
     # rider head
     P.append({"type":"circle","cx":128,"cy":80,"r":14,"color":SKIN,"outline":OUT,"outline_w":1})
-    # hair top
-    P.append({"type":"circle","cx":128,"cy":74,"r":13,"color":HAIR,"outline":OUT,"outline_w":1})
-    # hair flowing back (long ponytail)
-    P.append({"type":"polygon","points":[(140,76),(168,82),(172,108),(156,104)],
+    # hair top (BIG)
+    P.append({"type":"circle","cx":128,"cy":72,"r":15,"color":HAIR,"outline":OUT,"outline_w":1})
+    # hair flowing back (BIG long ponytail, prominent)
+    P.append({"type":"polygon","points":[(142,74),(186,82),(192,120),(170,112)],
               "color":HAIR,"outline":HAIR_DARK,"outline_w":1})
+    # second hair streak
+    P.append({"type":"polygon","points":[(138,78),(176,86),(180,116),(160,108)],
+              "color":HAIR_DARK,"outline":OUT,"outline_w":1})
     # eyes
     P.append({"type":"circle","cx":123,"cy":82,"r":2,"color":EYE})
     P.append({"type":"circle","cx":133,"cy":82,"r":2,"color":EYE})
@@ -187,39 +204,66 @@ def riven_prims():
     P.append({"type":"circle","cx":93,"cy":160,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
     P.append({"type":"circle","cx":157,"cy":160,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
 
-    # --- Legs (battle-worn, apart stance) ---
+    # --- Legs (battle-worn, apart stance -- torn cloth visible) ---
     P.append({"type":"rect","x":106,"y":160,"w":18,"h":46,"color":BROWN,"outline":OUT,"outline_w":1,"radius":3})
     P.append({"type":"rect","x":132,"y":160,"w":18,"h":46,"color":BROWN,"outline":OUT,"outline_w":1,"radius":3})
-    # shin armor
+    # battle-worn: torn cloth strips hanging (jagged hem)
+    P.append({"type":"polygon","points":[(106,196),(124,196),(120,208),(116,200),(112,210),(108,202)],
+              "color":BROWN,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(132,196),(150,196),(146,208),(142,200),(138,210),(134,202)],
+              "color":BROWN,"outline":OUT,"outline_w":1})
+    # shin armor (battle-worn, dented)
     P.append({"type":"rect","x":106,"y":180,"w":18,"h":20,"color":ARMOR_DARK,"outline":OUT,"outline_w":1,"radius":3})
     P.append({"type":"rect","x":132,"y":180,"w":18,"h":20,"color":ARMOR_DARK,"outline":OUT,"outline_w":1,"radius":3})
+    # dents/scratches on armor (battle-worn detail)
+    P.append({"type":"line","start":[110,184],"end":[114,194],"color":OUT,"width":1})
+    P.append({"type":"line","start":[136,184],"end":[140,194],"color":OUT,"width":1})
     # boots
     P.append({"type":"rect","x":102,"y":204,"w":24,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
     P.append({"type":"rect","x":130,"y":204,"w":24,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
 
-    # --- BROKEN RUNIC GREATSWORD (THE feature -- drawn LAST, IN FRONT, BIG) ---
-    # The blade is BROKEN -- jagged broken-off tip mid-blade, glowing green runes
-    # blade lower (from hilt up to the break point)
-    P.append({"type":"polygon","points":[(180,160),(192,160),(196,80),(176,80)],
+    # --- BROKEN RUNIC GREATSWORD (THE feature -- drawn LAST, IN FRONT, HUGE) ---
+    # THE SWORD IS BROKEN: lower 60% is a full blade, then a JAGGED BREAK at ~y=100,
+    # above which is only a short jagged stump (the tip is GONE). Green runes glow.
+    # blade lower (from hilt up to the break point -- wide, full blade)
+    P.append({"type":"polygon","points":[(172,170),(204,170),(200,104),(176,104)],
               "color":STEEL,"outline":OUT,"outline_w":2})
-    # THE BROKEN TIP -- jagged break at top of blade (the defining feature)
-    P.append({"type":"polygon","points":[(176,80),(196,80),(192,68),(188,76),(184,62),(180,74)],
+    # blade center groove
+    P.append({"type":"line","start":[188,170],"end":[188,104],"color":(150,150,160),"width":2})
+    # THE JAGGED BREAK at y=104 -- the blade is clearly snapped off (jagged stump)
+    # left side jagged, right side jagged, clearly NOT a point -- it's a break
+    P.append({"type":"polygon","points":[(176,104),(200,104),(196,92),(190,100),(186,86),(182,98),(178,88)],
               "color":STEEL,"outline":OUT,"outline_w":2})
-    # green glowing runes along the blade (THE runic energy)
-    for ry in (96, 112, 128, 144):
-        P.append({"type":"line","start":[180,ry],"end":[192,ry],"color":RUNE_GREEN,"width":2})
-    # rune glow halo
-    P.append({"type":"line","start":[186,90],"end":[186,150],"color":RUNE_GREEN,"width":1})
-    # hilt guard (gold, wide)
-    P.append({"type":"polygon","points":[(170,160),(202,160),(200,168),(172,168)],
+    # short broken stump above the break (clearly the remnant -- NOT a full tip)
+    P.append({"type":"polygon","points":[(180,92),(196,92),(192,82),(184,82)],
+              "color":STEEL,"outline":OUT,"outline_w":2})
+    # jagged broken edge highlight (the snap is obvious)
+    P.append({"type":"line","start":[178,100],"end":[198,100],"color":OUT,"width":2})
+    # BIG green glowing runes along the blade (THE runic energy -- PROMINENT)
+    for ry in (120, 132, 144, 156):
+        P.append({"type":"line","start":[178,ry],"end":[198,ry],"color":RUNE_GREEN,"width":3})
+    # green glow halo around the whole blade
+    P.append({"type":"rect","x":170,"y":100,"w":40,"h":72,"color":(120,220,140),"outline":RUNE_GREEN,"outline_w":1})
+    # hilt guard (gold, wide -- Noxian)
+    P.append({"type":"polygon","points":[(162,170),(214,170),(212,180),(164,180)],
               "color":(180,140,40),"outline":OUT,"outline_w":1})
-    # grip
-    P.append({"type":"rect","x":180,"y":168,"w":12,"h":18,"color":BROWN,"outline":OUT,"outline_w":1})
-    # pommel
-    P.append({"type":"circle","cx":186,"cy":190,"r":5,"color":(180,140,40),"outline":OUT,"outline_w":1})
-    # green rune glow burst at the break (THE energy signature)
-    P.append({"type":"circle","cx":186,"cy":72,"r":6,"color":RUNE_GREEN,"outline":RUNE_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":186,"cy":72,"r":3,"color":(180,255,200)})
+    # grip (wrapped, brown)
+    P.append({"type":"rect","x":182,"y":180,"w":14,"h":20,"color":BROWN,"outline":OUT,"outline_w":1})
+    # pommel (gold)
+    P.append({"type":"circle","cx":189,"cy":204,"r":6,"color":(180,140,40),"outline":OUT,"outline_w":1})
+    # HUGE green energy explosion at the break (THE signature -- the broken rune energy)
+    P.append({"type":"circle","cx":188,"cy":96,"r":16,"color":RUNE_GREEN,"outline":RUNE_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":188,"cy":96,"r":10,"color":(180,255,200)})
+    P.append({"type":"circle","cx":188,"cy":96,"r":5,"color":(255,255,255)})
+    # green energy wisps trailing up from the break
+    for wy in (78, 70, 62, 54):
+        P.append({"type":"circle","cx":188,"cy":wy,"r":4,"color":RUNE_GREEN,"outline":RUNE_DARK,"outline_w":1})
+    # green sparks radiating from the break
+    for ang in (30, 150, 210, 330):
+        import math as _m
+        sx = 188 + int(20 * _m.cos(_m.radians(ang)))
+        sy = 96 + int(20 * _m.sin(_m.radians(ang)))
+        P.append({"type":"circle","cx":sx,"cy":sy,"r":3,"color":RUNE_GREEN,"outline":RUNE_DARK,"outline_w":1})
     return P
 
 
@@ -279,11 +323,15 @@ def shyvana_prims():
 
     # --- Head ---
     P.append({"type":"circle","cx":128,"cy":72,"r":16,"color":SKIN,"outline":OUT,"outline_w":1})
-    # scaled skin patches on cheeks (red scales)
-    P.append({"type":"polygon","points":[(112,76),(124,76),(120,88),(112,84)],
+    # scaled skin patches on cheeks + forehead (BIG red scales -- obvious scaled skin)
+    P.append({"type":"polygon","points":[(110,76),(126,76),(122,90),(112,86)],
               "color":SCALE,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(132,76),(144,76),(144,84),(136,88)],
+    P.append({"type":"polygon","points":[(130,76),(146,76),(144,86),(134,90)],
               "color":SCALE,"outline":OUT,"outline_w":1})
+    # forehead scale patches
+    for sx, sy in [(118,64),(128,62),(138,64)]:
+        P.append({"type":"polygon","points":[(sx-4,sy),(sx,sy-4),(sx+4,sy),(sx,sy+4)],
+                  "color":SCALE_DARK,"outline":OUT,"outline_w":1})
     # golden dragon eyes (slit)
     P.append({"type":"circle","cx":121,"cy":72,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
     P.append({"type":"circle","cx":135,"cy":72,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
@@ -310,10 +358,10 @@ def shyvana_prims():
     # belly (lighter bronze)
     P.append({"type":"polygon","points":[(116,100),(140,100),(144,155),(112,155)],
               "color":BRONZE,"outline":OUT,"outline_w":1})
-    # scale texture (diamond pattern)
-    for sy in (108, 122, 136, 150):
-        for sx in (118, 130, 142):
-            P.append({"type":"polygon","points":[(sx-3,sy),(sx,sy-3),(sx+3,sy),(sx,sy+3)],
+    # scale texture (BIG diamond scales -- obvious scaled skin)
+    for sy in (106, 118, 130, 142, 154):
+        for sx in (116, 128, 140):
+            P.append({"type":"polygon","points":[(sx-5,sy),(sx,sy-5),(sx+5,sy),(sx,sy+5)],
                       "color":SCALE_DARK,"outline":OUT,"outline_w":1})
     # gold chest plate
     P.append({"type":"polygon","points":[(118,96),(138,96),(136,124),(120,124)],
@@ -402,19 +450,27 @@ def soraka_prims():
     P.append({"type":"polygon","points":[(148,62),(156,48),(160,58),(150,68)],
               "color":HORN,"outline":OUT,"outline_w":2})
 
-    # --- Ethereal robes (white, flowing) ---
-    P.append({"type":"polygon","points":[(104,92),(152,92),(164,170),(92,170)],
+    # --- Ethereal robes (white, flowing -- BIG, obvious) ---
+    P.append({"type":"polygon","points":[(100,92),(156,92),(170,170),(86,170)],
               "color":ROBE,"outline":OUT,"outline_w":1})
-    # robe shading
-    P.append({"type":"polygon","points":[(112,96),(144,96),(150,168),(106,168)],
+    # robe shading (ethereal layers)
+    P.append({"type":"polygon","points":[(110,96),(146,96),(152,168),(104,168)],
               "color":ROBE_DARK,"outline":OUT,"outline_w":1})
-    # gold trim on robe
-    P.append({"type":"line","start":[104,92],"end":[152,92],"color":GOLD,"width":2})
-    P.append({"type":"line","start":[92,170],"end":[164,170],"color":GOLD,"width":2})
-    # gold celestial symbol on chest
-    P.append({"type":"circle","cx":128,"cy":116,"r":6,"color":GOLD,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(124,116),(132,116),(128,108)],"color":(255,255,255),"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(124,116),(132,116),(128,124)],"color":(255,255,255),"outline":OUT,"outline_w":1})
+    # gold trim on robe (BIG)
+    P.append({"type":"line","start":[100,92],"end":[156,92],"color":GOLD,"width":3})
+    P.append({"type":"line","start":[86,170],"end":[170,170],"color":GOLD,"width":3})
+    # ethereal flowing folds (white streaks -- the robe is clearly flowing)
+    P.append({"type":"line","start":[110,100],"end":[100,168],"color":(255,255,255),"width":2})
+    P.append({"type":"line","start":[146,100],"end":[156,168],"color":(255,255,255),"width":2})
+    P.append({"type":"line","start":[128,100],"end":[128,168],"color":(255,255,255),"width":1})
+    # gold celestial symbol on chest (BIG -- celestial markings)
+    P.append({"type":"circle","cx":128,"cy":116,"r":8,"color":GOLD,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(122,116),(134,116),(128,106)],"color":(255,255,255),"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(122,116),(134,116),(128,126)],"color":(255,255,255),"outline":OUT,"outline_w":1})
+    # celestial markings (gold streaks down robe -- more obvious)
+    P.append({"type":"line","start":[128,128],"end":[128,168],"color":GOLD,"width":2})
+    P.append({"type":"line","start":[116,140],"end":[140,140],"color":GOLD,"width":1})
+    P.append({"type":"line","start":[118,154],"end":[138,154],"color":GOLD,"width":1})
 
     # --- Arms (slender, raised -- healing gesture) ---
     P.append({"type":"rect","x":96,"y":100,"w":12,"h":44,"color":ROBE,"outline":OUT,"outline_w":1,"radius":4})
@@ -425,24 +481,32 @@ def soraka_prims():
     P.append({"type":"circle","cx":102,"cy":144,"r":8,"color":GLOW,"outline":(150,180,220),"outline_w":1})
     P.append({"type":"circle","cx":154,"cy":144,"r":8,"color":GLOW,"outline":(150,180,220),"outline_w":1})
 
-    # --- HOOVES (THE feature -- goat-like legs, NO human feet) ---
+    # --- HOOVES (THE feature -- HUGE goat-like cloven hooves, NO human feet) ---
     # upper legs (robe-covered, slender)
-    P.append({"type":"rect","x":112,"y":170,"w":14,"h":24,"color":ROBE,"outline":OUT,"outline_w":1,"radius":3})
-    P.append({"type":"rect","x":130,"y":170,"w":14,"h":24,"color":ROBE,"outline":OUT,"outline_w":1,"radius":3})
-    # goat-like lower legs (fur-covered, slender -- reverse-joint look)
-    P.append({"type":"rect","x":113,"y":192,"w":12,"h":18,"color":LEG_FUR,"outline":OUT,"outline_w":1,"radius":3})
-    P.append({"type":"rect","x":131,"y":192,"w":12,"h":18,"color":LEG_FUR,"outline":OUT,"outline_w":1,"radius":3})
-    # fur tufts at top of hooves
-    P.append({"type":"polygon","points":[(110,206),(128,206),(124,212),(114,212)],"color":LEG_FUR,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(128,206),(146,206),(142,212),(132,212)],"color":LEG_FUR,"outline":OUT,"outline_w":1})
-    # HOOVES (dark, cloven -- NOT shoes/feet, distinctly hoof-shaped)
-    P.append({"type":"polygon","points":[(112,210),(126,210),(124,222),(114,222)],
-              "color":HOOF,"outline":OUT,"outline_w":2})
-    P.append({"type":"polygon","points":[(130,210),(144,210),(142,222),(132,222)],
-              "color":HOOF,"outline":OUT,"outline_w":2})
-    # cloven split in each hoof (THE goat detail)
-    P.append({"type":"line","start":[119,210],"end":[119,222],"color":OUT,"width":1})
-    P.append({"type":"line","start":[137,210],"end":[137,222],"color":OUT,"width":1})
+    P.append({"type":"rect","x":112,"y":166,"w":14,"h":22,"color":ROBE,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":130,"y":166,"w":14,"h":22,"color":ROBE,"outline":OUT,"outline_w":1,"radius":3})
+    # goat-like lower legs (fur-covered, slender -- reverse-joint look, BIG)
+    P.append({"type":"rect","x":110,"y":186,"w":18,"h":24,"color":LEG_FUR,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":128,"y":186,"w":18,"h":24,"color":LEG_FUR,"outline":OUT,"outline_w":1,"radius":3})
+    # fur tufts at top of hooves (fluffy goat leggings -- BIG)
+    P.append({"type":"polygon","points":[(104,206),(134,206),(130,216),(108,216)],"color":LEG_FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(122,206),(152,206),(148,216),(126,216)],"color":LEG_FUR,"outline":OUT,"outline_w":1})
+    # HUGE HOOVES (dark, cloven -- THE feature, distinctly hoof-shaped, NOT shoes)
+    # left hoof (big, dark, cloven -- dominates the lower body)
+    P.append({"type":"polygon","points":[(102,214),(134,214),(132,236),(104,236)],
+              "color":HOOF,"outline":OUT,"outline_w":3})
+    # right hoof
+    P.append({"type":"polygon","points":[(122,214),(154,214),(152,236),(124,236)],
+              "color":HOOF,"outline":OUT,"outline_w":3})
+    # BIG cloven split in each hoof (THE goat detail -- obvious, thick)
+    P.append({"type":"line","start":[118,214],"end":[118,236],"color":OUT,"width":3})
+    P.append({"type":"line","start":[138,214],"end":[138,236],"color":OUT,"width":3})
+    # hoof highlight (top edge -- makes it read as a hard hoof, not a shoe)
+    P.append({"type":"line","start":[104,216],"end":[132,216],"color":(100,80,70),"width":2})
+    P.append({"type":"line","start":[124,216],"end":[152,216],"color":(100,80,70),"width":2})
+    # hoof toe line (front of hoof -- goat detail)
+    P.append({"type":"line","start":[110,220],"end":[110,236],"color":(40,30,25),"width":1})
+    P.append({"type":"line","start":[128,220],"end":[128,236],"color":(40,30,25),"width":1})
 
     # --- Floating celestial stars/sparkles (the magic) ---
     for sx, sy in [(80,120),(176,120),(70,160),(186,160),(60,90)]:

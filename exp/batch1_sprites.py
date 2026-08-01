@@ -31,51 +31,77 @@ def belveth_prims():
         P.append({"type":"line","start":tail[i],"end":tail[i+1],"color":VOID,"width":14})
     for cx,cy in tail:
         P.append({"type":"circle","cx":cx,"cy":cy,"r":7,"color":VOID,"outline":VOID_DARK,"outline_w":1})
-    # tail blade tip (scythe)
     P.append({"type":"polygon","points":[(38,82),(52,76),(48,94)],"color":PLATE,"outline":OUT,"outline_w":1})
 
-    # --- Quadruped body (horizontal trunk, low-slung, BIG) ---
-    P.append({"type":"ellipse","x":44,"y":108,"w":150,"h":56,"color":VOID,"outline":VOID_DARK,"outline_w":2})
-    # belly (darker underside)
-    P.append({"type":"ellipse","x":60,"y":132,"w":118,"h":26,"color":VOID_DARK,"outline":OUT,"outline_w":1})
+    # --- Quadruped body (horizontal trunk, low-slung, BIG — lean predator) ---
+    P.append({"type":"ellipse","x":44,"y":112,"w":152,"h":50,"color":VOID,"outline":VOID_DARK,"outline_w":2})
+    P.append({"type":"ellipse","x":60,"y":134,"w":118,"h":22,"color":VOID_DARK,"outline":OUT,"outline_w":1})
 
-    # --- Four legs (digitigrade, splayed) with HUGE SCYTHE CLAWS (THE feature) ---
-    leg_pts = [(70,158),(104,160),(146,160),(180,158)]
+    # --- Four digitigrade legs (lean, bent — predator stance) ---
+    leg_pts = [(72,158),(106,160),(144,160),(178,158)]
     for lx,ly in leg_pts:
-        P.append({"type":"rect","x":lx-9,"y":ly,"w":18,"h":34,"color":VOID,"outline":VOID_DARK,"outline_w":1,"radius":4})
-        # foot
-        P.append({"type":"circle","cx":lx,"cy":ly+34,"r":8,"color":VOID_DARK,"outline":OUT,"outline_w":1})
-        # HUGE curved scythe claws (THE icon — long, curved, prominent)
-        for off in (-7,0,7):
-            P.append({"type":"line","start":[lx+off,ly+36],"end":[lx+off+5,ly+54],"color":CLAW,"width":3})
-        # big central scythe claw (curved blade)
-        P.append({"type":"polygon","points":[(lx-3,ly+34),(lx+12,ly+38),(lx+6,ly+58)],"color":CLAW,"outline":CLAW_DARK,"outline_w":1})
+        # upper leg (thigh, leaning forward = digitigrade)
+        P.append({"type":"polygon","points":[(lx-8,ly),(lx+8,ly),(lx+5,ly+18),(lx-5,ly+18)],
+                  "color":VOID,"outline":VOID_DARK,"outline_w":1})
+        # knee joint (visible bump = digitigrade bend)
+        P.append({"type":"circle","cx":lx,"cy":ly+18,"r":6,"color":VOID_DARK,"outline":OUT,"outline_w":1})
+        # lower leg (shin, angled back = digitigrade bend, thinner)
+        P.append({"type":"polygon","points":[(lx-3,ly+18),(lx+3,ly+18),(lx+2,ly+34),(lx-2,ly+34)],
+                  "color":VOID_DARK,"outline":OUT,"outline_w":1})
+        # paw
+        P.append({"type":"circle","cx":lx,"cy":ly+34,"r":7,"color":VOID_DARK,"outline":OUT,"outline_w":1})
 
-    # --- Crystalline void armor plates on back (THE feature — big ridged plates) ---
-    plate_pts = [(75,118),(108,110),(140,110),(172,118)]
+    # --- HUGE SCYTHE CLAWS (THE feature — giant curved claws on front feet) ---
+    # Front-left foot: massive scythe claw
+    P.append({"type":"polygon","points":[(66,188),(90,194),(82,222),(70,216)],
+              "color":CLAW,"outline":CLAW_DARK,"outline_w":2})
+    P.append({"type":"line","start":[72,190],"end":[86,196],"color":(255,240,255),"width":1})
+    # secondary claws
+    P.append({"type":"line","start":[64,190],"end":[58,210],"color":CLAW,"width":3})
+    P.append({"type":"line","start":[76,194],"end":[72,214],"color":CLAW,"width":2})
+    # Front-right foot: massive scythe claw
+    P.append({"type":"polygon","points":[(170,188),(194,194),(190,222),(176,216)],
+              "color":CLAW,"outline":CLAW_DARK,"outline_w":2})
+    P.append({"type":"line","start":[174,190],"end":[190,196],"color":(255,240,255),"width":1})
+    P.append({"type":"line","start":[196,190],"end":[202,210],"color":CLAW,"width":3})
+    P.append({"type":"line","start":[180,194],"end":[184,214],"color":CLAW,"width":2})
+    # Back feet smaller claws
+    for lx in (106,144):
+        P.append({"type":"line","start":[lx,194],"end":[lx,210],"color":CLAW,"width":2})
+        P.append({"type":"line","start":[lx-4,194],"end":[lx-6,208],"color":CLAW,"width":2})
+
+    # --- Crystalline void armor plates on back (THE feature — big faceted plates) ---
+    plate_pts = [(78,120),(110,112),(142,112),(172,120)]
     for i,(px,py) in enumerate(plate_pts):
-        P.append({"type":"polygon","points":[(px-16,py+10),(px+16,py+10),(px+9,py-14),(px-9,py-14)],
+        # main plate body (faceted crystal shape)
+        P.append({"type":"polygon","points":[(px-17,py+10),(px+17,py+10),(px+10,py-15),(px-10,py-15)],
                   "color":PLATE,"outline":PLATE_DARK,"outline_w":1})
-        P.append({"type":"line","start":[px,py-14],"end":[px,py+10],"color":PLATE_DARK,"width":1})
+        # facet line (crystalline detail)
+        P.append({"type":"line","start":[px,py-15],"end":[px,py+10],"color":PLATE_DARK,"width":1})
+        P.append({"type":"line","start":[px-10,py-15],"end":[px,py],"color":PLATE_DARK,"width":1})
+        P.append({"type":"line","start":[px+10,py-15],"end":[px,py],"color":PLATE_DARK,"width":1})
+        # plate highlight (crystal shine)
+        P.append({"type":"polygon","points":[(px-6,py-12),(px+2,py-12),(px-2,py-4)],
+                  "color":VOID_LIGHT,"outline":None,"outline_w":0})
     # ridge spikes between plates (chitinous ridges)
-    for sx in (90,124,158):
-        P.append({"type":"polygon","points":[(sx-5,104),(sx+5,104),(sx,90)],"color":PLATE_DARK,"outline":OUT,"outline_w":1})
+    for sx in (94,126,158):
+        P.append({"type":"polygon","points":[(sx-6,104),(sx+6,104),(sx,88)],"color":PLATE_DARK,"outline":OUT,"outline_w":1})
 
     # --- HEAD (right side, elongated predatory snout — THE feature) ---
-    P.append({"type":"circle","cx":200,"cy":128,"r":22,"color":VOID,"outline":VOID_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":198,"cy":128,"r":22,"color":VOID,"outline":VOID_DARK,"outline_w":2})
     # elongated snout pointing right (long predatory jaw)
-    P.append({"type":"polygon","points":[(194,122),(240,128),(240,140),(194,136)],
+    P.append({"type":"polygon","points":[(192,122),(242,128),(242,140),(192,136)],
               "color":VOID,"outline":VOID_DARK,"outline_w":1})
     # snout tip / jaw (tapered)
-    P.append({"type":"polygon","points":[(232,130),(248,132),(232,140)],"color":VOID_DARK,"outline":OUT,"outline_w":1})
-    # chitinous head ridges (crest)
-    P.append({"type":"polygon","points":[(188,112),(204,106),(210,120),(192,124)],"color":PLATE_DARK,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(196,100),(210,96),(214,108),(200,110)],"color":PLATE,"outline":PLATE_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(234,130),(250,132),(234,140)],"color":VOID_DARK,"outline":OUT,"outline_w":1})
+    # chitinous head crest (big spike)
+    P.append({"type":"polygon","points":[(186,112),(204,104),(210,122),(190,126)],"color":PLATE_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(194,98),(210,92),(216,110),(198,112)],"color":PLATE,"outline":PLATE_DARK,"outline_w":1})
     # glowing void eyes (two, menacing)
-    P.append({"type":"circle","cx":196,"cy":124,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":210,"cy":128,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":194,"cy":124,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":208,"cy":128,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
     # mandible teeth (sharp)
-    for tx in (216,224,232):
+    for tx in (218,226,234):
         P.append({"type":"polygon","points":[(tx-2,138),(tx+2,138),(tx,144)],"color":CLAW,"outline":OUT,"outline_w":1})
 
     # --- Void energy glow (magenta wisps) ---
@@ -423,79 +449,83 @@ def masteryi_prims():
     GOLD = (215, 175, 60)
     BROWN = (120, 80, 45)
     HAIR = (50, 35, 25)          # dark hair, topknot
-    GOGGLE = (60, 50, 45)        # goggle frame (dark)
-    LENS = (180, 200, 90)        # glowing green lenses (7-lens)
-    KATANA = (210, 215, 225)     # big katana blade
-    KATANA_DARK = (120, 125, 135)
+    GOGGLE = (55, 45, 40)        # goggle frame (dark)
+    LENS = (200, 235, 110)       # glowing green lenses (7-lens)
+    KATANA = (220, 225, 235)     # big katana blade
+    KATANA_DARK = (110, 115, 130)
     EYE = (30, 25, 20)
-    OUT = (30, 25, 20)
+    OUT = (25, 20, 20)
 
-    # --- BIG TOPKNOT PONYTAIL (high on head, flowing) ---
-    P.append({"type":"circle","cx":128,"cy":52,"r":10,"color":HAIR,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(120,58),(136,58),(132,72),(124,72)],"color":HAIR,"outline":OUT,"outline_w":1})
-    # hair tie
-    P.append({"type":"rect","x":122,"y":56,"w":12,"h":4,"color":GOLD,"outline":OUT,"outline_w":1})
-    # hair back
-    P.append({"type":"circle","cx":128,"cy":78,"r":18,"color":HAIR,"outline":OUT,"outline_w":1})
+    # --- BIG TOPKNOT PONYTAIL (high on head, prominent) ---
+    P.append({"type":"circle","cx":128,"cy":40,"r":11,"color":HAIR,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(119,48),(137,48),(133,66),(123,66)],"color":HAIR,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":121,"y":46,"w":14,"h":4,"color":GOLD,"outline":OUT,"outline_w":1})
+    # hair back (head)
+    P.append({"type":"circle","cx":128,"cy":74,"r":19,"color":HAIR,"outline":OUT,"outline_w":1})
 
-    # --- Head ---
-    P.append({"type":"circle","cx":128,"cy":80,"r":17,"color":SKIN,"outline":OUT,"outline_w":1})
+    # --- Head (lean) ---
+    P.append({"type":"circle","cx":128,"cy":78,"r":17,"color":SKIN,"outline":OUT,"outline_w":1})
 
-    # --- 7-LENS GOGGLES / MASK (THE feature — big, covering eyes, prominent) ---
-    # goggle frame band across eyes
-    P.append({"type":"rect","x":108,"y":74,"w":40,"h":14,"color":GOGGLE,"outline":OUT,"outline_w":2})
-    # 7 lenses in a row (the iconic multi-lens goggles)
-    lens_xs = [112,118,124,128,132,138,144]
+    # --- 7-LENS GOGGLES (THE feature — HUGE, the single dominant icon) ---
+    # goggle frame band across eyes (BIG — wider than head, tall)
+    P.append({"type":"rect","x":100,"y":70,"w":56,"h":20,"color":GOGGLE,"outline":OUT,"outline_w":2})
+    # 7 lenses in a row (the iconic multi-lens goggles — BIG glowing circles)
+    lens_xs = [108,116,122,128,134,140,148]
     for lx in lens_xs:
-        P.append({"type":"circle","cx":lx,"cy":81,"r":2,"color":LENS,"outline":OUT,"outline_w":1})
-    # goggle strap (around head)
-    P.append({"type":"rect","x":110,"y":78,"w":4,"h":6,"color":GOGGLE,"outline":OUT,"outline_w":1})
-    P.append({"type":"rect","x":142,"y":78,"w":4,"h":6,"color":GOGGLE,"outline":OUT,"outline_w":1})
-    # mask fabric below goggles (lower face covered)
-    P.append({"type":"polygon","points":[(110,88),(146,88),(144,98),(112,98)],"color":GOGGLE,"outline":OUT,"outline_w":1})
+        P.append({"type":"circle","cx":lx,"cy":80,"r":4,"color":LENS,"outline":OUT,"outline_w":1})
+    # lens bright glow centers
+    for lx in lens_xs:
+        P.append({"type":"circle","cx":lx,"cy":79,"r":2,"color":(255,255,210),"outline":None,"outline_w":0})
+    # goggle straps (around head sides, visible)
+    P.append({"type":"rect","x":96,"y":74,"w":6,"h":12,"color":GOGGLE,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":154,"y":74,"w":6,"h":12,"color":GOGGLE,"outline":OUT,"outline_w":1})
+    # mask fabric below goggles (lower face covered — ninja mask, dark)
+    P.append({"type":"polygon","points":[(104,90),(152,90),(150,102),(106,102)],"color":GOGGLE,"outline":OUT,"outline_w":1})
 
-    # --- Traditional Ionian robes (green) ---
-    P.append({"type":"polygon","points":[(108,100),(148,100),(156,195),(100,195)],
+    # --- Traditional Ionian robes (green, LEAN — narrow torso for athletic build) ---
+    P.append({"type":"polygon","points":[(110,104),(146,104),(152,195),(104,195)],
               "color":ROBE,"outline":OUT,"outline_w":1})
-    # robe center opening
-    P.append({"type":"line","start":[128,102],"end":[128,193],"color":ROBE_DARK,"width":2})
+    # robe center opening (V-neck)
+    P.append({"type":"polygon","points":[(120,104),(136,104),(128,140)],"color":ROBE_DARK,"outline":OUT,"outline_w":1})
     # gold trim on collar
-    P.append({"type":"rect","x":110,"y":100,"w":36,"h":5,"color":GOLD,"outline":OUT,"outline_w":1})
-    # gold sash/belt
-    P.append({"type":"rect","x":100,"y":150,"w":56,"h":8,"color":BROWN,"outline":OUT,"outline_w":1})
-    P.append({"type":"rect","x":100,"y":148,"w":56,"h":3,"color":GOLD,"outline":OUT,"outline_w":1})
-    # wrapped forearms (THE missing feature — visible wraps)
-    P.append({"type":"rect","x":98,"y":120,"w":12,"h":30,"color":BROWN,"outline":OUT,"outline_w":1,"radius":3})
-    P.append({"type":"rect","x":146,"y":120,"w":12,"h":30,"color":BROWN,"outline":OUT,"outline_w":1,"radius":3})
-    # wrap bands (visible wrapping)
-    for wy in (124,130,136,142):
-        P.append({"type":"line","start":[98,wy],"end":[110,wy],"color":GOLD,"width":1})
-        P.append({"type":"line","start":[146,wy],"end":[158,wy],"color":GOLD,"width":1})
-    # hands
-    P.append({"type":"circle","cx":104,"cy":152,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":152,"cy":152,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":110,"y":104,"w":36,"h":5,"color":GOLD,"outline":OUT,"outline_w":1})
+    # gold sash/belt (lean)
+    P.append({"type":"rect","x":104,"y":150,"w":48,"h":8,"color":BROWN,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":104,"y":148,"w":48,"h":3,"color":GOLD,"outline":OUT,"outline_w":1})
 
-    # --- Legs ---
-    P.append({"type":"rect","x":112,"y":193,"w":14,"h":30,"color":ROBE_DARK,"outline":OUT,"outline_w":1,"radius":3})
-    P.append({"type":"rect","x":130,"y":193,"w":14,"h":30,"color":ROBE_DARK,"outline":OUT,"outline_w":1,"radius":3})
-    P.append({"type":"rect","x":110,"y":221,"w":18,"h":8,"color":BROWN,"outline":OUT,"outline_w":1,"radius":2})
-    P.append({"type":"rect","x":128,"y":221,"w":18,"h":8,"color":BROWN,"outline":OUT,"outline_w":1,"radius":2})
+    # --- Wrapped forearms (THE missing feature — BIG, visible, martial-arts raised pose) ---
+    # LEFT arm raised forward (holding katana) — wrapped forearm prominent
+    P.append({"type":"rect","x":88,"y":120,"w":16,"h":36,"color":BROWN,"outline":OUT,"outline_w":1,"radius":5})
+    for wy in (124,130,136,142,148,154):
+        P.append({"type":"line","start":[88,wy],"end":[104,wy],"color":GOLD,"width":1})
+    P.append({"type":"circle","cx":96,"cy":158,"r":6,"color":SKIN,"outline":OUT,"outline_w":1})
+    # RIGHT arm raised (martial-arts posture)
+    P.append({"type":"rect","x":152,"y":116,"w":16,"h":34,"color":BROWN,"outline":OUT,"outline_w":1,"radius":5})
+    for wy in (120,126,132,138,144,150):
+        P.append({"type":"line","start":[152,wy],"end":[168,wy],"color":GOLD,"width":1})
+    P.append({"type":"circle","cx":160,"cy":152,"r":6,"color":SKIN,"outline":OUT,"outline_w":1})
 
-    # --- BIG KATANA (THE feature — long blade held across body, prominent) ---
-    # blade diagonal across body (drawn in front)
-    P.append({"type":"line","start":[80,170],"end":[196,90],"color":KATANA,"width":6})
-    P.append({"type":"line","start":[80,170],"end":[196,90],"color":KATANA_DARK,"width":1})
-    # blade edge (white highlight)
-    P.append({"type":"line","start":[82,168],"end":[194,88],"color":(255,255,255),"width":1})
-    # guard (tsuba)
-    P.append({"type":"rect","x":74,"y":164,"w":12,"h":14,"color":GOLD,"outline":OUT,"outline_w":1,"radius":2})
+    # --- Legs (lean, martial-arts stance — slightly apart) ---
+    P.append({"type":"rect","x":108,"y":195,"w":16,"h":34,"color":ROBE_DARK,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":132,"y":195,"w":16,"h":34,"color":ROBE_DARK,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":106,"y":226,"w":20,"h":10,"color":BROWN,"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":130,"y":226,"w":20,"h":10,"color":BROWN,"outline":OUT,"outline_w":1,"radius":2})
+
+    # --- BIG KATANA (THE feature — big polygon blade, held forward, prominent) ---
+    # blade as a thick polygon (drawn in front, diagonal across body)
+    P.append({"type":"polygon","points":[(70,176),(80,168),(206,82),(216,92),(86,184)],
+              "color":KATANA,"outline":KATANA_DARK,"outline_w":2})
+    # blade edge highlight (white line along the edge)
+    P.append({"type":"line","start":[78,174],"end":[204,84],"color":(255,255,255),"width":2})
+    # guard (tsuba) — gold, prominent
+    P.append({"type":"rect","x":62,"y":168,"w":18,"h":20,"color":GOLD,"outline":OUT,"outline_w":1,"radius":3})
     # handle
-    P.append({"type":"rect","x":62,"y":170,"w":16,"h":12,"color":BROWN,"outline":OUT,"outline_w":1,"radius":2})
-    # handle wrap
-    for hx in (64,68,72):
-        P.append({"type":"line","start":[hx,170],"end":[hx,182],"color":GOLD,"width":1})
-    # blade tip
-    P.append({"type":"polygon","points":[(194,88),(202,82),(198,94)],"color":KATANA,"outline":KATANA_DARK,"outline_w":1})
+    P.append({"type":"rect","x":48,"y":176,"w":18,"h":16,"color":BROWN,"outline":OUT,"outline_w":1,"radius":3})
+    # handle wrap (gold bands)
+    for hx in (50,54,58,62):
+        P.append({"type":"line","start":[hx,176],"end":[hx,192],"color":GOLD,"width":1})
+    # blade tip (pointed)
+    P.append({"type":"polygon","points":[(206,82),(222,76),(212,96)],"color":KATANA,"outline":KATANA_DARK,"outline_w":1})
 
     return P
 

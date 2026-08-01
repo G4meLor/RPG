@@ -161,7 +161,7 @@ At 256px, fine detail does NOT read. What scores 8-10 is ONE HUGE, UNIQUE signat
 ```
 {{"id":"{cid}","old":{x['score']},"new":8,"saved":true,"rounds":3,"approach":"which approach won","missing_final":[],"feature":"the dominant icon"}}
 ```
-Plus one line: "{cid}: {{x['score']}}->{{new}} ({{saved/not saved}}), approach: {{which}}"."""
+Plus one line: "{cid}: {x['score']}-><new> (saved/not saved), approach: <which>"."""
 
 
 if __name__ == "__main__":

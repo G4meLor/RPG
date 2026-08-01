@@ -197,12 +197,15 @@ def viego_prims():
     EYE = (100, 220, 210)        # glowing teal eyes
     OUT = (15, 20, 25)
 
-    # --- Long white hair (behind, flowing down) ---
-    P.append({"type":"polygon","points":[(100,70),(156,70),(170,200),(86,200)],
+    # --- Long white hair (behind, flowing down, BIG) ---
+    P.append({"type":"polygon","points":[(92,68),(164,68),(180,210),(76,210)],
+              "color":HAIR,"outline":OUT,"outline_w":2})
+    # hair strands (thicker, more obvious white)
+    for hx in (96, 108, 120, 132, 144, 156):
+        P.append({"type":"line","start":[hx,70],"end":[hx-6,200],"color":(210,220,230),"width":4})
+    # hair front bangs
+    P.append({"type":"polygon","points":[(106,70),(150,70),(148,60),(128,52),(110,60)],
               "color":HAIR,"outline":OUT,"outline_w":1})
-    # hair strands
-    for hx in (100, 112, 124, 136, 148):
-        P.append({"type":"line","start":[hx,72],"end":[hx-4,190],"color":(200,210,220),"width":3})
 
     # --- Tattered royal regalia (body, torn cape) ---
     P.append({"type":"polygon","points":[(92,100),(164,100),(176,210),(80,210)],

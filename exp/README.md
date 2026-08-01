@@ -124,3 +124,47 @@ that scored 8/10. 256px is the right resolution. Passing champs NOT redone.
 - stance: 159/170 = 94% (target 90% ✅)
 - verify_assets: OK
 - 5 hand-author wins committed (Ahri/Annie/Yuumi/TF/Poppy at 8-9/10)
+
+## Batch 2 hand-author results (2026-08-01)
+
+Added 10 more hand-authored champs (24 total now).
+
+| Champ | Result | Saved? |
+|-------|--------|--------|
+| Bard | 4→8 (re-gate 9) | ✅ floating mask+hands+chimes |
+| Cassiopeia | 4→6 (re-gate 8) | ✅ snake tail + gold jewelry |
+| Skarner | 6→6 | ❌ tie |
+| Nami | 6→6 | ❌ tie |
+| Pantheon | 6→6 | ❌ tie |
+| Thresh | 6→6 | ❌ tie |
+| Kindred | 6→6 | ❌ tie |
+| AurelionSol | 6→4 | ❌ |
+| Brand | 6→3 | ❌ |
+| Gwen | 5→3 | ❌ |
+| Sivir | 5→3 | ❌ |
+| Illaoi | 5→2 | ❌ |
+
+**2 new wins.** Pattern fully confirmed:
+- WINS = non-humanoid (Bard mask+hands, Cassiopeia naga) OR one huge
+  unique prop that dominates the silhouette.
+- LOSSES = humanoid + champ-ambiguous weapon/feature. The gate reads the
+  humanoid base and ignores the feature (fire-head, scissors, crossblade,
+  idol, dragon all read as "generic humanoid with a thing").
+
+## Updated honest state (after 7 hand-author wins)
+
+- mean: 5.84/10 (target 6.0 — 0.16 short)
+- recognizable: 98/170 = 58% (target 70%)
+- stance: 159/170 = 94% (target 90% ✅)
+- 7 hand-author wins: Ahri/Annie/Yuumi/TF/Poppy/Bard/Cassiopeia (8-9/10)
+- verify_assets: OK
+
+## Conclusion on the 70% target
+
+Both VLM (revision loops, splash-gen, 512px) and hand-authoring hit the
+same ~58% ceiling. The bottleneck is the canon gate itself: at 256px it
+demands fine detail (facial features, attire texture, proportions) that
+pixel primitives cannot carry for humanoid champs. Non-humanoid champs
+(Bard, Cassiopeia, Velkoz, Malphite, Zac, Chogath) score high because
+their silhouette IS the feature. Humanoid champs need a higher-res or
+non-pixel-art approach to break 70%.

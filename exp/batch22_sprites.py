@@ -423,88 +423,92 @@ def missfortune_prims():
     RED_LIP = (160, 40, 45)
     OUT = (25, 20, 25)
 
-    # --- LONG FLOWING RED HAIR (THE feature — HUGE, flowing down sides and back) ---
-    # hair left flow (behind body, flowing down left side)
-    P.append({"type":"polygon","points":[(84,58),(112,58),(100,215),(72,215)],
+    # --- LONG FLOWING RED HAIR (THE feature — BIG, flowing on sides, NOT covering body) ---
+    # hair left flow (behind body, flowing down left side — visible on left)
+    P.append({"type":"polygon","points":[(86,60),(112,60),(104,210),(78,210)],
               "color":HAIR,"outline":OUT,"outline_w":2})
-    # hair right flow (behind body, flowing down right side)
-    P.append({"type":"polygon","points":[(144,58),(172,58),(184,215),(156,215)],
+    # hair right flow (behind body, flowing down right side — visible on right)
+    P.append({"type":"polygon","points":[(144,60),(170,60),(178,210),(154,210)],
               "color":HAIR,"outline":OUT,"outline_w":2})
-    # hair back (behind head)
-    P.append({"type":"polygon","points":[(98,54),(158,54),(162,90),(94,90)],
+    # hair back (behind head, connecting)
+    P.append({"type":"polygon","points":[(100,56),(156,56),(160,90),(96,90)],
               "color":HAIR_DARK,"outline":OUT,"outline_w":1})
     # hair top (on head, under hat)
     P.append({"type":"circle","cx":128,"cy":66,"r":18,"color":HAIR,"outline":OUT,"outline_w":1})
     # hair highlight (shine)
-    P.append({"type":"polygon","points":[(106,56),(150,56),(146,64),(110,64)],
+    P.append({"type":"polygon","points":[(108,56),(148,56),(144,64),(112,64)],
               "color":HAIR_LIGHT,"outline":HAIR_DARK,"outline_w":1})
     # hair strand texture (left)
     for hy in (90, 120, 150, 180):
-        P.append({"type":"line","start":[88,hy],"end":[84,hy+20],"color":HAIR_DARK,"width":1})
+        P.append({"type":"line","start":[92,hy],"end":[88,hy+20],"color":HAIR_DARK,"width":1})
     # hair strand texture (right)
     for hy in (90, 120, 150, 180):
-        P.append({"type":"line","start":[168,hy],"end":[172,hy+20],"color":HAIR_DARK,"width":1})
+        P.append({"type":"line","start":[164,hy],"end":[168,hy+20],"color":HAIR_DARK,"width":1})
 
-    # --- DUAL FLINTLOCK PISTOLS (THE weapon — BIG, both hands, held at sides) ---
-    # LEFT pistol (held at left side, pointing down-out)
-    P.append({"type":"rect","x":60,"y":140,"w":30,"h":10,"color":SILVER_DARK,"outline":OUT,"outline_w":2,"radius":2})
-    # pistol barrel
-    P.append({"type":"rect","x":56,"y":142,"w":8,"h":6,"color":SILVER,"outline":OUT,"outline_w":1})
-    # pistol grip
-    P.append({"type":"polygon","points":[(78,150),(88,150),(84,168),(82,168)],
-              "color":(90,60,35),"outline":OUT,"outline_w":1})
-    # gold pistol ornament
-    P.append({"type":"circle","cx":75,"cy":145,"r":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    # RIGHT pistol (held at right side, pointing down-out)
-    P.append({"type":"rect","x":166,"y":140,"w":30,"h":10,"color":SILVER_DARK,"outline":OUT,"outline_w":2,"radius":2})
-    P.append({"type":"rect","x":192,"y":142,"w":8,"h":6,"color":SILVER,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(168,150),(178,150),(174,168),(172,168)],
-              "color":(90,60,35),"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":181,"cy":145,"r":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # --- LEGS (high-heeled boots — THE missing feature, with skin showing) ---
+    P.append({"type":"rect","x":110,"y":168,"w":16,"h":22,"color":SKIN,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":130,"y":168,"w":16,"h":22,"color":SKIN,"outline":OUT,"outline_w":1,"radius":3})
+    # high-heeled boots (THE missing feature — black, knee-high)
+    P.append({"type":"rect","x":106,"y":186,"w":24,"h":32,"color":COAT_DARK,"outline":OUT,"outline_w":2,"radius":2})
+    P.append({"type":"rect","x":126,"y":186,"w":24,"h":32,"color":COAT_DARK,"outline":OUT,"outline_w":2,"radius":2})
+    # gold boot trim (top)
+    P.append({"type":"rect","x":106,"y":186,"w":24,"h":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"rect","x":126,"y":186,"w":24,"h":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # gold boot buckle
+    P.append({"type":"rect","x":106,"y":194,"w":24,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"rect","x":126,"y":194,"w":24,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # high heels (pointed)
+    P.append({"type":"polygon","points":[(106,218),(114,218),(110,230),(108,230)],"color":COAT_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(126,218),(134,218),(132,230),(130,230)],"color":COAT_DARK,"outline":OUT,"outline_w":1})
 
-    # --- Legs (high-heeled boots — THE missing feature) ---
-    P.append({"type":"rect","x":110,"y":168,"w":16,"h":36,"color":COAT,"outline":OUT,"outline_w":1,"radius":3})
-    P.append({"type":"rect","x":130,"y":168,"w":16,"h":36,"color":COAT,"outline":OUT,"outline_w":1,"radius":3})
-    # high-heeled boots (THE missing feature — black, with heel)
-    P.append({"type":"rect","x":106,"y":200,"w":22,"h":18,"color":COAT_DARK,"outline":OUT,"outline_w":2,"radius":2})
-    P.append({"type":"rect","x":128,"y":200,"w":22,"h":18,"color":COAT_DARK,"outline":OUT,"outline_w":2,"radius":2})
-    # gold boot trim
-    P.append({"type":"rect","x":106,"y":200,"w":22,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    P.append({"type":"rect","x":128,"y":200,"w":22,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    # high heels
-    P.append({"type":"polygon","points":[(106,218),(112,218),(110,228),(108,228)],"color":COAT_DARK,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(128,218),(134,218),(132,228),(130,228)],"color":COAT_DARK,"outline":OUT,"outline_w":1})
-
-    # --- CAPTAIN'S COAT (THE missing feature — black, long, with gold trim) ---
-    P.append({"type":"polygon","points":[(98,100),(158,100),(168,205),(88,205)],
+    # --- CAPTAIN'S COAT (THE missing feature — black, long, with gold trim, female hourglass) ---
+    # coat body (hourglass female silhouette — wider shoulders, narrow waist)
+    P.append({"type":"polygon","points":[(96,100),(160,100),(150,135),(156,205),(100,205),(106,135)],
               "color":COAT,"outline":OUT,"outline_w":2})
-    # coat inner (white shirt visible)
-    P.append({"type":"polygon","points":[(112,106),(144,106),(140,160),(116,160)],
+    # coat inner (white shirt visible at chest)
+    P.append({"type":"polygon","points":[(112,106),(144,106),(140,155),(116,155)],
               "color":WHITE,"outline":OUT,"outline_w":1})
-    # coat gold trim (center line)
+    # coat gold trim (center line — ornate)
     P.append({"type":"line","start":[128,106],"end":[128,200],"color":GOLD,"width":2})
     # gold coat buttons
-    for by in (112, 124, 136, 148):
+    for by in (112, 122, 132, 142):
         P.append({"type":"circle","cx":128,"cy":by,"r":2,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    # gold coat collar
-    P.append({"type":"polygon","points":[(108,100),(148,100),(142,112),(114,112)],
+    # gold coat collar (V-neck — captain's coat)
+    P.append({"type":"polygon","points":[(106,100),(150,100),(142,114),(114,114)],
               "color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    # gold belt
-    P.append({"type":"rect","x":92,"y":158,"w":72,"h":8,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":128,"cy":162,"r":4,"color":COAT_DARK,"outline":GOLD_DARK,"outline_w":1})
+    # gold belt (wide, ornate)
+    P.append({"type":"rect","x":96,"y":152,"w":64,"h":10,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":128,"cy":157,"r":4,"color":COAT_DARK,"outline":GOLD_DARK,"outline_w":1})
     # coat gold trim at hem
-    P.append({"type":"line","start":[90,200],"end":[166,200],"color":GOLD,"width":2})
+    P.append({"type":"line","start":[100,200],"end":[156,200],"color":GOLD,"width":2})
 
-    # --- Arms (in coat sleeves, holding pistols) ---
-    P.append({"type":"rect","x":86,"y":112,"w":14,"h":40,"color":COAT,"outline":OUT,"outline_w":1,"radius":4})
-    P.append({"type":"rect","x":156,"y":112,"w":14,"h":40,"color":COAT,"outline":OUT,"outline_w":1,"radius":4})
-    # hands
-    P.append({"type":"circle","cx":93,"cy":154,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":163,"cy":154,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+    # --- Arms (in coat sleeves, holding pistols at hips) ---
+    P.append({"type":"rect","x":86,"y":110,"w":14,"h":44,"color":COAT,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":156,"y":110,"w":14,"h":44,"color":COAT,"outline":OUT,"outline_w":1,"radius":4})
+    # hands (holding pistols)
+    P.append({"type":"circle","cx":93,"cy":156,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":163,"cy":156,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+
+    # --- DUAL FLINTLOCK PISTOLS (THE weapon — BIG, held at hips, pointing out) ---
+    # LEFT pistol (held at left hip, pointing left)
+    P.append({"type":"rect","x":62,"y":150,"w":32,"h":10,"color":SILVER_DARK,"outline":OUT,"outline_w":2,"radius":2})
+    # pistol barrel (muzzle)
+    P.append({"type":"rect","x":56,"y":152,"w":8,"h":6,"color":SILVER,"outline":OUT,"outline_w":1})
+    # pistol grip (down)
+    P.append({"type":"polygon","points":[(80,160),(92,160),(88,178),(84,178)],
+              "color":(90,60,35),"outline":OUT,"outline_w":1})
+    # gold pistol ornament
+    P.append({"type":"circle","cx":76,"cy":155,"r":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # RIGHT pistol (held at right hip, pointing right)
+    P.append({"type":"rect","x":162,"y":150,"w":32,"h":10,"color":SILVER_DARK,"outline":OUT,"outline_w":2,"radius":2})
+    P.append({"type":"rect","x":192,"y":152,"w":8,"h":6,"color":SILVER,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(164,160),(176,160),(172,178),(168,178)],
+              "color":(90,60,35),"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":180,"cy":155,"r":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
 
     # --- HEAD: pretty face + red lips ---
     P.append({"type":"circle","cx":128,"cy":78,"r":15,"color":SKIN,"outline":OUT,"outline_w":1})
-    # eyes
+    # eyes (sharp, beautiful)
     P.append({"type":"circle","cx":122,"cy":78,"r":2,"color":OUT,"outline":None,"outline_w":0})
     P.append({"type":"circle","cx":134,"cy":78,"r":2,"color":OUT,"outline":None,"outline_w":0})
     # red lips (THE feature)
@@ -512,17 +516,18 @@ def missfortune_prims():
 
     # --- TRICORNE PIRATE HAT (THE feature — black, three-cornered, with gold trim) ---
     # hat brim (wide, three-cornered)
-    P.append({"type":"polygon","points":[(92,58),(164,58),(170,66),(86,66)],
+    P.append({"type":"polygon","points":[(90,58),(166,58),(172,66),(84,66)],
               "color":HAT_DARK,"outline":OUT,"outline_w":2})
     # hat crown (the tricorne peak)
-    P.append({"type":"polygon","points":[(104,58),(152,58),(144,42),(128,36),(112,42)],
+    P.append({"type":"polygon","points":[(102,58),(154,58),(146,40),(128,34),(110,40)],
               "color":HAT,"outline":OUT,"outline_w":2})
     # gold hat trim
-    P.append({"type":"line","start":[92,58],"end":[164,58],"color":GOLD,"width":2})
-    # gold hat buckle/ornament
+    P.append({"type":"line","start":[90,58],"end":[166,58],"color":GOLD,"width":2})
+    # gold hat buckle/ornament (skull — Miss Fortune's hat)
     P.append({"type":"circle","cx":128,"cy":48,"r":5,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":128,"cy":46,"r":2,"color":COAT_DARK,"outline":GOLD_DARK,"outline_w":1})
     # hat feather (red, from behind hat)
-    P.append({"type":"line","start":[150,44],"end":[160,30],"color":HAIR,"width":3})
+    P.append({"type":"line","start":[150,44],"end":[162,28],"color":HAIR,"width":3})
     return P
 
 
@@ -572,30 +577,30 @@ def nasus_prims():
     P.append({"type":"rect","x":106,"y":200,"w":22,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
     P.append({"type":"rect","x":128,"y":200,"w":22,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
 
-    # --- TORSO (ancient Egyptian-style armor — THE missing feature) ---
-    # towering stature (broad torso)
-    P.append({"type":"polygon","points":[(96,100),(160,100),(158,168),(98,168)],
+    # --- TORSO (ancient Egyptian-style armor — THE missing feature, BIG/towering) ---
+    # towering stature (BROAD torso — wider than normal, muscular)
+    P.append({"type":"polygon","points":[(88,96),(168,96),(164,170),(92,170)],
               "color":SAND,"outline":OUT,"outline_w":2})
-    # Egyptian gold chest plate (THE missing feature)
-    P.append({"type":"polygon","points":[(102,106),(154,106),(150,160),(106,160)],
+    # Egyptian gold chest plate (THE missing feature — BIG, wide)
+    P.append({"type":"polygon","points":[(96,104),(160,104),(154,162),(102,162)],
               "color":GOLD_DARK,"outline":OUT,"outline_w":1})
     # gold center trim (Egyptian ornamental)
-    P.append({"type":"line","start":[128,106],"end":[128,160],"color":GOLD,"width":3})
-    # Egyptian ornament on chest (sun disk / ankh style)
-    P.append({"type":"circle","cx":128,"cy":128,"r":10,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
+    P.append({"type":"line","start":[128,104],"end":[128,162],"color":GOLD,"width":3})
+    # Egyptian ornament on chest (sun disk / ankh style — BIG)
+    P.append({"type":"circle","cx":128,"cy":130,"r":12,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
     # Egyptian ankh-like emblem
-    P.append({"type":"line","start":[128,120],"end":[128,138],"color":GOLD_DARK,"width":2})
-    P.append({"type":"line","start":[122,126],"end":[134,126],"color":GOLD_DARK,"width":2})
+    P.append({"type":"line","start":[128,120],"end":[128,142],"color":GOLD_DARK,"width":2})
+    P.append({"type":"line","start":[120,128],"end":[136,128],"color":GOLD_DARK,"width":2})
     # blue gem center
-    P.append({"type":"circle","cx":128,"cy":128,"r":4,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
-    # golden ornaments (shoulder pauldrons — Egyptian style)
-    P.append({"type":"circle","cx":100,"cy":106,"r":11,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
-    P.append({"type":"circle","cx":156,"cy":106,"r":11,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
-    # Egyptian shoulder ornament detail
-    P.append({"type":"circle","cx":100,"cy":106,"r":5,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":156,"cy":106,"r":5,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
-    # gold belt (Egyptian ornamental)
-    P.append({"type":"rect","x":96,"y":156,"w":66,"h":10,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":128,"cy":130,"r":5,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
+    # golden ornaments (shoulder pauldrons — BIG Egyptian style)
+    P.append({"type":"circle","cx":92,"cy":104,"r":13,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":164,"cy":104,"r":13,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
+    # Egyptian shoulder ornament detail (blue gems)
+    P.append({"type":"circle","cx":92,"cy":104,"r":6,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":164,"cy":104,"r":6,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
+    # gold belt (Egyptian ornamental — wide)
+    P.append({"type":"rect","x":90,"y":156,"w":76,"h":10,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
     P.append({"type":"circle","cx":128,"cy":161,"r":4,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
 
     # --- Arms (muscular, golden armbands) ---

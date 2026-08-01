@@ -3,228 +3,295 @@
     "primitives": [
       {
         "type": "ellipse",
-        "x": 50,
-        "y": 110,
-        "w": 160,
-        "h": 180,
-        "color": [
-          230,
-          240,
-          255
-        ],
-        "outline": [
-          170,
-          180,
-          200
-        ],
-        "outline_w": 3
-      },
-      {
-        "type": "ellipse",
-        "x": 70,
-        "y": 130,
+        "x": 40,
+        "y": 80,
         "w": 120,
         "h": 140,
         "color": [
-          210,
-          220,
-          240
+          230,
+          235,
+          255
         ],
         "outline": [
           160,
           170,
-          190
+          200
         ],
-        "outline_w": 2
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
       },
       {
         "type": "ellipse",
-        "x": 80,
-        "y": 150,
-        "w": 100,
-        "h": 110,
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
         "color": [
           240,
           245,
           255
         ],
         "outline": [
-          180,
-          190,
-          210
+          160,
+          170,
+          200
         ],
-        "outline_w": 2
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
       },
       {
         "type": "ellipse",
-        "x": 90,
-        "y": 160,
-        "w": 80,
-        "h": 80,
-        "color": [
-          255,
-          255,
-          255
-        ],
-        "outline": [
-          200,
-          210,
-          230
-        ],
-        "outline_w": 2
-      },
-      {
-        "type": "ellipse",
-        "x": 110,
-        "y": 110,
+        "x": 70,
+        "y": 85,
         "w": 60,
         "h": 50,
         "color": [
-          230,
+          255,
+          255,
+          255
+        ],
+        "outline": [
           210,
-          190
-        ],
-        "outline": [
-          150,
-          130,
-          110
-        ],
-        "outline_w": 2
-      },
-      {
-        "type": "rect",
-        "x": 120,
-        "y": 90,
-        "w": 40,
-        "h": 30,
-        "color": [
-          180,
-          60,
-          60
-        ],
-        "outline": [
-          120,
-          40,
-          40
+          220,
+          240
         ],
         "outline_w": 2,
-        "radius": 5
+        "comment": "Fluffy white chest fur"
       },
       {
-        "type": "rect",
-        "x": 125,
-        "y": 80,
-        "w": 30,
-        "h": 20,
-        "color": [
-          200,
-          80,
-          80
-        ],
-        "outline": [
-          120,
-          40,
-          40
-        ],
-        "outline_w": 2,
-        "radius": 3
-      },
-      {
-        "type": "circle",
-        "cx": 130,
-        "cy": 120,
-        "r": 3,
-        "color": [
-          40,
-          40,
-          40
-        ],
-        "outline": null,
-        "outline_w": 0
-      },
-      {
-        "type": "circle",
-        "cx": 150,
-        "cy": 120,
-        "r": 3,
-        "color": [
-          40,
-          40,
-          40
-        ],
-        "outline": null,
-        "outline_w": 0
-      },
-      {
-        "type": "polygon",
-        "points": [
-          [
-            135,
-            125
-          ],
-          [
-            145,
-            125
-          ],
-          [
-            140,
-            132
-          ]
-        ],
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
         "color": [
           220,
-          150,
-          150
+          230,
+          250
         ],
         "outline": [
           150,
-          80,
-          80
-        ],
-        "outline_w": 1
-      },
-      {
-        "type": "rect",
-        "x": 130,
-        "y": 135,
-        "w": 20,
-        "h": 30,
-        "color": [
-          180,
-          60,
-          60
-        ],
-        "outline": [
-          120,
-          40,
-          40
+          160,
+          190
         ],
         "outline_w": 2,
-        "radius": 4
+        "comment": "Willump's left horn/ear, angled"
       },
       {
         "type": "ellipse",
         "x": 110,
-        "y": 140,
-        "w": 40,
-        "h": 30,
+        "y": 55,
+        "w": 25,
+        "h": 35,
         "color": [
-          180,
-          160,
-          140
+          220,
+          230,
+          250
         ],
         "outline": [
-          130,
-          110,
-          90
+          150,
+          160,
+          190
         ],
-        "outline_w": 2
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
       },
       {
         "type": "circle",
-        "cx": 140,
-        "cy": 240,
-        "r": 60,
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          210,
+          220,
+          250
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          210,
+          220,
+          250
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          180,
+          40,
+          40
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          200,
+          60,
+          60
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          100,
+          80,
+          60
+        ],
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
         "color": [
           255,
           255,
@@ -232,70 +299,15 @@
         ],
         "outline": [
           200,
-          220,
-          255
-        ],
-        "outline_w": 4
-      },
-      {
-        "type": "rect",
-        "x": 70,
-        "y": 150,
-        "w": 10,
-        "h": 20,
-        "color": [
           200,
-          210,
           230
         ],
-        "outline": null,
-        "outline_w": 0
-      },
-      {
-        "type": "rect",
-        "x": 180,
-        "y": 160,
-        "w": 10,
-        "h": 20,
-        "color": [
-          200,
-          210,
-          230
-        ],
-        "outline": null,
-        "outline_w": 0
-      },
-      {
-        "type": "rect",
-        "x": 100,
-        "y": 200,
-        "w": 15,
-        "h": 15,
-        "color": [
-          210,
-          220,
-          240
-        ],
-        "outline": null,
-        "outline_w": 0
-      },
-      {
-        "type": "rect",
-        "x": 150,
-        "y": 210,
-        "w": 15,
-        "h": 15,
-        "color": [
-          210,
-          220,
-          240
-        ],
-        "outline": null,
-        "outline_w": 0
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
       }
     ],
-    "generator": "vlm_primitives",
-    "phase": "2"
+    "generator": "vlm_fix3",
+    "phase": "fix3"
   },
   "3": {
     "descriptor": {

@@ -573,43 +573,49 @@ def katarina_prims():
     GREEN = (60, 160, 80)          # kat's eyes (green)
     OUT = (25, 20, 25)
 
-    # --- LONG CRIMSON HAIR (THE feature — HUGE, flowing, dominates entire silhouette) ---
-    # hair back mass (HUGE — flowing down past legs, the signature feature)
-    P.append({"type":"polygon","points":[(88,56),(168,56),(184,220),(72,220)],
+    # --- LONG CRIMSON HAIR (THE feature — BIG, flowing on sides/back, NOT covering body) ---
+    # hair flowing down the LEFT side (behind body, visible on left)
+    P.append({"type":"polygon","points":[(88,60),(112,60),(100,210),(78,210)],
               "color":HAIR,"outline":OUT,"outline_w":2})
-    # hair flowing wider (the signature ponytail + flowing locks — even wider)
-    P.append({"type":"polygon","points":[(80,64),(176,64),(192,210),(64,210)],
+    # hair flowing down the RIGHT side (behind body, visible on right)
+    P.append({"type":"polygon","points":[(144,60),(168,60),(178,210),(156,210)],
+              "color":HAIR,"outline":OUT,"outline_w":2})
+    # hair back (behind head, connecting left and right flows)
+    P.append({"type":"polygon","points":[(100,56),(156,56),(160,90),(96,90)],
               "color":HAIR_DARK,"outline":OUT,"outline_w":1})
-    # hair top (the big crimson mass on head — BIGGER)
-    P.append({"type":"circle","cx":128,"cy":66,"r":26,"color":HAIR,"outline":OUT,"outline_w":2})
-    # hair strands (flowing texture — more visible)
-    for hx in (96, 106, 116, 140, 150, 160):
-        P.append({"type":"line","start":[hx,70],"end":[hx,210],"color":HAIR_DARK,"width":1})
-    # hair highlight (the signature shine — BIGGER)
-    P.append({"type":"polygon","points":[(104,52),(152,52),(148,64),(108,64)],
+    # hair top (the big crimson mass on head — THE feature)
+    P.append({"type":"circle","cx":128,"cy":68,"r":22,"color":HAIR,"outline":OUT,"outline_w":2})
+    # hair highlight (the signature shine)
+    P.append({"type":"polygon","points":[(110,54),(146,54),(142,64),(114,64)],
               "color":HAIR_LIGHT,"outline":HAIR_DARK,"outline_w":1})
-    # hair fringe (bangs — BIGGER)
-    P.append({"type":"polygon","points":[(104,70),(152,70),(148,82),(108,82)],
+    # hair fringe (bangs)
+    P.append({"type":"polygon","points":[(108,72),(148,72),(144,82),(112,82)],
               "color":HAIR,"outline":OUT,"outline_w":1})
     # hair ponytail top knot (the signature top-knot)
     P.append({"type":"circle","cx":128,"cy":48,"r":10,"color":HAIR,"outline":OUT,"outline_w":2})
     P.append({"type":"circle","cx":128,"cy":46,"r":5,"color":HAIR_LIGHT,"outline":HAIR_DARK,"outline_w":1})
+    # hair strand texture (left flow)
+    for hy in (90, 120, 150, 180):
+        P.append({"type":"line","start":[92,hy],"end":[88,hy+20],"color":HAIR_DARK,"width":1})
+    # hair strand texture (right flow)
+    for hy in (90, 120, 150, 180):
+        P.append({"type":"line","start":[164,hy],"end":[168,hy+20],"color":HAIR_DARK,"width":1})
 
     # --- Legs (slender athletic — skin showing above boots) ---
     P.append({"type":"rect","x":110,"y":168,"w":16,"h":22,"color":SKIN,"outline":OUT,"outline_w":1,"radius":3})
     P.append({"type":"rect","x":130,"y":168,"w":16,"h":22,"color":SKIN,"outline":OUT,"outline_w":1,"radius":3})
-    # combat boots (THE missing feature — knee-high black leather, BIGGER)
+    # combat boots (THE missing feature — knee-high black leather)
     P.append({"type":"rect","x":106,"y":186,"w":24,"h":32,"color":LEATHER,"outline":OUT,"outline_w":2,"radius":2})
     P.append({"type":"rect","x":126,"y":186,"w":24,"h":32,"color":LEATHER,"outline":OUT,"outline_w":2,"radius":2})
-    # boot gold buckle (BIG)
+    # boot gold buckle
     P.append({"type":"rect","x":106,"y":190,"w":24,"h":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
     P.append({"type":"rect","x":126,"y":190,"w":24,"h":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
     # boot gold trim at top
     P.append({"type":"rect","x":106,"y":186,"w":24,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
     P.append({"type":"rect","x":126,"y":186,"w":24,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
 
-    # --- Torso (Noxian leather armor — THE missing feature, sleek female) ---
-    # hourglass female silhouette (narrow waist)
+    # --- Torso (Noxian leather armor — THE missing feature, sleek female hourglass) ---
+    # hourglass female silhouette (narrow waist) — BLACK leather, clearly armor
     P.append({"type":"polygon","points":[(100,100),(156,100),(146,135),(150,168),(106,168),(110,135)],
               "color":LEATHER,"outline":OUT,"outline_w":2})
     # leather armor chest plate (the Noxian corset-style — darker leather)
@@ -640,7 +646,7 @@ def katarina_prims():
     P.append({"type":"circle","cx":95,"cy":160,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
     P.append({"type":"circle","cx":161,"cy":160,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
 
-    # --- DUAL DAGGERS (THE weapon — both hands, curved Noxus blades, BIGGER) ---
+    # --- DUAL DAGGERS (THE weapon — both hands, curved Noxus blades) ---
     # LEFT dagger (curved blade, pointing down/out)
     P.append({"type":"line","start":[95,162],"end":[72,205],"color":SILVER,"width":5})
     P.append({"type":"polygon","points":[(72,205),(66,218),(78,212)],"color":SILVER,"outline":SILVER_DARK,"outline_w":1})
@@ -653,7 +659,7 @@ def katarina_prims():
 
     # --- HEAD: sharp facial features (THE missing feature) ---
     P.append({"type":"circle","cx":128,"cy":80,"r":16,"color":SKIN,"outline":OUT,"outline_w":1})
-    # sharp eyes (green — Katarina's signature, BIGGER)
+    # sharp eyes (green — Katarina's signature)
     P.append({"type":"polygon","points":[(116,78),(124,75),(124,83),(116,83)],
               "color":GREEN,"outline":OUT,"outline_w":1})
     P.append({"type":"polygon","points":[(132,75),(140,78),(140,83),(132,83)],
@@ -661,7 +667,7 @@ def katarina_prims():
     # eye glow (green shine)
     P.append({"type":"circle","cx":120,"cy":79,"r":1,"color":(140,240,140),"outline":None,"outline_w":0})
     P.append({"type":"circle","cx":136,"cy":79,"r":1,"color":(140,240,140),"outline":None,"outline_w":0})
-    # sharp eyebrows (THE missing feature — arched, fierce, BIGGER)
+    # sharp eyebrows (THE missing feature — arched, fierce)
     P.append({"type":"line","start":[114,71],"end":[124,74],"color":HAIR_DARK,"width":3})
     P.append({"type":"line","start":[132,74],"end":[142,71],"color":HAIR_DARK,"width":3})
     # sharp nose (more defined)

@@ -31,12 +31,12 @@ def rell_prims():
     EYE = (40, 30, 35)
 
     # --- METAL HORSE (THE feature -- big, armored, she sits on top) ---
-    # horse body (big rounded mass, low center)
-    P.append({"type":"ellipse","x":40,"y":150,"w":150,"h":78,"color":STEEL,"outline":OUT,"outline_w":2})
-    # horse chest (front, left)
-    P.append({"type":"circle","cx":52,"cy":182,"r":26,"color":STEEL,"outline":OUT,"outline_w":2})
-    # horse rump (back, right)
-    P.append({"type":"circle","cx":186,"cy":178,"r":28,"color":STEEL,"outline":OUT,"outline_w":2})
+    # horse body (big rounded mass, low center -- SILVER/STEEL, the metal horse)
+    P.append({"type":"ellipse","x":40,"y":150,"w":150,"h":78,"color":STEEL_LIGHT,"outline":OUT,"outline_w":2})
+    # horse chest (front, left -- SILVER)
+    P.append({"type":"circle","cx":52,"cy":182,"r":26,"color":STEEL_LIGHT,"outline":OUT,"outline_w":2})
+    # horse rump (back, right -- SILVER)
+    P.append({"type":"circle","cx":186,"cy":178,"r":28,"color":STEEL_LIGHT,"outline":OUT,"outline_w":2})
     # horse neck (armored, rising from chest)
     P.append({"type":"polygon","points":[(36,170),(72,170),(64,120),(40,128)],
               "color":STEEL,"outline":OUT,"outline_w":2})
@@ -67,14 +67,18 @@ def rell_prims():
     for hx in (60, 90, 150, 178):
         P.append({"type":"rect","x":hx-3,"y":224,"w":24,"h":8,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
 
-    # --- Armor plating on horse body (ferromancy -- BIG distinct steel plates) ---
-    # 3 big overlapping steel plates (ferromancy metal plating -- THE missing feature)
+    # --- Armor plating on horse body (ferromancy -- BIG distinct SHINY SILVER plates) ---
+    # 3 big overlapping SILVER steel plates (ferromancy metal plating -- THE missing feature)
     P.append({"type":"polygon","points":[(70,148),(110,144),(108,168),(72,170)],
               "color":STEEL_LIGHT,"outline":OUT,"outline_w":2})
     P.append({"type":"polygon","points":[(108,144),(148,144),(148,168),(108,168)],
-              "color":STEEL,"outline":OUT,"outline_w":2})
+              "color":STEEL_LIGHT,"outline":OUT,"outline_w":2})
     P.append({"type":"polygon","points":[(148,144),(182,148),(180,170),(148,168)],
               "color":STEEL_LIGHT,"outline":OUT,"outline_w":2})
+    # plate highlights (shiny metal sheen -- makes it read as polished metal)
+    P.append({"type":"line","start":[74,152],"end":[108,148],"color":(230,235,245),"width":2})
+    P.append({"type":"line","start":[110,148],"end":[146,148],"color":(230,235,245),"width":2})
+    P.append({"type":"line","start":[150,148],"end":[180,152],"color":(230,235,245),"width":2})
     # BIG gold studs on each plate (metallic shards -- obvious)
     for sx in (84, 96):
         P.append({"type":"circle","cx":sx,"cy":156,"r":5,"color":GOLD,"outline":OUT,"outline_w":1})
@@ -161,10 +165,16 @@ def riven_prims():
     P.append({"type":"polygon","points":[(108,100),(148,100),(158,168),(98,168)],
               "color":CAPE_DARK,"outline":OUT,"outline_w":1})
 
-    # --- Hair (white, ponytail) ---
+    # --- Hair (white, BIG ponytail -- THE missing feature, make it prominent) ---
     P.append({"type":"circle","cx":128,"cy":66,"r":18,"color":HAIR,"outline":OUT,"outline_w":1})
-    # ponytail flowing back
-    P.append({"type":"polygon","points":[(140,58),(168,52),(178,78),(168,92),(146,78)],
+    # BIG ponytail flowing back (long, prominent -- THE signature hair feature)
+    P.append({"type":"polygon","points":[(138,58),(176,48),(196,76),(188,108),(160,96),(144,78)],
+              "color":HAIR,"outline":HAIR_DARK,"outline_w":2})
+    # ponytail highlight streak
+    P.append({"type":"polygon","points":[(148,62),(176,54),(184,80),(168,90)],
+              "color":(255,255,255),"outline":HAIR_DARK,"outline_w":1})
+    # ponytail tail tip (tapered)
+    P.append({"type":"polygon","points":[(184,82),(198,76),(196,104),(182,100)],
               "color":HAIR,"outline":HAIR_DARK,"outline_w":1})
     # bangs
     P.append({"type":"polygon","points":[(112,58),(144,58),(140,72),(116,72)],
@@ -227,48 +237,49 @@ def riven_prims():
     P.append({"type":"rect","x":102,"y":204,"w":24,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
     P.append({"type":"rect","x":130,"y":204,"w":24,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
 
-    # --- BROKEN RUNIC GREATSWORD (THE feature -- drawn LAST, IN FRONT, HUGE) ---
-    # THE SWORD IS BROKEN: lower 60% is a full blade, then a JAGGED BREAK at ~y=100,
-    # above which is only a short jagged stump (the tip is GONE). Green runes glow.
-    # blade lower (from hilt up to the break point -- wide, full blade)
-    P.append({"type":"polygon","points":[(172,170),(204,170),(200,104),(176,104)],
-              "color":STEEL,"outline":OUT,"outline_w":2})
+    # --- BROKEN RUNIC GREATSWORD (THE feature -- drawn LAST, IN FRONT, ENORMOUS) ---
+    # THE SWORD IS BROKEN: the blade is clearly snapped at ~60% height. Above the
+    # break: only a jagged stump. Below: full blade with green runes. A HUGE green
+    # energy explosion marks the break point (the signature). The sword is WIDE
+    # and takes up a huge portion of the canvas.
+    # blade lower (from hilt up to the break -- WIDE, full blade)
+    P.append({"type":"polygon","points":[(160,200),(210,200),(206,110),(164,110)],
+              "color":STEEL,"outline":OUT,"outline_w":3})
     # blade center groove
-    P.append({"type":"line","start":[188,170],"end":[188,104],"color":(150,150,160),"width":2})
-    # THE JAGGED BREAK at y=104 -- the blade is clearly snapped off (jagged stump)
-    # left side jagged, right side jagged, clearly NOT a point -- it's a break
-    P.append({"type":"polygon","points":[(176,104),(200,104),(196,92),(190,100),(186,86),(182,98),(178,88)],
-              "color":STEEL,"outline":OUT,"outline_w":2})
+    P.append({"type":"line","start":[185,200],"end":[185,110],"color":(150,150,160),"width":3})
+    # THE JAGGED BREAK at y=110 -- the blade is clearly snapped off
+    P.append({"type":"polygon","points":[(164,110),(206,110),(202,96),(196,106),(192,90),(188,104),(184,92),(180,106),(176,96)],
+              "color":STEEL,"outline":OUT,"outline_w":3})
     # short broken stump above the break (clearly the remnant -- NOT a full tip)
-    P.append({"type":"polygon","points":[(180,92),(196,92),(192,82),(184,82)],
-              "color":STEEL,"outline":OUT,"outline_w":2})
-    # jagged broken edge highlight (the snap is obvious)
-    P.append({"type":"line","start":[178,100],"end":[198,100],"color":OUT,"width":2})
+    P.append({"type":"polygon","points":[(172,96),(198,96),(194,82),(176,82)],
+              "color":STEEL,"outline":OUT,"outline_w":3})
+    # jagged broken edge highlight (the snap is obvious -- thick dark line)
+    P.append({"type":"line","start":[164,108],"end":[206,108],"color":OUT,"width":4})
     # BIG green glowing runes along the blade (THE runic energy -- PROMINENT)
-    for ry in (120, 132, 144, 156):
-        P.append({"type":"line","start":[178,ry],"end":[198,ry],"color":RUNE_GREEN,"width":3})
-    # green glow halo around the whole blade
-    P.append({"type":"rect","x":170,"y":100,"w":40,"h":72,"color":(120,220,140),"outline":RUNE_GREEN,"outline_w":1})
-    # hilt guard (gold, wide -- Noxian)
-    P.append({"type":"polygon","points":[(162,170),(214,170),(212,180),(164,180)],
-              "color":(180,140,40),"outline":OUT,"outline_w":1})
+    for ry in (128, 142, 156, 170, 184):
+        P.append({"type":"line","start":[166,ry],"end":[204,ry],"color":RUNE_GREEN,"width":4})
+    # green glow halo around the whole blade (semi-transparent green aura)
+    P.append({"type":"rect","x":156,"y":106,"w":58,"h":96,"color":(120,220,140),"outline":RUNE_GREEN,"outline_w":1})
+    # hilt guard (gold, wide -- Noxian, BIG)
+    P.append({"type":"polygon","points":[(148,200),(222,200),(220,212),(150,212)],
+              "color":(180,140,40),"outline":OUT,"outline_w":2})
     # grip (wrapped, brown)
-    P.append({"type":"rect","x":182,"y":180,"w":14,"h":20,"color":BROWN,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":178,"y":212,"w":16,"h":22,"color":BROWN,"outline":OUT,"outline_w":1})
     # pommel (gold)
-    P.append({"type":"circle","cx":189,"cy":204,"r":6,"color":(180,140,40),"outline":OUT,"outline_w":1})
-    # HUGE green energy explosion at the break (THE signature -- the broken rune energy)
-    P.append({"type":"circle","cx":188,"cy":96,"r":16,"color":RUNE_GREEN,"outline":RUNE_DARK,"outline_w":2})
-    P.append({"type":"circle","cx":188,"cy":96,"r":10,"color":(180,255,200)})
-    P.append({"type":"circle","cx":188,"cy":96,"r":5,"color":(255,255,255)})
-    # green energy wisps trailing up from the break
-    for wy in (78, 70, 62, 54):
-        P.append({"type":"circle","cx":188,"cy":wy,"r":4,"color":RUNE_GREEN,"outline":RUNE_DARK,"outline_w":1})
-    # green sparks radiating from the break
-    for ang in (30, 150, 210, 330):
+    P.append({"type":"circle","cx":186,"cy":240,"r":7,"color":(180,140,40),"outline":OUT,"outline_w":1})
+    # ENORMOUS green energy explosion at the break (THE signature -- MASSIVE)
+    P.append({"type":"circle","cx":185,"cy":100,"r":22,"color":RUNE_GREEN,"outline":RUNE_DARK,"outline_w":3})
+    P.append({"type":"circle","cx":185,"cy":100,"r":14,"color":(180,255,200)})
+    P.append({"type":"circle","cx":185,"cy":100,"r":7,"color":(255,255,255)})
+    # green energy wisps trailing up from the break (BIG)
+    for wy in (76, 66, 56, 46):
+        P.append({"type":"circle","cx":185,"cy":wy,"r":6,"color":RUNE_GREEN,"outline":RUNE_DARK,"outline_w":1})
+    # green sparks radiating from the break (BIG)
+    for ang in (20, 70, 110, 160, 200, 250, 290, 340):
         import math as _m
-        sx = 188 + int(20 * _m.cos(_m.radians(ang)))
-        sy = 96 + int(20 * _m.sin(_m.radians(ang)))
-        P.append({"type":"circle","cx":sx,"cy":sy,"r":3,"color":RUNE_GREEN,"outline":RUNE_DARK,"outline_w":1})
+        sx = 185 + int(28 * _m.cos(_m.radians(ang)))
+        sy = 100 + int(28 * _m.sin(_m.radians(ang)))
+        P.append({"type":"circle","cx":sx,"cy":sy,"r":4,"color":RUNE_GREEN,"outline":RUNE_DARK,"outline_w":1})
     return P
 
 

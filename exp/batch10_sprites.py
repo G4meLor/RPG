@@ -360,16 +360,18 @@ def tryndamere_prims():
     # battle markings (face paint — red stripe across eyes)
     P.append({"type":"line","start":[104,72],"end":[136,72],"color":(180,40,40),"width":2})
 
-    # --- BARE CHEST (THE feature — bare muscular chest, skin showing) ---
-    P.append({"type":"polygon","points":[(96,98),(148,98),(152,175),(92,175)],
-              "color":SKIN,"outline":OUT,"outline_w":1})
-    # chest muscles (pecs — visible muscular build)
-    P.append({"type":"line","start":[120,102],"end":[120,150],"color":(180,145,115),"width":1})
-    P.append({"type":"line","start":[100,116],"end":[120,116],"color":(180,145,115),"width":1})
-    P.append({"type":"line","start":[120,116],"end":[140,116],"color":(180,145,115),"width":1})
-    # abs
-    for ay in (128,140,152,164):
-        P.append({"type":"line","start":[112,ay],"end":[128,ay],"color":(180,145,115),"width":1})
+    # --- BARE CHEST (THE feature — bare muscular chest, skin showing, BIG) ---
+    P.append({"type":"polygon","points":[(92,98),(152,98),(156,178),(88,178)],
+              "color":SKIN,"outline":OUT,"outline_w":2})
+    # chest muscles (pecs — BIG visible muscular build)
+    P.append({"type":"polygon","points":[(96,104),(120,104),(120,128),(96,128)],
+              "color":(195,160,130),"outline":(180,145,115),"outline_w":1})
+    P.append({"type":"polygon","points":[(120,104),(144,104),(144,128),(120,128)],
+              "color":(195,160,130),"outline":(180,145,115),"outline_w":1})
+    # abs (visible 6-pack)
+    for ay in (132,144,156,168):
+        P.append({"type":"line","start":[108,ay],"end":[132,ay],"color":(180,145,115),"width":1})
+    P.append({"type":"line","start":[120,128],"end":[120,172],"color":(180,145,115),"width":1})
 
     # FUR-LINED ARMOR (THE missing feature — big fur mantle over shoulders)
     # left fur shoulder (BIG)
@@ -382,14 +384,16 @@ def tryndamere_prims():
     for fx in (142,152,162):
         P.append({"type":"circle","cx":fx,"cy":96,"r":5,"color":FUR,"outline":FUR_DARK,"outline_w":1})
 
-    # BATTLE-WORN LEATHER STRAPS (THE missing feature — crossing bare chest, X pattern)
-    # leather strap diagonal across chest (left-to-right)
-    P.append({"type":"line","start":[92,110],"end":[152,165],"color":LEATHER,"width":7})
-    P.append({"type":"line","start":[92,110],"end":[152,165],"color":LEATHER_DARK,"width":1})
-    # leather strap buckle (gold, center)
-    P.append({"type":"circle","cx":122,"cy":138,"r":6,"color":GOLD_TRY,"outline":LEATHER_DARK,"outline_w":1})
-    # second strap (right-to-left)
-    P.append({"type":"line","start":[152,110],"end":[92,165],"color":LEATHER,"width":6})
+    # BATTLE-WORN LEATHER STRAPS (THE missing feature — BIG X-crossing bare chest, prominent)
+    # leather strap diagonal across chest (left-to-right, BIG)
+    P.append({"type":"polygon","points":[(88,108),(98,104),(156,170),(150,176)],
+              "color":LEATHER,"outline":LEATHER_DARK,"outline_w":1})
+    # leather strap buckle (gold, center — BIG)
+    P.append({"type":"circle","cx":122,"cy":140,"r":8,"color":GOLD_TRY,"outline":LEATHER_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":122,"cy":140,"r":4,"color":LEATHER_DARK,"outline":OUT,"outline_w":1})
+    # second strap (right-to-left, BIG)
+    P.append({"type":"polygon","points":[(148,104),(158,108),(104,176),(96,170)],
+              "color":LEATHER,"outline":LEATHER_DARK,"outline_w":1})
 
     # --- Arms (muscular, bare) ---
     P.append({"type":"rect","x":78,"y":114,"w":18,"h":54,"color":SKIN,"outline":OUT,"outline_w":1,"radius":5})

@@ -333,22 +333,19 @@ def hwei_prims():
     P.append({"type":"rect","x":106,"y":206,"w":22,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
     P.append({"type":"rect","x":130,"y":206,"w":22,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
 
-    # --- FLOATING PAINT PALETTE (THE feature -- HUGE, beside him, in front) ---
-    # big wooden palette (oval, with thumb hole -- ENORMOUS, dominates right side)
-    P.append({"type":"ellipse","x":168,"y":70,"w":80,"h":60,"color":PALETTE,"outline":OUT,"outline_w":3})
-    # palette thumb hole
-    P.append({"type":"circle","cx":178,"cy":82,"r":7,"color":OUT,"outline":PALETTE_DARK,"outline_w":1})
-    # paint blobs on palette (colorful -- BIG, the magic)
-    P.append({"type":"circle","cx":196,"cy":88,"r":8,"color":PAINT_RED,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":216,"cy":92,"r":8,"color":PAINT_BLUE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":232,"cy":102,"r":7,"color":PAINT_YELLOW,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":212,"cy":112,"r":7,"color":PAINT_GREEN,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":192,"cy":108,"r":6,"color":PAINT_WHITE,"outline":OUT,"outline_w":1})
-    # magical glow around palette (ink magic -- BIG)
-    P.append({"type":"ellipse","x":162,"y":64,"w":92,"h":72,"color":(120,100,160),"outline":(180,160,220),"outline_w":1})
-    # floating ink magic wisps from palette (the magic manifestation)
-    for sy in (60, 50, 40):
-        P.append({"type":"circle","cx":200,"cy":sy,"r":5,"color":INK_BLUE,"outline":INK,"outline_w":1})
+    # --- FLOATING PAINT PALETTE (THE feature -- HUGE, in FRONT of body, centered-right) ---
+    # big wooden palette (classic oval artist palette, ENORMOUS, clearly a palette shape)
+    P.append({"type":"ellipse","x":150,"y":100,"w":100,"h":70,"color":PALETTE,"outline":OUT,"outline_w":3})
+    # palette thumb hole (THE defining palette feature -- the hole you put your thumb through)
+    P.append({"type":"circle","cx":160,"cy":120,"r":9,"color":OUT,"outline":PALETTE_DARK,"outline_w":2})
+    # paint blobs on palette (colorful -- BIG, the magic paints)
+    P.append({"type":"circle","cx":186,"cy":112,"r":9,"color":PAINT_RED,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":210,"cy":116,"r":9,"color":PAINT_BLUE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":232,"cy":128,"r":8,"color":PAINT_YELLOW,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":216,"cy":146,"r":8,"color":PAINT_GREEN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":188,"cy":144,"r":7,"color":PAINT_WHITE,"outline":OUT,"outline_w":1})
+    # palette highlight (wood sheen -- makes it read as wooden)
+    P.append({"type":"line","start":[156,108],"end":[240,108],"color":(210,180,110),"width":2})
 
     # --- Paintbrush (in left hand, ink-stained) ---
     P.append({"type":"line","start":[95,156],"end":[60,100],"color":BRUSH,"width":4})
@@ -506,23 +503,19 @@ def janna_prims():
     EYE = (120, 180, 220)       # blue eyes
     OUT = (40, 50, 70)
 
-    # --- WIND SWIRLS / CYCLONE (THE feature -- BIG, around her, visible) ---
-    # big cyclone swirl behind her (the wind spirit signature)
-    # outer swirl rings (concentric, light blue, semi-transparent feel)
-    P.append({"type":"circle","cx":128,"cy":140,"r":90,"color":(200,230,245),"outline":WIND,"outline_w":1})
-    P.append({"type":"circle","cx":128,"cy":140,"r":70,"color":(210,235,248),"outline":WIND,"outline_w":1})
-    # wind swirl curves (spiral lines -- THE visible wind)
-    P.append({"type":"line","start":[48,140],"end":[208,140],"color":WIND,"width":3})
-    P.append({"type":"line","start":[60,110],"end":[196,110],"color":WIND_DARK,"width":2})
-    P.append({"type":"line","start":[60,170],"end":[196,170],"color":WIND_DARK,"width":2})
-    # swirl arcs (curved wind gusts)
-    P.append({"type":"polygon","points":[(40,100),(80,90),(76,110),(44,116)],"color":WIND,"outline":WIND_DARK,"outline_w":1})
-    P.append({"type":"polygon","points":[(176,90),(216,100),(212,116),(180,110)],"color":WIND,"outline":WIND_DARK,"outline_w":1})
-    P.append({"type":"polygon","points":[(40,180),(80,170),(76,190),(44,196)],"color":WIND,"outline":WIND_DARK,"outline_w":1})
-    P.append({"type":"polygon","points":[(176,170),(216,180),(212,196),(180,190)],"color":WIND,"outline":WIND_DARK,"outline_w":1})
-    # small wind wisps
-    for sx, sy in [(50,80),(200,80),(50,200),(200,200)]:
-        P.append({"type":"circle","cx":sx,"cy":sy,"r":5,"color":WIND_LIGHT,"outline":WIND_DARK,"outline_w":1})
+    # --- WIND SWIRLS / CYCLONE (THE feature -- visible wind gusts, NOT full-canvas) ---
+    # wind swirl curves (visible wind gusts -- BIG but targeted, not filling canvas)
+    P.append({"type":"line","start":[60,130],"end":[196,130],"color":WIND,"width":3})
+    P.append({"type":"line","start":[70,105],"end":[186,105],"color":WIND_DARK,"width":2})
+    P.append({"type":"line","start":[70,165],"end":[186,165],"color":WIND_DARK,"width":2})
+    # swirl arcs (curved wind gusts -- BIG, obvious wind)
+    P.append({"type":"polygon","points":[(50,100),(88,92),(84,112),(54,118)],"color":WIND,"outline":WIND_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(168,92),(206,100),(202,118),(172,112)],"color":WIND,"outline":WIND_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(50,180),(88,172),(84,192),(54,198)],"color":WIND,"outline":WIND_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(168,172),(206,180),(202,198),(172,192)],"color":WIND,"outline":WIND_DARK,"outline_w":1})
+    # small wind wisps (targeted, not full canvas)
+    for sx, sy in [(40,120),(216,120),(40,160),(216,160)]:
+        P.append({"type":"circle","cx":sx,"cy":sy,"r":6,"color":WIND_LIGHT,"outline":WIND_DARK,"outline_w":1})
 
     # --- Long flowing hair (white, HUGE, blowing in wind -- THE missing feature) ---
     P.append({"type":"circle","cx":128,"cy":66,"r":22,"color":HAIR,"outline":OUT,"outline_w":1})

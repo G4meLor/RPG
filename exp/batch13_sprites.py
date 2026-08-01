@@ -378,48 +378,52 @@ def kalista_prims():
     OUT = (15, 25, 25)
 
     # --- MANY FLOATING SPEARS (THE feature — spectral spears orbiting behind/around her) ---
-    # spear 1 (left, diagonal)
-    P.append({"type":"line","start":[40,200],"end":[70,60],"color":SPEAR,"width":4})
-    P.append({"type":"polygon","points":[(70,60),(64,72),(76,72)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":1})
-    # spear 2 (right, diagonal)
-    P.append({"type":"line","start":[216,200],"end":[186,60],"color":SPEAR,"width":4})
-    P.append({"type":"polygon","points":[(186,60),(180,72),(192,72)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":1})
+    # spear 1 (left, diagonal — BIG)
+    P.append({"type":"line","start":[36,210],"end":[68,40],"color":SPEAR,"width":5})
+    P.append({"type":"polygon","points":[(68,40),(60,56),(76,56)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":2})
+    # spear 2 (right, diagonal — BIG)
+    P.append({"type":"line","start":[220,210],"end":[188,40],"color":SPEAR,"width":5})
+    P.append({"type":"polygon","points":[(188,40),(180,56),(196,56)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":2})
     # spear 3 (far left, vertical)
-    P.append({"type":"line","start":[28,210],"end":[28,50],"color":SPEAR,"width":3})
-    P.append({"type":"polygon","points":[(28,50),(24,60),(32,60)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":1})
+    P.append({"type":"line","start":[24,215],"end":[24,45],"color":SPEAR,"width":4})
+    P.append({"type":"polygon","points":[(24,45),(18,58),(30,58)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":1})
     # spear 4 (far right, vertical)
-    P.append({"type":"line","start":[228,210],"end":[228,50],"color":SPEAR,"width":3})
-    P.append({"type":"polygon","points":[(228,50),(224,60),(232,60)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":1})
-    # spear 5 (left-upper, angled)
-    P.append({"type":"line","start":[52,120],"end":[80,40],"color":SPEAR,"width":3})
-    P.append({"type":"polygon","points":[(80,40),(74,50),(84,50)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":1})
-    # spear 6 (right-upper, angled)
-    P.append({"type":"line","start":[204,120],"end":[176,40],"color":SPEAR,"width":3})
-    P.append({"type":"polygon","points":[(176,40),(170,50),(180,50)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":1})
+    P.append({"type":"line","start":[232,215],"end":[232,45],"color":SPEAR,"width":4})
+    P.append({"type":"polygon","points":[(232,45),(226,58),(238,58)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":1})
+    # spear 5 (left-mid, angled)
+    P.append({"type":"line","start":[48,160],"end":[76,30],"color":SPEAR,"width":4})
+    P.append({"type":"polygon","points":[(76,30),(70,44),(82,44)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":1})
+    # spear 6 (right-mid, angled)
+    P.append({"type":"line","start":[208,160],"end":[180,30],"color":SPEAR,"width":4})
+    P.append({"type":"polygon","points":[(180,30),(174,44),(186,44)],"color":SILVER_BONE,"outline":SPEAR_DARK,"outline_w":1})
 
-    # --- Spectral aura (ethereal glow behind body) ---
-    P.append({"type":"circle","cx":128,"cy":130,"r":55,"color":(40,90,85),"outline":None,"outline_w":0})
+    # --- Spectral aura (ethereal glow behind body — BIG, teal) ---
+    P.append({"type":"circle","cx":128,"cy":130,"r":65,"color":(30,80,75),"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":128,"cy":130,"r":50,"color":(40,100,95),"outline":None,"outline_w":0})
 
-    # --- FLOWING TATTERED ROBES (THE missing feature — BIG, ghostly, teal) ---
-    P.append({"type":"polygon","points":[(90,90),(166,90),(180,220),(76,220)],
+    # --- FLOWING TATTERED ROBES (THE missing feature — BIG, ghostly, teal, wider) ---
+    P.append({"type":"polygon","points":[(82,88),(174,88),(192,225),(64,225)],
               "color":GHOST,"outline":OUT,"outline_w":2})
-    # tattered hem (jagged bottom — THE missing feature)
-    P.append({"type":"polygon","points":[(76,220),(88,210),(96,222),(106,208),(116,222),(126,208),(136,222),(146,208),(156,222),(166,210),(180,220),(180,230),(76,230)],
+    # tattered hem (jagged bottom — THE missing feature, BIGGER tatters)
+    P.append({"type":"polygon","points":[(64,225),(78,212),(90,228),(102,210),(114,228),(126,210),(138,228),(150,210),(162,228),(174,212),(192,225),(192,238),(64,238)],
               "color":GHOST,"outline":OUT,"outline_w":1})
-    # robe inner shadow
-    P.append({"type":"polygon","points":[(100,96),(156,96),(168,200),(88,200)],
+    # robe inner shadow (darker teal — depth)
+    P.append({"type":"polygon","points":[(96,94),(160,94),(174,205),(82,205)],
               "color":GHOST_DARK,"outline":OUT,"outline_w":1})
-    # spectral armor plating (THE missing feature — ghostly chest plate)
-    P.append({"type":"polygon","points":[(104,100),(152,100),(148,155),(108,155)],
-              "color":GHOST_LIGHT,"outline":OUT,"outline_w":1})
-    # armor ridges
+    # spectral armor plating (THE missing feature — ghostly chest plate, BIGGER)
+    P.append({"type":"polygon","points":[(100,98),(156,98),(150,160),(106,160)],
+              "color":GHOST_LIGHT,"outline":OUT,"outline_w":2})
+    # armor ridges (horizontal segment lines)
     for ay in (110, 122, 134, 146):
-        P.append({"type":"line","start":[108,ay],"end":[148,ay],"color":GHOST_DARK,"width":1})
-    # center seam
-    P.append({"type":"line","start":[128,100],"end":[128,155],"color":OUT,"width":1})
-    # ethereal glow lines (flowing energy on robe)
-    P.append({"type":"line","start":[96,160],"end":[100,210],"color":GHOST_LIGHT,"width":1})
-    P.append({"type":"line","start":[160,160],"end":[156,210],"color":GHOST_LIGHT,"width":1})
+        P.append({"type":"line","start":[106,ay],"end":[150,ay],"color":GHOST_DARK,"width":1})
+    # center seam (vertical)
+    P.append({"type":"line","start":[128,98],"end":[128,160],"color":OUT,"width":1})
+    # ethereal glow lines (flowing energy on robe — brighter, more visible)
+    P.append({"type":"line","start":[92,165],"end":[96,220],"color":GHOST_LIGHT,"width":2})
+    P.append({"type":"line","start":[164,165],"end":[160,220],"color":GHOST_LIGHT,"width":2})
+    # ethereal wisps (ghostly trails from robe)
+    P.append({"type":"line","start":[80,200],"end":[72,230],"color":GHOST,"width":2})
+    P.append({"type":"line","start":[176,200],"end":[184,230],"color":GHOST,"width":2})
 
     # --- Arms (ghostly, thin, holding spear) ---
     P.append({"type":"rect","x":92,"y":108,"w":12,"h":50,"color":GHOST_DARK,"outline":OUT,"outline_w":1,"radius":4})

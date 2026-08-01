@@ -292,10 +292,15 @@ def karma_prims():
     P.append({"type":"circle","cx":98,"cy":154,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
     P.append({"type":"circle","cx":158,"cy":154,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
 
-    # --- Legs (crossed/floating — robe covers) ---
-    P.append({"type":"ellipse","x":96,"y":196,"w":64,"h":24,"color":ROBE_DARK,"outline":OUT,"outline_w":1})
+    # --- Legs (crossed lotus pose — FLOATING, no feet on ground) ---
+    P.append({"type":"ellipse","x":88,"y":178,"w":80,"h":28,"color":ROBE_DARK,"outline":OUT,"outline_w":1})
+    # crossed legs (visible fold)
+    P.append({"type":"line","start":[96,190],"end":[160,190],"color":ROBE_DARK,"width":1})
     # gold trim at hem
-    P.append({"type":"rect","x":96,"y":196,"w":64,"h":5,"color":GOLD,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":88,"y":178,"w":80,"h":5,"color":GOLD,"outline":OUT,"outline_w":1})
+    # floating energy wisps under her (she hovers)
+    for fx in (96,128,160):
+        P.append({"type":"circle","cx":fx,"cy":210,"r":5,"color":TEAL_BRIGHT,"outline":TEAL,"outline_w":1})
 
     # --- Floating teal energy wisps (spiritual aura) ---
     for sx,sy in [(70,140),(186,140),(80,180),(176,180)]:
@@ -463,29 +468,34 @@ def khazix_prims():
         P.append({"type":"line","start":[lx,ly+16],"end":[lx,ly+30],"color":CHITIN_DARK,"width":4})
         P.append({"type":"circle","cx":lx,"cy":ly+30,"r":5,"color":CHITIN_DARK,"outline":OUT,"outline_w":1})
 
-    # --- SCYTHE-LIKE CLAWS (THE feature — BIG, raised on front legs) ---
-    # Front-left scythe claw (huge curved blade)
-    P.append({"type":"polygon","points":[(72,168),(48,150),(40,176),(60,184)],
+    # --- SCYTHE-LIKE CLAWS (THE feature — HUGE, raised high above body, prominent) ---
+    # Front-left scythe claw (giant curved blade raised up — the icon)
+    P.append({"type":"polygon","points":[(76,160),(40,120),(30,160),(54,176)],
               "color":CLAW,"outline":CLAW_DARK,"outline_w":2})
-    P.append({"type":"line","start":[60,172],"end":[44,160],"color":(255,240,255),"width":1})
-    # secondary claw
-    P.append({"type":"line","start":[76,170],"end":[64,156],"color":CLAW,"width":3})
-    # Front-right scythe claw (huge curved blade)
-    P.append({"type":"polygon","points":[(176,168),(200,150),(208,176),(188,184)],
+    P.append({"type":"line","start":[60,164],"end":[36,128],"color":(255,240,255),"width":1})
+    # secondary scythe claw (slightly smaller, behind)
+    P.append({"type":"polygon","points":[(80,156),(56,118),(48,150),(68,168)],
+              "color":CLAW,"outline":CLAW_DARK,"outline_w":1})
+    # Front-right scythe claw (giant curved blade raised up)
+    P.append({"type":"polygon","points":[(180,160),(216,120),(226,160),(202,176)],
               "color":CLAW,"outline":CLAW_DARK,"outline_w":2})
-    P.append({"type":"line","start":[188,172],"end":[204,160],"color":(255,240,255),"width":1})
-    P.append({"type":"line","start":[172,170],"end":[184,156],"color":CLAW,"width":3})
-    # Back leg claws (smaller)
+    P.append({"type":"line","start":[196,164],"end":[220,128],"color":(255,240,255),"width":1})
+    P.append({"type":"polygon","points":[(176,156),(200,118),(208,150),(188,168)],
+              "color":CLAW,"outline":CLAW_DARK,"outline_w":1})
+    # Back leg claws (smaller, pointing down)
     for lx in (108,140):
         P.append({"type":"line","start":[lx,196],"end":[lx,210],"color":CLAW,"width":2})
 
-    # --- HEAD (insectoid, with mandibles — THE missing feature) ---
+    # --- HEAD (insectoid, with BIG mandibles — THE missing feature) ---
     P.append({"type":"circle","cx":192,"cy":138,"r":20,"color":CHITIN,"outline":CHITIN_DARK,"outline_w":2})
-    # mandibles (THE feature — sharp, curved, big)
-    P.append({"type":"polygon","points":[(200,148),(220,154),(212,166)],
+    # BIG mandibles (THE feature — sharp, curved, prominent, like scythe jaws)
+    P.append({"type":"polygon","points":[(198,148),(224,156),(216,172),(200,164)],
               "color":CLAW,"outline":CLAW_DARK,"outline_w":1})
-    P.append({"type":"polygon","points":[(200,128),(220,122),(212,110)],
+    P.append({"type":"polygon","points":[(198,128),(224,120),(216,104),(200,112)],
               "color":CLAW,"outline":CLAW_DARK,"outline_w":1})
+    # mandible inner teeth
+    P.append({"type":"line","start":[206,150],"end":[214,156],"color":CLAW_DARK,"width":1})
+    P.append({"type":"line","start":[206,126],"end":[214,120],"color":CLAW_DARK,"width":1})
     # chitinous head crest
     P.append({"type":"polygon","points":[(184,122),(200,114),(206,130),(188,134)],"color":CHITIN_DARK,"outline":OUT,"outline_w":1})
     # glowing purple eyes (THE feature — 3 eyes, insectoid, BIG and bright)
@@ -561,39 +571,58 @@ def kled_prims():
     for cx,cy in tail:
         P.append({"type":"circle","cx":cx,"cy":cy,"r":5,"color":LIZARD,"outline":LIZARD_DARK,"outline_w":1})
 
-    # --- KLED (small yordle rider on top of Skaarl) ---
-    # rider body (small, tattered Noxian red armor)
-    P.append({"type":"polygon","points":[(112,96),(144,96),(148,140),(108,140)],
+    # --- KLED (small yordle rider on top of Skaarl — BIGGER, clearer) ---
+    # rider body (tattered Noxian red armor — BIGGER)
+    P.append({"type":"polygon","points":[(108,92),(148,92),(152,142),(104,142)],
               "color":ARMOR,"outline":OUT,"outline_w":1})
-    # armor straps (tattered)
-    P.append({"type":"rect","x":108,"y":116,"w":40,"h":4,"color":STEEL,"outline":OUT,"outline_w":1})
-    P.append({"type":"rect","x":108,"y":128,"w":40,"h":4,"color":STEEL,"outline":OUT,"outline_w":1})
-    # scrap metal plate on chest
-    P.append({"type":"polygon","points":[(118,104),(138,104),(136,128),(120,128)],
+    # tattered armor straps (steel — visible tattered Noxian armor)
+    P.append({"type":"rect","x":104,"y":112,"w":48,"h":5,"color":STEEL,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":104,"y":126,"w":48,"h":5,"color":STEEL,"outline":OUT,"outline_w":1})
+    # tattered edges (jagged bottom of armor = tattered look)
+    for tx in (108,118,128,138,148):
+        P.append({"type":"polygon","points":[(tx-4,142),(tx+4,142),(tx,148)],"color":ARMOR_DARK,"outline":OUT,"outline_w":1})
+    # scrap metal plate on chest (Noxian emblem)
+    P.append({"type":"polygon","points":[(116,100),(140,100),(138,128),(118,128)],
               "color":STEEL,"outline":OUT,"outline_w":1})
+    # Noxian emblem (red)
+    P.append({"type":"circle","cx":128,"cy":114,"r":5,"color":ARMOR,"outline":OUT,"outline_w":1})
 
-    # --- Kled head (small, wild) ---
-    P.append({"type":"circle","cx":128,"cy":82,"r":16,"color":SKIN,"outline":OUT,"outline_w":1})
-    # WILD FACIAL HAIR (THE missing feature — big bushy mustache + sideburns)
-    P.append({"type":"polygon","points":[(112,86),(144,86),(142,100),(114,100)],
+    # --- Kled head (BIGGER, wild — make rider read clearly) ---
+    P.append({"type":"circle","cx":128,"cy":78,"r":18,"color":SKIN,"outline":OUT,"outline_w":1})
+    # WILD FACIAL HAIR (THE missing feature — BIG bushy mustache + sideburns, prominent)
+    P.append({"type":"polygon","points":[(110,84),(146,84),(144,102),(112,102)],
               "color":FUR,"outline":OUT,"outline_w":1})
-    # big bushy mustache
-    P.append({"type":"polygon","points":[(114,92),(142,92),(140,98),(116,98)],"color":FUR,"outline":OUT,"outline_w":1})
-    # manic eyes (red, wild)
-    P.append({"type":"circle","cx":122,"cy":82,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":134,"cy":82,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
-    # manic grin
-    P.append({"type":"polygon","points":[(120,90),(136,90),(134,94),(122,94)],"color":OUT,"outline":None,"outline_w":0})
-    # wild hair top
-    P.append({"type":"polygon","points":[(112,70),(144,70),(140,60),(116,60)],"color":FUR,"outline":OUT,"outline_w":1})
-    # scrap-metal helmet
-    P.append({"type":"polygon","points":[(112,68),(144,68),(140,58),(116,58)],"color":STEEL,"outline":OUT,"outline_w":1})
+    # BIG bushy mustache (the icon of his face)
+    P.append({"type":"polygon","points":[(112,90),(144,90),(142,100),(114,100)],"color":FUR,"outline":OUT,"outline_w":1})
+    # mustache texture (wild strands)
+    for mx in (116,124,132,140):
+        P.append({"type":"line","start":[mx,90],"end":[mx,98],"color":ARMOR_DARK,"width":1})
+    # big sideburns (wild facial hair)
+    P.append({"type":"polygon","points":[(110,80),(116,80),(114,96),(110,94)],"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(140,80),(146,80),(146,94),(142,96)],"color":FUR,"outline":OUT,"outline_w":1})
+    # manic eyes (red, wild — BIGGER)
+    P.append({"type":"circle","cx":121,"cy":78,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":135,"cy":78,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    # eye glow (manic)
+    P.append({"type":"circle","cx":121,"cy":77,"r":2,"color":(255,150,120),"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":135,"cy":77,"r":2,"color":(255,150,120),"outline":None,"outline_w":0})
+    # manic grin (wide, crazy)
+    P.append({"type":"polygon","points":[(118,88),(138,88),(136,94),(120,94)],"color":OUT,"outline":None,"outline_w":0})
+    # wild hair top (bushy, sticking up)
+    P.append({"type":"polygon","points":[(110,66),(146,66),(142,54),(116,54)],"color":FUR,"outline":OUT,"outline_w":1})
+    # wild hair tufts (sticking up crazily)
+    for hx in (116,124,132,140):
+        P.append({"type":"polygon","points":[(hx-3,54),(hx+3,54),(hx,46)],"color":FUR,"outline":OUT,"outline_w":1})
+    # scrap-metal helmet (Noxian)
+    P.append({"type":"polygon","points":[(110,64),(146,64),(142,52),(116,52)],"color":STEEL,"outline":OUT,"outline_w":1})
+    # helmet spike (Noxian)
+    P.append({"type":"polygon","points":[(126,52),(130,52),(128,42)],"color":STEEL,"outline":OUT,"outline_w":1})
 
-    # --- Rider arms (holding sword) ---
-    P.append({"type":"rect","x":100,"y":104,"w":12,"h":32,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
-    P.append({"type":"rect","x":144,"y":104,"w":12,"h":32,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
-    P.append({"type":"circle","cx":106,"cy":138,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":150,"cy":138,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+    # --- Rider arms (holding sword — BIGGER) ---
+    P.append({"type":"rect","x":96,"y":100,"w":14,"h":36,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":146,"y":100,"w":14,"h":36,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"circle","cx":103,"cy":138,"r":6,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":153,"cy":138,"r":6,"color":SKIN,"outline":OUT,"outline_w":1})
 
     # --- SCRAP-METAL SWORD (THE missing feature — held up) ---
     P.append({"type":"line","start":[150,138],"end":[178,80],"color":SWORD,"width":5})

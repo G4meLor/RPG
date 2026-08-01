@@ -83,3 +83,44 @@ Loop: render → VLM critiques vs canon → revise → repeat (stop at cm>=7).
 - `exp/vlm_sprite_fix5.py` — splash fresh-gen best-of-N (regressed, kept for record)
 - `exp/hand_author_sprites.py` — hand-authored sprites (Ahri/Annie saved at 8/10)
 - `exp/recompute_scores.py` — re-gate all 170, max-of-2 to reduce variance
+
+## Batch 1 hand-author results (2026-08-01)
+
+Hand-authored 14 champs total (4 from POC + 10 new). Saved only beats-base:
+
+| Champ | Result | Saved? |
+|-------|--------|--------|
+| Ahri | 6→8 | ✅ |
+| Annie | 6→9 | ✅ |
+| Yuumi | 6→8 | ✅ |
+| TwistedFate | 6→9 | ✅ (re-gate confirmed 9) |
+| Poppy | 6→8 | ✅ (re-gate 6, gate variance) |
+| Pantheon | 6→6 | ❌ tie |
+| Kindred | 6→6 | ❌ tie |
+| Ezreal | 6→5 | ❌ |
+| Thresh | 6→5 | ❌ |
+| Teemo | 6→4 | ❌ |
+| Sejuani | 6→4 | ❌ |
+| Fiora | 6→4 | ❌ |
+| Darius | 7→4 | ❌ |
+| MonkeyKing | 6→3 | ❌ |
+
+**5 wins committed.** Pattern: hand-author wins ONLY when ONE huge UNIQUE
+feature dominates the silhouette (cat-on-book, giant-hammer-tiny-girl,
+gambler-hat+cards, 9 tails, pigtails+bear). Loses when the feature is
+present but champ-ambiguous (monkey+tail = generic monkey), or when the
+signature weapon is missing (Wukong's staff, Teemo's blowgun).
+
+## 512px test — REJECTED
+
+512px fresh-gen tested on 8 champs: 1/8 beats 256, mean delta -2.88.
+The VLM 31b is calibrated to 256px; at 512px it dilutes the bold features
+that scored 8/10. 256px is the right resolution. Passing champs NOT redone.
+
+## Current honest state
+
+- mean: 5.79/10 (target 6.0)
+- recognizable: 96/170 = 56% (target 70%)
+- stance: 159/170 = 94% (target 90% ✅)
+- verify_assets: OK
+- 5 hand-author wins committed (Ahri/Annie/Yuumi/TF/Poppy at 8-9/10)

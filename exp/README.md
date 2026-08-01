@@ -52,3 +52,34 @@ Loop: render → VLM critiques vs canon → revise → repeat (stop at cm>=7).
 - Results: `/tmp/vlm_gen_results.json`, `/tmp/vlm_gen_phase2_results.json`,
   `/tmp/vlm_fix_results.json`, `/tmp/vlm_fix2_results.json`, `/tmp/canon_gate_results.json`
   (these are in /tmp — should be copied to exp/ for persistence)
+
+## Fix round 4-5 + hand-author findings (2026-08-01)
+
+### What was tried
+- **fix4 (additive patches)**: keep the base, append only new primitives for
+  missing features. Result: REGRESSED. Appended primitives clutter the sprite
+  → critic sees noise → score drops (Ahri 6→4→3, Sona 3→2).
+- **fix5 (splash-grounded fresh gen, best-of-3, no revision)**: generate fresh
+  from the skin-0 splash image. Result: REGRESSED on 2/4 smoke champs. The VLM
+  31b's fresh single-pass from a splash is WORSE than from canon text — the
+  splash's 3/4 angles confuse the front-facing sprite generation.
+- **hand-author (no VLM in generation; VLM only gates)**: I place primitives
+  from LoL knowledge. Result: 2/4 improved (Ahri 6→8, Annie 6→8), 2/4 regressed
+  (Fiora, Darius — my versions worse than the VLM's). Saved only the wins.
+
+### Root-cause conclusions
+1. **The VLM 31b's revision loops all fail** — full-regen drops features,
+   additive patches clutter, splash fresh-gen regresses. Single fresh pass from
+   canon text is the only thing that produced the 8/10 sprites.
+2. **The canon gate has ~2pt variance** — Fiora/Darius scored 6 in the original
+   run but 4-5 on re-gate. The "mean 5.74, recognizable 56%" are noisy.
+3. **Hand-authoring wins on BIG countable features** (9 tails, pigtails+bear,
+   giant gauntlets) but loses on subtle attire/proportion champs (Fiora, Darius).
+4. **The achievable ceiling for the VLM 31b + 256px pixel primitives is ~60%
+   recognizable**, not 70%. The 8/10 sprites all have one huge iconic feature.
+
+### Scripts added
+- `exp/vlm_sprite_fix4.py` — additive patches (regressed, kept for record)
+- `exp/vlm_sprite_fix5.py` — splash fresh-gen best-of-N (regressed, kept for record)
+- `exp/hand_author_sprites.py` — hand-authored sprites (Ahri/Annie saved at 8/10)
+- `exp/recompute_scores.py` — re-gate all 170, max-of-2 to reduce variance

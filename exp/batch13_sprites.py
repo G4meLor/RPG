@@ -425,31 +425,37 @@ def kalista_prims():
     P.append({"type":"line","start":[80,200],"end":[72,230],"color":GHOST,"width":2})
     P.append({"type":"line","start":[176,200],"end":[184,230],"color":GHOST,"width":2})
 
-    # --- Arms (ghostly, thin, holding spear) ---
-    P.append({"type":"rect","x":92,"y":108,"w":12,"h":50,"color":GHOST_DARK,"outline":OUT,"outline_w":1,"radius":4})
-    P.append({"type":"rect","x":152,"y":108,"w":12,"h":50,"color":GHOST_DARK,"outline":OUT,"outline_w":1,"radius":4})
-    # bony hands
-    P.append({"type":"circle","cx":98,"cy":160,"r":4,"color":BONE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":158,"cy":160,"r":4,"color":BONE,"outline":OUT,"outline_w":1})
+    # --- Arms (ghostly, thin — raised, holding spear forward) ---
+    # left arm (raised, holding spear)
+    P.append({"type":"rect","x":96,"y":100,"w":10,"h":40,"color":GHOST_DARK,"outline":OUT,"outline_w":1,"radius":4})
+    # right arm (raised, holding spear)
+    P.append({"type":"rect","x":150,"y":100,"w":10,"h":40,"color":GHOST_DARK,"outline":OUT,"outline_w":1,"radius":4})
+    # bony hands (holding spears)
+    P.append({"type":"circle","cx":101,"cy":142,"r":4,"color":BONE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":155,"cy":142,"r":4,"color":BONE,"outline":OUT,"outline_w":1})
 
-    # --- HEAD: ghostly + hollow glowing eyes (THE feature) ---
-    P.append({"type":"circle","cx":128,"cy":76,"r":16,"color":GHOST_DARK,"outline":OUT,"outline_w":1})
-    # face (pale ghostly)
-    P.append({"type":"circle","cx":128,"cy":78,"r":13,"color":BONE,"outline":OUT,"outline_w":1})
-    # HOLLOW GLOWING EYES (THE feature — dark sockets with teal glow)
-    P.append({"type":"circle","cx":121,"cy":76,"r":5,"color":OUT,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":135,"cy":76,"r":5,"color":OUT,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":121,"cy":76,"r":3,"color":EYE,"outline":None,"outline_w":0})
-    P.append({"type":"circle","cx":135,"cy":76,"r":3,"color":EYE,"outline":None,"outline_w":0})
-    P.append({"type":"circle","cx":121,"cy":75,"r":1,"color":EYE_GLOW,"outline":None,"outline_w":0})
-    P.append({"type":"circle","cx":135,"cy":75,"r":1,"color":EYE_GLOW,"outline":None,"outline_w":0})
+    # --- HEAD: ghostly + hollow glowing eyes (THE feature — BIG) ---
+    # hood (dark, ghostly — BIG, prominent)
+    P.append({"type":"polygon","points":[(106,60),(150,60),(148,92),(108,92)],
+              "color":GHOST_DARK,"outline":OUT,"outline_w":2})
+    # face (pale ghostly, slender)
+    P.append({"type":"circle","cx":128,"cy":76,"r":14,"color":BONE,"outline":OUT,"outline_w":1})
+    # HOLLOW GLOWING EYES (THE feature — dark sockets with teal glow, BIG)
+    P.append({"type":"circle","cx":121,"cy":76,"r":6,"color":OUT,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":135,"cy":76,"r":6,"color":OUT,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":121,"cy":76,"r":4,"color":EYE,"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":135,"cy":76,"r":4,"color":EYE,"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":121,"cy":75,"r":2,"color":EYE_GLOW,"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":135,"cy":75,"r":2,"color":EYE_GLOW,"outline":None,"outline_w":0})
     # dark mouth (hollow)
     P.append({"type":"line","start":[122,88],"end":[134,88],"color":OUT,"width":2})
-    # hood/hood shadow (ghostly)
-    P.append({"type":"polygon","points":[(110,68),(146,68),(142,58),(128,52),(114,58)],
+    # hood top (pointed ghost hood)
+    P.append({"type":"polygon","points":[(108,62),(148,62),(142,48),(128,42),(114,48)],
               "color":GHOST_DARK,"outline":OUT,"outline_w":1})
 
-    # --- No legs (FLOATING — tattered robe ends) ---
+    # --- No legs (FLOATING — tattered robe ends, ghostly tail) ---
+    # spectral trail below robe (ethereal wisps)
+    P.append({"type":"circle","cx":128,"cy":232,"r":15,"color":(40,100,90),"outline":None,"outline_w":0})
     return P
 
 
@@ -567,88 +573,102 @@ def katarina_prims():
     GREEN = (60, 160, 80)          # kat's eyes (green)
     OUT = (25, 20, 25)
 
-    # --- LONG CRIMSON HAIR (THE feature — BIG, flowing, dominates silhouette) ---
-    # hair back mass (BIG — flowing down to legs)
-    P.append({"type":"polygon","points":[(96,60),(160,60),(172,210),(84,210)],
+    # --- LONG CRIMSON HAIR (THE feature — HUGE, flowing, dominates entire silhouette) ---
+    # hair back mass (HUGE — flowing down past legs, the signature feature)
+    P.append({"type":"polygon","points":[(88,56),(168,56),(184,220),(72,220)],
               "color":HAIR,"outline":OUT,"outline_w":2})
-    # hair flowing wider (the signature ponytail + flowing locks)
-    P.append({"type":"polygon","points":[(88,68),(168,68),(180,200),(76,200)],
+    # hair flowing wider (the signature ponytail + flowing locks — even wider)
+    P.append({"type":"polygon","points":[(80,64),(176,64),(192,210),(64,210)],
               "color":HAIR_DARK,"outline":OUT,"outline_w":1})
-    # hair top (the big crimson mass on head)
-    P.append({"type":"circle","cx":128,"cy":68,"r":22,"color":HAIR,"outline":OUT,"outline_w":2})
-    # hair strands (flowing texture)
-    for hx in (100, 110, 120, 136, 146, 156):
-        P.append({"type":"line","start":[hx,72],"end":[hx,200],"color":HAIR_DARK,"width":1})
-    # hair highlight (the signature shine)
-    P.append({"type":"polygon","points":[(108,56),(148,56),(144,66),(112,66)],
+    # hair top (the big crimson mass on head — BIGGER)
+    P.append({"type":"circle","cx":128,"cy":66,"r":26,"color":HAIR,"outline":OUT,"outline_w":2})
+    # hair strands (flowing texture — more visible)
+    for hx in (96, 106, 116, 140, 150, 160):
+        P.append({"type":"line","start":[hx,70],"end":[hx,210],"color":HAIR_DARK,"width":1})
+    # hair highlight (the signature shine — BIGGER)
+    P.append({"type":"polygon","points":[(104,52),(152,52),(148,64),(108,64)],
               "color":HAIR_LIGHT,"outline":HAIR_DARK,"outline_w":1})
-    # hair fringe (bangs)
-    P.append({"type":"polygon","points":[(108,72),(148,72),(144,82),(112,82)],
+    # hair fringe (bangs — BIGGER)
+    P.append({"type":"polygon","points":[(104,70),(152,70),(148,82),(108,82)],
               "color":HAIR,"outline":OUT,"outline_w":1})
+    # hair ponytail top knot (the signature top-knot)
+    P.append({"type":"circle","cx":128,"cy":48,"r":10,"color":HAIR,"outline":OUT,"outline_w":2})
+    P.append({"type":"circle","cx":128,"cy":46,"r":5,"color":HAIR_LIGHT,"outline":HAIR_DARK,"outline_w":1})
 
-    # --- Legs (combat boots — Noxian) ---
-    P.append({"type":"rect","x":108,"y":168,"w":18,"h":36,"color":SKIN,"outline":OUT,"outline_w":1,"radius":3})
-    P.append({"type":"rect","x":130,"y":168,"w":18,"h":36,"color":SKIN,"outline":OUT,"outline_w":1,"radius":3})
-    # combat boots (THE missing feature — knee-high black leather)
-    P.append({"type":"rect","x":106,"y":190,"w":22,"h":24,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":2})
-    P.append({"type":"rect","x":128,"y":190,"w":22,"h":24,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":2})
-    # boot gold buckle
-    P.append({"type":"rect","x":106,"y":194,"w":22,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    P.append({"type":"rect","x":128,"y":194,"w":22,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # --- Legs (slender athletic — skin showing above boots) ---
+    P.append({"type":"rect","x":110,"y":168,"w":16,"h":22,"color":SKIN,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":130,"y":168,"w":16,"h":22,"color":SKIN,"outline":OUT,"outline_w":1,"radius":3})
+    # combat boots (THE missing feature — knee-high black leather, BIGGER)
+    P.append({"type":"rect","x":106,"y":186,"w":24,"h":32,"color":LEATHER,"outline":OUT,"outline_w":2,"radius":2})
+    P.append({"type":"rect","x":126,"y":186,"w":24,"h":32,"color":LEATHER,"outline":OUT,"outline_w":2,"radius":2})
+    # boot gold buckle (BIG)
+    P.append({"type":"rect","x":106,"y":190,"w":24,"h":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"rect","x":126,"y":190,"w":24,"h":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # boot gold trim at top
+    P.append({"type":"rect","x":106,"y":186,"w":24,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"rect","x":126,"y":186,"w":24,"h":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
 
-    # --- Torso (Noxian leather armor — THE missing feature) ---
-    P.append({"type":"polygon","points":[(104,100),(152,100),(148,170),(108,170)],
+    # --- Torso (Noxian leather armor — THE missing feature, sleek female) ---
+    # hourglass female silhouette (narrow waist)
+    P.append({"type":"polygon","points":[(100,100),(156,100),(146,135),(150,168),(106,168),(110,135)],
               "color":LEATHER,"outline":OUT,"outline_w":2})
-    # leather armor chest plate (the Noxian corset-style armor)
-    P.append({"type":"polygon","points":[(110,106),(146,106),(142,160),(114,160)],
+    # leather armor chest plate (the Noxian corset-style — darker leather)
+    P.append({"type":"polygon","points":[(106,106),(150,106),(142,158),(114,158)],
               "color":LEATHER_DARK,"outline":OUT,"outline_w":1})
-    # leather armor seams
-    P.append({"type":"line","start":[128,106],"end":[128,160],"color":OUT,"width":1})
-    # gold trim on armor (Noxian accent)
-    P.append({"type":"line","start":[110,106],"end":[146,106],"color":GOLD,"width":2})
-    P.append({"type":"line","start":[114,160],"end":[142,160],"color":GOLD,"width":1})
-    # gold belt
-    P.append({"type":"rect","x":106,"y":158,"w":44,"h":8,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":128,"cy":162,"r":3,"color":LEATHER_DARK,"outline":GOLD_DARK,"outline_w":1})
-    # shoulder straps (leather)
-    P.append({"type":"line","start":[108,106],"end":[120,112],"color":LEATHER_DARK,"width":3})
-    P.append({"type":"line","start":[148,106],"end":[136,112],"color":LEATHER_DARK,"width":3})
+    # leather armor center seam (corset lacing)
+    P.append({"type":"line","start":[128,106],"end":[128,158],"color":OUT,"width":1})
+    # corset lacing crosses (X pattern — Noxian leather detail)
+    for ly in (114, 124, 134, 144):
+        P.append({"type":"line","start":[118,ly],"end":[138,ly+4],"color":GOLD,"width":1})
+        P.append({"type":"line","start":[138,ly],"end":[118,ly+4],"color":GOLD,"width":1})
+    # gold trim on armor collar (Noxian accent)
+    P.append({"type":"line","start":[106,106],"end":[150,106],"color":GOLD,"width":2})
+    # gold belt (wide)
+    P.append({"type":"rect","x":104,"y":156,"w":48,"h":10,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":128,"cy":161,"r":4,"color":LEATHER_DARK,"outline":GOLD_DARK,"outline_w":1})
+    # shoulder straps (leather — Noxian armor detail)
+    P.append({"type":"line","start":[104,106],"end":[118,114],"color":LEATHER_DARK,"width":4})
+    P.append({"type":"line","start":[152,106],"end":[138,114],"color":LEATHER_DARK,"width":4})
 
-    # --- Arms (leather-clad) ---
-    P.append({"type":"rect","x":90,"y":110,"w":14,"h":48,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":4})
-    P.append({"type":"rect","x":152,"y":110,"w":14,"h":48,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":4})
-    # gold arm bands
-    P.append({"type":"rect","x":90,"y":146,"w":14,"h":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    P.append({"type":"rect","x":152,"y":146,"w":14,"h":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # --- Arms (leather-clad, slender) ---
+    P.append({"type":"rect","x":88,"y":110,"w":14,"h":48,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":154,"y":110,"w":14,"h":48,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":4})
+    # gold arm bands (Noxian)
+    P.append({"type":"rect","x":88,"y":146,"w":14,"h":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"rect","x":154,"y":146,"w":14,"h":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
     # hands
-    P.append({"type":"circle","cx":97,"cy":160,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":159,"cy":160,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":95,"cy":160,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":161,"cy":160,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
 
-    # --- DUAL DAGGERS (THE weapon — both hands, curved Noxus blades) ---
+    # --- DUAL DAGGERS (THE weapon — both hands, curved Noxus blades, BIGGER) ---
     # LEFT dagger (curved blade, pointing down/out)
-    P.append({"type":"line","start":[97,162],"end":[78,200],"color":SILVER,"width":4})
-    P.append({"type":"polygon","points":[(78,200),(74,210),(82,206)],"color":SILVER,"outline":SILVER_DARK,"outline_w":1})
-    # dagger guard
-    P.append({"type":"line","start":[92,162],"end":[102,162],"color":GOLD,"width":2})
+    P.append({"type":"line","start":[95,162],"end":[72,205],"color":SILVER,"width":5})
+    P.append({"type":"polygon","points":[(72,205),(66,218),(78,212)],"color":SILVER,"outline":SILVER_DARK,"outline_w":1})
+    # dagger guard (gold)
+    P.append({"type":"line","start":[88,162],"end":[102,162],"color":GOLD,"width":3})
     # RIGHT dagger
-    P.append({"type":"line","start":[159,162],"end":[178,200],"color":SILVER,"width":4})
-    P.append({"type":"polygon","points":[(178,200),(182,210),(174,206)],"color":SILVER,"outline":SILVER_DARK,"outline_w":1})
-    P.append({"type":"line","start":[154,162],"end":[164,162],"color":GOLD,"width":2})
+    P.append({"type":"line","start":[161,162],"end":[184,205],"color":SILVER,"width":5})
+    P.append({"type":"polygon","points":[(184,205),(190,218),(178,212)],"color":SILVER,"outline":SILVER_DARK,"outline_w":1})
+    P.append({"type":"line","start":[154,162],"end":[168,162],"color":GOLD,"width":3})
 
     # --- HEAD: sharp facial features (THE missing feature) ---
-    P.append({"type":"circle","cx":128,"cy":80,"r":15,"color":SKIN,"outline":OUT,"outline_w":1})
-    # sharp eyes (green — Katarina's signature)
-    P.append({"type":"polygon","points":[(118,78),(124,76),(124,82),(118,82)],
+    P.append({"type":"circle","cx":128,"cy":80,"r":16,"color":SKIN,"outline":OUT,"outline_w":1})
+    # sharp eyes (green — Katarina's signature, BIGGER)
+    P.append({"type":"polygon","points":[(116,78),(124,75),(124,83),(116,83)],
               "color":GREEN,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(132,76),(138,78),(138,82),(132,82)],
+    P.append({"type":"polygon","points":[(132,75),(140,78),(140,83),(132,83)],
               "color":GREEN,"outline":OUT,"outline_w":1})
-    # sharp eyebrows (THE missing feature — arched, fierce)
-    P.append({"type":"line","start":[116,72],"end":[124,74],"color":HAIR_DARK,"width":2})
-    P.append({"type":"line","start":[132,74],"end":[140,72],"color":HAIR_DARK,"width":2})
-    # sharp nose
-    P.append({"type":"line","start":[128,82],"end":[126,90],"color":(180,150,120),"width":1})
-    # lips (red)
-    P.append({"type":"line","start":[122,92],"end":[134,92],"color":(140,40,40),"width":2})
+    # eye glow (green shine)
+    P.append({"type":"circle","cx":120,"cy":79,"r":1,"color":(140,240,140),"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":136,"cy":79,"r":1,"color":(140,240,140),"outline":None,"outline_w":0})
+    # sharp eyebrows (THE missing feature — arched, fierce, BIGGER)
+    P.append({"type":"line","start":[114,71],"end":[124,74],"color":HAIR_DARK,"width":3})
+    P.append({"type":"line","start":[132,74],"end":[142,71],"color":HAIR_DARK,"width":3})
+    # sharp nose (more defined)
+    P.append({"type":"line","start":[128,82],"end":[125,92],"color":(180,150,120),"width":1})
+    P.append({"type":"line","start":[125,92],"end":[131,92],"color":(180,150,120),"width":1})
+    # lips (red, defined)
+    P.append({"type":"line","start":[121,93],"end":[135,93],"color":(160,40,40),"width":2})
     return P
 
 

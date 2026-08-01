@@ -193,6 +193,24 @@ def test_weapon_dual_pistols_adds_pixels():
     bc = _knight_base_cov()
     assert _weapon_cov("dual_pistols") > bc + 0.003, "dual_pistols didn't add pixels"
 
+# --- RC2 iteration: attire + body_texture feature drawers ----------------------
+# attire is the single biggest missing feature (136 mentions of robe/armor in
+# the gate's features_missing). It must add visible pixels on a knight base.
+# body_texture (46 mentions) must also add pixels.
+
+def test_feature_attire_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("attire") > bc + 0.003, "attire didn't add pixels"
+
+def test_feature_body_texture_adds_pixels():
+    bc = _knight_base_cov()
+    assert _feat_cov("body_texture") > bc + 0.003, "body_texture didn't add pixels"
+
+def test_attire_and_body_texture_in_vocab():
+    from src.assets_gen.generate import RENDERER_VOCAB
+    assert "attire" in RENDERER_VOCAB["features"], "attire missing from RENDERER_VOCAB"
+    assert "body_texture" in RENDERER_VOCAB["features"], "body_texture missing from RENDERER_VOCAB"
+
 # --- Task 6: float_eye unique body + RENDERER_VOCAB single source of truth --
 
 def test_float_eye_renders_and_differs():

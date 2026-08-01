@@ -32,11 +32,16 @@ def kayn_prims():
     EYE = (220, 60, 60)         # glowing red eyes
     OUT = (20, 15, 20)
 
-    # --- Dark shadow energy aura (behind, THE missing feature) ---
-    P.append({"type":"circle","cx":60,"cy":120,"r":20,"color":SHADOW,"outline":SHADOW_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":196,"cy":120,"r":20,"color":SHADOW,"outline":SHADOW_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":50,"cy":160,"r":15,"color":SHADOW_DARK,"outline":SHADOW,"outline_w":1})
-    P.append({"type":"circle","cx":206,"cy":160,"r":15,"color":SHADOW_DARK,"outline":SHADOW,"outline_w":1})
+    # --- Dark shadow energy aura (THE missing feature -- BIG, obvious, around body) ---
+    P.append({"type":"circle","cx":50,"cy":110,"r":24,"color":SHADOW,"outline":SHADOW_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":206,"cy":110,"r":24,"color":SHADOW,"outline":SHADOW_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":40,"cy":150,"r":20,"color":SHADOW_DARK,"outline":SHADOW,"outline_w":1})
+    P.append({"type":"circle","cx":216,"cy":150,"r":20,"color":SHADOW_DARK,"outline":SHADOW,"outline_w":1})
+    # shadow wisps trailing from body (THE dark shadow energy)
+    for sy in (90, 80, 70):
+        P.append({"type":"circle","cx":50,"cy":sy,"r":6,"color":SHADOW,"outline":SHADOW_DARK,"outline_w":1})
+    for sy in (90, 80, 70):
+        P.append({"type":"circle","cx":206,"cy":sy,"r":6,"color":SHADOW,"outline":SHADOW_DARK,"outline_w":1})
 
     # --- Hair (dark) ---
     P.append({"type":"circle","cx":118,"cy":66,"r":20,"color":HAIR,"outline":OUT,"outline_w":1})
@@ -127,9 +132,12 @@ def kindred_prims():
     EYE = (140, 200, 255)       # spectral blue eyes
     OUT = (40, 30, 35)
 
-    # --- Ethereal blue glow aura (behind) ---
-    P.append({"type":"circle","cx":128,"cy":130,"r":70,"color":(180,210,240),"outline":GLOW,"outline_w":1})
-    P.append({"type":"circle","cx":128,"cy":130,"r":50,"color":(200,225,250),"outline":GLOW,"outline_w":1})
+    # --- Ethereal blue glow aura (behind -- THE missing feature, BIG but targeted) ---
+    P.append({"type":"circle","cx":96,"cy":130,"r":40,"color":(180,210,240),"outline":GLOW,"outline_w":2})
+    P.append({"type":"circle","cx":180,"cy":100,"r":35,"color":(180,210,240),"outline":GLOW,"outline_w":2})
+    # glow wisps (ethereal blue, trailing)
+    for sx, sy in [(60,100),(60,160),(220,60),(230,140)]:
+        P.append({"type":"circle","cx":sx,"cy":sy,"r":6,"color":GLOW_BRIGHT,"outline":GLOW,"outline_w":1})
 
     # --- BIG SPECTRAL WOLF (THE feature -- large, looming behind/beside lamb) ---
     # wolf body (looming large, right side)

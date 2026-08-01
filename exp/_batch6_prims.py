@@ -116,23 +116,25 @@ def hecarim_prims():
     SPECTRAL = (90, 200, 200)    # spectral teal glow
     SPECTRAL_DARK = (50, 140, 150)
     SPECTRAL_LIGHT = (160, 230, 230)
-    GHOST = (180, 220, 220)      # ghostly body
-    GHOST_DARK = (100, 160, 170)
+    GHOST = (120, 180, 160)      # ghostly body (teal-green-grey, like committed)
+    GHOST_DARK = (70, 120, 100)
     BONE = (220, 215, 200)       # skeletal features
     BONE_DARK = (140, 135, 120)
-    ARMOR = (110, 120, 135)      # heavy plate armor
-    ARMOR_DARK = (60, 70, 85)
-    ARMOR_LIGHT = (140, 150, 165)
-    STEEL = (160, 170, 185)
+    ARMOR = (45, 70, 80)         # heavy plate armor (dark, like committed)
+    ARMOR_DARK = (30, 50, 60)
+    ARMOR_LIGHT = (75, 100, 110)
+    STEEL = (110, 130, 140)
     GOLD = (215, 175, 60)
     TUSK = (235, 230, 215)
     EYE = (120, 255, 240)        # glowing teal eyes
-    OUT = (25, 35, 40)
+    OUT = (20, 30, 35)
 
-    # --- Spectral teal glow aura (behind everything, BIG) ---
-    P.append({"type":"ellipse","x":16,"y":70,"w":224,"h":180,"color":(60,160,170),"outline":SPECTRAL,"outline_w":1})
-    P.append({"type":"ellipse","x":24,"y":80,"w":208,"h":160,"color":(80,180,190),"outline":SPECTRAL,"outline_w":1})
-    P.append({"type":"ellipse","x":32,"y":90,"w":192,"h":140,"color":(100,200,210),"outline":SPECTRAL,"outline_w":1})
+    # --- Spectral teal glow wisps (targeted, NOT full-canvas -- keep silhouette clean) ---
+    # glow wisps around the figure (spectral, but don't fill the canvas)
+    P.append({"type":"circle","cx":30,"cy":120,"r":14,"color":(90,180,190),"outline":SPECTRAL,"outline_w":1})
+    P.append({"type":"circle","cx":226,"cy":140,"r":12,"color":(90,180,190),"outline":SPECTRAL,"outline_w":1})
+    P.append({"type":"circle","cx":20,"cy":170,"r":10,"color":SPECTRAL_DARK,"outline":SPECTRAL,"outline_w":1})
+    P.append({"type":"circle","cx":236,"cy":180,"r":10,"color":SPECTRAL_DARK,"outline":SPECTRAL,"outline_w":1})
 
     # --- CENTAUR BODY (horse lower half -- THE feature, big, clearly horse-shaped) ---
     # horse body (big rounded mass, low center, ghostly -- WIDE so it reads as horse)
@@ -142,12 +144,16 @@ def hecarim_prims():
     # horse rump (back, left -- big, rounded)
     P.append({"type":"circle","cx":50,"cy":176,"r":34,"color":GHOST,"outline":OUT,"outline_w":2})
     # horse legs (4, ghostly, skeletal-ish -- SPREAD so the horse body reads)
-    for lx in (58, 92, 140, 188):
-        P.append({"type":"rect","x":lx,"y":204,"w":20,"h":26,"color":GHOST_DARK,"outline":OUT,"outline_w":1,"radius":3})
-        # spectral hoof (glowing teal)
-        P.append({"type":"rect","x":lx-2,"y":224,"w":24,"h":10,"color":SPECTRAL_DARK,"outline":SPECTRAL,"outline_w":1,"radius":2})
+    # FRONT legs (right side, under chest -- close together like a horse)
+    for lx in (190, 206):
+        P.append({"type":"rect","x":lx,"y":200,"w":18,"h":28,"color":GHOST_DARK,"outline":OUT,"outline_w":1,"radius":3})
+        P.append({"type":"rect","x":lx-2,"y":222,"w":22,"h":10,"color":SPECTRAL_DARK,"outline":SPECTRAL,"outline_w":1,"radius":2})
+    # BACK legs (left side, under rump -- close together like a horse)
+    for lx in (50, 66):
+        P.append({"type":"rect","x":lx,"y":200,"w":18,"h":28,"color":GHOST_DARK,"outline":OUT,"outline_w":1,"radius":3})
+        P.append({"type":"rect","x":lx-2,"y":222,"w":22,"h":10,"color":SPECTRAL_DARK,"outline":SPECTRAL,"outline_w":1,"radius":2})
     # spectral glow wisps from hooves (THE ghost feature -- wisps trailing down)
-    for lx in (68, 102, 150, 198):
+    for lx in (60, 76, 200, 216):
         P.append({"type":"circle","cx":lx,"cy":238,"r":6,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
         P.append({"type":"circle","cx":lx,"cy":246,"r":4,"color":SPECTRAL_LIGHT,"outline":SPECTRAL_DARK,"outline_w":1})
 

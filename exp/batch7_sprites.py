@@ -98,16 +98,23 @@ def jinx_prims():
     P.append({"type":"rect","x":108,"y":206,"w":18,"h":10,"color":MINIGUN_DARK,"outline":OUT,"outline_w":1,"radius":2})
     P.append({"type":"rect","x":130,"y":206,"w":18,"h":10,"color":MINIGUN_DARK,"outline":OUT,"outline_w":1,"radius":2})
 
-    # --- POW-POW MINIGUN (THE feature — big, held in front) ---
-    # minigun body (cylindrical)
-    P.append({"type":"rect","x":150,"y":140,"w":40,"h":24,"color":MINIGUN,"outline":OUT,"outline_w":2})
-    # minigun barrels (multiple barrels = gatling)
-    for by in (144,150,156,162):
-        P.append({"type":"line","start":[190,by],"end":[210,by],"color":MINIGUN_DARK,"width":3})
-    # minigun ammo belt
-    P.append({"type":"rect","x":146,"y":138,"w":10,"h":28,"color":MINIGUN_DARK,"outline":OUT,"outline_w":1})
-    # pink bow on minigun (Jinx's signature decoration)
-    P.append({"type":"circle","cx":160,"cy":134,"r":4,"color":PINK,"outline":OUT,"outline_w":1})
+    # --- POW-POW MINIGUN (THE feature — BIG, held in front, clearly a gatling gun) ---
+    # minigun body (cylindrical, BIG)
+    P.append({"type":"rect","x":148,"y":136,"w":48,"h":28,"color":MINIGUN,"outline":OUT,"outline_w":2})
+    # minigun ammo drum (circular, big — the iconic Pow-Pow drum)
+    P.append({"type":"circle","cx":158,"cy":150,"r":14,"color":MINIGUN_DARK,"outline":OUT,"outline_w":2})
+    P.append({"type":"circle","cx":158,"cy":150,"r":10,"color":MINIGUN,"outline":MINIGUN_DARK,"outline_w":1})
+    # drum center
+    P.append({"type":"circle","cx":158,"cy":150,"r":4,"color":MINIGUN_DARK,"outline":OUT,"outline_w":1})
+    # minigun barrels (multiple barrels = gatling, BIG)
+    for by in (140,146,152,158,164):
+        P.append({"type":"line","start":[196,by],"end":[222,by],"color":MINIGUN_DARK,"width":4})
+    # barrel ring (front)
+    P.append({"type":"rect","x":194,"y":136,"w":6,"h":32,"color":MINIGUN_DARK,"outline":OUT,"outline_w":1})
+    # pink bow on minigun (Jinx's signature decoration — cute on weapon)
+    P.append({"type":"circle","cx":170,"cy":132,"r":5,"color":PINK,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":164,"cy":132,"r":3,"color":PINK,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":176,"cy":132,"r":3,"color":PINK,"outline":OUT,"outline_w":1})
 
     return P
 
@@ -128,47 +135,70 @@ def ksante_prims():
     EYE = (30, 25, 20)
     OUT = (30, 22, 15)
 
-    # --- LARGE ORNATE SHOULDER GUARDS (THE feature — huge, both shoulders) ---
-    # LEFT shoulder guard (big, ornate, gold-trimmed)
-    P.append({"type":"circle","cx":86,"cy":108,"r":22,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
-    P.append({"type":"circle","cx":86,"cy":108,"r":16,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
-    # ornate spike on left shoulder
-    P.append({"type":"polygon","points":[(80,90),(92,90),(86,74)],"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    # gold trim detailing
-    P.append({"type":"circle","cx":86,"cy":108,"r":5,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # --- LARGE ORNATE SHOULDER GUARDS (THE feature — HUGE, both shoulders, dominant) ---
+    # LEFT shoulder guard (HUGE, ornate, gold-trimmed, with spikes — dominates silhouette)
+    P.append({"type":"circle","cx":80,"cy":106,"r":28,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":80,"cy":106,"r":20,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
+    # ornate spikes on left shoulder (3 big spikes — the icon)
+    P.append({"type":"polygon","points":[(72,84),(80,84),(76,66)],"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(80,82),(88,82),(84,64)],"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(64,88),(72,88),(68,72)],"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # gold trim detailing (concentric)
+    P.append({"type":"circle","cx":80,"cy":106,"r":8,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":80,"cy":106,"r":4,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
 
-    # RIGHT shoulder guard (big, ornate, gold-trimmed)
-    P.append({"type":"circle","cx":170,"cy":108,"r":22,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
-    P.append({"type":"circle","cx":170,"cy":108,"r":16,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
-    P.append({"type":"polygon","points":[(164,90),(176,90),(170,74)],"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":170,"cy":108,"r":5,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # RIGHT shoulder guard (HUGE, ornate, gold-trimmed, with spikes)
+    P.append({"type":"circle","cx":176,"cy":106,"r":28,"color":GOLD,"outline":GOLD_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":176,"cy":106,"r":20,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(168,84),(176,84),(172,66)],"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(176,82),(184,82),(180,64)],"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(184,88),(192,88),(188,72)],"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":176,"cy":106,"r":8,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":176,"cy":106,"r":4,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
 
-    # --- Head (dark skin, braided hair) ---
-    P.append({"type":"circle","cx":128,"cy":78,"r":18,"color":SKIN,"outline":OUT,"outline_w":1})
-    # braided hair (top)
-    P.append({"type":"circle","cx":128,"cy":62,"r":14,"color":BROWN,"outline":OUT,"outline_w":1})
-    # braids (visible texture)
-    for bx in (120,128,136):
-        P.append({"type":"line","start":[bx,56],"end":[bx,72],"color":BLUE_DARK,"width":1})
-    # gold headband
-    P.append({"type":"rect","x":112,"y":68,"w":32,"h":4,"color":GOLD,"outline":OUT,"outline_w":1})
+    # --- Head (dark skin, BIG BRAIDED hair — THE missing feature) ---
+    P.append({"type":"circle","cx":128,"cy":76,"r":18,"color":SKIN,"outline":OUT,"outline_w":1})
+    # BIG braided hair (top — prominent, visible braids)
+    P.append({"type":"circle","cx":128,"cy":58,"r":16,"color":BROWN,"outline":OUT,"outline_w":1})
+    # visible braid strands (thick, braided texture — BIG)
+    for bx in (118,124,130,136):
+        P.append({"type":"line","start":[bx,48],"end":[bx,68],"color":BLUE_DARK,"width":2})
+    # braid crisscross pattern (visible braids)
+    for by in (52,58,64):
+        P.append({"type":"line","start":[118,by],"end":[136,by+2],"color":BROWN,"width":1})
+        P.append({"type":"line","start":[136,by],"end":[118,by+2],"color":BROWN,"width":1})
+    # gold headband (Nazumah)
+    P.append({"type":"rect","x":110,"y":66,"w":36,"h":5,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # side braids (hanging down — visible braided hair)
+    P.append({"type":"line","start":[110,74],"end":[104,100],"color":BROWN,"width":5})
+    P.append({"type":"line","start":[146,74],"end":[152,100],"color":BROWN,"width":5})
+    # braid segments on side braids
+    for by in (82,88,94):
+        P.append({"type":"line","start":[108,by],"end":[112,by+2],"color":BLUE_DARK,"width":1})
+        P.append({"type":"line","start":[148,by],"end":[152,by+2],"color":BLUE_DARK,"width":1})
     # eyes (determined)
-    P.append({"type":"circle","cx":122,"cy":80,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":134,"cy":80,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
-    # beard (short)
-    P.append({"type":"polygon","points":[(118,90),(138,90),(136,98),(120,98)],"color":BROWN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":122,"cy":78,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":134,"cy":78,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
+    # beard (short, braided)
+    P.append({"type":"polygon","points":[(118,88),(138,88),(136,98),(120,98)],"color":BROWN,"outline":OUT,"outline_w":1})
+    # beard braid (small)
+    P.append({"type":"line","start":[128,98],"end":[128,106],"color":BLUE_DARK,"width":2})
 
-    # --- Torso (Nazumah attire — deep blue with gold trim) ---
-    P.append({"type":"polygon","points":[(108,98),(148,98),(152,180),(104,180)],
+    # --- Torso (Nazumah attire — deep blue with BIG gold trim, ornate) ---
+    P.append({"type":"polygon","points":[(108,96),(148,96),(154,182),(102,182)],
               "color":BLUE,"outline":OUT,"outline_w":1})
-    # gold chest plate (ornate)
-    P.append({"type":"polygon","points":[(112,104),(144,104),(140,150),(116,150)],
+    # gold chest plate (ornate, BIG — Nazumah attire)
+    P.append({"type":"polygon","points":[(112,102),(144,102),(140,152),(116,152)],
               "color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    # chest emblem (Nazumah symbol)
-    P.append({"type":"circle","cx":128,"cy":120,"r":6,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":128,"cy":120,"r":3,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
-    # gold belt
-    P.append({"type":"rect","x":104,"y":168,"w":48,"h":10,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # Nazumah attire details (gold pattern lines)
+    P.append({"type":"line","start":[120,108],"end":[136,108],"color":GOLD_DARK,"width":1})
+    P.append({"type":"line","start":[120,140],"end":[136,140],"color":GOLD_DARK,"width":1})
+    # chest emblem (Nazumah sun symbol)
+    P.append({"type":"circle","cx":128,"cy":122,"r":7,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":128,"cy":122,"r":4,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    # gold belt (wide, ornate)
+    P.append({"type":"rect","x":102,"y":168,"w":52,"h":12,"color":GOLD,"outline":GOLD_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":128,"cy":174,"r":4,"color":BLUE,"outline":GOLD_DARK,"outline_w":1})
 
     # --- Arms (under shoulder guards) ---
     P.append({"type":"rect","x":96,"y":128,"w":14,"h":40,"color":BLUE,"outline":OUT,"outline_w":1,"radius":4})

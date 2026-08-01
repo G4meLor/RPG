@@ -1,36 +1,291 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "beast",
-      "weapon": "staff",
-      "palette": {
-        "primary": [
-          60,
-          70,
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            220
+          ],
+          [
+            130,
+            140
+          ],
+          [
+            180,
+            160
+          ],
+          [
+            200,
+            220
+          ]
+        ],
+        "color": [
+          85,
+          95,
           80
         ],
-        "secondary": [
+        "outline": [
+          50,
+          60,
+          45
+        ],
+        "outline_w": 2,
+        "comment": "Hunched plague rat body - adjusted to darker, grittier grey-green"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 130,
+        "w": 35,
+        "h": 45,
+        "color": [
+          95,
+          105,
+          90
+        ],
+        "outline": [
+          50,
+          60,
+          45
+        ],
+        "outline_w": 2,
+        "comment": "Rat head - adjusted to match splash fur tone"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            155,
+            140
+          ],
+          [
+            200,
+            155
+          ],
+          [
+            155,
+            165
+          ]
+        ],
+        "color": [
+          105,
+          115,
+          100
+        ],
+        "outline": [
+          50,
+          60,
+          45
+        ],
+        "outline_w": 1,
+        "comment": "Elongated pointed rat snout"
+      },
+      {
+        "type": "circle",
+        "cx": 145,
+        "cy": 135,
+        "r": 4,
+        "color": [
+          255,
           100,
+          255
+        ],
+        "outline": [
+          100,
+          50,
+          100
+        ],
+        "outline_w": 1,
+        "comment": "Glowing magenta eye to match goggles"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            195,
+            152
+          ],
+          [
+            205,
+            157
+          ],
+          [
+            195,
+            162
+          ]
+        ],
+        "color": [
+          180,
+          100,
+          100
+        ],
+        "outline": [
           120,
+          60,
           60
         ],
-        "accent": [
-          150,
-          255,
-          100
-        ]
+        "outline_w": 1,
+        "comment": "Darker pink nose"
       },
-      "features": [
-        "animal_ears",
-        "mask"
-      ],
-      "build": "short",
-      "motif": "nature"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 110,
+        "w": 15,
+        "h": 30,
+        "color": [
+          130,
+          140,
+          120
+        ],
+        "outline": [
+          70,
+          80,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Left ear"
+      },
+      {
+        "type": "ellipse",
+        "x": 145,
+        "y": 110,
+        "w": 15,
+        "h": 30,
+        "color": [
+          130,
+          140,
+          120
+        ],
+        "outline": [
+          70,
+          80,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Right ear"
+      },
+      {
+        "type": "rect",
+        "x": 110,
+        "y": 170,
+        "w": 60,
+        "h": 40,
+        "color": [
+          60,
+          75,
+          60
+        ],
+        "outline": [
+          30,
+          45,
+          30
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Darker Zaunite vest"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 170,
+        "w": 30,
+        "h": 30,
+        "color": [
+          120,
+          180,
+          60
+        ],
+        "outline": [
+          60,
+          100,
+          30
+        ],
+        "outline_w": 2,
+        "comment": "Bright toxic green Venom Cask"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 165,
+        "w": 10,
+        "h": 30,
+        "color": [
+          70,
+          60,
+          50
+        ],
+        "outline": [
+          40,
+          30,
+          20
+        ],
+        "outline_w": 1,
+        "comment": "Dark leather strap"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 150,
+        "w": 80,
+        "h": 12,
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "outline": [
+          20,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 2,
+        "comment": "Darker metallic blowgun barrel"
+      },
+      {
+        "type": "rect",
+        "x": 165,
+        "y": 140,
+        "w": 15,
+        "h": 25,
+        "color": [
+          50,
+          50,
+          50
+        ],
+        "outline": [
+          30,
+          30,
+          30
+        ],
+        "outline_w": 2,
+        "comment": "Darker blowgun stock"
+      },
+      {
+        "type": "ellipse",
+        "x": 140,
+        "y": 135,
+        "w": 20,
+        "h": 10,
+        "color": [
+          180,
+          160,
+          100
+        ],
+        "outline": [
+          100,
+          80,
+          40
+        ],
+        "outline_w": 1,
+        "comment": "Added golden goggle frames"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

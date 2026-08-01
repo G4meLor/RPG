@@ -1,35 +1,426 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "staff",
-      "palette": {
-        "primary": [
-          60,
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            180
+          ],
+          [
+            200,
+            180
+          ],
+          [
+            220,
+            280
+          ],
+          [
+            80,
+            280
+          ]
+        ],
+        "color": [
           30,
+          40,
+          35
+        ],
+        "outline": [
+          20,
+          30,
+          25
+        ],
+        "outline_w": 2,
+        "comment": "Tattered, heavy Shadow Isles robes"
+      },
+      {
+        "type": "rect",
+        "x": 125,
+        "y": 170,
+        "w": 50,
+        "h": 45,
+        "color": [
+          60,
+          70,
+          65
+        ],
+        "outline": [
+          40,
+          50,
+          45
+        ],
+        "outline_w": 2,
+        "radius": 2,
+        "comment": "Detailed rusted chest plate"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            170
+          ],
+          [
+            130,
+            170
+          ],
+          [
+            130,
+            200
+          ],
+          [
+            90,
+            200
+          ]
+        ],
+        "color": [
+          50,
+          60,
+          55
+        ],
+        "outline": [
+          30,
+          40,
+          35
+        ],
+        "outline_w": 2,
+        "comment": "Left shoulder armor plate"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            170,
+            170
+          ],
+          [
+            200,
+            170
+          ],
+          [
+            210,
+            200
+          ],
+          [
+            170,
+            200
+          ]
+        ],
+        "color": [
+          50,
+          60,
+          55
+        ],
+        "outline": [
+          30,
+          40,
+          35
+        ],
+        "outline_w": 2,
+        "comment": "Right shoulder armor plate"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            135,
+            120
+          ],
+          [
+            165,
+            120
+          ],
+          [
+            175,
+            150
+          ],
+          [
+            125,
+            150
+          ]
+        ],
+        "color": [
+          170,
+          190,
+          180
+        ],
+        "outline": [
+          70,
+          90,
           80
         ],
-        "secondary": [
-          120,
-          160,
-          160
-        ],
-        "accent": [
-          200,
-          255,
-          220
-        ]
+        "outline_w": 2,
+        "comment": "Gaunt, elongated undead face shape"
       },
-      "features": [
-        "hood"
-      ],
-      "build": "bulky",
-      "motif": "shadow"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 130,
+        "w": 6,
+        "h": 8,
+        "color": [
+          10,
+          20,
+          15
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Deeply sunken left eye"
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 130,
+        "w": 6,
+        "h": 8,
+        "color": [
+          10,
+          20,
+          15
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Deeply sunken right eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            142,
+            142
+          ],
+          [
+            158,
+            142
+          ],
+          [
+            150,
+            146
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          50
+        ],
+        "outline": [
+          20,
+          30,
+          20
+        ],
+        "outline_w": 1,
+        "comment": "Stitched ghoulish mouth"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            120,
+            110
+          ],
+          [
+            180,
+            110
+          ],
+          [
+            185,
+            140
+          ],
+          [
+            115,
+            140
+          ]
+        ],
+        "color": [
+          40,
+          50,
+          45
+        ],
+        "outline": [
+          30,
+          40,
+          35
+        ],
+        "outline_w": 2,
+        "comment": "Deep shadowed hood"
+      },
+      {
+        "type": "rect",
+        "x": 190,
+        "y": 140,
+        "w": 8,
+        "h": 130,
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          40,
+          30,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Wooden shovel handle"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            120
+          ],
+          [
+            210,
+            120
+          ],
+          [
+            215,
+            160
+          ],
+          [
+            175,
+            160
+          ]
+        ],
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "outline": [
+          60,
+          60,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Heavy iron shovel blade"
+      },
+      {
+        "type": "rect",
+        "x": 110,
+        "y": 210,
+        "w": 80,
+        "h": 4,
+        "color": [
+          40,
+          50,
+          45
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Clothing texture: fabric fold"
+      },
+      {
+        "type": "rect",
+        "x": 115,
+        "y": 230,
+        "w": 70,
+        "h": 4,
+        "color": [
+          40,
+          50,
+          45
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Clothing texture: fabric fold"
+      },
+      {
+        "type": "circle",
+        "cx": 70,
+        "cy": 250,
+        "r": 8,
+        "color": [
+          110,
+          130,
+          120
+        ],
+        "outline": [
+          50,
+          70,
+          60
+        ],
+        "outline_w": 1,
+        "comment": "Ghoul 1 head"
+      },
+      {
+        "type": "rect",
+        "x": 65,
+        "y": 258,
+        "w": 10,
+        "h": 15,
+        "color": [
+          90,
+          110,
+          100
+        ],
+        "outline": [
+          40,
+          60,
+          50
+        ],
+        "outline_w": 1,
+        "comment": "Ghoul 1 body"
+      },
+      {
+        "type": "circle",
+        "cx": 230,
+        "cy": 260,
+        "r": 6,
+        "color": [
+          140,
+          160,
+          150
+        ],
+        "outline": [
+          70,
+          90,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Soul fragment 1"
+      },
+      {
+        "type": "circle",
+        "cx": 240,
+        "cy": 240,
+        "r": 4,
+        "color": [
+          140,
+          160,
+          150
+        ],
+        "outline": [
+          70,
+          90,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Soul fragment 2"
+      },
+      {
+        "type": "circle",
+        "cx": 220,
+        "cy": 230,
+        "r": 5,
+        "color": [
+          140,
+          160,
+          150
+        ],
+        "outline": [
+          70,
+          90,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Soul fragment 3"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

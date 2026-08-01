@@ -1,36 +1,413 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
-          184,
-          134,
-          11
-        ],
-        "secondary": [
-          60,
-          50,
-          40
-        ],
-        "accent": [
+    "primitives": [
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 140,
+        "w": 110,
+        "h": 120,
+        "color": [
+          160,
           0,
-          191,
-          255
-        ]
+          0
+        ],
+        "outline": [
+          100,
+          0,
+          0
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Royal red cape with gold trim detailing for regal flow"
       },
-      "features": [
-        "crown",
-        "cape"
-      ],
-      "build": "bulky",
-      "motif": "light"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 140,
+        "w": 10,
+        "h": 120,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          150,
+          120,
+          20
+        ],
+        "outline_w": 1,
+        "comment": "Cape gold border left"
+      },
+      {
+        "type": "rect",
+        "x": 180,
+        "y": 140,
+        "w": 10,
+        "h": 120,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          150,
+          120,
+          20
+        ],
+        "outline_w": 1,
+        "comment": "Cape gold border right"
+      },
+      {
+        "type": "rect",
+        "x": 110,
+        "y": 145,
+        "w": 45,
+        "h": 65,
+        "color": [
+          220,
+          220,
+          220
+        ],
+        "outline": [
+          160,
+          160,
+          160
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Demacian silver breastplate with layered plating"
+      },
+      {
+        "type": "rect",
+        "x": 115,
+        "y": 155,
+        "w": 35,
+        "h": 10,
+        "color": [
+          190,
+          190,
+          190
+        ],
+        "outline": [
+          140,
+          140,
+          140
+        ],
+        "outline_w": 1,
+        "comment": "Breastplate armor plating detail"
+      },
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 145,
+        "w": 15,
+        "h": 30,
+        "color": [
+          200,
+          200,
+          200
+        ],
+        "outline": [
+          140,
+          140,
+          140
+        ],
+        "outline_w": 2,
+        "comment": "Left shoulder pauldron plating"
+      },
+      {
+        "type": "rect",
+        "x": 150,
+        "y": 145,
+        "w": 15,
+        "h": 30,
+        "color": [
+          200,
+          200,
+          200
+        ],
+        "outline": [
+          140,
+          140,
+          140
+        ],
+        "outline_w": 2,
+        "comment": "Right shoulder pauldron plating"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            120,
+            155
+          ],
+          [
+            140,
+            155
+          ],
+          [
+            130,
+            185
+          ]
+        ],
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          150,
+          120,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Lightshield dynasty golden wing iconography"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 210,
+        "w": 20,
+        "h": 45,
+        "color": [
+          220,
+          220,
+          220
+        ],
+        "outline": [
+          150,
+          150,
+          150
+        ],
+        "outline_w": 2,
+        "radius": 2,
+        "comment": "Left greave, reinforced plating"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 210,
+        "w": 20,
+        "h": 45,
+        "color": [
+          220,
+          220,
+          220
+        ],
+        "outline": [
+          150,
+          150,
+          150
+        ],
+        "outline_w": 2,
+        "radius": 2,
+        "comment": "Right greave, reinforced plating"
+      },
+      {
+        "type": "circle",
+        "cx": 130,
+        "cy": 130,
+        "r": 15,
+        "color": [
+          240,
+          210,
+          180
+        ],
+        "outline": [
+          150,
+          120,
+          90
+        ],
+        "outline_w": 1,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 124,
+        "y": 128,
+        "w": 3,
+        "h": 3,
+        "color": [
+          50,
+          50,
+          50
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "rect",
+        "x": 133,
+        "y": 128,
+        "w": 3,
+        "h": 3,
+        "color": [
+          50,
+          50,
+          50
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "rect",
+        "x": 125,
+        "y": 135,
+        "w": 10,
+        "h": 2,
+        "color": [
+          180,
+          140,
+          110
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 0,
+        "comment": "Facial feature: determined mouth"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            120
+          ],
+          [
+            145,
+            120
+          ],
+          [
+            130,
+            100
+          ]
+        ],
+        "color": [
+          220,
+          220,
+          220
+        ],
+        "outline": [
+          160,
+          160,
+          160
+        ],
+        "outline_w": 2,
+        "comment": "Demacian helmet"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            100
+          ],
+          [
+            135,
+            80
+          ],
+          [
+            125,
+            80
+          ]
+        ],
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          150,
+          120,
+          20
+        ],
+        "outline_w": 1,
+        "comment": "Characteristic helmet plume"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 110,
+        "w": 6,
+        "h": 140,
+        "color": [
+          220,
+          220,
+          220
+        ],
+        "outline": [
+          160,
+          160,
+          160
+        ],
+        "outline_w": 1,
+        "comment": "Lance shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            157,
+            110
+          ],
+          [
+            169,
+            110
+          ],
+          [
+            163,
+            90
+          ]
+        ],
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          150,
+          120,
+          20
+        ],
+        "outline_w": 1,
+        "comment": "Lance tip"
+      },
+      {
+        "type": "rect",
+        "x": 150,
+        "y": 170,
+        "w": 15,
+        "h": 10,
+        "color": [
+          220,
+          220,
+          220
+        ],
+        "outline": [
+          160,
+          160,
+          160
+        ],
+        "outline_w": 1,
+        "comment": "Right arm in dynamic combat stance"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

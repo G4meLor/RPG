@@ -1,36 +1,344 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "rogue",
-      "weapon": "dagger",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            120,
+            180
+          ],
+          [
+            130,
+            220
+          ],
+          [
+            135,
+            220
+          ],
+          [
+            140,
+            180
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          70
+        ],
+        "outline": [
+          10,
+          20,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Undead slender legs"
+      },
+      {
+        "type": "rect",
+        "x": 118,
+        "y": 140,
+        "w": 24,
+        "h": 45,
+        "color": [
+          30,
           45,
-          55,
+          55
+        ],
+        "outline": [
+          10,
+          20,
+          30
+        ],
+        "outline_w": 1,
+        "radius": 2,
+        "comment": "Dark nautical torso"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            115,
+            190
+          ],
+          [
+            125,
+            170
+          ],
+          [
+            110,
+            200
+          ],
+          [
+            120,
+            160
+          ]
+        ],
+        "color": [
+          20,
+          30,
+          40
+        ],
+        "outline": [
+          5,
+          10,
+          15
+        ],
+        "outline_w": 1,
+        "comment": "Torn cloak left side"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            140
+          ],
+          [
+            145,
+            190
+          ],
+          [
+            135,
+            170
+          ],
+          [
+            140,
+            200
+          ],
+          [
+            130,
+            160
+          ]
+        ],
+        "color": [
+          20,
+          30,
+          40
+        ],
+        "outline": [
+          5,
+          10,
+          15
+        ],
+        "outline_w": 1,
+        "comment": "Torn cloak right side"
+      },
+      {
+        "type": "circle",
+        "cx": 130,
+        "cy": 120,
+        "r": 16,
+        "color": [
+          160,
+          175,
+          170
+        ],
+        "outline": [
+          60,
+          70,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Pale undead face"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 124,
+        "w": 6,
+        "h": 8,
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Skeletal nasal cavity"
+      },
+      {
+        "type": "circle",
+        "cx": 123,
+        "cy": 116,
+        "r": 3,
+        "color": [
+          100,
+          255,
+          150
+        ],
+        "outline": [
+          40,
+          120,
           60
         ],
-        "secondary": [
-          180,
-          180,
-          180
-        ],
-        "accent": [
-          0,
-          191,
-          255
-        ]
+        "outline_w": 1,
+        "comment": "Glowing spectral eye left"
       },
-      "features": [
-        "mask",
-        "hood"
-      ],
-      "build": "slender",
-      "motif": "shadow"
-    },
-    "match": 6,
-    "iters": 2,
-    "ok": true,
-    "match_before": 5
+      {
+        "type": "circle",
+        "cx": 137,
+        "cy": 116,
+        "r": 3,
+        "color": [
+          100,
+          255,
+          150
+        ],
+        "outline": [
+          40,
+          120,
+          60
+        ],
+        "outline_w": 1,
+        "comment": "Glowing spectral eye right"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            112,
+            110
+          ],
+          [
+            148,
+            110
+          ],
+          [
+            140,
+            90
+          ],
+          [
+            120,
+            90
+          ]
+        ],
+        "color": [
+          25,
+          35,
+          45
+        ],
+        "outline": [
+          10,
+          20,
+          30
+        ],
+        "outline_w": 2,
+        "comment": "Bilgewater captain's hat"
+      },
+      {
+        "type": "rect",
+        "x": 125,
+        "y": 108,
+        "w": 10,
+        "h": 3,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          100,
+          80,
+          20
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold trim"
+      },
+      {
+        "type": "line",
+        "start": [
+          142,
+          150
+        ],
+        "end": [
+          190,
+          110
+        ],
+        "color": [
+          100,
+          100,
+          110
+        ],
+        "width": 3,
+        "comment": "Harpoon shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            190,
+            110
+          ],
+          [
+            205,
+            100
+          ],
+          [
+            200,
+            115
+          ]
+        ],
+        "color": [
+          160,
+          160,
+          170
+        ],
+        "outline": [
+          60,
+          60,
+          70
+        ],
+        "outline_w": 1,
+        "comment": "Harpoon tip"
+      },
+      {
+        "type": "line",
+        "start": [
+          195,
+          105
+        ],
+        "end": [
+          185,
+          125
+        ],
+        "color": [
+          80,
+          80,
+          90
+        ],
+        "width": 1,
+        "comment": "Harpoon barb"
+      },
+      {
+        "type": "line",
+        "start": [
+          142,
+          150
+        ],
+        "end": [
+          135,
+          155
+        ],
+        "color": [
+          40,
+          60,
+          70
+        ],
+        "width": 3,
+        "comment": "Undead arm"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "16": {
     "descriptor": {

@@ -1,36 +1,334 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "dagger",
-      "palette": {
-        "primary": [
-          45,
-          40,
-          40
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 150,
+        "w": 140,
+        "h": 70,
+        "color": [
+          101,
+          128,
+          60
         ],
-        "secondary": [
-          210,
-          210,
-          210
-        ],
-        "accent": [
-          160,
+        "outline": [
           40,
-          40
-        ]
+          60,
+          20
+        ],
+        "outline_w": 3,
+        "comment": "Skaarl's lizard body"
       },
-      "features": [
-        "animal_ears",
-        "mask"
-      ],
-      "build": "short",
-      "motif": "shadow"
-    },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            150
+          ],
+          [
+            230,
+            130
+          ],
+          [
+            230,
+            170
+          ],
+          [
+            180,
+            180
+          ]
+        ],
+        "color": [
+          101,
+          128,
+          60
+        ],
+        "outline": [
+          40,
+          60,
+          20
+        ],
+        "outline_w": 3,
+        "comment": "Skaarl's snout"
+      },
+      {
+        "type": "circle",
+        "cx": 215,
+        "cy": 145,
+        "r": 4,
+        "color": [
+          0,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Skaarl's eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 110,
+        "w": 45,
+        "h": 50,
+        "color": [
+          210,
+          160,
+          120
+        ],
+        "outline": [
+          139,
+          69,
+          19
+        ],
+        "outline_w": 2,
+        "comment": "Kled's Yordle head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            115
+          ],
+          [
+            155,
+            115
+          ],
+          [
+            132,
+            70
+          ]
+        ],
+        "color": [
+          160,
+          0,
+          0
+        ],
+        "outline": [
+          80,
+          0,
+          0
+        ],
+        "outline_w": 2,
+        "comment": "Kled's red hat"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 4,
+        "color": [
+          0,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Angry eye L"
+      },
+      {
+        "type": "circle",
+        "cx": 140,
+        "cy": 125,
+        "r": 4,
+        "color": [
+          0,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Angry eye R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            125,
+            135
+          ],
+          [
+            140,
+            135
+          ],
+          [
+            132,
+            142
+          ]
+        ],
+        "color": [
+          0,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Scowling mouth"
+      },
+      {
+        "type": "rect",
+        "x": 115,
+        "y": 155,
+        "w": 35,
+        "h": 40,
+        "color": [
+          60,
+          60,
+          60
+        ],
+        "outline": [
+          30,
+          30,
+          30
+        ],
+        "outline_w": 3,
+        "radius": 2,
+        "comment": "Noxian chestplate"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            155
+          ],
+          [
+            132,
+            145
+          ],
+          [
+            150,
+            155
+          ]
+        ],
+        "color": [
+          180,
+          0,
+          0
+        ],
+        "outline": [
+          100,
+          0,
+          0
+        ],
+        "outline_w": 2,
+        "comment": "Noxian cape/collar"
+      },
+      {
+        "type": "line",
+        "start": [
+          145,
+          170
+        ],
+        "end": [
+          200,
+          120
+        ],
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "width": 6,
+        "comment": "Weapon shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            190,
+            110
+          ],
+          [
+            220,
+            110
+          ],
+          [
+            215,
+            130
+          ],
+          [
+            185,
+            130
+          ]
+        ],
+        "color": [
+          160,
+          160,
+          160
+        ],
+        "outline": [
+          50,
+          50,
+          50
+        ],
+        "outline_w": 3,
+        "comment": "Canonical blade/axe head"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 190,
+        "w": 30,
+        "h": 20,
+        "color": [
+          80,
+          80,
+          80
+        ],
+        "outline": [
+          40,
+          40,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 2,
+        "comment": "Saddle"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 210,
+        "w": 15,
+        "h": 25,
+        "color": [
+          80,
+          110,
+          50
+        ],
+        "outline": [
+          40,
+          60,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Skaarl leg L"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 210,
+        "w": 15,
+        "h": 25,
+        "color": [
+          80,
+          110,
+          50
+        ],
+        "outline": [
+          40,
+          60,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Skaarl leg R"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "2": {
     "descriptor": {

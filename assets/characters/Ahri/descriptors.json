@@ -1,33 +1,581 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
-          10,
-          10,
-          10
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 125,
+        "y": 160,
+        "w": 20,
+        "h": 38,
+        "color": [
+          245,
+          230,
+          210
         ],
-        "secondary": [
-          0,
-          0,
-          0
+        "outline": [
+          180,
+          150,
+          120
         ],
-        "accent": [
-          0,
-          0,
-          0
-        ]
+        "outline_w": 2,
+        "comment": "Slender feminine torso"
       },
-      "features": [],
-      "build": "average",
-      "motif": "flame"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 190,
+        "w": 30,
+        "h": 20,
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "outline": [
+          180,
+          150,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Curved hips for feminine silhouette"
+      },
+      {
+        "type": "rect",
+        "x": 125,
+        "y": 160,
+        "w": 20,
+        "h": 30,
+        "color": [
+          180,
+          30,
+          30
+        ],
+        "outline": [
+          100,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Detailed red dress bodice"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            120,
+            190
+          ],
+          [
+            135,
+            210
+          ],
+          [
+            150,
+            190
+          ]
+        ],
+        "color": [
+          180,
+          30,
+          30
+        ],
+        "outline": [
+          100,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Dress skirt flare"
+      },
+      {
+        "type": "circle",
+        "cx": 135,
+        "cy": 135,
+        "r": 16,
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "outline": [
+          180,
+          150,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            125,
+            125
+          ],
+          [
+            130,
+            110
+          ],
+          [
+            135,
+            125
+          ]
+        ],
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "outline": [
+          180,
+          150,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Left Ear"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            141,
+            125
+          ],
+          [
+            146,
+            110
+          ],
+          [
+            151,
+            125
+          ]
+        ],
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "outline": [
+          180,
+          150,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Right Ear"
+      },
+      {
+        "type": "circle",
+        "cx": 132,
+        "cy": 135,
+        "r": 2,
+        "color": [
+          50,
+          50,
+          50
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 0,
+        "comment": "Eye L"
+      },
+      {
+        "type": "circle",
+        "cx": 138,
+        "cy": 135,
+        "r": 2,
+        "color": [
+          50,
+          50,
+          50
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 0,
+        "comment": "Eye R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            132
+          ],
+          [
+            128,
+            132
+          ],
+          [
+            125,
+            142
+          ]
+        ],
+        "color": [
+          255,
+          100,
+          150
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 0,
+        "comment": "Facial marking L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            138,
+            132
+          ],
+          [
+            144,
+            132
+          ],
+          [
+            141,
+            142
+          ]
+        ],
+        "color": [
+          255,
+          100,
+          150
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 0,
+        "comment": "Facial marking R"
+      },
+      {
+        "type": "line",
+        "start": [
+          125,
+          200
+        ],
+        "end": [
+          120,
+          240
+        ],
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "width": 6,
+        "comment": "Leg L"
+      },
+      {
+        "type": "line",
+        "start": [
+          145,
+          200
+        ],
+        "end": [
+          150,
+          240
+        ],
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "width": 6,
+        "comment": "Leg R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            135,
+            195
+          ],
+          [
+            110,
+            180
+          ],
+          [
+            115,
+            170
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1,
+        "comment": "Tail 1"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            135,
+            195
+          ],
+          [
+            100,
+            185
+          ],
+          [
+            105,
+            175
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1,
+        "comment": "Tail 2"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            135,
+            195
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            95,
+            180
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1,
+        "comment": "Tail 3"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            135,
+            195
+          ],
+          [
+            85,
+            200
+          ],
+          [
+            90,
+            190
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1,
+        "comment": "Tail 4"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            135,
+            195
+          ],
+          [
+            160,
+            180
+          ],
+          [
+            155,
+            170
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1,
+        "comment": "Tail 5"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            135,
+            195
+          ],
+          [
+            170,
+            185
+          ],
+          [
+            165,
+            175
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1,
+        "comment": "Tail 6"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            135,
+            195
+          ],
+          [
+            180,
+            190
+          ],
+          [
+            175,
+            180
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1,
+        "comment": "Tail 7"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            135,
+            195
+          ],
+          [
+            185,
+            200
+          ],
+          [
+            180,
+            190
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1,
+        "comment": "Tail 8"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            135,
+            195
+          ],
+          [
+            135,
+            170
+          ],
+          [
+            140,
+            180
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1,
+        "comment": "Tail 9"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 160,
+        "r": 8,
+        "color": [
+          100,
+          200,
+          255
+        ],
+        "outline": [
+          50,
+          150,
+          200
+        ],
+        "outline_w": 2,
+        "comment": "Orb of Deception"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "14": {
     "descriptor": {

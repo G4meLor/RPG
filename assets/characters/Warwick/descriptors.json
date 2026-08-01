@@ -1,36 +1,614 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "beast",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            70,
+            250
+          ],
+          [
+            130,
+            250
+          ],
+          [
+            140,
+            210
+          ],
+          [
+            100,
+            180
+          ],
+          [
+            60,
+            210
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Aggressive hunched torso"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            180
+          ],
+          [
+            150,
+            160
+          ],
+          [
+            155,
+            180
+          ],
+          [
+            100,
+            200
+          ]
+        ],
+        "color": [
           70,
-          80,
-          75
+          60,
+          50
         ],
-        "secondary": [
-          150,
-          140,
-          100
+        "outline": [
+          30,
+          20,
+          10
         ],
-        "accent": [
+        "outline_w": 2,
+        "comment": "Distinctive elongated wolf muzzle"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            170
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            100,
+            160
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Left pointed ear"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            170
+          ],
+          [
+            120,
+            130
+          ],
+          [
+            100,
+            160
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Right pointed ear"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 175,
+        "r": 3,
+        "color": [
           255,
+          255,
+          0
+        ],
+        "outline": [
+          150,
+          150,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Glowing eye L"
+      },
+      {
+        "type": "circle",
+        "cx": 120,
+        "cy": 175,
+        "r": 3,
+        "color": [
+          255,
+          255,
+          0
+        ],
+        "outline": [
+          150,
+          150,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Glowing eye R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            150,
+            170
+          ],
+          [
+            160,
+            165
+          ],
+          [
+            155,
+            180
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          0
+        ],
+        "outline": [
+          0,
           0,
           0
-        ]
+        ],
+        "outline_w": 1,
+        "comment": "Wolf nose"
       },
-      "features": [
-        "claws",
-        "animal_ears"
-      ],
-      "build": "bulky",
-      "motif": "shadow"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 200,
+        "w": 30,
+        "h": 40,
+        "color": [
+          0,
+          180,
+          140
+        ],
+        "outline": [
+          0,
+          80,
+          60
+        ],
+        "outline_w": 3,
+        "radius": 8,
+        "comment": "Zaunite chemical tank"
+      },
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 200,
+        "w": 10,
+        "h": 10,
+        "color": [
+          180,
+          255,
+          220
+        ],
+        "outline": [
+          0,
+          100,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Tank pressure gauge"
+      },
+      {
+        "type": "rect",
+        "x": 115,
+        "y": 210,
+        "w": 4,
+        "h": 30,
+        "color": [
+          120,
+          230,
+          200
+        ],
+        "outline": [
+          0,
+          100,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Chemical tube to right arm"
+      },
+      {
+        "type": "rect",
+        "x": 81,
+        "y": 210,
+        "w": 4,
+        "h": 30,
+        "color": [
+          120,
+          230,
+          200
+        ],
+        "outline": [
+          0,
+          100,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Chemical tube to left arm"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            70,
+            220
+          ],
+          [
+            40,
+            270
+          ],
+          [
+            55,
+            280
+          ],
+          [
+            80,
+            240
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Left muscular arm"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            220
+          ],
+          [
+            160,
+            270
+          ],
+          [
+            145,
+            280
+          ],
+          [
+            120,
+            240
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Right muscular arm"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            40,
+            270
+          ],
+          [
+            30,
+            285
+          ],
+          [
+            45,
+            285
+          ]
+        ],
+        "color": [
+          180,
+          180,
+          180
+        ],
+        "outline": [
+          100,
+          100,
+          100
+        ],
+        "outline_w": 1,
+        "comment": "Left claw 1"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            45,
+            280
+          ],
+          [
+            35,
+            295
+          ],
+          [
+            50,
+            295
+          ]
+        ],
+        "color": [
+          180,
+          180,
+          180
+        ],
+        "outline": [
+          100,
+          100,
+          100
+        ],
+        "outline_w": 1,
+        "comment": "Left claw 2"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            160,
+            270
+          ],
+          [
+            170,
+            285
+          ],
+          [
+            155,
+            285
+          ]
+        ],
+        "color": [
+          180,
+          180,
+          180
+        ],
+        "outline": [
+          100,
+          100,
+          100
+        ],
+        "outline_w": 1,
+        "comment": "Right claw 1"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            155,
+            280
+          ],
+          [
+            165,
+            295
+          ],
+          [
+            150,
+            295
+          ]
+        ],
+        "color": [
+          180,
+          180,
+          180
+        ],
+        "outline": [
+          100,
+          100,
+          100
+        ],
+        "outline_w": 1,
+        "comment": "Right claw 2"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            75,
+            240
+          ],
+          [
+            85,
+            230
+          ],
+          [
+            95,
+            240
+          ]
+        ],
+        "color": [
+          40,
+          30,
+          20
+        ],
+        "outline": [
+          20,
+          10,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Fur texture detail L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            105,
+            240
+          ],
+          [
+            115,
+            230
+          ],
+          [
+            125,
+            240
+          ]
+        ],
+        "color": [
+          40,
+          30,
+          20
+        ],
+        "outline": [
+          20,
+          10,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Fur texture detail R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            250
+          ],
+          [
+            100,
+            280
+          ],
+          [
+            120,
+            250
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Lower torso/hips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            280
+          ],
+          [
+            70,
+            320
+          ],
+          [
+            85,
+            320
+          ],
+          [
+            90,
+            280
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Left leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            120,
+            280
+          ],
+          [
+            130,
+            320
+          ],
+          [
+            115,
+            320
+          ],
+          [
+            110,
+            280
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Right leg"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

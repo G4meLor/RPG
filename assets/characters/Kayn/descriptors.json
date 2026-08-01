@@ -1,35 +1,425 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "rogue",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
-          45,
-          55,
-          60
+    "primitives": [
+      {
+        "type": "rect",
+        "x": 115,
+        "y": 160,
+        "w": 26,
+        "h": 50,
+        "color": [
+          40,
+          30,
+          50
         ],
-        "secondary": [
+        "outline": [
           20,
-          20,
-          25
+          10,
+          30
         ],
-        "accent": [
+        "outline_w": 2,
+        "radius": 5
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 140,
+        "r": 18,
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "outline": [
+          60,
+          40,
+          30
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            128,
+            120
+          ],
+          [
+            146,
+            140
+          ]
+        ],
+        "color": [
+          60,
+          20,
+          80
+        ],
+        "outline": [
+          30,
+          10,
+          50
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 145,
+        "w": 12,
+        "h": 10,
+        "color": [
           200,
+          180,
+          160
+        ],
+        "outline": [
+          0,
           0,
           0
-        ]
+        ],
+        "outline_w": 1,
+        "radius": 0
       },
-      "features": [
-        "mask"
-      ],
-      "build": "slender",
-      "motif": "shadow"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 160,
+        "w": 12,
+        "h": 40,
+        "color": [
+          50,
+          40,
+          60
+        ],
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 3
+      },
+      {
+        "type": "rect",
+        "x": 139,
+        "y": 160,
+        "w": 12,
+        "h": 40,
+        "color": [
+          50,
+          40,
+          60
+        ],
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 3
+      },
+      {
+        "type": "rect",
+        "x": 118,
+        "y": 210,
+        "w": 10,
+        "h": 30,
+        "color": [
+          30,
+          20,
+          40
+        ],
+        "outline": [
+          10,
+          0,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 2
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 210,
+        "w": 10,
+        "h": 30,
+        "color": [
+          30,
+          20,
+          40
+        ],
+        "outline": [
+          10,
+          0,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 2
+      },
+      {
+        "type": "line",
+        "start": [
+          140,
+          170
+        ],
+        "end": [
+          180,
+          130
+        ],
+        "color": [
+          70,
+          60,
+          80
+        ],
+        "width": 8
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            130
+          ],
+          [
+            210,
+            110
+          ],
+          [
+            200,
+            80
+          ],
+          [
+            170,
+            100
+          ]
+        ],
+        "color": [
+          120,
+          40,
+          160
+        ],
+        "outline": [
+          40,
+          10,
+          60
+        ],
+        "outline_w": 3
+      },
+      {
+        "type": "line",
+        "start": [
+          185,
+          120
+        ],
+        "end": [
+          185,
+          60
+        ],
+        "color": [
+          180,
+          180,
+          200
+        ],
+        "width": 4
+      },
+      {
+        "type": "ellipse",
+        "x": 180,
+        "y": 60,
+        "w": 20,
+        "h": 40,
+        "color": [
+          140,
+          60,
+          180
+        ],
+        "outline": [
+          60,
+          20,
+          80
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            60
+          ],
+          [
+            190,
+            40
+          ],
+          [
+            180,
+            20
+          ]
+        ],
+        "color": [
+          160,
+          80,
+          200
+        ],
+        "outline": [
+          80,
+          40,
+          100
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 140,
+        "r": 5,
+        "color": [
+          255,
+          0,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            160
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            110,
+            180
+          ]
+        ],
+        "color": [
+          60,
+          30,
+          90
+        ],
+        "outline": [
+          30,
+          10,
+          50
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            146,
+            160
+          ],
+          [
+            166,
+            180
+          ],
+          [
+            146,
+            180
+          ]
+        ],
+        "color": [
+          60,
+          30,
+          90
+        ],
+        "outline": [
+          30,
+          10,
+          50
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 240,
+        "w": 30,
+        "h": 10,
+        "color": [
+          20,
+          10,
+          30
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 240,
+        "w": 30,
+        "h": 10,
+        "color": [
+          20,
+          10,
+          30
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          150
+        ],
+        "end": [
+          128,
+          170
+        ],
+        "color": [
+          100,
+          80,
+          120
+        ],
+        "width": 3
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 155,
+        "w": 16,
+        "h": 20,
+        "color": [
+          80,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          20,
+          60
+        ],
+        "outline_w": 2,
+        "radius": 2
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "2": {
     "descriptor": {

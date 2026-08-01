@@ -1,35 +1,381 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "orb",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            70,
+            130
+          ],
+          [
+            170,
+            130
+          ],
+          [
+            190,
+            220
+          ],
+          [
+            50,
+            220
+          ]
+        ],
+        "color": [
+          60,
+          0,
+          0
+        ],
+        "outline": [
+          30,
+          0,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 130,
+        "w": 50,
+        "h": 80,
+        "color": [
+          90,
+          10,
+          10
+        ],
+        "outline": [
+          40,
+          0,
+          0
+        ],
+        "outline_w": 2,
+        "radius": 5
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            130
+          ],
+          [
+            110,
+            110
+          ],
+          [
+            140,
+            110
+          ],
+          [
+            160,
+            130
+          ]
+        ],
+        "color": [
+          110,
+          20,
+          20
+        ],
+        "outline": [
+          50,
+          0,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 130,
+        "w": 40,
+        "h": 40,
+        "color": [
+          120,
+          20,
+          20
+        ],
+        "outline": [
+          60,
+          0,
+          0
+        ],
+        "outline_w": 2,
+        "radius": 5
+      },
+      {
+        "type": "rect",
+        "x": 110,
+        "y": 140,
+        "w": 30,
+        "h": 4,
+        "color": [
+          218,
           165,
-          42,
-          42
+          32
         ],
-        "secondary": [
-          245,
-          245,
-          220
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "rect",
+        "x": 110,
+        "y": 148,
+        "w": 30,
+        "h": 4,
+        "color": [
+          218,
+          165,
+          32
         ],
-        "accent": [
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 100,
+        "r": 22,
+        "color": [
+          255,
+          240,
+          230
+        ],
+        "outline": [
+          200,
+          190,
+          180
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            105,
+            80
+          ],
+          [
+            125,
+            70
+          ],
+          [
+            145,
+            80
+          ]
+        ],
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "outline": [
+          20,
+          20,
+          20
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 118,
+        "cy": 98,
+        "r": 2,
+        "color": [
+          180,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 132,
+        "cy": 98,
+        "r": 2,
+        "color": [
+          180,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 108,
+        "w": 10,
+        "h": 2,
+        "color": [
+          150,
+          110,
+          110
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "rect",
+        "x": 115,
+        "y": 210,
+        "w": 12,
+        "h": 30,
+        "color": [
+          20,
+          20,
+          20
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "radius": 2
+      },
+      {
+        "type": "rect",
+        "x": 133,
+        "y": 210,
+        "w": 12,
+        "h": 30,
+        "color": [
+          20,
+          20,
+          20
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "radius": 2
+      },
+      {
+        "type": "ellipse",
+        "x": 100,
+        "y": 240,
+        "w": 50,
+        "h": 15,
+        "color": [
+          40,
+          0,
+          0
+        ],
+        "outline": [
+          20,
+          0,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 240,
+        "w": 50,
+        "h": 15,
+        "color": [
+          40,
+          0,
+          0
+        ],
+        "outline": [
+          20,
+          0,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "line",
+        "start": [
+          160,
+          170
+        ],
+        "end": [
+          210,
+          110
+        ],
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "width": 4
+      },
+      {
+        "type": "circle",
+        "cx": 215,
+        "cy": 105,
+        "r": 10,
+        "color": [
+          180,
+          0,
+          0
+        ],
+        "outline": [
+          100,
+          0,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 215,
+        "cy": 105,
+        "r": 4,
+        "color": [
+          255,
+          100,
+          100
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "ellipse",
+        "x": 170,
+        "y": 150,
+        "w": 30,
+        "h": 10,
+        "color": [
           255,
           0,
           0
-        ]
+        ],
+        "outline": [
+          150,
+          0,
+          0
+        ],
+        "outline_w": 1
       },
-      "features": [
-        "cape"
-      ],
-      "build": "slender",
-      "motif": "shadow"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
+      {
+        "type": "ellipse",
+        "x": 180,
+        "y": 130,
+        "w": 20,
+        "h": 8,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          150,
+          0,
+          0
+        ],
+        "outline_w": 1
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

@@ -1,35 +1,340 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "beast",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          74,
-          92,
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 140,
+        "color": [
+          0,
+          80,
           70
         ],
-        "secondary": [
-          30,
+        "outline": [
+          0,
+          40,
+          30
+        ],
+        "outline_w": 3
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 160,
+        "w": 120,
+        "h": 100,
+        "color": [
+          120,
+          160,
+          140
+        ],
+        "outline": [
+          0,
+          60,
+          50
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 80,
+        "w": 120,
+        "h": 90,
+        "color": [
+          0,
+          100,
+          90
+        ],
+        "outline": [
+          0,
+          40,
+          30
+        ],
+        "outline_w": 3
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 60,
+        "w": 60,
+        "h": 20,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          139,
+          101,
+          8
+        ],
+        "outline_w": 3,
+        "radius": 5
+      },
+      {
+        "type": "rect",
+        "x": 145,
+        "y": 50,
+        "w": 30,
+        "h": 15,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          139,
+          101,
+          8
+        ],
+        "outline_w": 3,
+        "radius": 5
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 80,
+        "h": 60,
+        "color": [
+          160,
+          60,
+          60
+        ],
+        "outline": [
+          80,
           30,
           30
         ],
-        "accent": [
-          165,
-          42,
-          42
-        ]
+        "outline_w": 2
       },
-      "features": [
-        "crown"
-      ],
-      "build": "bulky",
-      "motif": "nature"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
+      {
+        "type": "circle",
+        "cx": 130,
+        "cy": 100,
+        "r": 12,
+        "color": [
+          255,
+          230,
+          0
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 130,
+        "cy": 100,
+        "r": 5,
+        "color": [
+          0,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 100,
+        "r": 12,
+        "color": [
+          255,
+          230,
+          0
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 100,
+        "r": 5,
+        "color": [
+          0,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 140,
+        "w": 80,
+        "h": 40,
+        "color": [
+          100,
+          60,
+          40
+        ],
+        "outline": [
+          60,
+          30,
+          20
+        ],
+        "outline_w": 3,
+        "radius": 10
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 145,
+        "w": 40,
+        "h": 10,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "ellipse",
+        "x": 90,
+        "y": 180,
+        "w": 30,
+        "h": 20,
+        "color": [
+          100,
+          140,
+          130
+        ],
+        "outline": [
+          0,
+          60,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 180,
+        "w": 30,
+        "h": 20,
+        "color": [
+          100,
+          140,
+          130
+        ],
+        "outline": [
+          0,
+          60,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 170,
+        "y": 180,
+        "w": 30,
+        "h": 20,
+        "color": [
+          100,
+          140,
+          130
+        ],
+        "outline": [
+          0,
+          60,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 260,
+        "w": 40,
+        "h": 50,
+        "color": [
+          0,
+          60,
+          50
+        ],
+        "outline": [
+          0,
+          30,
+          20
+        ],
+        "outline_w": 3,
+        "radius": 10
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 260,
+        "w": 40,
+        "h": 50,
+        "color": [
+          0,
+          60,
+          50
+        ],
+        "outline": [
+          0,
+          30,
+          20
+        ],
+        "outline_w": 3,
+        "radius": 10
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 115,
+        "w": 20,
+        "h": 10,
+        "color": [
+          200,
+          180,
+          150
+        ],
+        "outline": [
+          100,
+          80,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 170,
+        "y": 115,
+        "w": 20,
+        "h": 10,
+        "color": [
+          200,
+          180,
+          150
+        ],
+        "outline": [
+          100,
+          80,
+          50
+        ],
+        "outline_w": 1
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

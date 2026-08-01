@@ -1,37 +1,375 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
           45,
-          55,
-          65
+          70,
+          80
         ],
-        "secondary": [
+        "outline": [
           20,
+          40,
+          50
+        ],
+        "outline_w": 3,
+        "comment": "Spectral horse body"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          30,
+          50,
+          60
+        ],
+        "outline": [
+          10,
           30,
           40
         ],
-        "accent": [
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          30,
+          50,
+          60
+        ],
+        "outline": [
+          10,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          60,
+          90,
+          110
+        ],
+        "outline": [
+          30,
+          60,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          70,
+          110,
+          130
+        ],
+        "outline": [
+          40,
+          70,
+          90
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
           100,
+          160,
+          180
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          160,
+          180
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          150,
           255,
           200
-        ]
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
       },
-      "features": [
-        "mask",
-        "horns",
-        "spikes"
-      ],
-      "build": "bulky",
-      "motif": "shadow"
-    },
-    "match": 8,
-    "iters": 1,
-    "ok": true,
-    "match_before": 8
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          50,
+          70,
+          80
+        ],
+        "outline": [
+          100,
+          140,
+          160
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          70
+        ],
+        "outline": [
+          20,
+          40,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
+          160,
+          180,
+          190
+        ],
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          180,
+          210,
+          220
+        ],
+        "outline": [
+          100,
+          140,
+          160
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          120,
+          180,
+          160
+        ],
+        "outline": [
+          60,
+          120,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          20,
+          40,
+          50
+        ],
+        "outline": [
+          10,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          20,
+          40,
+          50
+        ],
+        "outline": [
+          10,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          70
+        ],
+        "outline": [
+          20,
+          40,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

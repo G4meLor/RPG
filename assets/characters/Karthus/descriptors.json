@@ -1,37 +1,312 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
-          110,
-          120,
-          130
-        ],
-        "secondary": [
-          80,
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 130,
+        "w": 180,
+        "h": 260,
+        "color": [
           20,
+          60,
+          40
+        ],
+        "outline": [
+          100,
+          255,
+          180
+        ],
+        "outline_w": 4,
+        "comment": "Spectral glow - outer aura"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 170,
+        "w": 80,
+        "h": 200,
+        "color": [
+          15,
+          45,
           30
         ],
-        "accent": [
-          100,
-          200,
-          255
-        ]
+        "outline": [
+          40,
+          80,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Main robes - deep Shadow Isles green"
       },
-      "features": [
-        "cape",
-        "mask",
-        "crown"
-      ],
-      "build": "tall",
-      "motif": "shadow"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            350
+          ],
+          [
+            80,
+            410
+          ],
+          [
+            110,
+            380
+          ],
+          [
+            130,
+            420
+          ],
+          [
+            150,
+            380
+          ],
+          [
+            180,
+            420
+          ],
+          [
+            210,
+            380
+          ],
+          [
+            230,
+            410
+          ],
+          [
+            200,
+            350
+          ]
+        ],
+        "color": [
+          10,
+          30,
+          20
+        ],
+        "outline": [
+          60,
+          120,
+          90
+        ],
+        "outline_w": 1,
+        "comment": "Tattered robes - shredded hem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            150
+          ],
+          [
+            150,
+            60
+          ],
+          [
+            190,
+            150
+          ],
+          [
+            150,
+            140
+          ]
+        ],
+        "color": [
+          20,
+          40,
+          30
+        ],
+        "outline": [
+          70,
+          130,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Iconic pointed hood"
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 155,
+        "r": 22,
+        "color": [
+          190,
+          210,
+          190
+        ],
+        "outline": [
+          50,
+          70,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Undead skull - pale bone"
+      },
+      {
+        "type": "ellipse",
+        "x": 142,
+        "y": 150,
+        "w": 6,
+        "h": 10,
+        "color": [
+          0,
+          255,
+          150
+        ],
+        "outline": [
+          0,
+          100,
+          50
+        ],
+        "outline_w": 1,
+        "comment": "Skeletal eye L - glowing green"
+      },
+      {
+        "type": "ellipse",
+        "x": 152,
+        "y": 150,
+        "w": 6,
+        "h": 10,
+        "color": [
+          0,
+          255,
+          150
+        ],
+        "outline": [
+          0,
+          100,
+          50
+        ],
+        "outline_w": 1,
+        "comment": "Skeletal eye R - glowing green"
+      },
+      {
+        "type": "rect",
+        "x": 147,
+        "y": 162,
+        "w": 6,
+        "h": 4,
+        "color": [
+          40,
+          60,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Skeletal nasal cavity"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            170
+          ],
+          [
+            160,
+            170
+          ],
+          [
+            155,
+            178
+          ],
+          [
+            145,
+            178
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Skeletal jawline"
+      },
+      {
+        "type": "ellipse",
+        "x": 135,
+        "y": 210,
+        "w": 30,
+        "h": 60,
+        "color": [
+          160,
+          180,
+          160
+        ],
+        "outline": [
+          60,
+          80,
+          60
+        ],
+        "outline_w": 1,
+        "comment": "Exposed skeletal ribcage"
+      },
+      {
+        "type": "rect",
+        "x": 145,
+        "y": 215,
+        "w": 10,
+        "h": 4,
+        "color": [
+          120,
+          140,
+          120
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Rib bone 1"
+      },
+      {
+        "type": "rect",
+        "x": 145,
+        "y": 225,
+        "w": 10,
+        "h": 4,
+        "color": [
+          120,
+          140,
+          120
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Rib bone 2"
+      },
+      {
+        "type": "rect",
+        "x": 145,
+        "y": 235,
+        "w": 10,
+        "h": 4,
+        "color": [
+          120,
+          140,
+          120
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Rib bone 3"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 380,
+        "w": 60,
+        "h": 20,
+        "color": [
+          100,
+          255,
+          180
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Floating spectral mist base"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

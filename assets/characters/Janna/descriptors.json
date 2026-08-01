@@ -1,36 +1,332 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "staff",
-      "palette": {
-        "primary": [
-          240,
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 100,
+        "w": 80,
+        "h": 120,
+        "color": [
+          200,
+          230,
+          255,
+          150
+        ],
+        "outline": [
+          150,
+          180,
+          210
+        ],
+        "outline_w": 2,
+        "comment": "Spirit Aura/Wings Left"
+      },
+      {
+        "type": "ellipse",
+        "x": 140,
+        "y": 100,
+        "w": 80,
+        "h": 120,
+        "color": [
+          200,
+          230,
+          255,
+          150
+        ],
+        "outline": [
+          150,
+          180,
+          210
+        ],
+        "outline_w": 2,
+        "comment": "Spirit Aura/Wings Right"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            140
+          ],
+          [
+            160,
+            280
+          ],
+          [
+            40,
+            280
+          ]
+        ],
+        "color": [
+          230,
           245,
           255
         ],
-        "secondary": [
-          220,
-          220,
+        "outline": [
+          170,
+          200,
+          220
+        ],
+        "outline_w": 2,
+        "comment": "Ethereal Dress"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 80,
+        "w": 30,
+        "h": 40,
+        "color": [
+          255,
+          235,
           210
         ],
-        "accent": [
-          135,
-          206,
-          235
-        ]
+        "outline": [
+          200,
+          170,
+          150
+        ],
+        "outline_w": 1,
+        "comment": "Face"
       },
-      "features": [
-        "crown",
-        "animal_ears"
-      ],
-      "build": "slender",
-      "motif": "ice"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "circle",
+        "cx": 118,
+        "cy": 92,
+        "r": 2,
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "comment": "Eye L"
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 92,
+        "r": 2,
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "comment": "Eye R"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 102,
+        "w": 6,
+        "h": 3,
+        "color": [
+          255,
+          180,
+          180
+        ],
+        "comment": "Mouth"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            80
+          ],
+          [
+            80,
+            150
+          ],
+          [
+            100,
+            130
+          ],
+          [
+            120,
+            130
+          ],
+          [
+            140,
+            150
+          ],
+          [
+            130,
+            80
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          220
+        ],
+        "outline": [
+          220,
+          220,
+          180
+        ],
+        "outline_w": 1,
+        "comment": "Flowing Hair Main"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 80,
+        "w": 20,
+        "h": 70,
+        "color": [
+          255,
+          255,
+          240
+        ],
+        "outline": [
+          220,
+          220,
+          180
+        ],
+        "outline_w": 1,
+        "comment": "Hair Strand L"
+      },
+      {
+        "type": "ellipse",
+        "x": 140,
+        "y": 80,
+        "w": 20,
+        "h": 70,
+        "color": [
+          255,
+          255,
+          240
+        ],
+        "outline": [
+          220,
+          220,
+          180
+        ],
+        "outline_w": 1,
+        "comment": "Hair Strand R"
+      },
+      {
+        "type": "line",
+        "start": [
+          135,
+          140
+        ],
+        "end": [
+          170,
+          50
+        ],
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "width": 4,
+        "comment": "Wind Staff Shaft"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 50,
+        "r": 12,
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          173,
+          216,
+          230
+        ],
+        "outline_w": 3,
+        "comment": "Staff Orb"
+      },
+      {
+        "type": "ellipse",
+        "x": 160,
+        "y": 40,
+        "w": 20,
+        "h": 8,
+        "color": [
+          200,
+          240,
+          255
+        ],
+        "outline": [
+          150,
+          200,
+          230
+        ],
+        "outline_w": 1,
+        "comment": "Wind Swirl 1"
+      },
+      {
+        "type": "ellipse",
+        "x": 160,
+        "y": 60,
+        "w": 20,
+        "h": 8,
+        "color": [
+          200,
+          240,
+          255
+        ],
+        "outline": [
+          150,
+          200,
+          230
+        ],
+        "outline_w": 1,
+        "comment": "Wind Swirl 2"
+      },
+      {
+        "type": "ellipse",
+        "x": 115,
+        "y": 120,
+        "w": 20,
+        "h": 30,
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1,
+        "comment": "Humanoid Torso"
+      },
+      {
+        "type": "ellipse",
+        "x": 100,
+        "y": 130,
+        "w": 10,
+        "h": 25,
+        "color": [
+          255,
+          235,
+          210
+        ],
+        "comment": "Arm L"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 130,
+        "w": 10,
+        "h": 25,
+        "color": [
+          255,
+          235,
+          210
+        ],
+        "comment": "Arm R"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

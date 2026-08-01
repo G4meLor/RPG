@@ -1,36 +1,445 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "rogue",
-      "weapon": "dagger",
-      "palette": {
-        "primary": [
-          30,
+    "primitives": [
+      {
+        "type": "rect",
+        "x": 115,
+        "y": 180,
+        "w": 30,
+        "h": 50,
+        "color": [
+          25,
+          25,
+          35
+        ],
+        "outline": [
+          10,
+          10,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 2
+      },
+      {
+        "type": "rect",
+        "x": 118,
+        "y": 180,
+        "w": 12,
+        "h": 50,
+        "color": [
+          15,
+          15,
+          25
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "radius": 1
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 180,
+        "w": 12,
+        "h": 50,
+        "color": [
+          15,
+          15,
+          25
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "radius": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            130
+          ],
+          [
+            150,
+            130
+          ],
+          [
+            145,
+            185
+          ],
+          [
+            115,
+            185
+          ]
+        ],
+        "color": [
           40,
+          30,
+          50
+        ],
+        "outline": [
+          20,
+          15,
+          30
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            105,
+            135
+          ],
+          [
+            128,
+            90
+          ],
+          [
+            155,
+            135
+          ],
+          [
+            140,
+            145
+          ],
+          [
+            120,
+            145
+          ]
+        ],
+        "color": [
+          35,
+          35,
+          50
+        ],
+        "outline": [
+          20,
+          20,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            120,
+            110
+          ],
+          [
+            136,
+            110
+          ],
+          [
+            136,
+            130
+          ],
+          [
+            120,
+            130
+          ]
+        ],
+        "color": [
+          210,
+          170,
+          140
+        ],
+        "outline": [
+          100,
+          70,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 115,
+        "w": 12,
+        "h": 5,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "radius": 0
+      },
+      {
+        "type": "rect",
+        "x": 110,
+        "y": 135,
+        "w": 15,
+        "h": 40,
+        "color": [
+          45,
+          45,
+          65
+        ],
+        "outline": [
+          25,
+          25,
+          45
+        ],
+        "outline_w": 2,
+        "radius": 2
+      },
+      {
+        "type": "rect",
+        "x": 135,
+        "y": 135,
+        "w": 15,
+        "h": 40,
+        "color": [
+          45,
+          45,
+          65
+        ],
+        "outline": [
+          25,
+          25,
+          45
+        ],
+        "outline_w": 2,
+        "radius": 2
+      },
+      {
+        "type": "rect",
+        "x": 112,
+        "y": 140,
+        "w": 10,
+        "h": 10,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          60,
+          60,
           80
         ],
-        "secondary": [
-          120,
-          140,
-          180
-        ],
-        "accent": [
-          180,
-          210,
-          255
-        ]
+        "outline_w": 1,
+        "radius": 0
       },
-      "features": [
-        "hood",
-        "cape"
-      ],
-      "build": "slender",
-      "motif": "shadow"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "rect",
+        "x": 138,
+        "y": 140,
+        "w": 10,
+        "h": 10,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          60,
+          60,
+          80
+        ],
+        "outline_w": 1,
+        "radius": 0
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            150
+          ],
+          [
+            70,
+            160
+          ],
+          [
+            110,
+            170
+          ]
+        ],
+        "color": [
+          170,
+          175,
+          190
+        ],
+        "outline": [
+          90,
+          95,
+          110
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            160
+          ],
+          [
+            70,
+            170
+          ],
+          [
+            110,
+            180
+          ]
+        ],
+        "color": [
+          170,
+          175,
+          190
+        ],
+        "outline": [
+          90,
+          95,
+          110
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            170
+          ],
+          [
+            70,
+            180
+          ],
+          [
+            110,
+            190
+          ]
+        ],
+        "color": [
+          170,
+          175,
+          190
+        ],
+        "outline": [
+          90,
+          95,
+          110
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            150,
+            150
+          ],
+          [
+            190,
+            160
+          ],
+          [
+            150,
+            170
+          ]
+        ],
+        "color": [
+          170,
+          175,
+          190
+        ],
+        "outline": [
+          90,
+          95,
+          110
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            150,
+            160
+          ],
+          [
+            190,
+            170
+          ],
+          [
+            150,
+            180
+          ]
+        ],
+        "color": [
+          170,
+          175,
+          190
+        ],
+        "outline": [
+          90,
+          95,
+          110
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            150,
+            170
+          ],
+          [
+            190,
+            180
+          ],
+          [
+            150,
+            190
+          ]
+        ],
+        "color": [
+          170,
+          175,
+          190
+        ],
+        "outline": [
+          90,
+          95,
+          110
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            124,
+            90
+          ],
+          [
+            132,
+            90
+          ],
+          [
+            128,
+            105
+          ]
+        ],
+        "color": [
+          180,
+          190,
+          210
+        ],
+        "outline": [
+          100,
+          110,
+          130
+        ],
+        "outline_w": 1
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

@@ -1,33 +1,360 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "brute",
-      "weapon": "fists",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "rect",
+        "x": 90,
+        "y": 180,
+        "w": 80,
+        "h": 60,
+        "color": [
           45,
           48,
-          56
+          55
         ],
-        "secondary": [
-          210,
-          180,
-          120
+        "outline": [
+          20,
+          22,
+          30
         ],
-        "accent": [
-          150,
-          40,
-          40
-        ]
+        "outline_w": 3,
+        "radius": 10,
+        "comment": "Centaur horse body - heavy Noxian steel"
       },
-      "features": [],
-      "build": "average",
-      "motif": "light"
-    },
-    "match": 3,
-    "iters": 10,
-    "ok": false,
-    "match_before": 3
+      {
+        "type": "rect",
+        "x": 95,
+        "y": 230,
+        "w": 15,
+        "h": 40,
+        "color": [
+          45,
+          48,
+          55
+        ],
+        "outline": [
+          20,
+          22,
+          30
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Front left metallic leg"
+      },
+      {
+        "type": "rect",
+        "x": 110,
+        "y": 230,
+        "w": 15,
+        "h": 40,
+        "color": [
+          60,
+          65,
+          75
+        ],
+        "outline": [
+          30,
+          35,
+          45
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Front right metallic leg"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 230,
+        "w": 15,
+        "h": 40,
+        "color": [
+          60,
+          65,
+          75
+        ],
+        "outline": [
+          30,
+          35,
+          45
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Back left metallic leg"
+      },
+      {
+        "type": "rect",
+        "x": 155,
+        "y": 230,
+        "w": 15,
+        "h": 40,
+        "color": [
+          45,
+          48,
+          55
+        ],
+        "outline": [
+          20,
+          22,
+          30
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Back right metallic leg"
+      },
+      {
+        "type": "rect",
+        "x": 110,
+        "y": 140,
+        "w": 40,
+        "h": 50,
+        "color": [
+          70,
+          75,
+          85
+        ],
+        "outline": [
+          40,
+          45,
+          55
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Feminine torso silhouette - armored"
+      },
+      {
+        "type": "rect",
+        "x": 115,
+        "y": 145,
+        "w": 30,
+        "h": 20,
+        "color": [
+          90,
+          95,
+          105
+        ],
+        "outline": [
+          50,
+          55,
+          65
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Ferromancy breastplate"
+      },
+      {
+        "type": "circle",
+        "cx": 130,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          110,
+          115,
+          125
+        ],
+        "outline": [
+          60,
+          65,
+          75
+        ],
+        "outline_w": 3,
+        "comment": "Head base"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            118,
+            120
+          ],
+          [
+            130,
+            90
+          ],
+          [
+            142,
+            120
+          ]
+        ],
+        "color": [
+          130,
+          135,
+          145
+        ],
+        "outline": [
+          70,
+          75,
+          85
+        ],
+        "outline_w": 3,
+        "comment": "Distinctive pointed metallic helmet"
+      },
+      {
+        "type": "rect",
+        "x": 124,
+        "y": 112,
+        "w": 12,
+        "h": 3,
+        "color": [
+          180,
+          180,
+          190
+        ],
+        "outline": [
+          100,
+          100,
+          110
+        ],
+        "outline_w": 1,
+        "radius": 1,
+        "comment": "Helmet visor slit"
+      },
+      {
+        "type": "rect",
+        "x": 150,
+        "y": 130,
+        "w": 10,
+        "h": 50,
+        "color": [
+          110,
+          115,
+          125
+        ],
+        "outline": [
+          60,
+          65,
+          75
+        ],
+        "outline_w": 3,
+        "comment": "Right arm - armored"
+      },
+      {
+        "type": "rect",
+        "x": 155,
+        "y": 110,
+        "w": 8,
+        "h": 80,
+        "color": [
+          140,
+          145,
+          155
+        ],
+        "outline": [
+          80,
+          85,
+          95
+        ],
+        "outline_w": 3,
+        "comment": "Signature lance - shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            151,
+            110
+          ],
+          [
+            163,
+            110
+          ],
+          [
+            157,
+            80
+          ]
+        ],
+        "color": [
+          160,
+          165,
+          175
+        ],
+        "outline": [
+          100,
+          105,
+          115
+        ],
+        "outline_w": 3,
+        "comment": "Signature lance - tip"
+      },
+      {
+        "type": "rect",
+        "x": 125,
+        "y": 155,
+        "w": 10,
+        "h": 10,
+        "color": [
+          160,
+          30,
+          30
+        ],
+        "outline": [
+          80,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Noxian red accent gem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            160
+          ],
+          [
+            80,
+            180
+          ],
+          [
+            110,
+            200
+          ]
+        ],
+        "color": [
+          60,
+          65,
+          75
+        ],
+        "outline": [
+          40,
+          45,
+          55
+        ],
+        "outline_w": 2,
+        "comment": "Left jagged armor plating"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            150,
+            160
+          ],
+          [
+            180,
+            180
+          ],
+          [
+            150,
+            200
+          ]
+        ],
+        "color": [
+          60,
+          65,
+          75
+        ],
+        "outline": [
+          40,
+          45,
+          55
+        ],
+        "outline_w": 2,
+        "comment": "Right jagged armor plating"
+      }
+    ],
+    "generator": "vlm_primitives",
+    "phase": "2"
   },
   "1": {
     "descriptor": {

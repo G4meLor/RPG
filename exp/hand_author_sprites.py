@@ -507,12 +507,785 @@ def darius_prims():
     return P
 
 
+def monkeyking_prims():
+    """Wukong — the Monkey King.
+    Iconic: monkey face/fur, golden armor, LONG prehensile tail, red fabric sash,
+    staff (often). Tail is the missing feature.
+    """
+    P = []
+    FUR = (140, 95, 55)
+    FACE = (210, 165, 110)
+    GOLD = (215, 175, 55)
+    GOLD_DARK = (160, 120, 30)
+    RED = (175, 35, 35)
+    EYE = (35, 25, 20)
+    OUT = (40, 25, 20)
+
+    # --- Long prehensile tail (drawn behind, THE missing feature) — curls from
+    # lower back up and around to the side ---
+    P.append({"type":"circle","cx":96,"cy":150,"r":9,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":78,"cy":140,"r":8,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":62,"cy":122,"r":7,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":52,"cy":100,"r":6,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":50,"cy":78,"r":5,"color":FUR,"outline":OUT,"outline_w":1})  # tail tip
+
+    # --- Head (monkey face) ---
+    P.append({"type":"circle","cx":128,"cy":74,"r":22,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":128,"cy":80,"r":17,"color":FACE,"outline":OUT,"outline_w":1})  # face muzzle
+    # ears (monkey, on sides)
+    P.append({"type":"circle","cx":106,"cy":70,"r":7,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":150,"cy":70,"r":7,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":106,"cy":70,"r":3,"color":FACE})
+    P.append({"type":"circle","cx":150,"cy":70,"r":3,"color":FACE})
+    # eyes
+    P.append({"type":"circle","cx":121,"cy":76,"r":3,"color":EYE})
+    P.append({"type":"circle","cx":135,"cy":76,"r":3,"color":EYE})
+    # brow ridge
+    P.append({"type":"line","start":[114,70],"end":[142,70],"color":OUT,"width":1})
+    # mouth
+    P.append({"type":"line","start":[122,88],"end":[134,88],"color":(120,70,50),"width":1})
+
+    # --- Torso: golden armor + red sash ---
+    P.append({"type":"polygon","points":[(108,96),(148,96),(152,162),(104,162)],
+              "color":GOLD,"outline":OUT,"outline_w":1})
+    # armor chest plate
+    P.append({"type":"polygon","points":[(112,100),(144,100),(140,140),(116,140)],
+              "color":GOLD_DARK,"outline":OUT,"outline_w":1})
+    # red sash (decorative fabric)
+    P.append({"type":"polygon","points":[(108,140),(148,140),(150,162),(106,162)],
+              "color":RED,"outline":OUT,"outline_w":1})
+    # gold trim
+    P.append({"type":"line","start":[112,100],"end":[144,100],"color":GOLD,"width":1})
+
+    # --- Arms (muscular, golden bracers) ---
+    P.append({"type":"rect","x":96,"y":104,"w":14,"h":48,"color":FUR,"outline":OUT,"outline_w":1,"radius":5})
+    P.append({"type":"rect","x":146,"y":104,"w":14,"h":48,"color":FUR,"outline":OUT,"outline_w":1,"radius":5})
+    # golden bracers
+    P.append({"type":"rect","x":96,"y":142,"w":14,"h":8,"color":GOLD,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":146,"y":142,"w":14,"h":8,"color":GOLD,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":103,"cy":154,"r":5,"color":FACE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":153,"cy":154,"r":5,"color":FACE,"outline":OUT,"outline_w":1})
+
+    # --- Legs (fur + golden boots) ---
+    P.append({"type":"rect","x":110,"y":162,"w":14,"h":44,"color":FUR,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":132,"y":162,"w":14,"h":44,"color":FUR,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":106,"y":202,"w":22,"h":12,"color":GOLD_DARK,"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":128,"y":202,"w":22,"h":12,"color":GOLD_DARK,"outline":OUT,"outline_w":1,"radius":2})
+    return P
+
+
+def teemo_prims():
+    """Teemo — the Swift Scout.
+    Iconic: green scout hat (big), oversized goggles, round cheeks, brown fur (yordle).
+    Small stature. Hat + goggles are THE features.
+    """
+    P = []
+    FUR = (155, 110, 70)
+    HAT = (70, 130, 60)
+    HAT_DARK = (45, 95, 40)
+    GOGGLE = (180, 200, 60)
+    GOGGLE_DARK = (40, 50, 20)
+    EYE = (30, 25, 20)
+    OUT = (40, 25, 20)
+
+    # --- Big green scout hat (puff cap shape, THE feature) ---
+    P.append({"type":"circle","cx":128,"cy":56,"r":26,"color":HAT,"outline":OUT,"outline_w":1})
+    # hat band (darker)
+    P.append({"type":"rect","x":100,"y":70,"w":56,"h":8,"color":HAT_DARK,"outline":OUT,"outline_w":1})
+    # hat tip puff
+    P.append({"type":"circle","cx":128,"cy":36,"r":8,"color":HAT,"outline":OUT,"outline_w":1})
+
+    # --- Head (yordle: big head, round cheeks, brown fur) ---
+    P.append({"type":"circle","cx":128,"cy":86,"r":24,"color":FUR,"outline":OUT,"outline_w":1})
+    # round cheeks (lighter fur)
+    P.append({"type":"circle","cx":128,"cy":92,"r":18,"color":(180,135,95),"outline":OUT,"outline_w":1})
+
+    # --- Oversized goggles (THE feature — big, across the face) ---
+    # goggle strap
+    P.append({"type":"rect","x":104,"y":82,"w":48,"h":5,"color":GOGGLE_DARK,"outline":OUT,"outline_w":1})
+    # two big goggle lenses
+    P.append({"type":"circle","cx":118,"cy":86,"r":9,"color":GOGGLE,"outline":GOGGLE_DARK,"outline_w":2})
+    P.append({"type":"circle","cx":138,"cy":86,"r":9,"color":GOGGLE,"outline":GOGGLE_DARK,"outline_w":2})
+    # goggle pupils
+    P.append({"type":"circle","cx":118,"cy":86,"r":3,"color":EYE})
+    P.append({"type":"circle","cx":138,"cy":86,"r":3,"color":EYE})
+    # goggle shine
+    P.append({"type":"circle","cx":115,"cy":83,"r":2,"color":(240,250,200)})
+    P.append({"type":"circle","cx":135,"cy":83,"r":2,"color":(240,250,200)})
+
+    # nose + mouth
+    P.append({"type":"circle","cx":128,"cy":98,"r":3,"color":(120,80,60)})
+    P.append({"type":"line","start":[122,104],"end":[134,104],"color":(100,65,45),"width":1})
+
+    # --- Body (small — yordle scout uniform) ---
+    P.append({"type":"polygon","points":[(112,112),(144,112),(148,170),(108,170)],
+              "color":HAT_DARK,"outline":OUT,"outline_w":1})
+    # scout pack on back (visible at side)
+    P.append({"type":"rect","x":104,"y":120,"w":10,"h":30,"color":(90,70,50),"outline":OUT,"outline_w":1})
+
+    # --- Arms ---
+    P.append({"type":"rect","x":100,"y":116,"w":12,"h":42,"color":HAT_DARK,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":144,"y":116,"w":12,"h":42,"color":HAT_DARK,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"circle","cx":106,"cy":160,"r":5,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":150,"cy":160,"r":5,"color":FUR,"outline":OUT,"outline_w":1})
+
+    # --- Legs (short, small) ---
+    P.append({"type":"rect","x":112,"y":170,"w":12,"h":34,"color":FUR,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":132,"y":170,"w":12,"h":34,"color":FUR,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":108,"y":200,"w":20,"h":12,"color":(60,45,30),"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":128,"y":200,"w":20,"h":12,"color":(60,45,30),"outline":OUT,"outline_w":1,"radius":2})
+    return P
+
+
+def yuumi_prims():
+    """Yuumi — the Magical Cat.
+    Iconic: cat floating on a BIG open magical book, cat ears + tail, glowing aura.
+    The book is THE feature.
+    """
+    P = []
+    BOOK = (60, 90, 160)
+    BOOK_PAGE = (235, 225, 200)
+    BOOK_GOLD = (210, 170, 50)
+    FUR = (220, 210, 195)
+    FUR_DARK = (170, 160, 145)
+    PINK = (220, 150, 165)
+    EYE = (140, 200, 90)
+    OUT = (40, 30, 25)
+    AURA = (160, 220, 255)
+
+    # --- Glowing aura under book ---
+    P.append({"type":"ellipse","x":70,"y":150,"w":116,"h":30,"color":AURA,"outline":None})
+    P.append({"type":"ellipse","x":80,"y":155,"w":96,"h":20,"color":(200,235,255)})
+
+    # --- BIG open magical book (THE feature — floating platform) ---
+    # book base (thick tome)
+    P.append({"type":"rect","x":76,"y":148,"w":104,"h":22,"color":BOOK,"outline":OUT,"outline_w":1,"radius":2})
+    # open pages (V shape)
+    P.append({"type":"polygon","points":[(80,148),(128,140),(128,148)],"color":BOOK_PAGE,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(128,140),(176,148),(128,148)],"color":BOOK_PAGE,"outline":OUT,"outline_w":1})
+    # page lines (text)
+    for lx in (88, 96, 104, 112):
+        P.append({"type":"line","start":[lx,145],"end":[lx+8,143],"color":(150,140,110),"width":1})
+    for lx in (136, 144, 152, 160):
+        P.append({"type":"line","start":[lx,143],"end":[lx+8,145],"color":(150,140,110),"width":1})
+    # gold clasp + spine
+    P.append({"type":"rect","x":76,"y":148,"w":8,"h":22,"color":BOOK_GOLD,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":172,"y":148,"w":8,"h":22,"color":BOOK_GOLD,"outline":OUT,"outline_w":1})
+    # glowing rune on book
+    P.append({"type":"circle","cx":128,"cy":159,"r":5,"color":AURA,"outline":OUT,"outline_w":1})
+
+    # --- Cat body (sitting on book) ---
+    P.append({"type":"ellipse","x":108,"y":96,"w":40,"h":44,"color":FUR,"outline":OUT,"outline_w":1})  # body
+    # cat tail (curling up)
+    P.append({"type":"circle","cx":152,"cy":116,"r":6,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":160,"cy":106,"r":5,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":162,"cy":96,"r":4,"color":FUR,"outline":OUT,"outline_w":1})
+
+    # --- Cat head ---
+    P.append({"type":"circle","cx":128,"cy":80,"r":18,"color":FUR,"outline":OUT,"outline_w":1})
+    # cat ears (pointy, THE feature)
+    P.append({"type":"polygon","points":[(112,68),(118,46),(126,66)],"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(115,64),(119,52),(123,62)],"color":PINK})
+    P.append({"type":"polygon","points":[(130,66),(138,46),(144,68)],"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(133,62),(139,52),(141,64)],"color":PINK})
+    # big green eyes
+    P.append({"type":"circle","cx":121,"cy":80,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":135,"cy":80,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":122,"cy":79,"r":2,"color":(20,20,15)})
+    P.append({"type":"circle","cx":136,"cy":79,"r":2,"color":(20,20,15)})
+    # pink nose
+    P.append({"type":"polygon","points":[(125,88),(131,88),(128,92)],"color":PINK,"outline":OUT,"outline_w":1})
+    # whiskers
+    P.append({"type":"line","start":[112,88],"end":[122,89],"color":FUR_DARK,"width":1})
+    P.append({"type":"line","start":[134,89],"end":[144,88],"color":FUR_DARK,"width":1})
+    # mouth
+    P.append({"type":"line","start":[128,92],"end":[124,95],"color":OUT,"width":1})
+    P.append({"type":"line","start":[128,92],"end":[132,95],"color":OUT,"width":1})
+
+    # --- Front paws (on the book) ---
+    P.append({"type":"ellipse","x":112,"y":128,"w":12,"h":14,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"ellipse","x":132,"y":128,"w":12,"h":14,"color":FUR,"outline":OUT,"outline_w":1})
+    return P
+
+
+def pantheon_prims():
+    """Pantheon — the Unbreakable Spear.
+    Iconic: plumed greek helmet, LARGE circular shield, bronze armor, cape, spear.
+    Shield is THE big feature.
+    """
+    P = []
+    BRONZE = (180, 130, 50)
+    BRONZE_DARK = (130, 90, 30)
+    CREST_RED = (170, 35, 35)
+    SKIN = (210, 175, 140)
+    CAPE = (160, 40, 40)
+    METAL = (200, 180, 90)
+    EYE = (35, 25, 20)
+    OUT = (40, 25, 20)
+
+    # --- Spear (behind, diagonal) ---
+    P.append({"type":"line","start":[180,50],"end":[150,210],"color":(180,160,80),"width":3})
+    P.append({"type":"polygon","points":[(180,50),(176,44),(184,44)],"color":METAL,"outline":OUT,"outline_w":1})  # spear tip
+
+    # --- Cape (behind body, flowing) ---
+    P.append({"type":"polygon","points":[(108,96),(148,96),(156,200),(100,200)],
+              "color":CAPE,"outline":OUT,"outline_w":1})
+
+    # --- Plumed greek helmet (THE feature — crest + bronze) ---
+    P.append({"type":"circle","cx":128,"cy":72,"r":20,"color":BRONZE,"outline":OUT,"outline_w":1})
+    # red plume crest (big, on top)
+    P.append({"type":"polygon","points":[(108,54),(120,40),(136,40),(148,54),(144,58),(112,58)],
+              "color":CREST_RED,"outline":OUT,"outline_w":1})
+    # plume segments
+    P.append({"type":"line","start":[116,50],"end":[116,40],"color":(120,20,20),"width":1})
+    P.append({"type":"line","start":[124,48],"end":[124,38],"color":(120,20,20),"width":1})
+    P.append({"type":"line","start":[132,48],"end":[132,38],"color":(120,20,20),"width":1})
+    P.append({"type":"line","start":[140,50],"end":[140,40],"color":(120,20,20),"width":1})
+    # helmet face opening (T shape)
+    P.append({"type":"rect","x":118,"y":68,"w":20,"h":14,"color":SKIN,"outline":OUT,"outline_w":1})
+    # eyes in shadow
+    P.append({"type":"line","start":[121,75],"end":[125,75],"color":EYE,"width":2})
+    P.append({"type":"line","start":[131,75],"end":[135,75],"color":EYE,"width":2})
+    # cheek guards
+    P.append({"type":"polygon","points":[(110,72),(118,72),(118,88),(112,84)],"color":BRONZE_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(138,72),(146,72),(144,84),(138,88)],"color":BRONZE_DARK,"outline":OUT,"outline_w":1})
+
+    # --- Bronze armor torso ---
+    P.append({"type":"polygon","points":[(106,94),(150,94),(154,164),(102,164)],
+              "color":BRONZE,"outline":OUT,"outline_w":1})
+    # chest plate (muscular, bronze)
+    P.append({"type":"polygon","points":[(110,98),(146,98),(142,140),(114,140)],
+              "color":BRONZE_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"line","start":[128,98],"end":[128,140],"color":METAL,"width":1})
+    # abs
+    P.append({"type":"line","start":[114,140],"end":[142,140],"color":OUT,"width":1})
+    P.append({"type":"line","start":[116,152],"end":[140,152],"color":OUT,"width":1})
+    # shoulder armor (bronze, round)
+    P.append({"type":"circle","cx":102,"cy":98,"r":12,"color":BRONZE_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":154,"cy":98,"r":12,"color":BRONZE_DARK,"outline":OUT,"outline_w":1})
+
+    # --- Arms (one holds shield, one holds spear) ---
+    P.append({"type":"rect","x":96,"y":108,"w":14,"h":50,"color":SKIN,"outline":OUT,"outline_w":1,"radius":5})
+    P.append({"type":"rect","x":146,"y":108,"w":14,"h":50,"color":SKIN,"outline":OUT,"outline_w":1,"radius":5})
+
+    # --- LARGE circular shield (THE feature — big, in front, on left arm) ---
+    P.append({"type":"circle","cx":86,"cy":140,"r":30,"color":BRONZE,"outline":OUT,"outline_w":2})
+    P.append({"type":"circle","cx":86,"cy":140,"r":24,"color":BRONZE_DARK,"outline":OUT,"outline_w":1})
+    # shield boss (center) + emblem
+    P.append({"type":"circle","cx":86,"cy":140,"r":8,"color":METAL,"outline":OUT,"outline_w":1})
+    P.append({"type":"line","start":[86,128],"end":[86,152],"color":CREST_RED,"width":2})  # emblem
+    P.append({"type":"line","start":[74,140],"end":[98,140],"color":CREST_RED,"width":2})
+    # shield rim rivets
+    for ang in (0, 90, 180, 270):
+        import math as _m
+        rx = 86 + int(27 * _m.cos(_m.radians(ang)))
+        ry = 140 + int(27 * _m.sin(_m.radians(ang)))
+        P.append({"type":"circle","cx":rx,"cy":ry,"r":2,"color":METAL})
+    # hand behind shield
+    P.append({"type":"circle","cx":103,"cy":140,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+
+    # --- Legs (bronze greaves) ---
+    P.append({"type":"rect","x":108,"y":164,"w":16,"h":50,"color":BRONZE_DARK,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":132,"y":164,"w":16,"h":50,"color":BRONZE_DARK,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"line","start":[108,184],"end":[124,184],"color":METAL,"width":1})
+    P.append({"type":"line","start":[132,184],"end":[148,184],"color":METAL,"width":1})
+    P.append({"type":"rect","x":104,"y":210,"w":24,"h":12,"color":(50,35,20),"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":128,"y":210,"w":24,"h":12,"color":(50,35,20),"outline":OUT,"outline_w":1,"radius":2})
+    return P
+
+
+def twistedfate_prims():
+    """Twisted Fate — the Card Master.
+    Iconic: wide-brim gambler hat, long brown coat, GLOWING magical cards, sharp features.
+    Hat + cards are THE features.
+    """
+    P = []
+    HAT = (95, 60, 35)
+    HAT_BAND = (180, 45, 40)
+    COAT = (120, 75, 45)
+    COAT_DARK = (85, 50, 30)
+    SKIN = (225, 190, 155)
+    HAIR = (180, 140, 70)
+    CARD = (240, 235, 210)
+    CARD_GLOW = (120, 220, 255)
+    EYE = (40, 30, 25)
+    OUT = (40, 25, 20)
+
+    # --- Wide-brim gambler hat (THE feature — big brim) ---
+    P.append({"type":"ellipse","x":92,"y":48,"w":72,"h":16,"color":HAT,"outline":OUT,"outline_w":1})  # brim
+    P.append({"type":"ellipse","x":108,"y":38,"w":40,"h":22,"color":HAT,"outline":OUT,"outline_w":1})  # crown
+    # hat band (red)
+    P.append({"type":"rect","x":110,"y":52,"w":36,"h":6,"color":HAT_BAND,"outline":OUT,"outline_w":1})
+    # hat crown crease
+    P.append({"type":"line","start":[128,40],"end":[128,56],"color":HAT_BAND,"width":1})
+
+    # --- Head (sharp handsome features) ---
+    P.append({"type":"circle","cx":128,"cy":74,"r":18,"color":SKIN,"outline":OUT,"outline_w":1})
+    # slicked-back hair sideburns
+    P.append({"type":"polygon","points":[(112,68),(118,60),(122,72)],"color":HAIR,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(134,72),(138,60),(144,68)],"color":HAIR,"outline":OUT,"outline_w":1})
+    # sharp eyes + confident brow
+    P.append({"type":"line","start":[117,73],"end":[124,73],"color":EYE,"width":2})
+    P.append({"type":"line","start":[132,73],"end":[139,73],"color":EYE,"width":2})
+    P.append({"type":"line","start":[115,68],"end":[124,70],"color":HAIR,"width":1})
+    P.append({"type":"line","start":[132,70],"end":[141,68],"color":HAIR,"width":1})
+    # smirk
+    P.append({"type":"line","start":[122,84],"end":[134,82],"color":(140,70,50),"width":1})
+    # mustache (TF has a thin mustache)
+    P.append({"type":"line","start":[120,80],"end":[136,80],"color":HAIR,"width":1})
+
+    # --- Long brown coat (trench coat, THE attire) ---
+    P.append({"type":"polygon","points":[(106,94),(150,94),(158,210),(98,210)],
+              "color":COAT,"outline":OUT,"outline_w":1})
+    # coat lapels
+    P.append({"type":"polygon","points":[(106,94),(128,94),(124,130),(112,118)],"color":COAT_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(128,94),(150,94),(144,118),(132,130)],"color":COAT_DARK,"outline":OUT,"outline_w":1})
+    # coat buttons
+    P.append({"type":"circle","cx":128,"cy":120,"r":2,"color":(200,170,60)})
+    P.append({"type":"circle","cx":128,"cy":140,"r":2,"color":(200,170,60)})
+    P.append({"type":"circle","cx":128,"cy":160,"r":2,"color":(200,170,60)})
+    # shirt under coat
+    P.append({"type":"polygon","points":[(122,94),(134,94),(132,116),(124,116)],"color":(235,230,220),"outline":OUT,"outline_w":1})
+    # waistcoat (formal)
+    P.append({"type":"polygon","points":[(118,100),(138,100),(136,140),(120,140)],"color":(70,50,60),"outline":OUT,"outline_w":1})
+
+    # --- Arms (coat sleeves) ---
+    P.append({"type":"rect","x":96,"y":104,"w":14,"h":56,"color":COAT,"outline":OUT,"outline_w":1,"radius":5})
+    P.append({"type":"rect","x":146,"y":104,"w":14,"h":56,"color":COAT,"outline":OUT,"outline_w":1,"radius":5})
+    P.append({"type":"circle","cx":103,"cy":162,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":153,"cy":162,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+
+    # --- GLOWING magical cards (THE feature — 3 floating cards, in front) ---
+    # card glow
+    P.append({"type":"circle","cx":170,"cy":150,"r":14,"color":CARD_GLOW})
+    P.append({"type":"circle","cx":186,"cy":120,"r":12,"color":CARD_GLOW})
+    P.append({"type":"circle","cx":176,"cy":178,"r":11,"color":CARD_GLOW})
+    # cards (rotated rectangles via polygons)
+    P.append({"type":"polygon","points":[(162,140),(178,136),(180,158),(164,162)],"color":CARD,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(178,108),(192,112),(190,132),(176,128)],"color":CARD,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(168,168),(184,170),(182,188),(166,186)],"color":CARD,"outline":OUT,"outline_w":1})
+    # card symbols (red)
+    P.append({"type":"circle","cx":171,"cy":149,"r":3,"color":(190,30,30)})
+    P.append({"type":"circle","cx":184,"cy":120,"r":3,"color":(190,30,30)})
+    P.append({"type":"circle","cx":175,"cy":178,"r":3,"color":(190,30,30)})
+
+    # --- Legs + boots ---
+    P.append({"type":"rect","x":110,"y":210,"w":16,"h":8,"color":(50,35,20),"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":130,"y":210,"w":16,"h":8,"color":(50,35,20),"outline":OUT,"outline_w":1})
+    return P
+
+
+def ezreal_prims():
+    """Ezreal — the Prodigal Explorer.
+    Iconic: floating arcane gauntlet (big, glowing), blonde swept-back hair, blue scarf,
+    leather explorer jacket. Gauntlet is THE feature.
+    """
+    P = []
+    HAIR = (235, 200, 110)
+    SKIN = (235, 200, 165)
+    JACKET = (130, 90, 55)
+    JACKET_DARK = (90, 60, 35)
+    SCARF = (70, 130, 200)
+    GAUNTLET = (180, 160, 90)
+    GAUNTLET_GLOW = (120, 220, 255)
+    EYE = (40, 30, 25)
+    OUT = (40, 25, 20)
+
+    # --- Hair (blonde, swept back) ---
+    P.append({"type":"circle","cx":128,"cy":66,"r":20,"color":HAIR,"outline":OUT,"outline_w":1})
+    # swept-back spikes
+    P.append({"type":"polygon","points":[(110,56),(124,46),(130,58)],"color":HAIR,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(126,52),(140,46),(146,60)],"color":HAIR,"outline":OUT,"outline_w":1})
+
+    # --- Head (young, confident) ---
+    P.append({"type":"circle","cx":128,"cy":72,"r":17,"color":SKIN,"outline":OUT,"outline_w":1})
+    # swept bangs
+    P.append({"type":"polygon","points":[(112,64),(144,64),(140,74),(116,72)],"color":HAIR,"outline":OUT,"outline_w":1})
+    # eyes (bright, youthful)
+    P.append({"type":"circle","cx":121,"cy":74,"r":3,"color":(90,160,220),"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":135,"cy":74,"r":3,"color":(90,160,220),"outline":OUT,"outline_w":1})
+    # confident smirk
+    P.append({"type":"line","start":[122,84],"end":[134,84],"color":(140,80,60),"width":1})
+
+    # --- Blue scarf (THE feature — around neck, flowing) ---
+    P.append({"type":"polygon","points":[(110,90),(146,90),(150,100),(106,100)],
+              "color":SCARF,"outline":OUT,"outline_w":1})
+    # scarf tails flowing
+    P.append({"type":"polygon","points":[(146,96),(168,96),(164,118),(148,110)],"color":SCARF,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(110,96),(92,98),(96,118),(112,110)],"color":SCARF,"outline":OUT,"outline_w":1})
+
+    # --- Leather explorer jacket ---
+    P.append({"type":"polygon","points":[(106,100),(150,100),(154,168),(102,168)],
+              "color":JACKET,"outline":OUT,"outline_w":1})
+    # jacket chest detail
+    P.append({"type":"polygon","points":[(110,104),(146,104),(142,140),(114,140)],
+              "color":JACKET_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"line","start":[128,104],"end":[128,140],"color":(200,170,60),"width":1})  # zipper
+    # shoulder pads
+    P.append({"type":"circle","cx":104,"cy":104,"r":9,"color":JACKET_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":152,"cy":104,"r":9,"color":JACKET_DARK,"outline":OUT,"outline_w":1})
+
+    # --- Arms ---
+    P.append({"type":"rect","x":96,"y":110,"w":13,"h":48,"color":JACKET,"outline":OUT,"outline_w":1,"radius":5})
+    P.append({"type":"rect","x":147,"y":110,"w":13,"h":48,"color":JACKET,"outline":OUT,"outline_w":1,"radius":5})
+
+    # --- Floating arcane GAUNTLET (THE feature — big, glowing, on left hand) ---
+    # glow halo
+    P.append({"type":"circle","cx":88,"cy":160,"r":20,"color":GAUNTLET_GLOW})
+    P.append({"type":"circle","cx":88,"cy":160,"r":16,"color":(180,235,255)})
+    # gauntlet body (big mechanical glove)
+    P.append({"type":"rect","x":74,"y":146,"w":28,"h":30,"color":GAUNTLET,"outline":OUT,"outline_w":1,"radius":4})
+    # gauntlet gem (glowing core)
+    P.append({"type":"circle","cx":88,"cy":160,"r":7,"color":GAUNTLET_GLOW,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":86,"cy":158,"r":3,"color":(230,250,255)})
+    # gauntlet plates/details
+    P.append({"type":"line","start":[74,156],"end":[102,156],"color":OUT,"width":1})
+    P.append({"type":"line","start":[82,146],"end":[82,176],"color":OUT,"width":1})
+    P.append({"type":"line","start":[94,146],"end":[94,176],"color":OUT,"outline_w":1,"width":1})
+    # hand reaching to gauntlet
+    P.append({"type":"circle","cx":103,"cy":162,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+
+    # --- Legs + boots ---
+    P.append({"type":"rect","x":108,"y":168,"w":15,"h":42,"color":JACKET_DARK,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":133,"y":168,"w":15,"h":42,"color":JACKET_DARK,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":104,"y":206,"w":23,"h":12,"color":(60,40,25),"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":129,"y":206,"w":23,"h":12,"color":(60,40,25),"outline":OUT,"outline_w":1,"radius":2})
+    return P
+
+
+def poppy_prims():
+    """Poppy — Keeper of the Hammer.
+    Iconic: OVERSIZED warhammer (bigger than her), blonde pigtails, Demacian plate armor, small stature (yordle).
+    Hammer is THE feature — it's huge relative to her.
+    """
+    P = []
+    HAMMER_HEAD = (160, 160, 170)
+    HAMMER_DARK = (100, 100, 110)
+    HAMMER_HANDLE = (90, 55, 35)
+    GOLD = (210, 170, 55)
+    ARMOR = (200, 195, 200)
+    ARMOR_BLUE = (70, 90, 150)
+    HAIR = (240, 215, 120)
+    SKIN = (250, 220, 195)
+    EYE = (40, 30, 25)
+    OUT = (40, 25, 20)
+
+    # --- OVERSIZED warhammer (THE feature — huge, held over shoulder) ---
+    # handle (long, diagonal)
+    P.append({"type":"line","start":[180,40],"end":[120,210],"color":HAMMER_HANDLE,"width":7})
+    P.append({"type":"line","start":[180,40],"end":[120,210],"color":OUT,"width":1})
+    # BIG hammer head (massive block)
+    P.append({"type":"polygon","points":[(170,30),(210,36),(206,66),(166,60)],
+              "color":HAMMER_HEAD,"outline":OUT,"outline_w":2})
+    # hammer head detail (rivets + edge)
+    P.append({"type":"line","start":[170,42],"end":[208,48],"color":HAMMER_DARK,"width":2})
+    P.append({"type":"circle","cx":180,"cy":44,"r":2,"color":GOLD})
+    P.append({"type":"circle","cx":198,"cy":48,"r":2,"color":GOLD})
+    # gold pommel on handle
+    P.append({"type":"circle","cx":120,"cy":210,"r":5,"color":GOLD,"outline":OUT,"outline_w":1})
+
+    # --- Head (small yordle, blonde pigtails) ---
+    P.append({"type":"circle","cx":128,"cy":78,"r":20,"color":SKIN,"outline":OUT,"outline_w":1})
+    # hair cap
+    P.append({"type":"circle","cx":128,"cy":72,"r":20,"color":HAIR,"outline":OUT,"outline_w":1})
+    # bangs
+    P.append({"type":"polygon","points":[(110,68),(146,68),(142,80),(114,80)],"color":HAIR,"outline":OUT,"outline_w":1})
+    # BLONDE PIGTAILS (THE feature — two bunches sticking out)
+    P.append({"type":"circle","cx":104,"cy":82,"r":9,"color":HAIR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":100,"cy":94,"r":7,"color":HAIR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":104,"cy":80,"r":3,"color":ARMOR_BLUE})  # tie
+    P.append({"type":"circle","cx":152,"cy":82,"r":9,"color":HAIR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":156,"cy":94,"r":7,"color":HAIR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":152,"cy":80,"r":3,"color":ARMOR_BLUE})  # tie
+    # eyes (determined)
+    P.append({"type":"circle","cx":121,"cy":80,"r":3,"color":EYE})
+    P.append({"type":"circle","cx":135,"cy":80,"r":3,"color":EYE})
+    # determined mouth
+    P.append({"type":"line","start":[122,90],"end":[134,90],"color":(140,60,60),"width":1})
+
+    # --- Demacian plate armor (blue + white + gold) ---
+    P.append({"type":"polygon","points":[(108,98),(148,98),(152,168),(104,168)],
+              "color":ARMOR_BLUE,"outline":OUT,"outline_w":1})
+    # white chest plate
+    P.append({"type":"polygon","points":[(112,102),(144,102),(140,144),(116,144)],
+              "color":ARMOR,"outline":OUT,"outline_w":1})
+    # gold trim + Demacian crest
+    P.append({"type":"line","start":[112,102],"end":[144,102],"color":GOLD,"width":2})
+    P.append({"type":"circle","cx":128,"cy":120,"r":6,"color":GOLD,"outline":OUT,"outline_w":1})
+    P.append({"type":"line","start":[128,108],"end":[128,134],"color":GOLD,"width":1})
+    # shoulder armor
+    P.append({"type":"circle","cx":104,"cy":102,"r":10,"color":ARMOR_BLUE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":152,"cy":102,"r":10,"color":ARMOR_BLUE,"outline":OUT,"outline_w":1})
+
+    # --- Arms (one holding hammer) ---
+    P.append({"type":"rect","x":96,"y":112,"w":13,"h":48,"color":ARMOR_BLUE,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":147,"y":112,"w":13,"h":48,"color":ARMOR_BLUE,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"circle","cx":103,"cy":162,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":153,"cy":162,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+
+    # --- Legs (armored greaves, short) ---
+    P.append({"type":"rect","x":110,"y":168,"w":14,"h":40,"color":ARMOR_BLUE,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":132,"y":168,"w":14,"h":40,"color":ARMOR_BLUE,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":106,"y":204,"w":22,"h":12,"color":(50,40,30),"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":128,"y":204,"w":22,"h":12,"color":(50,40,30),"outline":OUT,"outline_w":1,"radius":2})
+    return P
+
+
+def thresh_prims():
+    """Thresh — the Chain Warden.
+    Iconic: soul lantern, spectral chains, tattered ghostly cloak, glowing green eyes, floating wraith.
+    Lantern + chains are THE features.
+    """
+    P = []
+    CLOAK = (50, 75, 60)
+    CLOAK_DARK = (30, 50, 40)
+    BONE = (200, 195, 170)
+    GREEN = (140, 230, 110)
+    GREEN_GLOW = (90, 200, 80)
+    LANTERN = (180, 150, 50)
+    CHAIN = (130, 130, 120)
+    EYE = (140, 230, 110)
+    OUT = (20, 30, 25)
+
+    # --- Tattered ghostly cloak (flowing, behind) ---
+    P.append({"type":"polygon","points":[(98,90),(158,90),(168,210),(88,210)],
+              "color":CLOAK,"outline":OUT,"outline_w":1})
+    # tattered hem (jagged bottom)
+    P.append({"type":"polygon","points":[(88,210),(100,200),(108,212),(118,198),(128,212),(138,198),(148,212),(158,200),(168,210),(168,220),(88,220)],
+              "color":CLOAK,"outline":OUT,"outline_w":1})
+    # cloak inner shadow
+    P.append({"type":"polygon","points":[(104,96),(152,96),(158,200),(98,200)],
+              "color":CLOAK_DARK,"outline":OUT,"outline_w":1})
+
+    # --- Spectral chains (THE feature — hanging from arm, links) ---
+    # chain links from right arm down to lantern
+    chain_pts = [(150,130),(156,144),(150,158),(156,172)]
+    for i in range(len(chain_pts)-1):
+        s, e = chain_pts[i], chain_pts[i+1]
+        P.append({"type":"line","start":s,"end":e,"color":CHAIN,"width":3})
+    for cx, cy in chain_pts:
+        P.append({"type":"circle","cx":cx,"cy":cy,"r":4,"color":CHAIN,"outline":OUT,"outline_w":1})
+
+    # --- Head (hooded skull — wraith) ---
+    # hood
+    P.append({"type":"polygon","points":[(108,58),(148,58),(146,92),(110,92)],
+              "color":CLOAK_DARK,"outline":OUT,"outline_w":1})
+    # skull face (bone)
+    P.append({"type":"circle","cx":128,"cy":76,"r":15,"color":BONE,"outline":OUT,"outline_w":1})
+    # glowing green eyes (soulless)
+    P.append({"type":"circle","cx":122,"cy":74,"r":4,"color":GREEN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":134,"cy":74,"r":4,"color":GREEN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":122,"cy":74,"r":2,"color":GREEN_GLOW})
+    P.append({"type":"circle","cx":134,"cy":74,"r":2,"color":GREEN_GLOW})
+    # nose hole (skull)
+    P.append({"type":"polygon","points":[(126,80),(130,80),(128,86)],"color":OUT})
+    # teeth
+    P.append({"type":"line","start":[122,88],"end":[134,88],"color":OUT,"width":1})
+    for tx in (123, 127, 131):
+        P.append({"type":"line","start":[tx,88],"end":[tx,92],"color":OUT,"width":1})
+
+    # --- Exposed ribcage (THE feature — visible through cloak) ---
+    P.append({"type":"polygon","points":[(112,100),(144,100),(140,150),(116,150)],
+              "color":BONE,"outline":OUT,"outline_w":1})
+    # ribs (curved lines)
+    for ry in (108, 116, 124, 132, 140):
+        P.append({"type":"line","start":[116,ry],"end":[140,ry],"color":OUT,"width":1})
+    P.append({"type":"line","start":[128,100],"end":[128,150],"color":OUT,"width":1})  # sternum
+
+    # --- Arms (ghostly, thin) ---
+    P.append({"type":"rect","x":100,"y":106,"w":12,"h":50,"color":CLOAK_DARK,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":146,"y":106,"w":12,"h":50,"color":CLOAK_DARK,"outline":OUT,"outline_w":1,"radius":4})
+    # bony hand holding chain
+    P.append({"type":"circle","cx":152,"cy":160,"r":5,"color":BONE,"outline":OUT,"outline_w":1})
+
+    # --- Soul lantern (THE feature — glowing green lantern on chain) ---
+    # green glow
+    P.append({"type":"circle","cx":156,"cy":186,"r":16,"color":GREEN_GLOW})
+    P.append({"type":"circle","cx":156,"cy":186,"r":12,"color":(120,220,100)})
+    # lantern body (cage)
+    P.append({"type":"rect","x":146,"y":176,"w":20,"h":24,"color":LANTERN,"outline":OUT,"outline_w":1,"radius":2})
+    # lantern cage bars
+    P.append({"type":"line","start":[152,176],"end":[152,200],"color":OUT,"width":1})
+    P.append({"type":"line","start":[160,176],"end":[160,200],"color":OUT,"width":1})
+    # glowing soul inside
+    P.append({"type":"circle","cx":156,"cy":188,"r":6,"color":GREEN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":155,"cy":186,"r":3,"color":(200,255,180)})
+    # lantern cap + ring
+    P.append({"type":"rect","x":148,"y":172,"w":16,"h":5,"color":LANTERN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":156,"cy":170,"r":3,"color":LANTERN,"outline":OUT,"outline_w":1})
+
+    # --- No legs (floating wraith — tattered cloak ends) ---
+    return P
+
+
+def sejuani_prims():
+    """Sejuani — Fury of the North.
+    Iconic: giant armored boar (Bristle) mount, rider with flail, ice, fur.
+    The BOAR is THE feature — it's the biggest part.
+    """
+    P = []
+    BOAR = (120, 95, 80)
+    BOAR_DARK = (85, 65, 55)
+    ICE_BLUE = (180, 220, 240)
+    FUR = (200, 200, 210)
+    RIDER_SKIN = (220, 185, 150)
+    RIDER_HAIR = (190, 165, 130)
+    ARMOR = (150, 160, 175)
+    TUSK = (235, 230, 215)
+    EYE = (40, 30, 25)
+    OUT = (40, 25, 20)
+
+    # --- Giant armored boar (THE feature — big body, low) ---
+    # body (big rounded mass)
+    P.append({"type":"ellipse","x":60,"y":150,"w":140,"h":70,"color":BOAR,"outline":OUT,"outline_w":1})
+    # boar head (front, right side)
+    P.append({"type":"circle","cx":196,"cy":178,"r":26,"color":BOAR,"outline":OUT,"outline_w":1})
+    # snout
+    P.append({"type":"ellipse","x":206,"y":172,"w":24,"h":20,"color":BOAR_DARK,"outline":OUT,"outline_w":1})
+    # nostrils
+    P.append({"type":"circle","cx":222,"cy":178,"r":2,"color":OUT})
+    P.append({"type":"circle","cx":222,"cy":184,"r":2,"color":OUT})
+    # boar eye
+    P.append({"type":"circle","cx":190,"cy":172,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    # boar ear
+    P.append({"type":"polygon","points":[(178,156),(184,144),(192,156)],"color":BOAR_DARK,"outline":OUT,"outline_w":1})
+    # BIG tusks (THE feature — curved, white, from snout)
+    P.append({"type":"polygon","points":[(208,186),(220,190),(214,206),(206,198)],"color":TUSK,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(208,170),(220,166),(214,150),(206,158)],"color":TUSK,"outline":OUT,"outline_w":1})
+
+    # --- Boar legs (4 stubby) ---
+    for lx in (78, 110, 150, 180):
+        P.append({"type":"rect","x":lx,"y":210,"w":16,"h":18,"color":BOAR_DARK,"outline":OUT,"outline_w":1,"radius":3})
+        P.append({"type":"rect","x":lx-2,"y":224,"w":20,"h":8,"color":(60,45,35),"outline":OUT,"outline_w":1,"radius":2})
+
+    # --- Armored plating on boar (ice-blue metal) ---
+    P.append({"type":"ellipse","x":80,"y":146,"w":100,"h":24,"color":ARMOR,"outline":OUT,"outline_w":1})
+    # armor studs
+    for sx in (96, 116, 136, 156):
+        P.append({"type":"circle","cx":sx,"cy":158,"r":3,"color":ICE_BLUE,"outline":OUT,"outline_w":1})
+    # fur trim on armor
+    P.append({"type":"rect","x":78,"y":142,"w":104,"h":8,"color":FUR,"outline":OUT,"outline_w":1})
+
+    # --- Ice crystals on boar (Freljord) ---
+    P.append({"type":"polygon","points":[(110,130),(116,116),(122,130)],"color":ICE_BLUE,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(140,128),(146,114),(152,128)],"color":ICE_BLUE,"outline":OUT,"outline_w":1})
+
+    # --- Rider (Sejuani, on top of boar) ---
+    # rider torso
+    P.append({"type":"polygon","points":[(112,96),(140,96),(144,140),(108,140)],
+              "color":ARMOR,"outline":OUT,"outline_w":1})
+    # fur cape
+    P.append({"type":"polygon","points":[(108,96),(140,96),(98,130),(92,112)],"color":FUR,"outline":OUT,"outline_w":1})
+    # rider head
+    P.append({"type":"circle","cx":126,"cy":80,"r":15,"color":RIDER_SKIN,"outline":OUT,"outline_w":1})
+    # rider hair (braided, blonde-ish)
+    P.append({"type":"circle","cx":126,"cy":74,"r":15,"color":RIDER_HAIR,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(110,72),(142,72),(138,84),(114,84)],"color":RIDER_HAIR,"outline":OUT,"outline_w":1})
+    # rider eyes
+    P.append({"type":"circle","cx":120,"cy":82,"r":2,"color":EYE})
+    P.append({"type":"circle","cx":132,"cy":82,"r":2,"color":EYE})
+    # rider arms (holding flail)
+    P.append({"type":"rect","x":140,"y":100,"w":12,"h":36,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
+
+    # --- Flail (morning star, ice) ---
+    P.append({"type":"line","start":[152,136],"end":[176,118],"color":(90,60,40),"width":3})
+    P.append({"type":"circle","cx":180,"cy":114,"r":12,"color":ICE_BLUE,"outline":OUT,"outline_w":2})
+    P.append({"type":"circle","cx":180,"cy":114,"r":8,"color":ARMOR,"outline":OUT,"outline_w":1})
+    # spikes on flail
+    for ang in (0, 72, 144, 216, 288):
+        import math as _m
+        sx = 180 + int(14 * _m.cos(_m.radians(ang)))
+        sy = 114 + int(14 * _m.sin(_m.radians(ang)))
+        P.append({"type":"circle","cx":sx,"cy":sy,"r":3,"color":ICE_BLUE,"outline":OUT,"outline_w":1})
+    return P
+
+
+def kindred_prims():
+    """Kindred — The Eternal Hunters.
+    Iconic: white woolly lamb (Lamb) + large spectral wolf (Wolf), white mask, bow.
+    Lamb + Wolf are THE features — two entities.
+    """
+    P = []
+    LAMB_WOOL = (235, 235, 240)
+    LAMB_DARK = (200, 200, 210)
+    WOLF = (90, 70, 110)
+    WOLF_DARK = (60, 45, 75)
+    MASK = (245, 245, 250)
+    BOW = (140, 100, 60)
+    GLOW = (150, 200, 255)
+    EYE = (140, 200, 255)
+    OUT = (40, 30, 35)
+
+    # --- Spectral Wolf (THE feature — large, behind/beside lamb, ghostly purple) ---
+    # wolf body (looming behind)
+    P.append({"type":"ellipse","x":150,"y":60,"w":70,"h":90,"color":WOLF,"outline":OUT,"outline_w":1})
+    # wolf head (snarling, up high)
+    P.append({"type":"circle","cx":198,"cy":78,"r":22,"color":WOLF,"outline":OUT,"outline_w":1})
+    # wolf snout
+    P.append({"type":"polygon","points":[(210,72),(232,76),(228,90),(210,86)],"color":WOLF_DARK,"outline":OUT,"outline_w":1})
+    # wolf ears
+    P.append({"type":"polygon","points":[(184,60),(190,42),(198,58)],"color":WOLF,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(200,58),(208,42),(214,60)],"color":WOLF,"outline":OUT,"outline_w":1})
+    # wolf glowing eyes (spectral)
+    P.append({"type":"circle","cx":192,"cy":76,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":206,"cy":76,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":192,"cy":76,"r":2,"color":GLOW})
+    P.append({"type":"circle","cx":206,"cy":76,"r":2,"color":GLOW})
+    # wolf teeth
+    P.append({"type":"polygon","points":[(214,86),(218,86),(216,94)],"color":MASK,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(220,86),(224,86),(222,94)],"color":MASK,"outline":OUT,"outline_w":1})
+    # ethereal glow around wolf
+    P.append({"type":"ellipse","x":148,"y":56,"w":74,"h":98,"color":(110,90,150,60) if False else WOLF_DARK,"outline":GLOW,"outline_w":1})
+
+    # --- Lamb (white woolly, front) ---
+    # woolly body
+    P.append({"type":"ellipse","x":76,"y":120,"w":80,"h":76,"color":LAMB_WOOL,"outline":OUT,"outline_w":1})
+    # wool texture (bumps)
+    for wx in (88, 104, 120, 136):
+        P.append({"type":"circle","cx":wx,"cy":132,"r":10,"color":LAMB_WOOL,"outline":LAMB_DARK,"outline_w":1})
+        P.append({"type":"circle","cx":wx,"cy":156,"r":10,"color":LAMB_WOOL,"outline":LAMB_DARK,"outline_w":1})
+    # lamb head
+    P.append({"type":"circle","cx":100,"cy":108,"r":18,"color":LAMB_WOOL,"outline":OUT,"outline_w":1})
+    # lamb ears (floppy)
+    P.append({"type":"ellipse","x":82,"y":96,"w":10,"h":18,"color":LAMB_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"ellipse","x":110,"y":96,"w":10,"h":18,"color":LAMB_DARK,"outline":OUT,"outline_w":1})
+
+    # --- White mask (THE feature — on lamb's face, blank) ---
+    P.append({"type":"circle","cx":100,"cy":108,"r":12,"color":MASK,"outline":OUT,"outline_w":1})
+    # mask eye holes (dark)
+    P.append({"type":"circle","cx":95,"cy":106,"r":3,"color":OUT})
+    P.append({"type":"circle","cx":105,"cy":106,"r":3,"color":OUT})
+    # mask markings (Lamb's mask has a line)
+    P.append({"type":"line","start":[100,112],"end":[100,118],"color":LAMB_DARK,"width":1})
+
+    # --- Lamb legs ---
+    for lx in (88, 110, 132):
+        P.append({"type":"rect","x":lx,"y":188,"w":12,"h":28,"color":LAMB_DARK,"outline":OUT,"outline_w":1,"radius":3})
+
+    # --- Bow (Lamb's weapon, drawn) ---
+    P.append({"type":"line","start":[60,120],"end":[60,180],"color":BOW,"width":3})
+    P.append({"type":"line","start":[60,120],"end":[60,180],"color":(200,200,220),"width":1})  # bowstring glow
+    # arrow
+    P.append({"type":"line","start":[60,150],"end":[40,150],"color":(180,180,200),"width":1})
+    return P
+
+
 # Map of hand-authored champs
 HAND_AUTHORED = {
     "Ahri": ahri_prims,
     "Annie": annie_prims,
     "Fiora": fiora_prims,
     "Darius": darius_prims,
+    "MonkeyKing": monkeyking_prims,
+    "Teemo": teemo_prims,
+    "Yuumi": yuumi_prims,
+    "Pantheon": pantheon_prims,
+    "TwistedFate": twistedfate_prims,
+    "Ezreal": ezreal_prims,
+    "Poppy": poppy_prims,
+    "Thresh": thresh_prims,
+    "Sejuani": sejuani_prims,
+    "Kindred": kindred_prims,
 }
 
 

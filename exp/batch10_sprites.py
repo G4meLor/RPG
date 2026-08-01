@@ -326,111 +326,112 @@ def tryndamere_prims():
     GOLD_TRY = (200, 160, 50)    # gold trim
     OUT = (30, 22, 18)
 
-    # --- Massive two-handed greatsword (behind, BIG) ---
-    # blade (long, vertical, big)
-    P.append({"type":"polygon","points":[(120,30),(136,30),(134,180),(122,180)],
-              "color":SWORD,"outline":SWORD_DARK,"outline_w":2})
-    # blade edge highlight
-    P.append({"type":"line","start":[124,34],"end":[124,176],"color":(255,255,255),"width":1})
-    P.append({"type":"line","start":[134,34],"end":[134,176],"color":SWORD_DARK,"width":1})
-    # blade tip (pointed)
-    P.append({"type":"polygon","points":[(120,30),(136,30),(128,16)],"color":SWORD,"outline":SWORD_DARK,"outline_w":1})
-    # crossguard (BIG, wide)
-    P.append({"type":"rect","x":100,"y":178,"w":56,"h":10,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":2})
-    P.append({"type":"rect","x":100,"y":178,"w":56,"h":3,"color":GOLD_TRY,"outline":OUT,"outline_w":1})
-    # handle
-    P.append({"type":"rect","x":120,"y":188,"w":16,"h":24,"color":LEATHER_DARK,"outline":OUT,"outline_w":1,"radius":2})
-    # handle wrap
-    for hy in (192,198,204):
-        P.append({"type":"line","start":[120,hy],"end":[136,hy],"color":GOLD_TRY,"width":1})
-    # pommel (gold)
-    P.append({"type":"circle","cx":128,"cy":214,"r":6,"color":GOLD_TRY,"outline":OUT,"outline_w":1})
-
     # --- LONG WILD HAIR (THE feature — BIG, flowing, wild, the icon) ---
     # hair back (big mass)
-    P.append({"type":"circle","cx":128,"cy":68,"r":24,"color":HAIR,"outline":OUT,"outline_w":1})
-    # wild hair flowing DOWN both sides (long, prominent)
-    P.append({"type":"polygon","points":[(104,68),(112,68),(108,140),(96,130)],
+    P.append({"type":"circle","cx":120,"cy":68,"r":26,"color":HAIR,"outline":OUT,"outline_w":1})
+    # wild hair flowing DOWN both sides (long, prominent — THE icon)
+    P.append({"type":"polygon","points":[(96,68),(104,68),(100,150),(86,136)],
               "color":HAIR,"outline":OUT,"outline_w":1})
-    P.append({"type":"polygon","points":[(144,68),(152,68),(160,130),(148,140)],
+    P.append({"type":"polygon","points":[(136,68),(144,68),(154,136),(140,150)],
               "color":HAIR,"outline":OUT,"outline_w":1})
-    # wild hair top (spiky, untamed)
-    for hx in (108,116,124,132,140,148):
-        P.append({"type":"polygon","points":[(hx-4,52),(hx+4,52),(hx,38)],"color":HAIR,"outline":OUT,"outline_w":1})
+    # wild hair top (spiky, untamed — BIG spikes)
+    for hx in (100,108,116,124,132,140):
+        P.append({"type":"polygon","points":[(hx-5,52),(hx+5,52),(hx,34)],"color":HAIR,"outline":OUT,"outline_w":1})
     # wild hair strands (texture)
-    for hx in (108,120,136,148):
-        P.append({"type":"line","start":[hx,56],"end":[hx,72],"color":HAIR_DARK,"width":1})
+    for hx in (100,112,128,140):
+        P.append({"type":"line","start":[hx,54],"end":[hx,74],"color":HAIR_DARK,"width":1})
 
     # --- Head ---
-    P.append({"type":"circle","cx":128,"cy":74,"r":17,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":120,"cy":74,"r":18,"color":SKIN,"outline":OUT,"outline_w":1})
     # raging red eyes (fury)
-    P.append({"type":"circle","cx":121,"cy":76,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":135,"cy":76,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":113,"cy":76,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":127,"cy":76,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
     # eye glow
-    P.append({"type":"circle","cx":121,"cy":75,"r":2,"color":(255,150,120),"outline":None,"outline_w":0})
-    P.append({"type":"circle","cx":135,"cy":75,"r":2,"color":(255,150,120),"outline":None,"outline_w":0})
-    # RUGGED BEARD (THE missing feature — big, wild)
-    P.append({"type":"polygon","points":[(110,84),(146,84),(144,104),(112,104)],
+    P.append({"type":"circle","cx":113,"cy":75,"r":2,"color":(255,150,120),"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":127,"cy":75,"r":2,"color":(255,150,120),"outline":None,"outline_w":0})
+    # RUGGED BEARD (THE missing feature — BIG, wild, prominent)
+    P.append({"type":"polygon","points":[(100,84),(140,84),(142,112),(98,112)],
               "color":HAIR,"outline":OUT,"outline_w":1})
     # beard texture (wild strands)
-    for bx in (116,124,132,140):
-        P.append({"type":"line","start":[bx,86],"end":[bx,100],"color":HAIR_DARK,"width":1})
-    # mustache
-    P.append({"type":"polygon","points":[(116,82),(140,82),(138,88),(118,88)],"color":HAIR,"outline":OUT,"outline_w":1})
-    # battle markings (face paint — red stripe)
-    P.append({"type":"line","start":[128,64],"end":[128,74],"color":(180,40,40),"width":2})
+    for bx in (106,114,122,130,138):
+        P.append({"type":"line","start":[bx,86],"end":[bx,108],"color":HAIR_DARK,"width":1})
+    # mustache (wild, flowing)
+    P.append({"type":"polygon","points":[(106,82),(134,82),(132,90),(108,90)],"color":HAIR,"outline":OUT,"outline_w":1})
+    # battle markings (face paint — red stripe across eyes)
+    P.append({"type":"line","start":[104,72],"end":[136,72],"color":(180,40,40),"width":2})
 
-    # --- BARE CHEST + fur-lined armor (THE feature — bare muscular chest with fur straps) ---
-    # bare chest (skin, muscular — THE feature)
-    P.append({"type":"polygon","points":[(108,96),(148,96),(150,170),(106,170)],
+    # --- BARE CHEST (THE feature — bare muscular chest, skin showing) ---
+    P.append({"type":"polygon","points":[(96,98),(148,98),(152,175),(92,175)],
               "color":SKIN,"outline":OUT,"outline_w":1})
-    # chest muscles (pecs)
-    P.append({"type":"line","start":[128,100],"end":[128,140],"color":(180,145,115),"width":1})
-    P.append({"type":"line","start":[112,112],"end":[128,112],"color":(180,145,115),"width":1})
-    P.append({"type":"line","start":[128,112],"end":[144,112],"color":(180,145,115),"width":1})
+    # chest muscles (pecs — visible muscular build)
+    P.append({"type":"line","start":[120,102],"end":[120,150],"color":(180,145,115),"width":1})
+    P.append({"type":"line","start":[100,116],"end":[120,116],"color":(180,145,115),"width":1})
+    P.append({"type":"line","start":[120,116],"end":[140,116],"color":(180,145,115),"width":1})
     # abs
-    for ay in (124,136,148):
-        P.append({"type":"line","start":[120,ay],"end":[136,ay],"color":(180,145,115),"width":1})
+    for ay in (128,140,152,164):
+        P.append({"type":"line","start":[112,ay],"end":[128,ay],"color":(180,145,115),"width":1})
 
     # FUR-LINED ARMOR (THE missing feature — big fur mantle over shoulders)
-    # left fur shoulder
-    P.append({"type":"circle","cx":100,"cy":100,"r":14,"color":FUR,"outline":FUR_DARK,"outline_w":1})
-    # right fur shoulder
-    P.append({"type":"circle","cx":156,"cy":100,"r":14,"color":FUR,"outline":FUR_DARK,"outline_w":1})
-    # fur texture (tufts)
-    for fx in (92,100,108):
-        P.append({"type":"circle","cx":fx,"cy":96,"r":4,"color":FUR,"outline":FUR_DARK,"outline_w":1})
-    for fx in (148,156,164):
-        P.append({"type":"circle","cx":fx,"cy":96,"r":4,"color":FUR,"outline":FUR_DARK,"outline_w":1})
+    # left fur shoulder (BIG)
+    P.append({"type":"circle","cx":92,"cy":102,"r":16,"color":FUR,"outline":FUR_DARK,"outline_w":1})
+    # right fur shoulder (BIG)
+    P.append({"type":"circle","cx":152,"cy":102,"r":16,"color":FUR,"outline":FUR_DARK,"outline_w":1})
+    # fur texture (tufts — visible fur)
+    for fx in (82,92,102):
+        P.append({"type":"circle","cx":fx,"cy":96,"r":5,"color":FUR,"outline":FUR_DARK,"outline_w":1})
+    for fx in (142,152,162):
+        P.append({"type":"circle","cx":fx,"cy":96,"r":5,"color":FUR,"outline":FUR_DARK,"outline_w":1})
 
-    # BATTLE-WORN LEATHER STRAPS (THE missing feature — crossing bare chest)
-    # leather strap diagonal across chest
-    P.append({"type":"line","start":[100,108],"end":[156,160],"color":LEATHER,"width":6})
-    P.append({"type":"line","start":[100,108],"end":[156,160],"color":LEATHER_DARK,"width":1})
-    # leather strap buckle
-    P.append({"type":"circle","cx":128,"cy":134,"r":5,"color":GOLD_TRY,"outline":LEATHER_DARK,"outline_w":1})
-    # second strap
-    P.append({"type":"line","start":[156,108],"end":[100,160],"color":LEATHER,"width":5})
+    # BATTLE-WORN LEATHER STRAPS (THE missing feature — crossing bare chest, X pattern)
+    # leather strap diagonal across chest (left-to-right)
+    P.append({"type":"line","start":[92,110],"end":[152,165],"color":LEATHER,"width":7})
+    P.append({"type":"line","start":[92,110],"end":[152,165],"color":LEATHER_DARK,"width":1})
+    # leather strap buckle (gold, center)
+    P.append({"type":"circle","cx":122,"cy":138,"r":6,"color":GOLD_TRY,"outline":LEATHER_DARK,"outline_w":1})
+    # second strap (right-to-left)
+    P.append({"type":"line","start":[152,110],"end":[92,165],"color":LEATHER,"width":6})
 
     # --- Arms (muscular, bare) ---
-    P.append({"type":"rect","x":88,"y":112,"w":16,"h":50,"color":SKIN,"outline":OUT,"outline_w":1,"radius":5})
-    P.append({"type":"rect","x":152,"y":112,"w":16,"h":50,"color":SKIN,"outline":OUT,"outline_w":1,"radius":5})
+    P.append({"type":"rect","x":78,"y":114,"w":18,"h":54,"color":SKIN,"outline":OUT,"outline_w":1,"radius":5})
+    P.append({"type":"rect","x":148,"y":114,"w":18,"h":54,"color":SKIN,"outline":OUT,"outline_w":1,"radius":5})
     # leather bracers
-    P.append({"type":"rect","x":88,"y":140,"w":16,"h":14,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":3})
-    P.append({"type":"rect","x":152,"y":140,"w":16,"h":14,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":78,"y":144,"w":18,"h":16,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":148,"y":144,"w":18,"h":16,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":3})
+    # gold bracer trim
+    P.append({"type":"rect","x":78,"y":144,"w":18,"h":4,"color":GOLD_TRY,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":148,"y":144,"w":18,"h":4,"color":GOLD_TRY,"outline":OUT,"outline_w":1})
     # hands (gripping sword)
-    P.append({"type":"circle","cx":96,"cy":166,"r":6,"color":SKIN,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":160,"cy":166,"r":6,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":87,"cy":172,"r":7,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":157,"cy":172,"r":7,"color":SKIN,"outline":OUT,"outline_w":1})
 
     # --- Legs (fur-lined boots) ---
-    P.append({"type":"rect","x":108,"y":168,"w":18,"h":40,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":3})
-    P.append({"type":"rect","x":130,"y":168,"w":18,"h":40,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":3})
-    # fur-lined boots (top)
-    P.append({"type":"rect","x":106,"y":200,"w":22,"h":10,"color":FUR,"outline":FUR_DARK,"outline_w":1,"radius":2})
-    P.append({"type":"rect","x":128,"y":200,"w":22,"h":10,"color":FUR,"outline":FUR_DARK,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":100,"y":173,"w":20,"h":42,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":124,"y":173,"w":20,"h":42,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":3})
+    # fur-lined boots (top — visible fur)
+    P.append({"type":"rect","x":98,"y":207,"w":24,"h":10,"color":FUR,"outline":FUR_DARK,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":122,"y":207,"w":24,"h":10,"color":FUR,"outline":FUR_DARK,"outline_w":1,"radius":2})
     # boot bottoms
-    P.append({"type":"rect","x":106,"y":232,"w":22,"h":10,"color":LEATHER_DARK,"outline":OUT,"outline_w":1,"radius":2})
-    P.append({"type":"rect","x":128,"y":232,"w":22,"h":10,"color":LEATHER_DARK,"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":98,"y":239,"w":24,"h":10,"color":LEATHER_DARK,"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":122,"y":239,"w":24,"h":10,"color":LEATHER_DARK,"outline":OUT,"outline_w":1,"radius":2})
+
+    # --- MASSIVE GREATSWORD (THE feature — held to the RIGHT side, NOT covering body) ---
+    # blade diagonal, held to the right (so body/hair/beard/chest are all visible)
+    P.append({"type":"polygon","points":[(168,172),(184,166),(232,40),(216,34),(200,160),(164,168)],
+              "color":SWORD,"outline":SWORD_DARK,"outline_w":2})
+    # blade edge highlight (white, sharp)
+    P.append({"type":"line","start":[170,170],"end":[220,40],"color":(255,255,255),"width":2})
+    # blade tip (pointed, top-right)
+    P.append({"type":"polygon","points":[(216,34),(232,40),(226,22)],"color":SWORD,"outline":SWORD_DARK,"outline_w":1})
+    # crossguard (wide, gold-trimmed — at hands)
+    P.append({"type":"rect","x":158,"y":166,"w":28,"h":10,"color":LEATHER,"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":158,"y":166,"w":28,"h":3,"color":GOLD_TRY,"outline":OUT,"outline_w":1})
+    # handle (short, below guard)
+    P.append({"type":"rect","x":160,"y":176,"w":16,"h":18,"color":LEATHER_DARK,"outline":OUT,"outline_w":1,"radius":2})
+    # handle wrap (gold)
+    for hy in (180,186,192):
+        P.append({"type":"line","start":[160,hy],"end":[176,hy],"color":GOLD_TRY,"width":1})
+    # pommel (gold)
+    P.append({"type":"circle","cx":168,"cy":196,"r":6,"color":GOLD_TRY,"outline":OUT,"outline_w":1})
 
     return P
 
@@ -489,20 +490,35 @@ def warwick_prims():
     # chest fur lighter
     P.append({"type":"polygon","points":[(110,108),(146,108),(150,170),(106,170)],
               "color":SKIN,"outline":OUT,"outline_w":1})
-    # jagged fur texture (THE missing feature — visible fur)
-    for fx in (100,116,140,156):
+    # JAGGED FUR texture (THE missing feature — BIG visible jagged fur tufts on chest/shoulders)
+    for fx in (100,108,116,140,148,156):
+        P.append({"type":"polygon","points":[(fx-5,104),(fx+5,104),(fx,116)],"color":FUR_DARK,"outline":OUT,"outline_w":1})
+    # jagged fur on chest (visible texture)
+    for fx in (108,120,136,148):
         P.append({"type":"polygon","points":[(fx-4,108),(fx+4,108),(fx,118)],"color":FUR_DARK,"outline":OUT,"outline_w":1})
+    # fur tufts on shoulders (jagged, wild)
+    for sx in (94,162):
+        P.append({"type":"polygon","points":[(sx-6,100),(sx+6,100),(sx,88)],"color":FUR,"outline":FUR_DARK,"outline_w":1})
 
-    # --- METAL RESTRAINTS / SHACKLES (THE missing feature — visible metal cuffs) ---
-    # neck shackle (metal collar with chain)
-    P.append({"type":"rect","x":112,"y":96,"w":32,"h":8,"color":METAL,"outline":METAL_DARK,"outline_w":2})
-    P.append({"type":"circle","cx":128,"cy":100,"r":3,"color":METAL_DARK,"outline":OUT,"outline_w":1})  # shackle ring
-    # arm shackles (metal cuffs on wrists)
-    P.append({"type":"rect","x":88,"y":150,"w":16,"h":10,"color":METAL,"outline":METAL_DARK,"outline_w":2})
-    P.append({"type":"rect","x":152,"y":150,"w":16,"h":10,"color":METAL,"outline":METAL_DARK,"outline_w":2})
-    # shackle bolts
-    P.append({"type":"circle","cx":96,"cy":155,"r":2,"color":METAL_DARK,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":160,"cy":155,"r":2,"color":METAL_DARK,"outline":OUT,"outline_w":1})
+    # --- METAL RESTRAINTS / SHACKLES (THE missing feature — BIG, prominent, clearly metal cuffs) ---
+    # neck shackle (BIG metal collar with chain — the icon of his imprisonment)
+    P.append({"type":"rect","x":108,"y":94,"w":40,"h":10,"color":METAL,"outline":METAL_DARK,"outline_w":2})
+    # shackle ring (BIG, the chain attachment point)
+    P.append({"type":"circle","cx":128,"cy":104,"r":5,"color":METAL_DARK,"outline":OUT,"outline_w":1})
+    # chain links hanging from collar (broken chain = uncaged)
+    P.append({"type":"circle","cx":118,"cy":112,"r":4,"color":METAL,"outline":METAL_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":112,"cy":120,"r":4,"color":METAL,"outline":METAL_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":138,"cy":112,"r":4,"color":METAL,"outline":METAL_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":144,"cy":120,"r":4,"color":METAL,"outline":METAL_DARK,"outline_w":1})
+    # arm shackles (BIG metal cuffs on wrists — clearly restraints)
+    P.append({"type":"rect","x":84,"y":148,"w":20,"h":12,"color":METAL,"outline":METAL_DARK,"outline_w":2})
+    P.append({"type":"rect","x":152,"y":148,"w":20,"h":12,"color":METAL,"outline":METAL_DARK,"outline_w":2})
+    # shackle bolts (BIG, visible — the bolts holding cuffs)
+    P.append({"type":"circle","cx":94,"cy":154,"r":3,"color":METAL_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":162,"cy":154,"r":3,"color":METAL_DARK,"outline":OUT,"outline_w":1})
+    # shackle rings on arms (chain attachment)
+    P.append({"type":"circle","cx":84,"cy":154,"r":3,"color":METAL_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":172,"cy":154,"r":3,"color":METAL_DARK,"outline":OUT,"outline_w":1})
 
     # --- Arms (muscular, furry) ---
     P.append({"type":"rect","x":86,"y":112,"w":18,"h":48,"color":FUR,"outline":OUT,"outline_w":1,"radius":5})

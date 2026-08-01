@@ -156,29 +156,29 @@ def hecarim_prims():
         P.append({"type":"circle","cx":lx,"cy":238,"r":6,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
         P.append({"type":"circle","cx":lx,"cy":246,"r":4,"color":SPECTRAL_LIGHT,"outline":SPECTRAL_DARK,"outline_w":1})
 
-    # --- Horse neck + head (front, right -- clearly horse, skull-like, undead) ---
-    # horse neck (rising from chest, angled -- BIG and clearly horse neck)
-    P.append({"type":"polygon","points":[(196,170),(236,170),(232,100),(200,112)],
+    # --- Horse neck + head (front, LEFT -- clearly horse, skull-like, undead) ---
+    # horse neck (rising from chest, angled LEFT -- BIG and clearly horse neck)
+    P.append({"type":"polygon","points":[(20,170),(60,170),(56,100),(24,112)],
               "color":GHOST,"outline":OUT,"outline_w":2})
-    # horse head (elongated, skull-like -- BIG, clearly a horse head)
-    P.append({"type":"ellipse","x":216,"y":92,"w":44,"h":34,"color":GHOST,"outline":OUT,"outline_w":2})
-    # elongated muzzle (skeletal, pointing right)
-    P.append({"type":"ellipse","x":244,"y":104,"w":24,"h":22,"color":GHOST_DARK,"outline":OUT,"outline_w":1})
+    # horse head (elongated, skull-like -- BIG, clearly a horse head, pointing LEFT)
+    P.append({"type":"ellipse","x":-4,"y":92,"w":44,"h":34,"color":GHOST,"outline":OUT,"outline_w":2})
+    # elongated muzzle (skeletal, pointing left)
+    P.append({"type":"ellipse","x":-12,"y":104,"w":24,"h":22,"color":GHOST_DARK,"outline":OUT,"outline_w":1})
     # skeletal jaw teeth (THE undead feature)
-    for tx in (246, 252):
+    for tx in (2, 8):
         P.append({"type":"polygon","points":[(tx,114),(tx+3,114),(tx+1,120)],"color":BONE,"outline":OUT,"outline_w":1})
     # glowing teal eye (undead -- BIG)
-    P.append({"type":"circle","cx":226,"cy":102,"r":6,"color":EYE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":226,"cy":102,"r":3,"color":(255,255,255)})
+    P.append({"type":"circle","cx":18,"cy":102,"r":6,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":18,"cy":102,"r":3,"color":(255,255,255)})
     # horse ear (pointed, skeletal)
-    P.append({"type":"polygon","points":[(220,88),(226,72),(232,90)],"color":GHOST_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(24,88),(30,72),(36,90)],"color":GHOST_DARK,"outline":OUT,"outline_w":1})
     # ghostly mane (flowing, spectral teal, BIG along neck -- THE missing feature)
-    for mx, my in [(200,110),(208,100),(216,106),(224,96)]:
+    for mx, my in [(40,110),(48,100),(56,106)]:
         P.append({"type":"polygon","points":[(mx-5,my+10),(mx,my-10),(mx+5,my+10)],
                   "color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
     # extra flowing mane wisps (long, trailing back -- THE ghostly mane)
-    P.append({"type":"polygon","points":[(200,110),(184,100),(180,140),(200,128)],"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
-    P.append({"type":"polygon","points":[(196,114),(176,110),(172,150),(196,134)],"color":SPECTRAL_LIGHT,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(56,110),(72,100),(76,140),(56,128)],"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(60,114),(80,110),(84,150),(60,134)],"color":SPECTRAL_LIGHT,"outline":SPECTRAL_DARK,"outline_w":1})
 
     # --- Heavy plate armor on horse body (THE missing feature -- BIG plates) ---
     P.append({"type":"ellipse","x":72,"y":146,"w":120,"h":30,"color":ARMOR,"outline":OUT,"outline_w":2})
@@ -234,21 +234,21 @@ def hecarim_prims():
     P.append({"type":"circle","cx":97,"cy":138,"r":5,"color":GHOST,"outline":OUT,"outline_w":1})
     P.append({"type":"circle","cx":159,"cy":138,"r":5,"color":GHOST,"outline":OUT,"outline_w":1})
 
-    # --- Massive polearm / trident (ghostly, in right hand, BIG) ---
-    P.append({"type":"line","start":[159,138],"end":[210,20],"color":ARMOR_DARK,"width":6})
+    # --- Massive polearm / trident (ghostly, in right hand, BIG, drawn LAST IN FRONT) ---
+    P.append({"type":"line","start":[159,138],"end":[230,30],"color":ARMOR_DARK,"width":7})
     # trident head (3 prongs, spectral, BIG)
-    P.append({"type":"line","start":[210,20],"end":[196,0],"color":STEEL,"width":4})
-    P.append({"type":"line","start":[210,20],"end":[210,0],"color":STEEL,"width":4})
-    P.append({"type":"line","start":[210,20],"end":[224,0],"color":STEEL,"width":4})
+    P.append({"type":"line","start":[230,30],"end":[214,6],"color":STEEL,"width":5})
+    P.append({"type":"line","start":[230,30],"end":[230,2],"color":STEEL,"width":5})
+    P.append({"type":"line","start":[230,30],"end":[246,6],"color":STEEL,"width":5})
     # prong tips (sharp)
-    P.append({"type":"circle","cx":196,"cy":0,"r":2,"color":STEEL,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":210,"cy":0,"r":2,"color":STEEL,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":224,"cy":0,"r":2,"color":STEEL,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":214,"cy":6,"r":3,"color":STEEL,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":230,"cy":2,"r":3,"color":STEEL,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":246,"cy":6,"r":3,"color":STEEL,"outline":OUT,"outline_w":1})
     # spectral glow on trident (THE ghost feature)
-    P.append({"type":"circle","cx":210,"cy":10,"r":8,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":210,"cy":10,"r":4,"color":SPECTRAL_LIGHT})
+    P.append({"type":"circle","cx":230,"cy":18,"r":10,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":230,"cy":18,"r":5,"color":SPECTRAL_LIGHT})
     # gold band on polearm
-    P.append({"type":"rect","x":186,"y":70,"w":8,"h":6,"color":GOLD,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":200,"y":80,"w":10,"h":8,"color":GOLD,"outline":OUT,"outline_w":1})
     return P
 
 
@@ -333,19 +333,22 @@ def hwei_prims():
     P.append({"type":"rect","x":106,"y":206,"w":22,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
     P.append({"type":"rect","x":130,"y":206,"w":22,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
 
-    # --- FLOATING PAINT PALETTE (THE feature -- BIG, beside him, in front) ---
-    # big wooden palette (oval, with thumb hole)
-    P.append({"type":"ellipse","x":180,"y":80,"w":60,"h":44,"color":PALETTE,"outline":OUT,"outline_w":2})
+    # --- FLOATING PAINT PALETTE (THE feature -- HUGE, beside him, in front) ---
+    # big wooden palette (oval, with thumb hole -- ENORMOUS, dominates right side)
+    P.append({"type":"ellipse","x":168,"y":70,"w":80,"h":60,"color":PALETTE,"outline":OUT,"outline_w":3})
     # palette thumb hole
-    P.append({"type":"circle","cx":188,"cy":88,"r":5,"color":OUT,"outline":PALETTE_DARK,"outline_w":1})
-    # paint blobs on palette (colorful -- the magic)
-    P.append({"type":"circle","cx":200,"cy":92,"r":6,"color":PAINT_RED,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":215,"cy":96,"r":6,"color":PAINT_BLUE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":225,"cy":104,"r":5,"color":PAINT_YELLOW,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":210,"cy":110,"r":5,"color":PAINT_GREEN,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":195,"cy":108,"r":4,"color":PAINT_WHITE,"outline":OUT,"outline_w":1})
-    # magical glow around palette (ink magic)
-    P.append({"type":"ellipse","x":176,"y":76,"w":68,"h":52,"color":(120,100,160),"outline":(180,160,220),"outline_w":1})
+    P.append({"type":"circle","cx":178,"cy":82,"r":7,"color":OUT,"outline":PALETTE_DARK,"outline_w":1})
+    # paint blobs on palette (colorful -- BIG, the magic)
+    P.append({"type":"circle","cx":196,"cy":88,"r":8,"color":PAINT_RED,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":216,"cy":92,"r":8,"color":PAINT_BLUE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":232,"cy":102,"r":7,"color":PAINT_YELLOW,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":212,"cy":112,"r":7,"color":PAINT_GREEN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":192,"cy":108,"r":6,"color":PAINT_WHITE,"outline":OUT,"outline_w":1})
+    # magical glow around palette (ink magic -- BIG)
+    P.append({"type":"ellipse","x":162,"y":64,"w":92,"h":72,"color":(120,100,160),"outline":(180,160,220),"outline_w":1})
+    # floating ink magic wisps from palette (the magic manifestation)
+    for sy in (60, 50, 40):
+        P.append({"type":"circle","cx":200,"cy":sy,"r":5,"color":INK_BLUE,"outline":INK,"outline_w":1})
 
     # --- Paintbrush (in left hand, ink-stained) ---
     P.append({"type":"line","start":[95,156],"end":[60,100],"color":BRUSH,"width":4})
@@ -398,41 +401,53 @@ def illaoi_prims():
     P.append({"type":"circle","cx":205,"cy":100,"r":6,"color":(180,60,180),"outline":GOLD_DARK,"outline_w":1})
     P.append({"type":"circle","cx":205,"cy":100,"r":3,"color":(255,180,255)})
 
-    # --- Giant tentacles (summoned, from idol -- THE feature pair) ---
-    # tentacle 1 (left of idol, curling)
-    t1 = [(195,170),(210,190),(200,210),(186,206)]
+    # --- GIANT TENTACLES (THE feature pair -- BIG, from idol, dominating) ---
+    # tentacle 1 (left of idol, curling down -- BIG)
+    t1 = [(195,170),(215,195),(205,220),(188,216)]
     for i in range(len(t1)-1):
-        P.append({"type":"line","start":t1[i],"end":t1[i+1],"color":TENTACLE,"width":14})
+        P.append({"type":"line","start":t1[i],"end":t1[i+1],"color":TENTACLE,"width":18})
     for cx, cy in t1:
-        P.append({"type":"circle","cx":cx,"cy":cy,"r":8,"color":TENTACLE,"outline":TENTACLE_DARK,"outline_w":1})
-    # tentacle 2 (right of idol, curling up)
-    t2 = [(218,170),(232,150),(228,130)]
+        P.append({"type":"circle","cx":cx,"cy":cy,"r":10,"color":TENTACLE,"outline":TENTACLE_DARK,"outline_w":1})
+    # tentacle 2 (right of idol, curling up -- BIG)
+    t2 = [(220,170),(238,145),(232,115)]
     for i in range(len(t2)-1):
-        P.append({"type":"line","start":t2[i],"end":t2[i+1],"color":TENTACLE,"width":12})
+        P.append({"type":"line","start":t2[i],"end":t2[i+1],"color":TENTACLE,"width":16})
     for cx, cy in t2:
-        P.append({"type":"circle","cx":cx,"cy":cy,"r":7,"color":TENTACLE,"outline":TENTACLE_DARK,"outline_w":1})
-    # tentacle suckers
-    for cx, cy in [(200,200),(192,200),(230,140)]:
-        P.append({"type":"circle","cx":cx,"cy":cy,"r":3,"color":TENTACLE_DARK,"outline":OUT,"outline_w":1})
+        P.append({"type":"circle","cx":cx,"cy":cy,"r":9,"color":TENTACLE,"outline":TENTACLE_DARK,"outline_w":1})
+    # tentacle 3 (from idol top, reaching left toward Illaoi -- BIG)
+    t3 = [(200,60),(180,80),(170,110)]
+    for i in range(len(t3)-1):
+        P.append({"type":"line","start":t3[i],"end":t3[i+1],"color":TENTACLE,"width":14})
+    for cx, cy in t3:
+        P.append({"type":"circle","cx":cx,"cy":cy,"r":8,"color":TENTACLE,"outline":TENTACLE_DARK,"outline_w":1})
+    # tentacle suckers (BIG, obvious)
+    for cx, cy in [(205,205),(195,210),(235,130),(175,95)]:
+        P.append({"type":"circle","cx":cx,"cy":cy,"r":4,"color":TENTACLE_DARK,"outline":OUT,"outline_w":1})
 
     # --- Hair (dark, short) ---
     P.append({"type":"circle","cx":100,"cy":70,"r":18,"color":HAIR,"outline":OUT,"outline_w":1})
     P.append({"type":"polygon","points":[(84,64),(116,64),(112,80),(88,80)],"color":HAIR,"outline":OUT,"outline_w":1})
 
-    # --- Head (strong jawline -- THE missing feature) ---
+    # --- Head (strong jawline -- THE missing feature, BIG + obvious) ---
     P.append({"type":"circle","cx":100,"cy":78,"r":16,"color":SKIN,"outline":OUT,"outline_w":1})
-    # strong jaw (broad, squared -- THE feature)
-    P.append({"type":"polygon","points":[(88,86),(112,86),(108,96),(92,96)],"color":SKIN,"outline":OUT,"outline_w":1})
+    # BIG strong jaw (broad, squared -- THE feature, prominent)
+    P.append({"type":"polygon","points":[(84,86),(116,86),(112,100),(88,100)],"color":SKIN,"outline":OUT,"outline_w":2})
+    # jaw shadow (emphasizes the strong jawline)
+    P.append({"type":"line","start":[86,88],"end":[114,88],"color":SKIN_DARK,"width":2})
     # determined eyes
     P.append({"type":"line","start":[92,78],"end":[98,78],"color":EYE,"width":2})
     P.append({"type":"line","start":[102,78],"end":[108,78],"color":EYE,"width":2})
     # determined mouth
-    P.append({"type":"line","start":[95,90],"end":[105,90],"color":(120,60,60),"width":1})
-    # tribal tattoos (THE missing feature -- on face + arms)
-    P.append({"type":"line","start":[86,82],"end":[86,92],"color":TATTOO,"width":2})
-    P.append({"type":"line","start":[84,86],"end":[88,86],"color":TATTOO,"width":1})
-    P.append({"type":"line","start":[114,82],"end":[114,92],"color":TATTOO,"width":2})
-    P.append({"type":"line","start":[112,86],"end":[116,86],"color":TATTOO,"width":1})
+    P.append({"type":"line","start":[95,92],"end":[105,92],"color":(120,60,60),"width":1})
+    # BIG tribal tattoos (THE missing feature -- on face, obvious purple patterns)
+    # left face tattoo (BIG geometric pattern)
+    P.append({"type":"line","start":[84,82],"end":[84,96],"color":TATTOO,"width":3})
+    P.append({"type":"line","start":[82,86],"end":[88,86],"color":TATTOO,"width":2})
+    P.append({"type":"line","start":[82,92],"end":[88,92],"color":TATTOO,"width":2})
+    # right face tattoo
+    P.append({"type":"line","start":[116,82],"end":[116,96],"color":TATTOO,"width":3})
+    P.append({"type":"line","start":[112,86],"end":[118,86],"color":TATTOO,"width":2})
+    P.append({"type":"line","start":[112,92],"end":[118,92],"color":TATTOO,"width":2})
 
     # --- Flowing robes (deep purple) ---
     P.append({"type":"polygon","points":[(78,98),(122,98),(130,180),(70,180)],
@@ -448,12 +463,22 @@ def illaoi_prims():
     P.append({"type":"line","start":[76,124],"end":[80,124],"color":TATTOO,"width":1})
     P.append({"type":"line","start":[76,134],"end":[80,134],"color":TATTOO,"width":1})
 
-    # --- Arms (muscular, holding idol) ---
-    P.append({"type":"rect","x":66,"y":108,"w":14,"h":50,"color":SKIN,"outline":OUT,"outline_w":1,"radius":4})
-    P.append({"type":"rect","x":120,"y":108,"w":14,"h":50,"color":SKIN,"outline":OUT,"outline_w":1,"radius":4})
+    # --- Arms (muscular -- BIG, obvious muscle definition) ---
+    P.append({"type":"rect","x":62,"y":106,"w":18,"h":52,"color":SKIN,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":120,"y":106,"w":18,"h":52,"color":SKIN,"outline":OUT,"outline_w":1,"radius":4})
+    # BIG bicep muscle definition (muscular build -- THE missing feature)
+    P.append({"type":"circle","cx":71,"cy":120,"r":8,"color":SKIN,"outline":SKIN_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":129,"cy":120,"r":8,"color":SKIN,"outline":SKIN_DARK,"outline_w":1})
+    # BIG tribal tattoos on arms (THE missing feature -- obvious)
+    P.append({"type":"line","start":[66,130],"end":[66,150],"color":TATTOO,"width":3})
+    P.append({"type":"line","start":[64,134],"end":[70,134],"color":TATTOO,"width":2})
+    P.append({"type":"line","start":[64,142],"end":[70,142],"color":TATTOO,"width":2})
+    P.append({"type":"line","start":[124,130],"end":[124,150],"color":TATTOO,"width":3})
+    P.append({"type":"line","start":[122,134],"end":[128,134],"color":TATTOO,"width":2})
+    P.append({"type":"line","start":[122,142],"end":[128,142],"color":TATTOO,"width":2})
     # hands
-    P.append({"type":"circle","cx":73,"cy":160,"r":6,"color":SKIN,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":127,"cy":160,"r":6,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":71,"cy":160,"r":6,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":129,"cy":160,"r":6,"color":SKIN,"outline":OUT,"outline_w":1})
 
     # --- Legs (robe-covered, muscular) ---
     P.append({"type":"rect","x":82,"y":180,"w":18,"h":30,"color":ROBE_DARK,"outline":OUT,"outline_w":1,"radius":3})
@@ -499,17 +524,22 @@ def janna_prims():
     for sx, sy in [(50,80),(200,80),(50,200),(200,200)]:
         P.append({"type":"circle","cx":sx,"cy":sy,"r":5,"color":WIND_LIGHT,"outline":WIND_DARK,"outline_w":1})
 
-    # --- Long flowing hair (white, BIG, blowing in wind) ---
-    P.append({"type":"circle","cx":128,"cy":66,"r":20,"color":HAIR,"outline":OUT,"outline_w":1})
-    # hair flowing wildly (wind-blown, both sides, BIG)
-    P.append({"type":"polygon","points":[(108,60),(128,52),(148,60),(170,50),(176,80),(150,76)],
+    # --- Long flowing hair (white, HUGE, blowing in wind -- THE missing feature) ---
+    P.append({"type":"circle","cx":128,"cy":66,"r":22,"color":HAIR,"outline":OUT,"outline_w":1})
+    # hair flowing wildly (wind-blown, both sides, HUGE streams)
+    P.append({"type":"polygon","points":[(108,60),(128,50),(148,60),(176,44),(186,80),(150,76)],
+              "color":HAIR,"outline":HAIR_BLUE,"outline_w":2})
+    P.append({"type":"polygon","points":[(108,60),(128,50),(80,40),(68,76),(108,78)],
+              "color":HAIR,"outline":HAIR_BLUE,"outline_w":2})
+    # VERY long flowing hair streams (wind-blown, trailing far -- THE feature)
+    P.append({"type":"polygon","points":[(110,70),(84,82),(60,140),(78,148),(104,92)],
+              "color":HAIR,"outline":HAIR_BLUE,"outline_w":2})
+    P.append({"type":"polygon","points":[(146,70),(172,82),(196,140),(178,148),(152,92)],
+              "color":HAIR,"outline":HAIR_BLUE,"outline_w":2})
+    # extra long hair wisps (trailing even further, wind-blown)
+    P.append({"type":"polygon","points":[(100,76),(72,90),(52,160),(72,168),(96,100)],
               "color":HAIR,"outline":HAIR_BLUE,"outline_w":1})
-    P.append({"type":"polygon","points":[(108,60),(128,52),(88,42),(80,70),(108,76)],
-              "color":HAIR,"outline":HAIR_BLUE,"outline_w":1})
-    # long flowing hair streams (wind-blown, trailing)
-    P.append({"type":"polygon","points":[(110,70),(88,80),(70,120),(86,130),(104,90)],
-              "color":HAIR,"outline":HAIR_BLUE,"outline_w":1})
-    P.append({"type":"polygon","points":[(146,70),(168,80),(186,120),(170,130),(152,90)],
+    P.append({"type":"polygon","points":[(156,76),(184,90),(204,160),(184,168),(160,100)],
               "color":HAIR,"outline":HAIR_BLUE,"outline_w":1})
     # bangs (wind-blown)
     P.append({"type":"polygon","points":[(110,58),(146,58),(142,72),(114,72)],
@@ -607,58 +637,75 @@ def jhin_prims():
     # gold hat ornament
     P.append({"type":"circle","cx":128,"cy":51,"r":4,"color":GOLD,"outline":OUT,"outline_w":1})
 
-    # --- WHITE PORCELAIN MASK (THE feature -- face IS a mask, big, prominent) ---
-    # mask face (big, white porcelain, oval)
-    P.append({"type":"ellipse","x":108,"y":58,"w":40,"h":48,"color":MASK,"outline":OUT,"outline_w":2})
+    # --- WHITE PORCELAIN MASK (THE feature -- face IS a mask, HUGE, prominent) ---
+    # mask face (BIG, white porcelain, oval -- dominates the head)
+    P.append({"type":"ellipse","x":104,"y":54,"w":48,"h":56,"color":MASK,"outline":OUT,"outline_w":3})
     # mask cheek shadows (porcelain sheen)
-    P.append({"type":"polygon","points":[(112,76),(120,76),(116,96),(112,92)],"color":MASK_SHADOW,"outline":MASK_DARK,"outline_w":1})
-    P.append({"type":"polygon","points":[(136,76),(144,76),(144,92),(140,96)],"color":MASK_SHADOW,"outline":MASK_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(108,76),(118,76),(114,98),(108,94)],"color":MASK_SHADOW,"outline":MASK_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(138,76),(148,76),(148,94),(142,98)],"color":MASK_SHADOW,"outline":MASK_DARK,"outline_w":1})
     # mask brow (painted, dramatic)
-    P.append({"type":"polygon","points":[(112,72),(144,72),(140,76),(116,76)],"color":MASK_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(108,72),(148,72),(144,76),(112,76)],"color":MASK_DARK,"outline":OUT,"outline_w":1})
     # mask eye slits (THE feature -- dramatic, painted eyes on porcelain)
-    P.append({"type":"line","start":[114,80],"end":[124,80],"color":EYE,"width":3})
-    P.append({"type":"line","start":[132,80],"end":[142,80],"color":EYE,"width":3})
-    # mask painted cheeks (theatrical, crimson)
-    P.append({"type":"circle","cx":116,"cy":92,"r":4,"color":CAPE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":140,"cy":92,"r":4,"color":CAPE,"outline":OUT,"outline_w":1})
-    # mask painted lips (theatrical smile)
-    P.append({"type":"line","start":[120,98],"end":[136,98],"color":CAPE_DARK,"width":2})
-    # mask porcelain highlight (sheen)
-    P.append({"type":"line","start":[112,64],"end":[112,100],"color":(255,255,250),"width":2})
-    # gold mask trim (edge)
-    P.append({"type":"ellipse","x":108,"y":58,"w":40,"h":48,"color":(255,255,255,0) if False else MASK,"outline":GOLD,"outline_w":1})
+    P.append({"type":"line","start":[110,80],"end":[122,80],"color":EYE,"width":4})
+    P.append({"type":"line","start":[134,80],"end":[146,80],"color":EYE,"width":4})
+    # mask painted cheeks (theatrical, crimson -- BIG)
+    P.append({"type":"circle","cx":114,"cy":94,"r":5,"color":CAPE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":142,"cy":94,"r":5,"color":CAPE,"outline":OUT,"outline_w":1})
+    # mask painted lips (theatrical smile -- BIG)
+    P.append({"type":"line","start":[118,100],"end":[138,100],"color":CAPE_DARK,"width":3})
+    # mask porcelain highlight (sheen -- obvious porcelain)
+    P.append({"type":"line","start":[108,60],"end":[108,104],"color":(255,255,250),"width":3})
+    P.append({"type":"line","start":[110,62],"end":[110,102],"color":(255,255,250),"width":1})
+    # gold mask trim (edge -- frames the mask)
+    P.append({"type":"ellipse","x":104,"y":54,"w":48,"h":56,"color":MASK,"outline":GOLD,"outline_w":1})
 
-    # --- Mechanical armor plating (torso, dark) ---
-    P.append({"type":"polygon","points":[(104,108),(152,108),(154,170),(102,170)],
+    # --- Mechanical armor plating (torso, dark -- slender, segmented) ---
+    # slender torso (narrower = slender proportions)
+    P.append({"type":"polygon","points":[(110,110),(146,110),(150,170),(106,170)],
               "color":ARMOR,"outline":OUT,"outline_w":1})
-    # armor plates (mechanical, segmented)
-    P.append({"type":"polygon","points":[(108,112),(148,112),(146,140),(110,140)],
+    # armor plates (mechanical, segmented -- BIG, obvious plating)
+    P.append({"type":"polygon","points":[(112,114),(144,114),(142,140),(114,140)],
               "color":ARMOR_LIGHT,"outline":OUT,"outline_w":2})
-    P.append({"type":"line","start":[128,112],"end":[128,140],"color":GOLD,"width":2})
-    # armor segment lines (mechanical plating)
-    for py in (120, 130):
-        P.append({"type":"line","start":[110,py],"end":[146,py],"color":GOLD,"width":1})
-    # gold shoulder epaulettes
-    P.append({"type":"circle","cx":104,"cy":112,"r":9,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":152,"cy":112,"r":9,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
-    P.append({"type":"line","start":[98,110],"end":[110,110],"color":GOLD,"width":1})
-    P.append({"type":"line","start":[146,110],"end":[158,110],"color":GOLD,"width":1})
+    P.append({"type":"line","start":[128,114],"end":[128,140],"color":GOLD,"width":2})
+    # armor segment lines (mechanical plating -- MORE obvious)
+    for py in (122, 130, 138):
+        P.append({"type":"line","start":[114,py],"end":[142,py],"color":GOLD,"width":2})
+    # mechanical arm plates (segmented rectangles on torso sides)
+    P.append({"type":"rect","x":108,"y":118,"w":6,"h":24,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":142,"y":118,"w":6,"h":24,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
+    # gold rivets on armor (mechanical detail)
+    for ry in (120, 128, 136):
+        P.append({"type":"circle","cx":111,"cy":ry,"r":2,"color":GOLD,"outline":OUT,"outline_w":1})
+        P.append({"type":"circle","cx":145,"cy":ry,"r":2,"color":GOLD,"outline":OUT,"outline_w":1})
+    # gold shoulder epaulettes (mechanical, BIG)
+    P.append({"type":"circle","cx":106,"cy":114,"r":10,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":150,"cy":114,"r":10,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
+    P.append({"type":"line","start":[98,112],"end":[112,112],"color":GOLD,"width":2})
+    P.append({"type":"line","start":[144,112],"end":[158,112],"color":GOLD,"width":2})
 
-    # --- Arms (one holding pistol) ---
-    P.append({"type":"rect","x":88,"y":116,"w":14,"h":46,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
-    P.append({"type":"rect","x":154,"y":116,"w":14,"h":46,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
-    P.append({"type":"circle","cx":95,"cy":164,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":161,"cy":164,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+    # --- Arms (one holding pistol -- slender) ---
+    P.append({"type":"rect","x":90,"y":118,"w":12,"h":46,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":154,"y":118,"w":12,"h":46,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
+    # mechanical arm plates (segmented)
+    P.append({"type":"line","start":[96,130],"end":[96,150],"color":GOLD,"width":1})
+    P.append({"type":"line","start":[160,130],"end":[160,150],"color":GOLD,"width":1})
+    P.append({"type":"circle","cx":96,"cy":166,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":160,"cy":166,"r":5,"color":SKIN,"outline":OUT,"outline_w":1})
 
-    # --- Legs (armor-plated) ---
-    P.append({"type":"rect","x":106,"y":170,"w":18,"h":38,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":3})
-    P.append({"type":"rect","x":132,"y":170,"w":18,"h":38,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":3})
+    # --- Legs (armor-plated, slender) ---
+    P.append({"type":"rect","x":110,"y":170,"w":16,"h":38,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":134,"y":170,"w":16,"h":38,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":3})
+    # mechanical shin plates (segmented -- BIG)
+    P.append({"type":"rect","x":110,"y":180,"w":16,"h":6,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":134,"y":180,"w":16,"h":6,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":110,"y":194,"w":16,"h":6,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":134,"y":194,"w":16,"h":6,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
     # gold shin armor trim
-    P.append({"type":"rect","x":106,"y":186,"w":18,"h":4,"color":GOLD,"outline":OUT,"outline_w":1})
-    P.append({"type":"rect","x":132,"y":186,"w":18,"h":4,"color":GOLD,"outline":OUT,"outline_w":1})
+    P.append({"type":"line","start":[110,186],"end":[126,186],"color":GOLD,"width":1})
+    P.append({"type":"line","start":[134,186],"end":[150,186],"color":GOLD,"width":1})
     # boots
-    P.append({"type":"rect","x":104,"y":204,"w":22,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
-    P.append({"type":"rect","x":130,"y":204,"w":22,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":108,"y":204,"w":20,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
+    P.append({"type":"rect","x":132,"y":204,"w":20,"h":12,"color":OUT,"outline":OUT,"outline_w":1,"radius":2})
 
     # --- Whisper pistol (THE weapon, in right hand, drawn IN FRONT) ---
     # pistol barrel (long, elegant, hextech sniper)

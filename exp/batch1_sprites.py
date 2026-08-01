@@ -33,9 +33,9 @@ def belveth_prims():
         P.append({"type":"circle","cx":cx,"cy":cy,"r":7,"color":VOID,"outline":VOID_DARK,"outline_w":1})
     P.append({"type":"polygon","points":[(38,82),(52,76),(48,94)],"color":PLATE,"outline":OUT,"outline_w":1})
 
-    # --- Quadruped body (horizontal trunk, low-slung, BIG — lean predator) ---
-    P.append({"type":"ellipse","x":44,"y":112,"w":152,"h":50,"color":VOID,"outline":VOID_DARK,"outline_w":2})
-    P.append({"type":"ellipse","x":60,"y":134,"w":118,"h":22,"color":VOID_DARK,"outline":OUT,"outline_w":1})
+    # --- Quadruped body (horizontal trunk, low-slung, LEAN insectoid predator) ---
+    P.append({"type":"ellipse","x":42,"y":116,"w":158,"h":42,"color":VOID,"outline":VOID_DARK,"outline_w":2})
+    P.append({"type":"ellipse","x":60,"y":134,"w":120,"h":18,"color":VOID_DARK,"outline":OUT,"outline_w":1})
 
     # --- Four digitigrade legs (lean, bent — predator stance) ---
     leg_pts = [(72,158),(106,160),(144,160),(178,158)]
@@ -97,9 +97,12 @@ def belveth_prims():
     # chitinous head crest (big spike)
     P.append({"type":"polygon","points":[(186,112),(204,104),(210,122),(190,126)],"color":PLATE_DARK,"outline":OUT,"outline_w":1})
     P.append({"type":"polygon","points":[(194,98),(210,92),(216,110),(198,112)],"color":PLATE,"outline":PLATE_DARK,"outline_w":1})
-    # glowing void eyes (two, menacing)
-    P.append({"type":"circle","cx":194,"cy":124,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":208,"cy":128,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    # glowing void eyes (two, menacing — BIG and bright)
+    P.append({"type":"circle","cx":194,"cy":124,"r":6,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":208,"cy":128,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
+    # eye glow (bright core)
+    P.append({"type":"circle","cx":194,"cy":123,"r":3,"color":(255,200,255),"outline":None,"outline_w":0})
+    P.append({"type":"circle","cx":208,"cy":127,"r":2,"color":(255,200,255),"outline":None,"outline_w":0})
     # mandible teeth (sharp)
     for tx in (218,226,234):
         P.append({"type":"polygon","points":[(tx-2,138),(tx+2,138),(tx,144)],"color":CLAW,"outline":OUT,"outline_w":1})

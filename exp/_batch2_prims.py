@@ -192,10 +192,15 @@ def riven_prims():
     P.append({"type":"rect","x":88,"y":108,"w":24,"h":4,"color":(180,40,40),"outline":OUT,"outline_w":1})
     # small right shoulder
     P.append({"type":"circle","cx":152,"cy":100,"r":8,"color":ARMOR,"outline":OUT,"outline_w":1})
-    # chest plate detail
-    P.append({"type":"polygon","points":[(114,98),(142,98),(140,140),(116,140)],
-              "color":ARMOR_DARK,"outline":OUT,"outline_w":1})
-    P.append({"type":"line","start":[128,98],"end":[128,140],"color":STEEL,"width":2})
+    # chest plate detail (Noxian plating -- BIG, obvious)
+    P.append({"type":"polygon","points":[(110,96),(146,96),(144,150),(112,150)],
+              "color":ARMOR_DARK,"outline":OUT,"outline_w":2})
+    P.append({"type":"line","start":[128,96],"end":[128,150],"color":STEEL,"width":3})
+    # Noxian armor plates (horizontal bands -- detailed plating)
+    for py in (108, 122, 136):
+        P.append({"type":"line","start":[112,py],"end":[144,py],"color":STEEL,"width":2})
+    # red Noxian trim on chest
+    P.append({"type":"line","start":[110,96],"end":[146,96],"color":(180,40,40),"width":2})
 
     # --- Arms ---
     P.append({"type":"rect","x":86,"y":118,"w":14,"h":40,"color":ARMOR_DARK,"outline":OUT,"outline_w":1,"radius":4})
@@ -358,7 +363,7 @@ def shyvana_prims():
     # belly (lighter bronze)
     P.append({"type":"polygon","points":[(116,100),(140,100),(144,155),(112,155)],
               "color":BRONZE,"outline":OUT,"outline_w":1})
-    # scale texture (BIG diamond scales -- obvious scaled skin)
+    # scale texture (BIG diamond scales -- obvious scaled skin, on torso)
     for sy in (106, 118, 130, 142, 154):
         for sx in (116, 128, 140):
             P.append({"type":"polygon","points":[(sx-5,sy),(sx,sy-5),(sx+5,sy),(sx,sy+5)],
@@ -366,6 +371,16 @@ def shyvana_prims():
     # gold chest plate
     P.append({"type":"polygon","points":[(118,96),(138,96),(136,124),(120,124)],
               "color":GOLD,"outline":OUT,"outline_w":1})
+
+    # --- Scaled skin on ARMS (THE missing feature -- scales on arms too) ---
+    # scale patches on left arm
+    for sy in (112, 124, 136):
+        P.append({"type":"polygon","points":[(94,sy),(100,sy-4),(94,sy-8),(88,sy-4)],
+                  "color":SCALE_DARK,"outline":OUT,"outline_w":1})
+    # scale patches on right arm
+    for sy in (112, 124, 136):
+        P.append({"type":"polygon","points":[(162,sy),(168,sy-4),(162,sy-8),(156,sy-4)],
+                  "color":SCALE_DARK,"outline":OUT,"outline_w":1})
 
     # --- Arms (clawed hands) ---
     P.append({"type":"rect","x":92,"y":100,"w":16,"h":50,"color":SCALE,"outline":OUT,"outline_w":1,"radius":5})

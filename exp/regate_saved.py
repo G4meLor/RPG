@@ -12,7 +12,7 @@ from src.build.vlm_client import VLMClient
 from src.data.tuning import ASSET_DIR
 
 EXP_DIR = os.path.dirname(os.path.abspath(__file__))
-CHANGED = ["Yuumi", "TwistedFate", "Poppy"]  # saved after the last full re-gate
+CHANGED = ["Bard", "Cassiopeia"]  # saved after the last re-gate
 
 
 def main():

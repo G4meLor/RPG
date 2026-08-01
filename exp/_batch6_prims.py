@@ -129,12 +129,11 @@ def hecarim_prims():
     EYE = (120, 255, 240)        # glowing teal eyes
     OUT = (20, 30, 35)
 
-    # --- Spectral teal glow wisps (targeted, NOT full-canvas -- keep silhouette clean) ---
-    # glow wisps around the figure (spectral, but don't fill the canvas)
-    P.append({"type":"circle","cx":30,"cy":120,"r":14,"color":(90,180,190),"outline":SPECTRAL,"outline_w":1})
-    P.append({"type":"circle","cx":226,"cy":140,"r":12,"color":(90,180,190),"outline":SPECTRAL,"outline_w":1})
-    P.append({"type":"circle","cx":20,"cy":170,"r":10,"color":SPECTRAL_DARK,"outline":SPECTRAL,"outline_w":1})
-    P.append({"type":"circle","cx":236,"cy":180,"r":10,"color":SPECTRAL_DARK,"outline":SPECTRAL,"outline_w":1})
+    # --- Spectral teal glow wisps (minimal, just around hooves -- keep silhouette clean) ---
+    P.append({"type":"circle","cx":60,"cy":238,"r":6,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":76,"cy":238,"r":6,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":200,"cy":238,"r":6,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":216,"cy":238,"r":6,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
 
     # --- CENTAUR BODY (horse lower half -- THE feature, big, clearly horse-shaped) ---
     # horse body (big rounded mass, low center, ghostly -- WIDE so it reads as horse)
@@ -158,27 +157,28 @@ def hecarim_prims():
         P.append({"type":"circle","cx":lx,"cy":246,"r":4,"color":SPECTRAL_LIGHT,"outline":SPECTRAL_DARK,"outline_w":1})
 
     # --- Horse neck + head (front, right -- clearly horse, skull-like, undead) ---
-    # horse neck (rising from chest, angled)
-    P.append({"type":"polygon","points":[(196,168),(232,168),(228,108),(200,118)],
+    # horse neck (rising from chest, angled -- BIG and clearly horse neck)
+    P.append({"type":"polygon","points":[(196,170),(236,170),(232,100),(200,112)],
               "color":GHOST,"outline":OUT,"outline_w":2})
-    # horse head (elongated, skull-like)
-    P.append({"type":"ellipse","x":220,"y":100,"w":40,"h":32,"color":GHOST,"outline":OUT,"outline_w":2})
+    # horse head (elongated, skull-like -- BIG, clearly a horse head)
+    P.append({"type":"ellipse","x":216,"y":92,"w":44,"h":34,"color":GHOST,"outline":OUT,"outline_w":2})
     # elongated muzzle (skeletal, pointing right)
-    P.append({"type":"ellipse","x":242,"y":112,"w":24,"h":22,"color":GHOST_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"ellipse","x":244,"y":104,"w":24,"h":22,"color":GHOST_DARK,"outline":OUT,"outline_w":1})
     # skeletal jaw teeth (THE undead feature)
-    for tx in (244, 250, 256):
-        P.append({"type":"polygon","points":[(tx,120),(tx+3,120),(tx+1,126)],"color":BONE,"outline":OUT,"outline_w":1})
+    for tx in (246, 252):
+        P.append({"type":"polygon","points":[(tx,114),(tx+3,114),(tx+1,120)],"color":BONE,"outline":OUT,"outline_w":1})
     # glowing teal eye (undead -- BIG)
-    P.append({"type":"circle","cx":230,"cy":110,"r":6,"color":EYE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":230,"cy":110,"r":3,"color":(255,255,255)})
+    P.append({"type":"circle","cx":226,"cy":102,"r":6,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":226,"cy":102,"r":3,"color":(255,255,255)})
     # horse ear (pointed, skeletal)
-    P.append({"type":"polygon","points":[(224,96),(230,80),(236,98)],"color":GHOST_DARK,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(220,88),(226,72),(232,90)],"color":GHOST_DARK,"outline":OUT,"outline_w":1})
     # ghostly mane (flowing, spectral teal, BIG along neck -- THE missing feature)
-    for mx, my in [(196,118),(204,108),(212,114),(220,104),(228,110)]:
+    for mx, my in [(200,110),(208,100),(216,106),(224,96)]:
         P.append({"type":"polygon","points":[(mx-5,my+10),(mx,my-10),(mx+5,my+10)],
                   "color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
-    # extra flowing mane wisps (long, trailing)
-    P.append({"type":"polygon","points":[(196,118),(180,108),(176,140),(196,130)],"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
+    # extra flowing mane wisps (long, trailing back -- THE ghostly mane)
+    P.append({"type":"polygon","points":[(200,110),(184,100),(180,140),(200,128)],"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(196,114),(176,110),(172,150),(196,134)],"color":SPECTRAL_LIGHT,"outline":SPECTRAL_DARK,"outline_w":1})
 
     # --- Heavy plate armor on horse body (THE missing feature -- BIG plates) ---
     P.append({"type":"ellipse","x":72,"y":146,"w":120,"h":30,"color":ARMOR,"outline":OUT,"outline_w":2})
@@ -189,67 +189,66 @@ def hecarim_prims():
     P.append({"type":"rect","x":72,"y":142,"w":120,"h":5,"color":SPECTRAL,"outline":OUT,"outline_w":1})
     P.append({"type":"rect","x":72,"y":170,"w":120,"h":5,"color":SPECTRAL,"outline":OUT,"outline_w":1})
 
-    # --- Rider torso (upper half, where the human meets the horse) ---
-    P.append({"type":"polygon","points":[(102,96),(154,96),(158,150),(98,150)],
+    # --- Rider torso (upper half -- raised ABOVE the horse body, clearly human torso) ---
+    # rider torso positioned higher so the human half is clearly separate from horse
+    P.append({"type":"polygon","points":[(108,84),(148,84),(152,140),(104,140)],
               "color":ARMOR,"outline":OUT,"outline_w":1})
     # heavy chest plate (BIG, obvious)
-    P.append({"type":"polygon","points":[(106,100),(150,100),(148,140),(108,140)],
+    P.append({"type":"polygon","points":[(112,88),(144,88),(142,130),(114,130)],
               "color":ARMOR_DARK,"outline":OUT,"outline_w":2})
-    P.append({"type":"line","start":[128,100],"end":[128,140],"color":STEEL,"width":2})
+    P.append({"type":"line","start":[128,88],"end":[128,130],"color":STEEL,"width":2})
     # armor plate segments (horizontal bands -- heavy plate armor)
-    for py in (112, 124, 136):
-        P.append({"type":"line","start":[108,py],"end":[148,py],"color":STEEL,"width":1})
+    for py in (100, 112, 124):
+        P.append({"type":"line","start":[114,py],"end":[142,py],"color":STEEL,"width":1})
     # spectral glow on chest
-    P.append({"type":"circle","cx":128,"cy":118,"r":6,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":128,"cy":118,"r":3,"color":SPECTRAL_LIGHT})
+    P.append({"type":"circle","cx":128,"cy":106,"r":6,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":128,"cy":106,"r":3,"color":SPECTRAL_LIGHT})
     # gold trim on armor
-    P.append({"type":"line","start":[106,100],"end":[150,100],"color":GOLD,"width":2})
+    P.append({"type":"line","start":[112,88],"end":[144,88],"color":GOLD,"width":2})
 
-    # --- Rider head (skull-like, undead -- THE missing feature) ---
-    P.append({"type":"circle","cx":128,"cy":80,"r":16,"color":GHOST,"outline":OUT,"outline_w":1})
+    # --- Rider head (skull-like, undead -- raised, clearly human head above torso) ---
+    P.append({"type":"circle","cx":128,"cy":68,"r":16,"color":GHOST,"outline":OUT,"outline_w":1})
     # skeletal face (bone-colored, lower jaw)
-    P.append({"type":"polygon","points":[(116,84),(140,84),(136,102),(120,102)],
+    P.append({"type":"polygon","points":[(116,72),(140,72),(136,90),(120,90)],
               "color":BONE,"outline":OUT,"outline_w":1})
     # glowing teal eyes (undead -- BIG)
-    P.append({"type":"circle","cx":121,"cy":82,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":135,"cy":82,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":122,"cy":81,"r":2,"color":(255,255,255)})
-    P.append({"type":"circle","cx":136,"cy":81,"r":2,"color":(255,255,255)})
+    P.append({"type":"circle","cx":121,"cy":70,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":135,"cy":70,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":122,"cy":69,"r":2,"color":(255,255,255)})
+    P.append({"type":"circle","cx":136,"cy":69,"r":2,"color":(255,255,255)})
     # skeletal jaw teeth (THE undead feature)
     for tx in (120, 126, 132, 138):
-        P.append({"type":"polygon","points":[(tx,98),(tx+3,98),(tx+1,104)],"color":BONE,"outline":OUT,"outline_w":1})
+        P.append({"type":"polygon","points":[(tx,86),(tx+3,86),(tx+1,92)],"color":BONE,"outline":OUT,"outline_w":1})
     # skeletal nose hole (undead skull)
-    P.append({"type":"circle","cx":128,"cy":92,"r":2,"color":OUT,"outline":BONE_DARK,"outline_w":1})
-    # ghostly flowing mane (rider, spectral teal -- BIG, flowing back)
-    P.append({"type":"polygon","points":[(110,70),(96,56),(90,100),(108,90)],"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
-    P.append({"type":"polygon","points":[(146,70),(160,56),(166,100),(148,90)],"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
-    # extra mane wisps (long, trailing, ghostly)
-    P.append({"type":"polygon","points":[(108,72),(88,68),(84,110),(106,96)],"color":SPECTRAL_LIGHT,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":128,"cy":80,"r":2,"color":OUT,"outline":BONE_DARK,"outline_w":1})
+    # ghostly flowing mane (rider, spectral teal -- flowing back from head)
+    P.append({"type":"polygon","points":[(110,58),(96,44),(90,84),(108,78)],"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"polygon","points":[(146,58),(160,44),(166,84),(148,78)],"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
 
-    # --- Rider arms (one holding trident) ---
-    P.append({"type":"rect","x":86,"y":104,"w":14,"h":44,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
-    P.append({"type":"rect","x":156,"y":104,"w":14,"h":44,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
+    # --- Rider arms (raised, one holding trident) ---
+    P.append({"type":"rect","x":90,"y":92,"w":14,"h":44,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":152,"y":92,"w":14,"h":44,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
     # gold shoulder pads
-    P.append({"type":"circle","cx":93,"cy":108,"r":8,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":163,"cy":108,"r":8,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":93,"cy":150,"r":5,"color":GHOST,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":163,"cy":150,"r":5,"color":GHOST,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":97,"cy":96,"r":8,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":159,"cy":96,"r":8,"color":ARMOR_LIGHT,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":97,"cy":138,"r":5,"color":GHOST,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":159,"cy":138,"r":5,"color":GHOST,"outline":OUT,"outline_w":1})
 
     # --- Massive polearm / trident (ghostly, in right hand, BIG) ---
-    P.append({"type":"line","start":[163,150],"end":[210,30],"color":ARMOR_DARK,"width":6})
+    P.append({"type":"line","start":[159,138],"end":[210,20],"color":ARMOR_DARK,"width":6})
     # trident head (3 prongs, spectral, BIG)
-    P.append({"type":"line","start":[210,30],"end":[196,8],"color":STEEL,"width":4})
-    P.append({"type":"line","start":[210,30],"end":[210,4],"color":STEEL,"width":4})
-    P.append({"type":"line","start":[210,30],"end":[224,8],"color":STEEL,"width":4})
+    P.append({"type":"line","start":[210,20],"end":[196,0],"color":STEEL,"width":4})
+    P.append({"type":"line","start":[210,20],"end":[210,0],"color":STEEL,"width":4})
+    P.append({"type":"line","start":[210,20],"end":[224,0],"color":STEEL,"width":4})
     # prong tips (sharp)
-    P.append({"type":"circle","cx":196,"cy":8,"r":2,"color":STEEL,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":210,"cy":4,"r":2,"color":STEEL,"outline":OUT,"outline_w":1})
-    P.append({"type":"circle","cx":224,"cy":8,"r":2,"color":STEEL,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":196,"cy":0,"r":2,"color":STEEL,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":210,"cy":0,"r":2,"color":STEEL,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":224,"cy":0,"r":2,"color":STEEL,"outline":OUT,"outline_w":1})
     # spectral glow on trident (THE ghost feature)
-    P.append({"type":"circle","cx":210,"cy":18,"r":8,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
-    P.append({"type":"circle","cx":210,"cy":18,"r":4,"color":SPECTRAL_LIGHT})
+    P.append({"type":"circle","cx":210,"cy":10,"r":8,"color":SPECTRAL,"outline":SPECTRAL_DARK,"outline_w":1})
+    P.append({"type":"circle","cx":210,"cy":10,"r":4,"color":SPECTRAL_LIGHT})
     # gold band on polearm
-    P.append({"type":"rect","x":186,"y":80,"w":8,"h":6,"color":GOLD,"outline":OUT,"outline_w":1})
+    P.append({"type":"rect","x":186,"y":70,"w":8,"h":6,"color":GOLD,"outline":OUT,"outline_w":1})
     return P
 
 

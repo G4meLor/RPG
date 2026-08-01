@@ -2024,6 +2024,474 @@ def bard_prims():
     return P
 
 
+def fiddlesticks_prims():
+    """Fiddlesticks — the Ancient Fear.
+    Iconic: burlap sack head (stitched), exposed straw stuffing, long spindly limbs,
+    scarecrow on a cross-pole, crows. NON-HUMANOID scarecrow — the cross-pole is THE feature.
+    """
+    P = []
+    SACK = (180, 150, 90)
+    SACK_DARK = (130, 100, 55)
+    STRAW = (220, 190, 90)
+    STRAW_DARK = (170, 140, 50)
+    WOOD = (110, 75, 45)
+    CROW = (35, 30, 35)
+    EYE = (255, 200, 40)
+    STITCH = (60, 40, 25)
+    OUT = (30, 20, 15)
+
+    # --- Cross-pole (THE feature — scarecrow T-cross, behind body) ---
+    P.append({"type":"line","start":[128,30],"end":[128,240],"color":WOOD,"width":6})  # vertical
+    P.append({"type":"line","start":[78,80],"end":[178,80],"color":WOOD,"width":6})  # horizontal arm-pole
+    # pole texture
+    P.append({"type":"line","start":[128,30],"end":[128,240],"color":OUT,"width":1})
+
+    # --- Straw stuffing (exposed at neck + cuffs + hem, THE feature) ---
+    # neck straw
+    for sx in (116, 124, 132, 140):
+        P.append({"type":"line","start":[sx,96],"end":[sx,86],"color":STRAW,"width":2})
+    # arm-pole straw (ends)
+    for sx in (78, 82, 86):
+        P.append({"type":"line","start":[sx,80],"end":[sx-4,72],"color":STRAW,"width":2})
+    for sx in (170, 174, 178):
+        P.append({"type":"line","start":[sx,80],"end":[sx+4,72],"color":STRAW,"width":2})
+    # hem straw
+    for sx in (108, 116, 124, 132, 140, 148):
+        P.append({"type":"line","start":[sx,200],"end":[sx,212],"color":STRAW,"width":2})
+
+    # --- Burlap sack head (THE feature — stitched sack on top of pole) ---
+    P.append({"type":"ellipse","x":108,"y":40,"w":40,"h":50,"color":SACK,"outline":OUT,"outline_w":1})
+    # stitched seams (X stitches on face)
+    P.append({"type":"line","start":[118,56],"end":[126,64],"color":STITCH,"width":1})
+    P.append({"type":"line","start":[126,56],"end":[118,64],"color":STITCH,"width":1})
+    P.append({"type":"line","start":[130,56],"end":[138,64],"color":STITCH,"width":1})
+    P.append({"type":"line","start":[138,56],"end":[130,64],"color":STITCH,"width":1})
+    # glowing eyes (sewn-on buttons, glowing)
+    P.append({"type":"circle","cx":120,"cy":56,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":136,"cy":56,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":120,"cy":55,"r":2,"color":(255,240,180)})
+    P.append({"type":"circle","cx":136,"cy":55,"r":2,"color":(255,240,180)})
+    # stitched mouth (zigzag)
+    for mx in range(118, 140, 4):
+        P.append({"type":"line","start":[mx,72],"end":[mx+2,70],"color":STITCH,"width":1})
+        P.append({"type":"line","start":[mx+2,70],"end":[mx+4,72],"color":STITCH,"width":1})
+    # sack rope tie at neck
+    P.append({"type":"line","start":[110,88],"end":[146,88],"color":STRAW_DARK,"width":2})
+
+    # --- Tattered cloak/body (hanging from cross-pole) ---
+    P.append({"type":"polygon","points":[(88,90),(168,90),(176,200),(80,200)],
+              "color":SACK_DARK,"outline":OUT,"outline_w":1})
+    # tattered hem (jagged)
+    P.append({"type":"polygon","points":[(80,200),(92,192),(100,204),(112,194),(124,206),(136,194),(148,206),(160,194),(172,200),(176,200),(176,212),(80,212)],
+              "color":SACK_DARK,"outline":OUT,"outline_w":1})
+    # cloak inner shadow
+    P.append({"type":"polygon","points":[(96,96),(160,96),(166,196),(90,196)],
+              "color":(90,70,40),"outline":OUT,"outline_w":1})
+    # straw poking from cloak tears
+    P.append({"type":"line","start":[120,140],"end":[120,132],"color":STRAW,"width":2})
+    P.append({"type":"line","start":[136,160],"end":[136,152],"color":STRAW,"width":2})
+
+    # --- Long spindly arms (THE feature — thin, hanging from arm-pole) ---
+    # left arm (thin, draped over horizontal pole)
+    P.append({"type":"line","start":[88,90],"end":[78,80],"color":SACK_DARK,"width":5})
+    P.append({"type":"line","start":[78,80],"end":[70,130],"color":SACK_DARK,"width":4})
+    # bony fingers
+    for fy in (128, 132, 136):
+        P.append({"type":"line","start":[70,130],"end":[64,fy+8],"color":SACK_DARK,"width":2})
+    # right arm
+    P.append({"type":"line","start":[168,90],"end":[178,80],"color":SACK_DARK,"width":5})
+    P.append({"type":"line","start":[178,80],"end":[186,130],"color":SACK_DARK,"width":4})
+    for fy in (128, 132, 136):
+        P.append({"type":"line","start":[186,130],"end":[192,fy+8],"color":SACK_DARK,"width":2})
+
+    # --- Crows (THE feature — perched on the scarecrow) ---
+    P.append({"type":"circle","cx":100,"cy":50,"r":6,"color":CROW,"outline":OUT,"outline_w":1})  # on head
+    P.append({"type":"polygon","points":[(94,50),(88,48),(92,54)],"color":CROW,"outline":OUT,"outline_w":1})  # beak
+    P.append({"type":"circle","cx":98,"cy":48,"r":1,"color":EYE})
+    P.append({"type":"circle","cx":156,"cy":90,"r":6,"color":CROW,"outline":OUT,"outline_w":1})  # on arm
+    P.append({"type":"polygon","points":[(162,90),(168,88),(164,94)],"color":CROW,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":158,"cy":88,"r":1,"color":EYE})
+    return P
+
+
+def reksai_prims():
+    """Rek'Sai — the Void Burrower.
+    Iconic: large gaping maw (huge mouth), sharp chitinous claws, segmented carapace,
+    sensory antennae, void predator. NON-HUMANOID — big burrower beast.
+    """
+    P = []
+    CARAPACE = (120, 95, 70)
+    CARAPACE_DARK = (80, 60, 45)
+    VOID = (150, 80, 180)
+    VOID_GLOW = (200, 130, 230)
+    CLAW = (230, 220, 200)
+    TOOTH = (240, 235, 220)
+    EYE = (220, 80, 200)
+    OUT = (30, 20, 25)
+
+    # --- Segmented carapace body (THE feature — big armored beast body) ---
+    P.append({"type":"ellipse","x":70,"y":140,"w":130,"h":70,"color":CARAPACE,"outline":OUT,"outline_w":1})
+    # carapace segments (plates)
+    for sx in (90, 110, 130, 150, 170):
+        P.append({"type":"line","start":[sx,142],"end":[sx,200],"color":CARAPACE_DARK,"width":1})
+    # dorsal plates (spiky ridge on back)
+    for dx in (96, 116, 136, 156):
+        P.append({"type":"polygon","points":[(dx-6,140),(dx,124),(dx+6,140)],
+                  "color":CARAPACE_DARK,"outline":OUT,"outline_w":1})
+
+    # --- LARGE gaping maw (THE feature — huge mouth at front, full of teeth) ---
+    # mouth (wide open, on the left/front)
+    P.append({"type":"ellipse","x":50,"y":150,"w":50,"h":40,"color":(60,30,50),"outline":OUT,"outline_w":2})
+    # inner mouth (void purple)
+    P.append({"type":"ellipse","x":56,"y":156,"w":38,"h":28,"color":VOID,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":75,"cy":170,"r":8,"color":VOID_GLOW})
+    # teeth (top + bottom rows, sharp)
+    for tx in (56, 64, 72, 80, 88):
+        P.append({"type":"polygon","points":[(tx,156),(tx+3,156),(tx+1,164)],
+                  "color":TOOTH,"outline":OUT,"outline_w":1})  # top teeth
+        P.append({"type":"polygon","points":[(tx,184),(tx+3,184),(tx+1,176)],
+                  "color":TOOTH,"outline":OUT,"outline_w":1})  # bottom teeth
+
+    # --- Head (above mouth, with sensory antennae) ---
+    P.append({"type":"circle","cx":80,"cy":140,"r":18,"color":CARAPACE,"outline":OUT,"outline_w":1})
+    # sensory antennae (THE feature — thin feelers on head)
+    P.append({"type":"line","start":[72,128],"end":[60,108],"color":CARAPACE_DARK,"width":2})
+    P.append({"type":"line","start":[88,128],"end":[100,108],"color":CARAPACE_DARK,"width":2})
+    P.append({"type":"circle","cx":60,"cy":108,"r":2,"color":VOID_GLOW})
+    P.append({"type":"circle","cx":100,"cy":108,"r":2,"color":VOID_GLOW})
+    # void eyes (glowing)
+    P.append({"type":"circle","cx":74,"cy":138,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":88,"cy":138,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":74,"cy":137,"r":2,"color":VOID_GLOW})
+    P.append({"type":"circle","cx":88,"cy":137,"r":2,"color":VOID_GLOW})
+
+    # --- Sharp chitinous claws (THE feature — big front claws) ---
+    # left big claw
+    P.append({"type":"line","start":[60,180],"end":[40,200],"color":CARAPACE_DARK,"width":7})
+    P.append({"type":"polygon","points":[(40,200),(24,206),(32,194)],
+              "color":CLAW,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(40,200),(28,210),(36,198)],
+              "color":CLAW,"outline":OUT,"outline_w":1})
+    # right big claw
+    P.append({"type":"line","start":[60,170],"end":[40,156],"color":CARAPACE_DARK,"width":7})
+    P.append({"type":"polygon","points":[(40,156),(24,150),(32,162)],
+              "color":CLAW,"outline":OUT,"outline_w":1})
+
+    # --- Segmented legs (4 stubby clawed legs) ---
+    for lx in (110, 140, 170):
+        P.append({"type":"line","start":[lx,200],"end":[lx,220],"color":CARAPACE_DARK,"width":5})
+        P.append({"type":"polygon","points":[(lx-4,220),(lx+4,220),(lx,228)],
+                  "color":CLAW,"outline":OUT,"outline_w":1})
+    return P
+
+
+def hecarim_prims():
+    """Hecarim — the Shadow of War.
+    Iconic: CENTAUR — undead horse body + humanoid torso, spectral ghostly glow,
+    glowing teal eyes, halberd. NON-HUMANOID — centaur shape is THE feature.
+    """
+    P = []
+    HORSE = (70, 75, 90)
+    HORSE_DARK = (45, 50, 65)
+    TORSO_SKIN = (180, 175, 185)
+    GHOST = (120, 220, 210)
+    GHOST_GLOW = (160, 240, 230)
+    ARMOR = (90, 95, 110)
+    HALBERD = (170, 170, 180)
+    EYE = (140, 240, 220)
+    OUT = (20, 25, 35)
+
+    # --- Spectral ghostly glow (under/around, THE feature) ---
+    P.append({"type":"ellipse","x":60,"y":195,"w":140,"h":24,"color":GHOST,"outline":GHOST_GLOW,"outline_w":1})
+    P.append({"type":"ellipse","x":72,"y":200,"w":116,"h":14,"color":GHOST_GLOW})
+
+    # --- Horse body (centaur lower — big horizontal mass) ---
+    P.append({"type":"ellipse","x":70,"y":150,"w":120,"h":55,"color":HORSE,"outline":OUT,"outline_w":1})
+    # horse chest (front, right)
+    P.append({"type":"circle","cx":178,"cy":172,"r":22,"color":HORSE,"outline":OUT,"outline_w":1})
+    # horse neck (rising to humanoid torso)
+    P.append({"type":"polygon","points":[(168,150),(188,150),(180,110),(172,110)],
+              "color":HORSE,"outline":OUT,"outline_w":1})
+    # horse mane (spectral, flowing)
+    P.append({"type":"polygon","points":[(168,148),(172,110),(160,100),(156,140)],
+              "color":GHOST,"outline":OUT,"outline_w":1})
+    P.append({"type":"line","start":[164,140],"end":[160,108],"color":GHOST_GLOW,"width":1})
+
+    # --- Horse head (front, with glowing teal eyes) ---
+    P.append({"type":"ellipse","x":188,"y":150,"w":30,"h":24,"color":HORSE,"outline":OUT,"outline_w":1})  # snout
+    # undead horse eye (glowing teal, no flesh)
+    P.append({"type":"circle","cx":190,"cy":162,"r":4,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":190,"cy":161,"r":2,"color":GHOST_GLOW})
+    # skeletal nostril
+    P.append({"type":"circle","cx":212,"cy":162,"r":2,"color":OUT})
+    # horse ears
+    P.append({"type":"polygon","points":[(186,150),(182,138),(190,148)],"color":HORSE_DARK,"outline":OUT,"outline_w":1})
+
+    # --- Hooves (4, THE feature — horse legs) ---
+    for lx in (86, 120, 156, 184):
+        P.append({"type":"line","start":[lx,195],"end":[lx,215],"color":HORSE_DARK,"width":6})
+        P.append({"type":"rect","x":lx-4,"y":213,"w":12,"h":8,"color":(40,30,30),"outline":OUT,"outline_w":1,"radius":1})
+
+    # --- Humanoid torso (centaur upper, on top of horse neck) ---
+    P.append({"type":"polygon","points":[(164,110),(196,110),(200,150),(160,150)],
+              "color":ARMOR,"outline":OUT,"outline_w":1})
+    # armor chest plate
+    P.append({"type":"polygon","points":[(168,114),(192,114),(188,140),(172,140)],
+              "color":HORSE_DARK,"outline":OUT,"outline_w":1})
+    # spectral glow on armor
+    P.append({"type":"line","start":[168,114],"end":[192,114],"color":GHOST,"width":1})
+
+    # --- Humanoid head (undead, hooded) ---
+    P.append({"type":"circle","cx":182,"cy":96,"r":14,"color":TORSO_SKIN,"outline":OUT,"outline_w":1})
+    # hood
+    P.append({"type":"polygon","points":[(168,90),(196,90),(192,76),(172,76)],
+              "color":HORSE_DARK,"outline":OUT,"outline_w":1})
+    # glowing teal eyes (undead)
+    P.append({"type":"circle","cx":177,"cy":96,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":187,"cy":96,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":177,"cy":95,"r":1,"color":GHOST_GLOW})
+    P.append({"type":"circle","cx":187,"cy":95,"r":1,"color":GHOST_GLOW})
+
+    # --- Arms (one holding halberd) ---
+    P.append({"type":"rect","x":158,"y":118,"w":10,"h":36,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":194,"y":118,"w":10,"h":36,"color":ARMOR,"outline":OUT,"outline_w":1,"radius":4})
+
+    # --- Halberd (spectral weapon) ---
+    P.append({"type":"line","start":[210,60],"end":[210,160],"color":HALBERD,"width":3})
+    P.append({"type":"line","start":[210,60],"end":[210,160],"color":GHOST,"width":1})  # glow
+    # halberd blade
+    P.append({"type":"polygon","points":[(210,60),(224,68),(220,84),(210,78)],
+              "color":HALBERD,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":210,"cy":160,"r":4,"color":HALBERD,"outline":OUT,"outline_w":1})  # pommel
+    return P
+
+
+def velkoz_prims():
+    """Vel'Koz — the Eye of the Void.
+    Iconic: single MASSIVE central eye, floating organic tentacles, void-energy core,
+    NO body/legs — just an eye with tentacles. NON-HUMANOID — eye is THE feature.
+    (Velkoz already scores 8 but let's confirm/keep — actually skip, already high.)
+    """
+    return []  # placeholder — Velkoz already 8/10, skip
+
+
+def khazix_prims():
+    """Kha'Zix — the Voidreaver.
+    Iconic: scythe-like claws, chitinous exoskeleton, glowing purple eyes, segmented tail,
+    void insectoid predator. NON-HUMANOID — insectoid with big claws.
+    """
+    P = []
+    CHITIN = (110, 70, 130)
+    CHITIN_DARK = (70, 40, 85)
+    VOID = (180, 100, 220)
+    VOID_GLOW = (220, 140, 255)
+    CLAW = (200, 180, 220)
+    EYE = (220, 100, 255)
+    OUT = (25, 15, 30)
+
+    # --- Segmented tail (behind, curling up) ---
+    tail_pts = [(128,170),(118,160),(108,144),(100,124),(96,104)]
+    for i in range(len(tail_pts)-1):
+        s, e = tail_pts[i], tail_pts[i+1]
+        P.append({"type":"line","start":s,"end":e,"color":CHITIN_DARK,"width":12})
+    for cx, cy in tail_pts:
+        P.append({"type":"circle","cx":cx,"cy":cy,"r":6,"color":CHITIN,"outline":CHITIN_DARK,"outline_w":1})
+
+    # --- Chitinous body (hunched, insectoid) ---
+    P.append({"type":"ellipse","x":92,"y":120,"w":76,"h":56,"color":CHITIN,"outline":OUT,"outline_w":1})
+    # exoskeleton plates
+    P.append({"type":"line","start":[100,130],"end":[164,130],"color":CHITIN_DARK,"width":1})
+    P.append({"type":"line","start":[104,150],"end":[160,150],"color":CHITIN_DARK,"width":1})
+    # dorsal spikes
+    for dx in (108, 128, 148):
+        P.append({"type":"polygon","points":[(dx-5,120),(dx,108),(dx+5,120)],
+                  "color":CHITIN_DARK,"outline":OUT,"outline_w":1})
+
+    # --- Head (insectoid, with mandibles) ---
+    P.append({"type":"circle","cx":170,"cy":140,"r":18,"color":CHITIN,"outline":OUT,"outline_w":1})
+    # mandibles (THE feature — sharp, curved)
+    P.append({"type":"polygon","points":[(180,148),(196,152),(188,160)],
+              "color":CLAW,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(180,132),(196,128),(188,120)],
+              "color":CLAW,"outline":OUT,"outline_w":1})
+    # glowing purple eyes (THE feature — 3 eyes, insectoid)
+    P.append({"type":"circle","cx":164,"cy":134,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":176,"cy":134,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":170,"cy":128,"r":3,"color":EYE,"outline":OUT,"outline_w":1})  # third eye
+    P.append({"type":"circle","cx":164,"cy":133,"r":1,"color":VOID_GLOW})
+    P.append({"type":"circle","cx":176,"cy":133,"r":1,"color":VOID_GLOW})
+
+    # --- Scythe-like claws (THE feature — BIG, raised) ---
+    # left big claw (raised, scythe curve)
+    P.append({"type":"line","start":[100,130],"end":[72,108],"color":CHITIN_DARK,"width":7})
+    P.append({"type":"polygon","points":[(72,108),(56,96),(64,116)],
+              "color":CLAW,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(72,108),(60,86),(72,100)],
+              "color":CLAW,"outline":OUT,"outline_w":1})
+    # right big claw
+    P.append({"type":"line","start":[160,130],"end":[188,108],"color":CHITIN_DARK,"width":7})
+    P.append({"type":"polygon","points":[(188,108),(204,96),(196,116)],
+              "color":CLAW,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(188,108),(200,86),(188,100)],
+              "color":CLAW,"outline":OUT,"outline_w":1})
+
+    # --- Insectoid legs (4, spindly) ---
+    for lx in (104, 124, 148):
+        P.append({"type":"line","start":[lx,164],"end":[lx-8,196],"color":CHITIN_DARK,"width":4})
+        P.append({"type":"line","start":[lx-8,196],"end":[lx-14,188],"color":CHITIN_DARK,"width":3})
+    for lx in (104, 124, 148):
+        P.append({"type":"line","start":[lx,164],"end":[lx+10,196],"color":CHITIN_DARK,"width":4})
+        P.append({"type":"line","start":[lx+10,196],"end":[lx+16,188],"color":CHITIN_DARK,"width":3})
+    return P
+
+
+def twitch_prims():
+    """Twitch — the Plague Rat.
+    Iconic: long pink tail, pointed rat ears, hunched posture, beady eyes,
+    tattered clothing, crossbow. NON-HUMANOID rat — tail + ears are THE feature.
+    """
+    P = []
+    FUR = (170, 150, 130)
+    FUR_DARK = (120, 100, 85)
+    PINK = (230, 180, 190)
+    PINK_DARK = (200, 140, 155)
+    CLOTH = (90, 80, 70)
+    CROSSBOW = (140, 100, 60)
+    EYE = (40, 30, 25)
+    OUT = (30, 25, 20)
+
+    # --- Long pink tail (THE feature — curls from base, long) ---
+    tail_pts = [(120,180),(108,190),(92,196),(76,190),(64,176),(58,160),(62,148)]
+    for i in range(len(tail_pts)-1):
+        s, e = tail_pts[i], tail_pts[i+1]
+        P.append({"type":"line","start":s,"end":e,"color":PINK_DARK,"width":7})
+    for cx, cy in tail_pts:
+        P.append({"type":"circle","cx":cx,"cy":cy,"r":4,"color":PINK,"outline":PINK_DARK,"outline_w":1})
+    # tail tip
+    P.append({"type":"circle","cx":62,"cy":148,"r":5,"color":PINK,"outline":PINK_DARK,"outline_w":1})
+
+    # --- Head (rat — pointed snout, THE feature) ---
+    P.append({"type":"circle","cx":128,"cy":84,"r":18,"color":FUR,"outline":OUT,"outline_w":1})
+    # pointed snout
+    P.append({"type":"polygon","points":[(128,84),(146,90),(128,98)],
+              "color":FUR_DARK,"outline":OUT,"outline_w":1})
+    # pink nose
+    P.append({"type":"circle","cx":144,"cy":90,"r":3,"color":PINK,"outline":OUT,"outline_w":1})
+    # whiskers
+    for wy in (86, 90, 94):
+        P.append({"type":"line","start":[136,wy],"end":[150,wy-2],"color":FUR_DARK,"width":1})
+    # beady eyes
+    P.append({"type":"circle","cx":122,"cy":82,"r":3,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":122,"cy":81,"r":1,"color":(180,160,120)})  # shine
+    # pointed rat ears (THE feature — big, round, pink inside)
+    P.append({"type":"circle","cx":114,"cy":68,"r":8,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":114,"cy":68,"r":5,"color":PINK_DARK})
+    P.append({"type":"circle","cx":138,"cy":68,"r":8,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":138,"cy":68,"r":5,"color":PINK_DARK})
+
+    # --- Hunched body (tattered clothing) ---
+    P.append({"type":"polygon","points":[(108,102),(148,102),(150,180),(106,180)],
+              "color":CLOTH,"outline":OUT,"outline_w":1})
+    # tattered hem
+    P.append({"type":"polygon","points":[(106,180),(116,172),(124,182),(132,172),(140,182),(148,172),(150,180),(150,188),(106,188)],
+              "color":CLOTH,"outline":OUT,"outline_w":1})
+    # belt
+    P.append({"type":"rect","x":106,"y":140,"w":44,"h":6,"color":(60,50,40),"outline":OUT,"outline_w":1})
+
+    # --- Arms (one holding crossbow, hunched) ---
+    P.append({"type":"rect","x":100,"y":110,"w":11,"h":50,"color":FUR,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"rect","x":146,"y":110,"w":11,"h":50,"color":FUR,"outline":OUT,"outline_w":1,"radius":4})
+    P.append({"type":"circle","cx":105,"cy":162,"r":4,"color":PINK,"outline":OUT,"outline_w":1})  # pink hand
+    P.append({"type":"circle","cx":152,"cy":162,"r":4,"color":PINK,"outline":OUT,"outline_w":1})
+
+    # --- Crossbow (THE feature — improvised, held) ---
+    # stock
+    P.append({"type":"rect","x":156,"y":140,"w":24,"h":6,"color":CROSSBOW,"outline":OUT,"outline_w":1})
+    # bow limbs
+    P.append({"type":"line","start":[156,136],"end":[156,150],"color":CROSSBOW,"width":2})
+    P.append({"type":"line","start":[180,136],"end":[180,150],"color":CROSSBOW,"width":2})
+    P.append({"type":"line","start":[156,136],"end":[180,136],"color":(180,180,190),"width":1})  # string
+    P.append({"type":"line","start":[156,150],"end":[180,150],"color":(180,180,190),"width":1})
+    # bolt
+    P.append({"type":"line","start":[168,143],"end":[192,143],"color":(200,200,210),"width":1})
+
+    # --- Legs (hunched, clawed rat feet) ---
+    P.append({"type":"rect","x":110,"y":180,"w":14,"h":32,"color":FUR,"outline":OUT,"outline_w":1,"radius":3})
+    P.append({"type":"rect","x":132,"y":180,"w":14,"h":32,"color":FUR,"outline":OUT,"outline_w":1,"radius":3})
+    # pink clawed feet
+    P.append({"type":"polygon","points":[(108,212),(124,212),(116,220)],"color":PINK,"outline":OUT,"outline_w":1})
+    P.append({"type":"polygon","points":[(130,212),(146,212),(138,220)],"color":PINK,"outline":OUT,"outline_w":1})
+    return P
+
+
+def volibear_prims():
+    """Volibear — the Thunder's Roar.
+    Iconic: massive BEAR (quadruped), thick white fur, electric blue lightning arcs,
+    glowing blue eyes, heavy tribal armor plates. NON-HUMANOID — bear is THE feature.
+    """
+    P = []
+    FUR = (235, 235, 240)
+    FUR_DARK = (190, 190, 200)
+    LIGHTNING = (120, 200, 255)
+    LIGHTNING_BRIGHT = (180, 230, 255)
+    ARMOR = (120, 110, 95)
+    ARMOR_GOLD = (200, 165, 50)
+    EYE = (140, 220, 255)
+    OUT = (30, 25, 25)
+
+    # --- Massive bear body (quadruped, THE feature) ---
+    P.append({"type":"ellipse","x":64,"y":140,"w":140,"h":70,"color":FUR,"outline":OUT,"outline_w":1})
+    # fur texture (tufts)
+    for fx in (80, 100, 120, 140, 160, 180):
+        P.append({"type":"circle","cx":fx,"cy":146,"r":8,"color":FUR,"outline":FUR_DARK,"outline_w":1})
+
+    # --- Bear head (front, right) ---
+    P.append({"type":"circle","cx":196,"cy":170,"r":26,"color":FUR,"outline":OUT,"outline_w":1})
+    # snout
+    P.append({"type":"ellipse","x":204,"y":166,"w":26,"h":20,"color":FUR_DARK,"outline":OUT,"outline_w":1})
+    # nose
+    P.append({"type":"circle","cx":222,"cy":172,"r":4,"color":(40,30,30),"outline":OUT,"outline_w":1})
+    # glowing blue eyes (THE feature)
+    P.append({"type":"circle","cx":190,"cy":164,"r":5,"color":EYE,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":190,"cy":163,"r":2,"color":LIGHTNING_BRIGHT})
+    # bear ears (round)
+    P.append({"type":"circle","cx":180,"cy":150,"r":7,"color":FUR,"outline":OUT,"outline_w":1})
+    P.append({"type":"circle","cx":180,"cy":150,"r":4,"color":FUR_DARK})
+    # teeth (fierce)
+    P.append({"type":"line","start":[210,182],"end":[210,188],"color":OUT,"width":1})
+    P.append({"type":"line","start":[216,182],"end":[216,188],"color":OUT,"width":1})
+
+    # --- Electric blue lightning arcs (THE feature — crackling around body) ---
+    # zigzag lightning bolts
+    P.append({"type":"line","start":[80,120],"end":[88,110],"color":LIGHTNING,"width":2})
+    P.append({"type":"line","start":[88,110],"end":[80,100],"color":LIGHTNING,"width":2})
+    P.append({"type":"line","start":[80,100],"end":[90,94],"color":LIGHTNING,"width":2})
+    P.append({"type":"line","start":[140,116],"end":[148,106],"color":LIGHTNING,"width":2})
+    P.append({"type":"line","start":[148,106],"end":[140,96],"color":LIGHTNING,"width":2})
+    P.append({"type":"line","start":[140,96],"end":[150,90],"color":LIGHTNING,"width":2})
+    # lightning glow
+    P.append({"type":"circle","cx":84,"cy":108,"r":4,"color":LIGHTNING_BRIGHT})
+    P.append({"type":"circle","cx":144,"cy":104,"r":4,"color":LIGHTNING_BRIGHT})
+
+    # --- Heavy tribal armor plates (THE feature — on back) ---
+    P.append({"type":"ellipse","x":84,"y":130,"w":96,"h":20,"color":ARMOR,"outline":OUT,"outline_w":1})
+    # armor studs (gold)
+    for sx in (96, 116, 136, 156):
+        P.append({"type":"circle","cx":sx,"cy":140,"r":4,"color":ARMOR_GOLD,"outline":OUT,"outline_w":1})
+    # armor spikes
+    for dx in (100, 120, 140, 160):
+        P.append({"type":"polygon","points":[(dx-4,130),(dx,120),(dx+4,130)],
+                  "color":ARMOR,"outline":OUT,"outline_w":1})
+
+    # --- Massive paws (4, with claws) ---
+    for lx in (80, 112, 148, 180):
+        P.append({"type":"rect","x":lx,"y":200,"w":20,"h":18,"color":FUR_DARK,"outline":OUT,"outline_w":1,"radius":4})
+        # claws
+        for cx in (lx+4, lx+10, lx+16):
+            P.append({"type":"line","start":[cx,200],"end":[cx,192],"color":(230,225,215),"width":2})
+    return P
+
+
 # Map of hand-authored champs
 HAND_AUTHORED = {
     "Ahri": ahri_prims,
@@ -2050,6 +2518,12 @@ HAND_AUTHORED = {
     "Zilean": zilean_prims,
     "Brand": brand_prims,
     "Bard": bard_prims,
+    "Fiddlesticks": fiddlesticks_prims,
+    "RekSai": reksai_prims,
+    "Hecarim": hecarim_prims,
+    "Khazix": khazix_prims,
+    "Twitch": twitch_prims,
+    "Volibear": volibear_prims,
 }
 
 

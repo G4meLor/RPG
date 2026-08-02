@@ -33,15 +33,17 @@ _BYID = {c["id"]: c for c in CHAMPIONS_DB}
 
 
 def is_baked(cid, idx):
-    """True if this skin has a skin_mod-generated sprite (not the old placeholder)."""
-    dp = os.path.join(ASSET_DIR, "characters", cid, "descriptors.json")
-    if not os.path.exists(dp): return False
-    try:
-        d = json.load(open(dp))
-    except Exception:
-        return False
+    """True if this skin has a generated sprite (skin_mod OR a retry generator —
+    both are valid baked sprites, just from different fix passes). Excludes the
+    old placeholders (gen=? / 0 prims) and skin_fallback."""
+    from skin_modder import _load_descriptors
+    d = _load_descriptors(cid)
     v = d.get(str(idx))
-    return isinstance(v, dict) and v.get("generator") == "skin_mod"
+    if not isinstance(v, dict): return False
+    gen = v.get("generator", "")
+    if gen in ("skin_fallback",): return False
+    if len(v.get("primitives", [])) == 0: return False
+    return gen in ("skin_mod", "recolor-only-retry", "redescribe-retry", "recolor-only")
 
 
 def rebake_recolor_only(cid, idx):
@@ -95,28 +97,31 @@ def _save(cid, idx, revised, sname, gen):
 
 def gate_and_fix(cid, idx):
     """Gate one skin; if failing, apply the appropriate fix; re-gate. Returns
-    the final gate result + what action was taken."""
+    the final gate result + what action was taken.
+
+    Fix policy:
+      - IoU < 0.80 (adds broke silhouette): recolor-only retry → IoU returns to ~1.0.
+      - match < 6 (palette wrong): redescribe retry (fresh VLM delta). One retry.
+      - STILL failing: KEEP the best recolor (do NOT fallback to default — the
+        recolor is closer to the skin than the default, so fallback would make
+        match WORSE). Mark action="kept-best". Fallback to default only happens
+        if the sprite is blank/broken (handled by the caller).
+    """
     action = "none"
     r = gate_skin(cid, idx, n_match=2)
     if r.get("pass"):
         return r, action
-    # diagnose + fix
     iou = r.get("iou"); match = r.get("match")
     if iou is not None and iou < IOU_MIN:
-        # adds broke silhouette → recolor-only retry
         rebake_recolor_only(cid, idx); action = "recolor-only"
         r = gate_skin(cid, idx, n_match=2)
         if r.get("pass"): return r, action
-    if (match is None or match < MATCH_MIN) and iou is not None and iou >= IOU_MIN:
-        # silhouette ok but palette wrong → redescribe retry
+    if (match is None or match < MATCH_MIN):
         rebake_redescribe(cid, idx); action = "redescribe"
         r = gate_skin(cid, idx, n_match=2)
         if r.get("pass"): return r, action
-    # still failing → fallback to default
-    if not r.get("pass"):
-        fallback_default(cid, idx); action = "fallback"
-        r = gate_skin(cid, idx, n_match=2)
-        r["fallback"] = True
+    # still failing — keep the best recolor (don't fallback; default matches worse)
+    action = "kept-best"
     return r, action
 
 

@@ -99,12 +99,16 @@ def silhouette_iou(skin0_path, skinN_path):
 
 MATCH_SYS = (
     "You are a pixel-art critic who knows League of Legends skins. Given a skin's "
-    "splash art (image 1, the reference) and a 256x256 pixel sprite (image 2, the "
-    "attempt), score how well the sprite captures THIS SKIN's look (colors, theme, "
-    "key features) on 0-10. 10 = perfect match to the skin's colors/theme; 6 = "
-    "recognizably this skin; 0 = wrong skin / generic. Output JSON ONLY: "
-    '{"match": 0-10, "ok": true/false, "note": "one line"}. '
-    "Judge the SKIN (colors/theme vs splash), not the champion identity."
+    "splash art (image 1, the reference) and a 256x256 CHIBI pixel sprite (image 2, "
+    "the attempt), score how well the sprite captures THIS SKIN's COLOR PALETTE and "
+    "THEME on 0-10.\n\n"
+    "IMPORTANT: image 2 is a CHIBI — a deliberately simplified 256px sprite. It "
+    "CANNOT show fabric texture, small ornaments, or fine detail. Judge ONLY the "
+    "COLOR PALETTE (are the dominant colors right for this skin?) and the THEME "
+    "(does it feel like this skin's vibe?). Do NOT penalize for missing fine detail.\n"
+    "10 = perfect palette/theme match; 7 = clearly this skin's colors; 5 = partial "
+    "palette match; 3 = mostly default colors; 0 = wrong skin entirely. "
+    'Output JSON ONLY: {"match": 0-10, "ok": true/false, "note": "one line"}.'
 )
 
 

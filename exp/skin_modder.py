@@ -174,17 +174,25 @@ DELTA_SYS = (
     "given: (1) the splash art of a specific skin (image 1), (2) the champion's "
     "default-skin pixel sprite (image 2), the champion name, the skin name, AND "
     "the EXACT [r,g,b] colors that actually appear in the default sprite (so you "
-    "can map them precisely). Your job: describe the MINIMAL changes to turn the "
-    "default sprite into this skin. Most skins are a RECOLOR of the default.\n\n"
+    "can map them precisely). Your job: describe the changes to turn the default "
+    "sprite into this skin.\n\n"
+    "You may change: COLORS (recolor hair, outfit, skin, weapon, accents to match "
+    "the skin's palette), ATTIRE/WEAPON (add a hat, change weapon shape, add armor "
+    "piece), and FEATURES (hair color/style, horns, wings, glasses). The ONLY "
+    "constraint: keep the BODY SILHOUETTE the same (head/torso/limbs position and "
+    "size unchanged) so the champion stays recognizable.\n\n"
     "Output JSON ONLY:\n"
-    '{"color_map": [[[r,g,b],[r,g,b]], ...], "adds": [{"type":"circle","cx":int,"cy":int,"r":int,"color":[r,g,b]}, ...], "removes": [], "notes": "one line"}\n\n'
+    '{"color_map": [[[r,g,b],[r,g,b]], ...], "adds": [{"type":"circle","cx":int,"cy":int,"r":int,"color":[r,g,b],"outline":[r,g,b],"outline_w":int}, ...], "removes": [], "notes": "one line"}\n\n'
     "color_map: list of [base_color, skin_color] pairs. base_color MUST be one of "
-    "the EXACT default colors listed below (copy it verbatim — the recolor matches "
-    "by exact/near color, so a wrong base_color means no recolor happens). "
-    "skin_color is what it becomes in this skin (from the splash). Map EVERY "
-    "listed default color to its skin equivalent (even if unchanged). "
-    "adds: new primitives for features this skin adds (wings, halo, glasses). "
-    "Keep to 0-5 adds. removes: usually empty. Output JSON ONLY."
+    "the EXACT default colors listed below (copy it verbatim). skin_color is what "
+    "it becomes in this skin — use VIVID, SATURATED colors matching the splash "
+    "(e.g. hot pink [255,40,180], neon blue [40,180,255], deep purple [120,40,180], "
+    "bright gold [255,200,40]). Do NOT use muted/desaturated/grayish colors — "
+    "pixel art needs BOLD colors to read at 256px. Map EVERY listed default color "
+    "to its skin equivalent.\n"
+    "adds: new primitives for skin-specific features (hat, weapon, wings, glasses, "
+    "halo, headphones). These can be any size/position — draw them where the splash "
+    "shows them. 0-8 adds is fine. removes: usually empty. Output JSON ONLY."
 )
 
 
@@ -247,21 +255,46 @@ def _near(a, b, tol=40):
     return all(abs(int(a[i]) - int(b[i])) <= tol for i in range(min(3, len(a), len(b))))
 
 
+def _apply_one_map(out, base, target, tol=40):
+    """Recolor every prim whose fill OR outline matches `base` (within tol) to
+    `target`. Returns count of recolored prims."""
+    n = 0
+    for p in out:
+        if _near(p.get("color"), base, tol=tol):
+            p["color"] = list(target[:3]); n += 1
+        if p.get("outline") and _near(p.get("outline"), base, tol=tol):
+            p["outline"] = list(target[:3])
+    return n
+
+
 def apply_delta(prims, delta):
-    """Apply a skin delta to a copy of the skin-0 primitives. Returns revised prims."""
+    """Apply a skin delta to a copy of the skin-0 primitives. Returns revised prims.
+
+    Recolor strategy (FIXED): single pass at tol=40, tracking which prims were
+    already recolored so a later map entry can't re-recolor them. This was the
+    root cause of the 0% pass rate: the widening-tolerance loop let a later
+    "dark hair" map (tol up to 120) re-recolor the already-magenta tails back
+    to dark, collapsing the palette to near-default.
+    """
     out = [dict(p) for p in prims]
     cmap = delta.get("color_map", []) or []
-    # recolor: for each [base, skin] pair, recolor prims whose color matches base
+    recolored = set()  # indices of prims already recolored — skip in later maps
     for pair in cmap:
         if not isinstance(pair, list) or len(pair) < 2: continue
         base, skin = pair[0], pair[1]
         if not base or not skin: continue
-        for p in out:
+        for j, p in enumerate(out):
+            if j in recolored: continue
             if _near(p.get("color"), base, tol=40):
-                p["color"] = list(skin[:3])
-            # also recolor outlines that match (so borders follow)
-            if p.get("outline") and _near(p.get("outline"), base, tol=40):
+                p["color"] = list(skin[:3]); recolored.add(j)
+            elif p.get("outline") and _near(p.get("outline"), base, tol=40):
                 p["outline"] = list(skin[:3])
+        # second pass with wider tol ONLY for prims not yet recolored (catch a
+        # slightly-off base_color without clobbering already-mapped prims)
+        for j, p in enumerate(out):
+            if j in recolored: continue
+            if _near(p.get("color"), base, tol=80):
+                p["color"] = list(skin[:3]); recolored.add(j)
     # adds: append new primitives (validate shape)
     for a in (delta.get("adds", []) or []):
         if not isinstance(a, dict) or "type" not in a: continue

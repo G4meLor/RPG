@@ -448,37 +448,476 @@
     "phase": "2"
   },
   "1": {
-    "descriptor": {
-      "archetype": "vastaya",
-      "weapon": "none",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 140,
+        "w": 100,
+        "h": 70,
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 160,
+        "cy": 120,
+        "r": 38,
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            160,
+            85
+          ],
+          [
+            170,
+            70
+          ],
+          [
+            180,
+            85
+          ]
+        ],
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            85
+          ],
+          [
+            150,
+            70
+          ],
+          [
+            160,
+            85
+          ]
+        ],
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            120
+          ],
+          [
+            220,
+            110
+          ],
+          [
+            190,
+            140
+          ]
+        ],
+        "color": [
+          210,
+          160,
+          120
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            130
+          ],
+          [
+            220,
+            140
+          ],
+          [
+            190,
+            160
+          ]
+        ],
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 175,
+        "cy": 115,
+        "r": 6,
+        "color": [
           255,
           255,
           255
         ],
-        "secondary": [
-          210,
-          45,
-          45
+        "outline": [
+          0,
+          0,
+          0
         ],
-        "accent": [
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 178,
+        "cy": 113,
+        "r": 3,
+        "color": [
+          0,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            140
+          ],
+          [
+            60,
+            100
+          ],
+          [
+            110,
+            120
+          ],
+          [
+            120,
+            160
+          ]
+        ],
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            150,
+            100
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            130,
+            160
+          ]
+        ],
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "rect",
+        "x": 110,
+        "y": 170,
+        "w": 18,
+        "h": 40,
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 5
+      },
+      {
+        "type": "rect",
+        "x": 132,
+        "y": 170,
+        "w": 18,
+        "h": 40,
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 5
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            160
+          ],
+          [
+            50,
+            200
+          ],
+          [
+            90,
+            210
+          ]
+        ],
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            160
+          ],
+          [
+            130,
+            200
+          ],
+          [
+            70,
+            210
+          ]
+        ],
+        "color": [
+          230,
+          230,
+          230
+        ],
+        "outline": [
+          180,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            120,
+            150
+          ],
+          [
+            140,
+            160
+          ],
+          [
+            120,
+            170
+          ]
+        ],
+        "color": [
           255,
-          215,
+          230,
+          150
+        ],
+        "outline": [
+          200,
+          150,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            155
+          ],
+          [
+            130,
+            165
+          ],
+          [
+            110,
+            175
+          ]
+        ],
+        "color": [
+          255,
+          230,
+          150
+        ],
+        "outline": [
+          200,
+          150,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 225,
+        "cy": 110,
+        "r": 8,
+        "color": [
+          255,
+          200,
+          0
+        ],
+        "outline": [
+          200,
+          100,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 238,
+        "cy": 105,
+        "r": 6,
+        "color": [
+          255,
+          230,
+          150
+        ],
+        "outline": [
+          200,
+          100,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 250,
+        "cy": 100,
+        "r": 4,
+        "color": [
+          255,
+          255,
+          100
+        ],
+        "outline": [
+          200,
+          100,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 60,
+        "cy": 30,
+        "r": 5,
+        "color": [
+          255,
+          150,
           0
         ]
       },
-      "features": [
-        "animal_ears",
-        "wings",
-        "crown"
-      ],
-      "build": "short",
-      "motif": "light"
-    },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
+      {
+        "type": "rect",
+        "cx": 55,
+        "cy": 25,
+        "r": 2,
+        "color": [
+          100,
+          200,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Heavenscale",
+    "notes": "Recolor body to white/cream, horns/accents to gold, and add a small flame effect on the head."
   }
 }

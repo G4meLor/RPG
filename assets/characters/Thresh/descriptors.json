@@ -1304,7 +1304,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           20,
@@ -1464,7 +1464,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           20,
@@ -1496,7 +1496,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           20,
@@ -1545,7 +1545,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           20,
@@ -1726,7 +1726,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           20,
@@ -1887,7 +1887,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "width": 1
       },
@@ -1904,7 +1904,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "width": 1
       },
@@ -1921,7 +1921,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "width": 1
       },
@@ -1955,7 +1955,7 @@
         "outline": [
           40,
           60,
-          50
+          80
         ],
         "outline_w": 1
       },
@@ -1972,7 +1972,7 @@
         "outline": [
           40,
           60,
-          50
+          80
         ],
         "outline_w": 1
       },
@@ -1989,7 +1989,7 @@
         "outline": [
           40,
           60,
-          50
+          80
         ],
         "outline_w": 1
       },
@@ -2006,7 +2006,7 @@
         "outline": [
           40,
           60,
-          50
+          80
         ],
         "outline_w": 1
       },
@@ -2033,12 +2033,12 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           40,
           60,
-          50
+          80
         ],
         "outline_w": 2
       },
@@ -2128,12 +2128,12 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           40,
           60,
-          50
+          80
         ],
         "outline_w": 1
       },
@@ -2146,12 +2146,12 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           40,
           60,
-          50
+          80
         ],
         "outline_w": 1
       },
@@ -2174,12 +2174,12 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           40,
           60,
-          50
+          80
         ],
         "outline_w": 1
       },
@@ -2294,7 +2294,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           20,
@@ -2313,7 +2313,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           20,
@@ -2370,7 +2370,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "width": 5
       },
@@ -2446,7 +2446,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           20,
@@ -2478,7 +2478,7 @@
         "color": [
           40,
           60,
-          50
+          80
         ],
         "outline": [
           20,
@@ -2561,16 +2561,16 @@
         "cy": 80,
         "r": 8,
         "color": [
-          255,
           200,
-          150
+          100,
+          80
         ],
         "outline": [
-          150,
-          80,
-          50
+          100,
+          50,
+          30
         ],
-        "outline_w": 2
+        "outline_w": 1
       },
       {
         "type": "circle",
@@ -2578,23 +2578,22 @@
         "cy": 80,
         "r": 8,
         "color": [
-          255,
           200,
-          150
+          100,
+          80
         ],
         "outline": [
-          150,
-          80,
-          50
+          100,
+          50,
+          30
         ],
-        "outline_w": 2
+        "outline_w": 1
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Deep Terror",
-    "notes": "Recolored to deep sea greens and coral reds with bright cyan bioluminescence for the lantern and eyes."
+    "skin": "Deep Terror"
   },
   "2": {
     "primitives": [
@@ -6490,11 +6489,10 @@
         "outline_w": 1
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "SSW",
-    "notes": "Recolored to blue and white athletic gear with gold headphones and a white cap."
+    "skin": "SSW"
   },
   "5": {
     "primitives": [
@@ -11713,13 +11711,13 @@
         "r": 3,
         "color": [
           255,
-          0,
-          0
+          50,
+          50
         ],
         "outline": [
-          150,
-          0,
-          0
+          255,
+          255,
+          255
         ],
         "outline_w": 1
       },
@@ -11730,22 +11728,38 @@
         "r": 3,
         "color": [
           255,
-          0,
-          0
+          50,
+          50
         ],
         "outline": [
-          150,
-          0,
-          0
+          255,
+          255,
+          255
         ],
         "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 130,
+        "r": 15,
+        "color": [
+          0,
+          180,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Prestige Pulsefire",
-    "notes": "Recolored to gold and deep purple with neon blue energy accents and red glowing eyes for the Prestige Pulsefire look."
+    "skin": "Prestige Pulsefire"
   },
   "27": {
     "primitives": [
@@ -14342,12 +14356,12 @@
       },
       {
         "type": "circle",
-        "cx": 110,
+        "cx": 115,
         "cy": 75,
         "r": 8,
         "color": [
-          200,
-          100,
+          220,
+          150,
           255
         ],
         "outline": [
@@ -14359,12 +14373,12 @@
       },
       {
         "type": "circle",
-        "cx": 140,
+        "cx": 145,
         "cy": 75,
         "r": 8,
         "color": [
-          200,
-          100,
+          220,
+          150,
           255
         ],
         "outline": [
@@ -14375,11 +14389,10 @@
         "outline_w": 2
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Spirit Blossom",
-    "notes": "Recolored Thresh to a deep purple and magenta palette with Spirit Blossom floral accents and horns."
+    "skin": "Spirit Blossom"
   },
   "28": {
     "primitives": [
@@ -19615,8 +19628,8 @@
         "r": 15,
         "color": [
           255,
-          215,
-          0
+          220,
+          50
         ],
         "outline": [
           255,
@@ -19643,10 +19656,9 @@
         "outline_w": 1
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "FPX",
-    "notes": "Recolored to FPX red, gold, and deep purple palette with a central gold star accent."
+    "skin": "FPX"
   }
 }

@@ -683,8 +683,8 @@
         "h": 40,
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "outline": [
           20,
@@ -700,8 +700,8 @@
         "r": 16,
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "outline": [
           20,
@@ -718,8 +718,8 @@
         "h": 12,
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "outline": [
           20,
@@ -757,8 +757,8 @@
         ],
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "outline": [
           20,
@@ -785,8 +785,8 @@
         ],
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "outline": [
           20,
@@ -813,7 +813,7 @@
         "r": 1,
         "color": [
           255,
-          220,
+          200,
           255
         ]
       },
@@ -824,7 +824,7 @@
         "r": 4,
         "color": [
           255,
-          220,
+          200,
           255
         ]
       },
@@ -835,7 +835,7 @@
         "r": 4,
         "color": [
           255,
-          220,
+          200,
           255
         ]
       },
@@ -846,7 +846,7 @@
         "r": 3,
         "color": [
           255,
-          220,
+          200,
           255
         ]
       },
@@ -862,8 +862,8 @@
         ],
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "width": 4
       },
@@ -879,8 +879,8 @@
         ],
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "width": 4
       },
@@ -896,8 +896,8 @@
         ],
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "width": 4
       },
@@ -913,8 +913,8 @@
         ],
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "width": 4
       },
@@ -926,7 +926,7 @@
         "color": [
           120,
           60,
-          20
+          30
         ],
         "outline": [
           20,
@@ -941,7 +941,7 @@
         "cy": 54,
         "r": 10,
         "color": [
-          80,
+          60,
           180,
           255
         ],
@@ -958,7 +958,7 @@
         "cy": 54,
         "r": 10,
         "color": [
-          80,
+          60,
           180,
           255
         ],
@@ -976,8 +976,8 @@
         "r": 14,
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "outline": [
           20,
@@ -1163,8 +1163,8 @@
         ],
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "outline": [
           80,
@@ -1185,8 +1185,8 @@
         ],
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "width": 3
       },
@@ -1202,8 +1202,8 @@
         ],
         "color": [
           150,
-          70,
-          30
+          80,
+          40
         ],
         "width": 3
       },
@@ -1213,7 +1213,7 @@
         "cy": 120,
         "r": 4,
         "color": [
-          80,
+          60,
           180,
           255
         ],
@@ -1346,16 +1346,16 @@
       {
         "type": "circle",
         "cx": 110,
-        "cy": 75,
-        "r": 6,
+        "cy": 90,
+        "r": 5,
         "color": [
           255,
-          200,
+          215,
           0
         ],
         "outline": [
-          150,
-          100,
+          180,
+          140,
           0
         ],
         "outline_w": 1
@@ -1363,16 +1363,16 @@
       {
         "type": "circle",
         "cx": 146,
-        "cy": 75,
-        "r": 6,
+        "cy": 90,
+        "r": 5,
         "color": [
           255,
-          200,
+          215,
           0
         ],
         "outline": [
-          150,
-          100,
+          180,
+          140,
           0
         ],
         "outline_w": 1
@@ -1381,25 +1381,41 @@
         "type": "circle",
         "cx": 128,
         "cy": 110,
-        "r": 20,
+        "r": 6,
         "color": [
           255,
-          150,
-          200
+          255,
+          0
         ],
         "outline": [
           200,
-          80,
-          150
+          150,
+          0
         ],
-        "outline_w": 2
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 142,
+        "cy": 110,
+        "r": 6,
+        "color": [
+          255,
+          255,
+          0
+        ],
+        "outline": [
+          200,
+          150,
+          0
+        ],
+        "outline_w": 1
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Candy King",
-    "notes": "Recolored wooden body to chocolate brown and leafy crown to blue frosting and pink cream, added a golden crown and glasses."
+    "skin": "Candy King"
   },
   "2": {
     "primitives": [
@@ -1652,9 +1668,9 @@
         "cy": 60,
         "r": 16,
         "color": [
-          140,
           90,
-          50
+          60,
+          30
         ],
         "outline": [
           20,
@@ -2073,9 +2089,26 @@
       },
       {
         "type": "circle",
-        "cx": 125,
-        "cy": 115,
-        "r": 12,
+        "cx": 130,
+        "cy": 110,
+        "r": 15,
+        "color": [
+          0,
+          180,
+          100
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 110,
+        "r": 15,
         "color": [
           0,
           180,
@@ -2091,28 +2124,11 @@
       {
         "type": "circle",
         "cx": 140,
-        "cy": 115,
-        "r": 12,
-        "color": [
-          0,
-          180,
-          100
-        ],
-        "outline": [
-          255,
-          255,
-          255
-        ],
-        "outline_w": 2
-      },
-      {
-        "type": "circle",
-        "cx": 132,
         "cy": 160,
         "r": 25,
         "color": [
           0,
-          150,
+          160,
           80
         ],
         "outline": [
@@ -2123,11 +2139,10 @@
         "outline_w": 3
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Dunkmaster",
-    "notes": "Recolored leaves to bright orange, added green sports glasses and a green basketball jersey torso."
+    "skin": "Dunkmaster"
   },
   "11": {
     "primitives": [
@@ -2802,11 +2817,11 @@
       {
         "type": "circle",
         "cx": 128,
-        "cy": 80,
+        "cy": 110,
         "r": 5,
         "color": [
           0,
-          150,
+          180,
           255
         ],
         "outline": [
@@ -2819,7 +2834,7 @@
       {
         "type": "circle",
         "cx": 120,
-        "cy": 95,
+        "cy": 125,
         "r": 3,
         "color": [
           0,
@@ -2836,7 +2851,7 @@
       {
         "type": "circle",
         "cx": 136,
-        "cy": 95,
+        "cy": 125,
         "r": 3,
         "color": [
           0,
@@ -2851,11 +2866,10 @@
         "outline_w": 1
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Old God",
-    "notes": "Recolored wooden tones to deep void purples and greens to vivid magenta/pink, adding glowing blue eyes and gem."
+    "skin": "Old God"
   },
   "20": {
     "primitives": [
@@ -3125,8 +3139,8 @@
         "cy": 54,
         "r": 10,
         "color": [
-          100,
-          100,
+          80,
+          120,
           255
         ],
         "outline": [
@@ -3142,8 +3156,8 @@
         "cy": 54,
         "r": 10,
         "color": [
-          100,
-          100,
+          80,
+          120,
           255
         ],
         "outline": [
@@ -3397,8 +3411,8 @@
         "cy": 120,
         "r": 4,
         "color": [
-          100,
-          100,
+          80,
+          120,
           255
         ],
         "outline": [
@@ -3530,7 +3544,7 @@
       {
         "type": "circle",
         "cx": 110,
-        "cy": 140,
+        "cy": 150,
         "r": 8,
         "color": [
           255,
@@ -3547,7 +3561,7 @@
       {
         "type": "circle",
         "cx": 146,
-        "cy": 140,
+        "cy": 150,
         "r": 8,
         "color": [
           255,
@@ -3562,10 +3576,9 @@
         "outline_w": 1
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Astronaut",
-    "notes": "Recolored wooden textures to white/blue space suit colors and added a gold-rimmed purple visor."
+    "skin": "Astronaut"
   }
 }

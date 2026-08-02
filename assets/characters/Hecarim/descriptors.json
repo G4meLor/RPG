@@ -1318,9 +1318,9 @@
           ]
         ],
         "color": [
-          200,
-          200,
-          220
+          180,
+          180,
+          210
         ],
         "outline": [
           50,
@@ -1347,9 +1347,9 @@
           ]
         ],
         "color": [
-          200,
-          200,
-          220
+          180,
+          180,
+          210
         ],
         "outline": [
           50,
@@ -1433,9 +1433,9 @@
           20
         ],
         "color": [
-          200,
-          200,
-          220
+          180,
+          180,
+          210
         ],
         "width": 8,
         "comment": "Distinctive polearm shaft"
@@ -1461,14 +1461,14 @@
           ]
         ],
         "color": [
-          200,
-          200,
-          220
+          180,
+          180,
+          210
         ],
         "outline": [
-          200,
-          200,
-          220
+          180,
+          180,
+          210
         ],
         "outline_w": 2,
         "comment": "Polearm blade"
@@ -1480,9 +1480,9 @@
         "w": 80,
         "h": 40,
         "color": [
-          200,
-          200,
-          220
+          180,
+          180,
+          210
         ],
         "outline": [
           60,
@@ -1559,7 +1559,7 @@
       },
       {
         "type": "circle",
-        "cx": 150,
+        "cx": 160,
         "cy": 60,
         "r": 25,
         "color": [
@@ -1575,11 +1575,10 @@
         "outline_w": 2
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Arcade",
-    "notes": "Recolored to metallic silver and neon pink, added a pink mane and a rainbow-colored horn effect."
+    "skin": "Arcade"
   },
   "5": {
     "primitives": [
@@ -2184,8 +2183,8 @@
         "r": 4,
         "color": [
           255,
-          215,
-          0
+          50,
+          100
         ],
         "outline": null,
         "outline_w": 0,
@@ -2374,47 +2373,12 @@
         ],
         "outline_w": 2,
         "comment": "Horse rump"
-      },
-      {
-        "type": "circle",
-        "cx": 140,
-        "cy": 75,
-        "r": 5,
-        "color": [
-          255,
-          50,
-          50
-        ],
-        "outline": [
-          150,
-          0,
-          0
-        ],
-        "outline_w": 1
-      },
-      {
-        "type": "circle",
-        "cx": 150,
-        "cy": 75,
-        "r": 5,
-        "color": [
-          255,
-          50,
-          50
-        ],
-        "outline": [
-          150,
-          0,
-          0
-        ],
-        "outline_w": 1
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Worldbreaker",
-    "notes": "Recolored to deep cosmic blues and bright gold armor with glowing red eyes for the Worldbreaker theme."
+    "skin": "Worldbreaker"
   },
   "7": {
     "primitives": [
@@ -3197,11 +3161,11 @@
         "type": "circle",
         "cx": 140,
         "cy": 70,
-        "r": 3,
+        "r": 4,
         "color": [
           255,
-          50,
-          50
+          255,
+          255
         ],
         "outline": [
           255,
@@ -3214,25 +3178,24 @@
         "type": "circle",
         "cx": 120,
         "cy": 110,
-        "r": 5,
+        "r": 6,
         "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
           255,
           215,
           0
         ],
-        "outline": [
-          120,
-          30,
-          40
-        ],
-        "outline_w": 1
+        "outline_w": 2
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Arcana",
-    "notes": "Recolored to a regal gold and deep crimson palette with red gem accents to match the Arcana theme."
+    "skin": "Arcana"
   },
   "14": {
     "primitives": [
@@ -4199,7 +4162,7 @@
         ],
         "color": [
           180,
-          140,
+          120,
           60
         ],
         "outline": [
@@ -4228,7 +4191,7 @@
         ],
         "color": [
           180,
-          140,
+          120,
           60
         ],
         "outline": [
@@ -4314,7 +4277,7 @@
         ],
         "color": [
           180,
-          140,
+          120,
           60
         ],
         "width": 8,
@@ -4342,12 +4305,12 @@
         ],
         "color": [
           180,
-          140,
+          120,
           60
         ],
         "outline": [
           180,
-          140,
+          120,
           60
         ],
         "outline_w": 2,
@@ -4361,7 +4324,7 @@
         "h": 40,
         "color": [
           180,
-          140,
+          120,
           60
         ],
         "outline": [
@@ -4439,27 +4402,43 @@
       },
       {
         "type": "circle",
-        "cx": 145,
-        "cy": 55,
-        "r": 5,
+        "cx": 150,
+        "cy": 60,
+        "r": 25,
         "color": [
           255,
-          255,
-          100
+          140,
+          0
         ],
         "outline": [
           255,
-          160,
+          200,
           0
         ],
-        "outline_w": 1
+        "outline_w": 3
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 50,
+        "r": 15,
+        "color": [
+          255,
+          200,
+          0
+        ],
+        "outline": [
+          255,
+          100,
+          0
+        ],
+        "outline_w": 2
       }
     ],
-    "generator": "skin_mod",
+    "generator": "redescribe-retry",
     "phase": "per-skin",
     "base": "0",
-    "skin": "Headless",
-    "notes": "Recolored spectral teal to deep purple and pumpkin orange, added a pumpkin head glow."
+    "skin": "Headless"
   },
   "8": {
     "primitives": [

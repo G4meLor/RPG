@@ -293,11 +293,13 @@ def apply_delta(prims, delta):
         if t == "circle":
             cy = p.get("cy", 999); cx = p.get("cx", 999); r = p.get("r", 0)
             col = p.get("color", [0, 0, 0])
+            if col is None:
+                continue
             # head circle: large, in face region, skin-tone-ish (R>G>B, R>180)
-            if r >= 15 and 55 < cy < 95 and 108 < cx < 148 and col[0] > 180 and col[0] > col[2]:
+            if r >= 15 and 55 < cy < 95 and 108 < cx < 148 and len(col) >= 3 and col[0] > 180 and col[0] > col[2]:
                 face_prims.add(j)
             # eyes: small dark circles in face region
-            if r <= 5 and 60 < cy < 85 and 110 < cx < 146 and col[0] < 80:
+            if r <= 5 and 60 < cy < 85 and 110 < cx < 146 and len(col) >= 3 and col[0] < 80:
                 face_prims.add(j)
     for pair in cmap:
         if not isinstance(pair, list) or len(pair) < 2: continue

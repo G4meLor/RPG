@@ -19,9 +19,9 @@
       "weapon": "massive greatsword"
     },
     "gate": {
-      "canonical_match": 8,
+      "canonical_match": 7,
       "stance_captured": true,
-      "body_shape_score": 7,
+      "body_shape_score": 6,
       "features_captured": [
         "large demonic wings",
         "glowing red eyes",
@@ -1640,22 +1640,22 @@
       "weapon": "massive polearm"
     },
     "gate": {
-      "canonical_match": 5,
+      "canonical_match": 3,
       "stance_captured": false,
-      "body_shape_score": 6,
+      "body_shape_score": 2,
       "features_captured": [
         "massive polearm",
-        "glowing teal eyes"
+        "spectral teal colors"
       ],
       "features_missing": [
-        "spectral ghostly glow",
+        "half-man half-horse hybrid body",
         "undead skeletal features",
-        "heavy plate armor",
-        "flowing ghostly mane"
+        "flowing ghostly mane",
+        "heavy plate armor"
       ],
       "colors_captured": true,
       "recognizable": false,
-      "verdict": "borderline"
+      "verdict": "fail"
     },
     "sprite_path": "/home/misa/Desktop/RD/Gacha/assets/characters/Hecarim/sprite.png"
   },
@@ -3410,9 +3410,9 @@
       "weapon": "giant anchor"
     },
     "gate": {
-      "canonical_match": 7,
+      "canonical_match": 8,
       "stance_captured": true,
-      "body_shape_score": 8,
+      "body_shape_score": 9,
       "features_captured": [
         "heavy diving suit",
         "glowing nautical helm",
@@ -3832,9 +3832,9 @@
       "weapon": "bone harpoon"
     },
     "gate": {
-      "canonical_match": 6,
+      "canonical_match": 7,
       "stance_captured": true,
-      "body_shape_score": 5,
+      "body_shape_score": 6,
       "features_captured": [
         "glowing ghostly eyes",
         "bone harpoon"
@@ -3842,12 +3842,11 @@
       "features_missing": [
         "tattered nautical clothing",
         "undead pale skin",
-        "bone-like armor accents",
         "spectral aura"
       ],
       "colors_captured": true,
       "recognizable": true,
-      "verdict": "borderline"
+      "verdict": "pass"
     },
     "sprite_path": "/home/misa/Desktop/RD/Gacha/assets/characters/Pyke/sprite.png"
   },
@@ -4058,21 +4057,21 @@
       "weapon": "ferromancy-infused armor and hooves"
     },
     "gate": {
-      "canonical_match": 5,
+      "canonical_match": 8,
       "stance_captured": true,
-      "body_shape_score": 6,
+      "body_shape_score": 9,
       "features_captured": [
         "integrated horse armor",
-        "metallic shards"
-      ],
-      "features_missing": [
-        "ferromancy metal plating",
+        "metallic shards",
         "heavy plate armor",
         "flowing hair"
       ],
+      "features_missing": [
+        "detailed ferromancy metal plating"
+      ],
       "colors_captured": true,
-      "recognizable": false,
-      "verdict": "borderline"
+      "recognizable": true,
+      "verdict": "pass"
     },
     "sprite_path": "/home/misa/Desktop/RD/Gacha/assets/characters/Rell/sprite.png"
   },
@@ -4449,11 +4448,11 @@
       "features_captured": [
         "floating stage platform",
         "long flowing pink hair",
-        "crystalline microphone"
+        "crystalline microphone",
+        "sparkling magical aura"
       ],
       "features_missing": [
-        "pop-star attire",
-        "sparkling magical aura"
+        "detailed pop-star attire"
       ],
       "colors_captured": true,
       "recognizable": true,
@@ -5554,8 +5553,8 @@
       "stance_captured": true,
       "body_shape_score": 7,
       "features_captured": [
-        "dark hooded cloak",
-        "wrist-mounted crossbow"
+        "wrist-mounted crossbow",
+        "dark hooded cloak"
       ],
       "features_missing": [
         "high leather boots",
@@ -5738,21 +5737,21 @@
       "weapon": "Blade of the Ruined King"
     },
     "gate": {
-      "canonical_match": 6,
+      "canonical_match": 5,
       "stance_captured": true,
-      "body_shape_score": 5,
+      "body_shape_score": 6,
       "features_captured": [
-        "crown of shards",
-        "long white hair",
-        "pale skin"
+        "pale skin",
+        "teal accents",
+        "weapon"
       ],
       "features_missing": [
-        "tattered royal regalia",
-        "glowing teal accents",
-        "Blade of the Ruined King (weapon shape is incorrect)"
+        "long white hair",
+        "crown of thorns/shards",
+        "tattered royal regalia"
       ],
       "colors_captured": true,
-      "recognizable": true,
+      "recognizable": false,
       "verdict": "borderline"
     },
     "sprite_path": "/home/misa/Desktop/RD/Gacha/assets/characters/Viego/sprite.png"
@@ -6005,16 +6004,16 @@
       "weapon": "three-talon spear"
     },
     "gate": {
-      "canonical_match": 6,
+      "canonical_match": 5,
       "stance_captured": true,
       "body_shape_score": 7,
       "features_captured": [
-        "Demacian plate armor",
+        "plate armor",
         "military posture"
       ],
       "features_missing": [
+        "three-talon spear",
         "flowing cape",
-        "three-talon spear head",
         "determined facial expression"
       ],
       "colors_captured": true,

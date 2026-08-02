@@ -1107,227 +1107,7917 @@
     "phase": "per-champ"
   },
   "2": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          103,
-          58,
-          183
+    "primitives": [
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 38,
+        "color": [
+          200,
+          170,
+          80
         ],
-        "secondary": [
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 3
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 30,
+        "color": [
+          240,
+          230,
+          200
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 154,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 86,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 34,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 116,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 115,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          110,
+          48
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 3
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          148,
+          52
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 92,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 164,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 89,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 84,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 88,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 172,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 160,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 42,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 108,
+        "r": 18,
+        "color": [
+          230,
+          120,
+          50
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 112,
+        "r": 16,
+        "color": [
           210,
-          105,
+          180,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          200,
+          240,
+          255
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          200,
+          240,
+          255
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          116,
+          108
+        ],
+        "end": [
+          120,
+          108
+        ],
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          136,
+          108
+        ],
+        "end": [
+          140,
+          108
+        ],
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            118
+          ],
+          [
+            146,
+            118
+          ],
+          [
+            150,
+            170
+          ],
+          [
+            106,
+            170
+          ]
+        ],
+        "color": [
+          230,
+          120,
+          50
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            108,
+            140
+          ],
+          [
+            148,
+            140
+          ],
+          [
+            146,
+            180
+          ],
+          [
+            110,
+            180
+          ]
+        ],
+        "color": [
+          230,
+          120,
+          50
+        ],
+        "outline": [
+          210,
+          180,
+          140
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          114,
+          120
+        ],
+        "end": [
+          114,
+          176
+        ],
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          122,
+          120
+        ],
+        "end": [
+          122,
+          176
+        ],
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          130,
+          176
+        ],
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          138,
+          120
+        ],
+        "end": [
+          138,
+          176
+        ],
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            114,
+            114
+          ],
+          [
+            142,
+            114
+          ],
+          [
+            140,
+            122
+          ],
+          [
+            116,
+            122
+          ]
+        ],
+        "color": [
+          230,
+          120,
+          50
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 112,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          230,
+          120,
+          50
+        ],
+        "outline": [
+          210,
+          180,
+          140
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 144,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          230,
+          120,
+          50
+        ],
+        "outline": [
+          210,
+          180,
+          140
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            134
+          ],
+          [
+            156,
+            134
+          ],
+          [
+            166,
+            220
+          ],
+          [
+            90,
+            220
+          ]
+        ],
+        "color": [
+          120,
+          60,
+          160
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 134,
+        "w": 56,
+        "h": 6,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          150,
+          110,
           30
         ],
-        "accent": [
-          154,
-          205,
-          50
-        ]
+        "outline_w": 1
       },
-      "features": [],
-      "build": "slender",
-      "motif": "shadow"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "rect",
+        "x": 90,
+        "y": 180,
+        "w": 76,
+        "h": 8,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          140
+        ],
+        "end": [
+          128,
+          218
+        ],
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "width": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 156,
+        "r": 6,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          152
+        ],
+        "end": [
+          128,
+          160
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          124,
+          156
+        ],
+        "end": [
+          132,
+          156
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          120,
+          60,
+          160
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          120,
+          60,
+          160
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 95,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 20,
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 5,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 50,
+        "cy": 25,
+        "r": 20,
+        "color": [
+          255,
+          215,
+          0
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Groovy",
+    "notes": "Recolor white beard to orange, purple robes to deep magenta, and the blue clock to gold."
   },
   "3": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "staff",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 38,
+        "color": [
+          200,
+          170,
+          80
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 3
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 30,
+        "color": [
+          240,
+          230,
+          200
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 154,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 86,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 34,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 116,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 115,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          110,
+          48
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 3
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          148,
+          52
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          184,
+          134,
+          11
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 92,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 164,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 89,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 84,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 88,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 172,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 160,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 42,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 108,
+        "r": 18,
+        "color": [
+          230,
+          230,
+          210
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 112,
+        "r": 16,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          116,
+          108
+        ],
+        "end": [
+          120,
+          108
+        ],
+        "color": [
           180,
-          40,
+          160,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          136,
+          108
+        ],
+        "end": [
+          140,
+          108
+        ],
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            118
+          ],
+          [
+            146,
+            118
+          ],
+          [
+            150,
+            170
+          ],
+          [
+            106,
+            170
+          ]
+        ],
+        "color": [
+          230,
+          230,
+          210
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            108,
+            140
+          ],
+          [
+            148,
+            140
+          ],
+          [
+            146,
+            180
+          ],
+          [
+            110,
+            180
+          ]
+        ],
+        "color": [
+          230,
+          230,
+          210
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          114,
+          120
+        ],
+        "end": [
+          114,
+          176
+        ],
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          122,
+          120
+        ],
+        "end": [
+          122,
+          176
+        ],
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          130,
+          176
+        ],
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          138,
+          120
+        ],
+        "end": [
+          138,
+          176
+        ],
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            114,
+            114
+          ],
+          [
+            142,
+            114
+          ],
+          [
+            140,
+            122
+          ],
+          [
+            116,
+            122
+          ]
+        ],
+        "color": [
+          230,
+          230,
+          210
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 112,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          230,
+          230,
+          210
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 144,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          230,
+          230,
+          210
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            134
+          ],
+          [
+            156,
+            134
+          ],
+          [
+            166,
+            220
+          ],
+          [
+            90,
+            220
+          ]
+        ],
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 134,
+        "w": 56,
+        "h": 6,
+        "color": [
+          184,
+          134,
+          11
+        ],
+        "outline": [
+          150,
+          110,
           30
         ],
-        "secondary": [
-          220,
-          210,
-          180
-        ],
-        "accent": [
-          255,
-          200,
-          50
-        ]
+        "outline_w": 1
       },
-      "features": [
-        "hood"
-      ],
-      "build": "average",
-      "motif": "flame"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "rect",
+        "x": 90,
+        "y": 180,
+        "w": 76,
+        "h": 8,
+        "color": [
+          184,
+          134,
+          11
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          140
+        ],
+        "end": [
+          128,
+          218
+        ],
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "width": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 156,
+        "r": 6,
+        "color": [
+          184,
+          134,
+          11
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          152
+        ],
+        "end": [
+          128,
+          160
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          124,
+          156
+        ],
+        "end": [
+          132,
+          156
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          184,
+          134,
+          11
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          184,
+          134,
+          11
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 95,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 20,
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 5,
+        "color": [
+          184,
+          134,
+          11
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          218,
+          165,
+          32
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "cx": 50,
+        "cy": 40,
+        "rx": 15,
+        "ry": 8,
+        "color": [
+          165,
+          42,
+          42
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Shurima Desert",
+    "notes": "Recolor purple robes to red, blue clock to gold, and add a red turban shape to the head."
   },
   "5": {
-    "descriptor": {
-      "archetype": "brute",
-      "weapon": "fists",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 38,
+        "color": [
+          200,
+          170,
+          80
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 3
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 30,
+        "color": [
+          240,
+          230,
+          200
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 154,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 86,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 34,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 116,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 115,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          110,
+          48
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 3
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          148,
+          52
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          180,
+          140,
+          100
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 92,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 164,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 89,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 84,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 88,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 172,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 160,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 42,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 108,
+        "r": 18,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 112,
+        "r": 16,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          116,
+          108
+        ],
+        "end": [
+          120,
+          108
+        ],
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          136,
+          108
+        ],
+        "end": [
+          140,
+          108
+        ],
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            118
+          ],
+          [
+            146,
+            118
+          ],
+          [
+            150,
+            170
+          ],
+          [
+            106,
+            170
+          ]
+        ],
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            108,
+            140
+          ],
+          [
+            148,
+            140
+          ],
+          [
+            146,
+            180
+          ],
+          [
+            110,
+            180
+          ]
+        ],
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          255,
+          0,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          114,
+          120
+        ],
+        "end": [
+          114,
+          176
+        ],
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          122,
+          120
+        ],
+        "end": [
+          122,
+          176
+        ],
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          130,
+          176
+        ],
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          138,
+          120
+        ],
+        "end": [
+          138,
+          176
+        ],
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            114,
+            114
+          ],
+          [
+            142,
+            114
+          ],
+          [
+            140,
+            122
+          ],
+          [
+            116,
+            122
+          ]
+        ],
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 112,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          255,
+          0,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 144,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          255,
+          0,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            134
+          ],
+          [
+            156,
+            134
+          ],
+          [
+            166,
+            220
+          ],
+          [
+            90,
+            220
+          ]
+        ],
+        "color": [
           139,
           0,
-          64
+          0
         ],
-        "secondary": [
-          200,
-          200,
-          230
+        "outline": [
+          30,
+          22,
+          25
         ],
-        "accent": [
-          255,
-          50,
-          50
-        ]
+        "outline_w": 1
       },
-      "features": [
-        "horns",
-        "mask"
-      ],
-      "build": "bulky",
-      "motif": "shadow"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "6": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "orb",
-      "palette": {
-        "primary": [
-          184,
-          115,
-          51
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 134,
+        "w": 56,
+        "h": 6,
+        "color": [
+          180,
+          140,
+          100
         ],
-        "secondary": [
-          245,
-          245,
-          245
+        "outline": [
+          150,
+          110,
+          30
         ],
-        "accent": [
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 90,
+        "y": 180,
+        "w": 76,
+        "h": 8,
+        "color": [
+          180,
+          140,
+          100
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          140
+        ],
+        "end": [
+          128,
+          218
+        ],
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "width": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 156,
+        "r": 6,
+        "color": [
+          180,
+          140,
+          100
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          152
+        ],
+        "end": [
+          128,
+          160
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          124,
+          156
+        ],
+        "end": [
+          132,
+          156
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          139,
+          0,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          139,
+          0,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          180,
+          140,
+          100
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          180,
+          140,
+          100
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 95,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 20,
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 5,
+        "color": [
+          180,
+          140,
+          100
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 244,
+        "r": 4,
+        "color": [
           255,
-          165,
+          0,
+          0
+        ],
+        "outline": [
+          255,
+          0,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          255,
+          0,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          255,
+          0,
+          0
+        ],
+        "outline": [
+          255,
+          0,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            45,
+            35
+          ],
+          [
+            50,
+            25
+          ],
+          [
+            55,
+            35
+          ]
+        ],
+        "color": [
+          200,
+          0,
           0
         ]
       },
-      "features": [
-        "horns",
-        "animal_ears"
-      ],
-      "build": "short",
-      "motif": "flame"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "14": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "orb",
-      "palette": {
-        "primary": [
-          45,
-          30,
-          80
+      {
+        "type": "polygon",
+        "points": [
+          [
+            55,
+            35
+          ],
+          [
+            60,
+            25
+          ],
+          [
+            65,
+            35
+          ]
         ],
-        "secondary": [
-          180,
+        "color": [
           200,
-          220
-        ],
-        "accent": [
-          100,
-          200,
-          255
-        ]
-      },
-      "features": [
-        "crown",
-        "mask",
-        "cape"
-      ],
-      "build": "tall",
-      "motif": "void"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "1": {
-    "descriptor": {
-      "archetype": "brute",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          180,
-          20,
-          30
-        ],
-        "secondary": [
-          170,
-          200,
-          220
-        ],
-        "accent": [
-          255,
-          255,
-          255
-        ]
-      },
-      "features": [
-        "hood"
-      ],
-      "build": "bulky",
-      "motif": "light"
-    },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
-  },
-  "4": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "none",
-      "palette": {
-        "primary": [
           0,
-          80,
+          0
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Blood Moon",
+    "notes": "Recolor purple robes to deep red, white beard to pale lavender, and gold trim to muted bronze; add red demon horns."
+  },
+  "6": {
+    "primitives": [
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 38,
+        "color": [
+          200,
+          170,
           80
         ],
-        "secondary": [
-          210,
-          210,
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 3
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 30,
+        "color": [
+          240,
+          230,
+          200
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 154,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 86,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 34,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 116,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 115,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          110,
+          48
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 3
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          148,
+          52
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 92,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 164,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 89,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 84,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 88,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 172,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 160,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 42,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 108,
+        "r": 18,
+        "color": [
+          245,
+          230,
           210
         ],
-        "accent": [
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 112,
+        "r": 16,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          116,
+          108
+        ],
+        "end": [
+          120,
+          108
+        ],
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          136,
+          108
+        ],
+        "end": [
+          140,
+          108
+        ],
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            118
+          ],
+          [
+            146,
+            118
+          ],
+          [
+            150,
+            170
+          ],
+          [
+            106,
+            170
+          ]
+        ],
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            108,
+            140
+          ],
+          [
+            148,
+            140
+          ],
+          [
+            146,
+            180
+          ],
+          [
+            110,
+            180
+          ]
+        ],
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "outline": [
+          139,
+          69,
+          19
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          114,
+          120
+        ],
+        "end": [
+          114,
+          176
+        ],
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          122,
+          120
+        ],
+        "end": [
+          122,
+          176
+        ],
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          130,
+          176
+        ],
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          138,
+          120
+        ],
+        "end": [
+          138,
+          176
+        ],
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            114,
+            114
+          ],
+          [
+            142,
+            114
+          ],
+          [
+            140,
+            122
+          ],
+          [
+            116,
+            122
+          ]
+        ],
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 112,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "outline": [
+          139,
+          69,
+          19
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 144,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          245,
+          230,
+          210
+        ],
+        "outline": [
+          139,
+          69,
+          19
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            134
+          ],
+          [
+            156,
+            134
+          ],
+          [
+            166,
+            220
+          ],
+          [
+            90,
+            220
+          ]
+        ],
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 134,
+        "w": 56,
+        "h": 6,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 90,
+        "y": 180,
+        "w": 76,
+        "h": 8,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          140
+        ],
+        "end": [
+          128,
+          218
+        ],
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "width": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 156,
+        "r": 6,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          152
+        ],
+        "end": [
+          128,
+          160
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          124,
+          156
+        ],
+        "end": [
+          132,
+          156
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 95,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 20,
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 5,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          139,
+          69,
+          19
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          139,
+          69,
+          19
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          139,
+          69,
+          19
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 50,
+        "cy": 45,
+        "r": 3,
+        "color": [
+          128,
+          0,
+          128
+        ]
+      },
+      {
+        "type": "circle",
+        "cx": 60,
+        "cy": 45,
+        "r": 3,
+        "color": [
+          128,
+          0,
+          128
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Sugar Rush",
+    "notes": "Recolor purple robes to caramel brown, blue clock to golden-brown, and white beard to cream; add purple glowing eyes."
+  },
+  "14": {
+    "primitives": [
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 38,
+        "color": [
+          200,
+          170,
+          80
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 3
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 30,
+        "color": [
+          240,
+          230,
+          200
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 154,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 86,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 34,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 116,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 115,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          110,
+          48
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 3
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          148,
+          52
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          180,
+          190,
+          210
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 92,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 164,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 89,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 84,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 88,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 172,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 160,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 42,
+        "color": [
+          170,
+          210,
+          255
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 108,
+        "r": 18,
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 112,
+        "r": 16,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          170,
+          210,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          170,
+          210,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          200,
+          240,
+          255
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          200,
+          240,
+          255
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          116,
+          108
+        ],
+        "end": [
+          120,
+          108
+        ],
+        "color": [
+          100,
+          110,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          136,
+          108
+        ],
+        "end": [
+          140,
+          108
+        ],
+        "color": [
+          100,
+          110,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            118
+          ],
+          [
+            146,
+            118
+          ],
+          [
+            150,
+            170
+          ],
+          [
+            106,
+            170
+          ]
+        ],
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            108,
+            140
+          ],
+          [
+            148,
+            140
+          ],
+          [
+            146,
+            180
+          ],
+          [
+            110,
+            180
+          ]
+        ],
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          190,
+          190,
+          200
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          114,
+          120
+        ],
+        "end": [
+          114,
+          176
+        ],
+        "color": [
+          190,
+          190,
+          200
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          122,
+          120
+        ],
+        "end": [
+          122,
+          176
+        ],
+        "color": [
+          190,
+          190,
+          200
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          130,
+          176
+        ],
+        "color": [
+          190,
+          190,
+          200
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          138,
+          120
+        ],
+        "end": [
+          138,
+          176
+        ],
+        "color": [
+          190,
+          190,
+          200
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            114,
+            114
+          ],
+          [
+            142,
+            114
+          ],
+          [
+            140,
+            122
+          ],
+          [
+            116,
+            122
+          ]
+        ],
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 112,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          190,
+          190,
+          200
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 144,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          190,
+          190,
+          200
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            134
+          ],
+          [
+            156,
+            134
+          ],
+          [
+            166,
+            220
+          ],
+          [
+            90,
+            220
+          ]
+        ],
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 134,
+        "w": 56,
+        "h": 6,
+        "color": [
+          180,
+          190,
+          210
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 90,
+        "y": 180,
+        "w": 76,
+        "h": 8,
+        "color": [
+          180,
+          190,
+          210
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          140
+        ],
+        "end": [
+          128,
+          218
+        ],
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "width": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 156,
+        "r": 6,
+        "color": [
+          180,
+          190,
+          210
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          152
+        ],
+        "end": [
+          128,
+          160
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          124,
+          156
+        ],
+        "end": [
+          132,
+          156
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          180,
+          190,
+          210
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          180,
+          190,
+          210
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 95,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 20,
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 5,
+        "color": [
+          180,
+          190,
+          210
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          170,
+          210,
+          255
+        ],
+        "outline": [
+          170,
+          210,
+          255
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          170,
+          210,
+          255
+        ],
+        "outline": [
+          170,
+          210,
+          255
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          170,
+          210,
+          255
+        ],
+        "outline": [
+          170,
+          210,
+          255
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            15,
+            10
+          ],
+          [
+            20,
+            5
+          ],
+          [
+            25,
+            10
+          ]
+        ],
+        "color": [
+          40,
+          30,
+          70
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Winterblessed",
+    "notes": "Shift purple robes to a colder blue-violet, gold trim to silver/frost, and add a dark crown peak."
+  },
+  "1": {
+    "primitives": [
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 38,
+        "color": [
+          200,
+          170,
+          80
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 3
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 30,
+        "color": [
+          240,
+          230,
+          200
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 154,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 86,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 34,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 116,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 115,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          110,
+          48
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 3
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          148,
+          52
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 92,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 164,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 89,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 84,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 88,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 172,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 160,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 42,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 108,
+        "r": 18,
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 112,
+        "r": 16,
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          116,
+          108
+        ],
+        "end": [
+          120,
+          108
+        ],
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          136,
+          108
+        ],
+        "end": [
+          140,
+          108
+        ],
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            118
+          ],
+          [
+            146,
+            118
+          ],
+          [
+            150,
+            170
+          ],
+          [
+            106,
+            170
+          ]
+        ],
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            108,
+            140
+          ],
+          [
+            148,
+            140
+          ],
+          [
+            146,
+            180
+          ],
+          [
+            110,
+            180
+          ]
+        ],
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          114,
+          120
+        ],
+        "end": [
+          114,
+          176
+        ],
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          122,
+          120
+        ],
+        "end": [
+          122,
+          176
+        ],
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          130,
+          176
+        ],
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          138,
+          120
+        ],
+        "end": [
+          138,
+          176
+        ],
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            114,
+            114
+          ],
+          [
+            142,
+            114
+          ],
+          [
+            140,
+            122
+          ],
+          [
+            116,
+            122
+          ]
+        ],
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 112,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 144,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            134
+          ],
+          [
+            156,
+            134
+          ],
+          [
+            166,
+            220
+          ],
+          [
+            90,
+            220
+          ]
+        ],
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 134,
+        "w": 56,
+        "h": 6,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 90,
+        "y": 180,
+        "w": 76,
+        "h": 8,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          140
+        ],
+        "end": [
+          128,
+          218
+        ],
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "width": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 156,
+        "r": 6,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          152
+        ],
+        "end": [
+          128,
+          160
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          124,
+          156
+        ],
+        "end": [
+          132,
+          156
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          110,
+          70,
+          140
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 95,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          220,
+          235,
+          255
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 20,
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 5,
+        "color": [
+          215,
+          175,
+          60
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 50,
+        "cy": 38,
+        "r": 4,
+        "color": [
+          255,
+          255,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Old Saint",
+    "notes": "Recolor purple robes to red, gold trim to white fur, and white beard to light blue; add a white pom-pom to the hat."
+  },
+  "4": {
+    "primitives": [
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 38,
+        "color": [
+          200,
+          170,
+          80
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 3
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 30,
+        "color": [
+          240,
+          230,
+          200
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 154,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 86,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 34,
+        "r": 3,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 116,
+        "cy": 82,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 72,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 106,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 115,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 141,
+        "cy": 38,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 47,
+        "r": 1,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          110,
+          48
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 3
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          60
+        ],
+        "end": [
+          148,
+          52
+        ],
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "width": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 3,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          130,
+          100,
+          40
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 92,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 164,
+        "cy": 60,
+        "r": 8,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 89,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 84,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 88,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 96,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 172,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 66,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 60,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 160,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 168,
+        "cy": 54,
+        "r": 2,
+        "color": [
+          130,
+          100,
+          40
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 60,
+        "r": 42,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 108,
+        "r": 18,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 112,
+        "r": 16,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 112,
+        "r": 3,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 122,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "circle",
+        "cx": 134,
+        "cy": 111,
+        "r": 1,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0
+      },
+      {
+        "type": "line",
+        "start": [
+          116,
+          108
+        ],
+        "end": [
+          120,
+          108
+        ],
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          136,
+          108
+        ],
+        "end": [
+          140,
+          108
+        ],
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            118
+          ],
+          [
+            146,
+            118
+          ],
+          [
+            150,
+            170
+          ],
+          [
+            106,
+            170
+          ]
+        ],
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            108,
+            140
+          ],
+          [
+            148,
+            140
+          ],
+          [
+            146,
+            180
+          ],
+          [
+            110,
+            180
+          ]
+        ],
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          150,
+          180,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          114,
+          120
+        ],
+        "end": [
+          114,
+          176
+        ],
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          122,
+          120
+        ],
+        "end": [
+          122,
+          176
+        ],
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          130,
+          176
+        ],
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          138,
+          120
+        ],
+        "end": [
+          138,
+          176
+        ],
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "width": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            114,
+            114
+          ],
+          [
+            142,
+            114
+          ],
+          [
+            140,
+            122
+          ],
+          [
+            116,
+            122
+          ]
+        ],
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 112,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          150,
+          180,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 144,
+        "cy": 118,
+        "r": 3,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          150,
+          180,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            134
+          ],
+          [
+            156,
+            134
+          ],
+          [
+            166,
+            220
+          ],
+          [
+            90,
+            220
+          ]
+        ],
+        "color": [
+          0,
+          68,
+          78
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 100,
+        "y": 134,
+        "w": 56,
+        "h": 6,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 90,
+        "y": 180,
+        "w": 76,
+        "h": 8,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          140
+        ],
+        "end": [
+          128,
+          218
+        ],
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "width": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 156,
+        "r": 6,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          128,
+          152
+        ],
+        "end": [
+          128,
+          160
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "line",
+        "start": [
+          124,
+          156
+        ],
+        "end": [
+          132,
+          156
+        ],
+        "color": [
+          150,
+          110,
+          30
+        ],
+        "width": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          0,
+          68,
+          78
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 40,
+        "color": [
+          0,
+          68,
+          78
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1,
+        "radius": 4
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 154,
+        "y": 142,
+        "w": 14,
+        "h": 4,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 95,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 161,
+        "cy": 184,
+        "r": 5,
+        "color": [
+          210,
+          190,
+          170
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "ellipse",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 20,
+        "color": [
+          70,
+          45,
+          95
+        ],
+        "outline": [
+          30,
+          22,
+          25
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 218,
+        "w": 80,
+        "h": 5,
+        "color": [
+          139,
+          69,
+          19
+        ],
+        "outline": [
+          150,
+          110,
+          30
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 100,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          150,
+          180,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          150,
+          180,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 156,
+        "cy": 244,
+        "r": 4,
+        "color": [
+          150,
+          180,
+          50
+        ],
+        "outline": [
+          150,
+          180,
+          50
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 50,
+        "cy": 42,
+        "r": 3,
+        "color": [
           173,
           255,
           47
         ]
       },
-      "features": [],
-      "build": "short",
-      "motif": "light"
-    },
-    "match": 3,
-    "iters": 10,
-    "ok": false,
-    "match_before": 3
+      {
+        "type": "circle",
+        "cx": 56,
+        "cy": 42,
+        "r": 3,
+        "color": [
+          173,
+          255,
+          47
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Time Machine",
+    "notes": "Recolor purple robes to dark teal, light blue clock to lime green, and add glowing green goggles."
   }
 }

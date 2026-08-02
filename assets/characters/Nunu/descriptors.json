@@ -310,356 +310,3634 @@
     "phase": "fix3"
   },
   "3": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          154,
-          188,
-          64
-        ],
-        "secondary": [
-          65,
-          52,
-          45
-        ],
-        "accent": [
-          139,
-          178,
-          198
-        ]
-      },
-      "features": [
-        "hood",
-        "horns"
-      ],
-      "build": "short",
-      "motif": "nature"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
-  },
-  "1": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          245,
-          245,
-          220
-        ],
-        "secondary": [
-          220,
-          220,
-          220
-        ],
-        "accent": [
-          100,
-          149,
-          237
-        ]
-      },
-      "features": [],
-      "build": "short",
-      "motif": "nature"
-    },
-    "match": 3,
-    "iters": 10,
-    "ok": false,
-    "match_before": 3
-  },
-  "4": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          30,
-          60,
-          150
-        ],
-        "secondary": [
-          220,
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
           140,
-          40
+          170,
+          80
         ],
-        "accent": [
-          255,
-          255,
-          255
-        ]
+        "outline": [
+          110,
+          140,
+          60
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
       },
-      "features": [],
-      "build": "short",
-      "motif": "wind"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "2": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          0,
-          162,
-          191
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          140,
+          170,
+          80
         ],
-        "secondary": [
-          139,
-          34,
-          85
+        "outline": [
+          110,
+          140,
+          60
         ],
-        "accent": [
-          255,
-          255,
-          255
-        ]
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
       },
-      "features": [
-        "animal_ears"
-      ],
-      "build": "short",
-      "motif": "ice"
-    },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
-  },
-  "5": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
-          45,
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          140,
+          170,
+          80
+        ],
+        "outline": [
+          140,
+          170,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          140,
+          170,
+          80
+        ],
+        "outline": [
+          110,
+          140,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          140,
+          170,
+          80
+        ],
+        "outline": [
+          110,
+          140,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          80,
+          60,
+          120
+        ],
+        "outline": [
+          40,
           40,
           80
         ],
-        "secondary": [
-          110,
-          30,
-          120
-        ],
-        "accent": [
-          180,
-          100,
-          220
-        ]
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
       },
-      "features": [
-        "cape",
-        "mask"
-      ],
-      "build": "average",
-      "motif": "shadow"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "6": {
-    "descriptor": {
-      "archetype": "rogue",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          220,
-          220,
-          220
-        ],
-        "secondary": [
-          180,
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
           30,
-          30
+          30,
+          50
         ],
-        "accent": [
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          140,
+          170,
+          80
+        ],
+        "outline": [
+          110,
+          140,
+          60
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          140,
+          170,
+          80
+        ],
+        "outline": [
+          110,
+          140,
+          60
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          180,
+          40,
+          40
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          200,
+          60,
+          60
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
           100,
-          150,
+          80,
+          60
+        ],
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          140,
+          170,
+          80
+        ],
+        "outline": [
+          140,
+          170,
+          80
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      },
+      {
+        "type": "circle",
+        "cx": 40,
+        "cy": 30,
+        "r": 3,
+        "color": [
+          255,
+          255,
           255
         ]
       },
-      "features": [
-        "hood"
-      ],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
+      {
+        "type": "circle",
+        "cx": 60,
+        "cy": 30,
+        "r": 3,
+        "color": [
+          255,
+          255,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Grungy",
+    "notes": "Recolor white fur to grungy green, red hat to horn-brown, and add small white eyes to the monster hood."
   },
-  "7": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "gauntlet",
-      "palette": {
-        "primary": [
+  "1": {
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "outline": [
+          120,
+          100,
+          80
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
+      },
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "outline": [
+          120,
+          100,
+          80
+        ],
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "outline": [
+          180,
+          160,
+          140
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "outline": [
+          120,
+          100,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "outline": [
+          120,
+          100,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "outline": [
+          120,
+          100,
+          80
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "outline": [
+          120,
+          100,
+          80
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          100,
+          80,
+          60
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          100,
+          80,
+          60
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          100,
+          80,
+          60
+        ],
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          180,
+          160,
+          140
+        ],
+        "outline": [
+          180,
+          160,
+          140
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      },
+      {
+        "type": "circle",
+        "cx": 10,
+        "cy": 10,
+        "r": 2,
+        "color": [
+          100,
+          150,
+          200
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Sasquatch",
+    "notes": "Recolor white yeti fur to brown/tan sasquatch fur and change red hat to earthy tones."
+  },
+  "4": {
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
           100,
           100,
+          120
+        ],
+        "outline": [
+          100,
+          100,
+          120
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
+      },
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          100,
+          100,
+          120
+        ],
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          100,
+          100,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          100,
+          100,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          100,
+          100,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          100,
+          100,
+          120
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          100,
+          100,
+          120
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          255,
+          140,
+          0
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          255,
+          140,
+          0
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          40,
+          60,
           150
         ],
-        "secondary": [
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          100,
+          100,
+          120
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      },
+      {
+        "type": "rect",
+        "cx": 10,
+        "cy": 10,
+        "r": 2,
+        "color": [
+          255,
+          255,
+          0
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Nunu Bot",
+    "notes": "Recolor yeti to metallic grey, Nunu's hat to orange, and outfit to blue to match the robotic theme."
+  },
+  "2": {
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
+          150,
+          150,
+          180
+        ],
+        "outline": [
+          150,
+          150,
+          180
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
+      },
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          150,
+          150,
+          180
+        ],
+        "outline": [
+          150,
+          150,
+          180
+        ],
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          150,
+          150,
+          180
+        ],
+        "outline": [
+          150,
+          150,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          150,
+          150,
+          180
+        ],
+        "outline": [
+          150,
+          150,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          150,
+          150,
+          180
+        ],
+        "outline": [
+          150,
+          150,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          150,
+          150,
+          180
+        ],
+        "outline": [
+          150,
+          150,
+          180
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          150,
+          150,
+          180
+        ],
+        "outline": [
+          150,
+          150,
+          180
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          140,
+          40,
+          120
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          140,
+          40,
+          120
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          100,
+          80,
+          60
+        ],
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          150,
+          150,
+          180
+        ],
+        "outline": [
+          150,
+          150,
+          180
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      },
+      {
+        "type": "rect",
+        "cx": 10,
+        "cy": 15,
+        "r": 5,
+        "color": [
+          212,
+          175,
+          55
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Workshop",
+    "notes": "Recolor white fur to cool grey, red hat to purple, and blue accents to teal; add gold trim detail."
+  },
+  "5": {
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
           60,
           60,
           80
         ],
-        "accent": [
-          150,
-          255,
-          0
-        ]
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
       },
-      "features": [
-        "mask",
-        "animal_ears"
-      ],
-      "build": "short",
-      "motif": "lightning"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "8": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          78,
-          145,
-          132
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          100,
+          100,
+          120
         ],
-        "secondary": [
-          198,
-          134,
-          58
+        "outline": [
+          60,
+          60,
+          80
         ],
-        "accent": [
-          255,
-          255,
-          255
-        ]
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
       },
-      "features": [
-        "hood"
-      ],
-      "build": "short",
-      "motif": "nature"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "16": {
-    "descriptor": {
-      "archetype": "construct",
-      "weapon": "fists",
-      "palette": {
-        "primary": [
-          170,
-          185,
-          200
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          100,
+          100,
+          120
         ],
-        "secondary": [
-          210,
+        "outline": [
+          100,
+          100,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          60,
+          60,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          60,
+          60,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
           30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          60,
+          60,
+          80
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          60,
+          60,
+          80
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          120,
+          40,
+          150
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          120,
+          40,
+          150
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          100,
+          80,
           60
         ],
-        "accent": [
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          100,
+          100,
+          120
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Demolisher",
+    "notes": "Recolor white yeti fur to metallic grey/blue and red hat to deep purple to match the Demolisher armor theme."
+  },
+  "6": {
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
+          140,
+          140,
+          160
+        ],
+        "outline": [
+          140,
+          140,
+          160
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
+      },
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          140,
+          140,
+          160
+        ],
+        "outline": [
+          140,
+          140,
+          160
+        ],
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          140,
+          140,
+          160
+        ],
+        "outline": [
+          140,
+          140,
+          160
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          140,
+          140,
+          160
+        ],
+        "outline": [
+          140,
+          140,
+          160
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          140,
+          140,
+          160
+        ],
+        "outline": [
+          140,
+          140,
+          160
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          140,
+          140,
+          160
+        ],
+        "outline": [
+          140,
+          140,
+          160
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          140,
+          140,
+          160
+        ],
+        "outline": [
+          140,
+          140,
+          160
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
           220,
-          230,
+          30,
+          30
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          220,
+          30,
+          30
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          40,
+          40,
+          50
+        ],
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          140,
+          140,
+          160
+        ],
+        "outline": [
+          140,
+          140,
+          160
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      },
+      {
+        "type": "circle",
+        "cx": 45,
+        "cy": 25,
+        "r": 5,
+        "color": [
+          255,
+          255,
+          255
+        ]
+      },
+      {
+        "type": "circle",
+        "cx": 55,
+        "cy": 25,
+        "r": 5,
+        "color": [
+          255,
+          255,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "TPA",
+    "notes": "Recolor yeti to a cooler grey-white and boy's gear to bright red/dark grey; add white headphones."
+  },
+  "7": {
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
+          85,
+          107,
+          47
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
+      },
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          85,
+          107,
+          47
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          85,
+          107,
+          47
+        ],
+        "outline": [
+          85,
+          107,
+          47
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          85,
+          107,
+          47
+        ],
+        "outline": [
+          150,
+          160,
+          190
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          85,
+          107,
+          47
+        ],
+        "outline": [
+          150,
+          160,
+          190
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          85,
+          107,
+          47
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          85,
+          107,
+          47
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          40,
+          60,
+          20
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          40,
+          60,
+          20
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          40,
+          60,
+          20
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          100,
+          80,
+          60
+        ],
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          85,
+          107,
+          47
+        ],
+        "outline": [
+          85,
+          107,
+          47
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      },
+      {
+        "type": "circle",
+        "cx": 45,
+        "cy": 25,
+        "r": 3,
+        "color": [
+          255,
+          200,
+          0
+        ]
+      },
+      {
+        "type": "circle",
+        "cx": 55,
+        "cy": 25,
+        "r": 3,
+        "color": [
+          255,
+          200,
+          0
+        ]
+      },
+      {
+        "type": "circle",
+        "cx": 70,
+        "cy": 60,
+        "r": 15,
+        "color": [
+          150,
+          255,
           50
         ]
-      },
-      "features": [
-        "mask"
-      ],
-      "build": "short",
-      "motif": "light"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Zombie",
+    "notes": "Recolor white fur to decayed olive green, skin to zombie purple/grey, and snowball to glowing toxic green."
   },
-  "35": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "staff",
-      "palette": {
-        "primary": [
-          139,
-          0,
-          0
+  "8": {
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
+          210,
+          180,
+          140
         ],
-        "secondary": [
+        "outline": [
+          160,
+          130,
+          100
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
+      },
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          160,
+          130,
+          100
+        ],
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          210,
+          180,
+          140
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          160,
+          130,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          160,
+          130,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          160,
+          130,
+          100
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          160,
+          130,
+          100
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
           220,
+          150,
+          80
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
           220,
+          150,
+          80
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          100,
+          80,
+          60
+        ],
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          210,
+          180,
+          140
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            40,
+            20
+          ],
+          [
+            60,
+            20
+          ],
+          [
+            50,
+            0
+          ]
+        ],
+        "color": [
+          220,
+          150,
+          80
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Papercraft",
+    "notes": "Recolor white fur to cardboard brown, blue accents to green, and red hat to orange-brown; add pointed hat peak."
+  },
+  "16": {
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
+          180,
+          100,
           255
         ],
-        "accent": [
+        "outline": [
+          220,
+          220,
+          220
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
+      },
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          180,
+          100,
+          255
+        ],
+        "outline": [
+          220,
+          220,
+          220
+        ],
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          180,
+          100,
+          255
+        ],
+        "outline": [
+          180,
+          100,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          180,
+          100,
+          255
+        ],
+        "outline": [
+          220,
+          220,
+          220
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          180,
+          100,
+          255
+        ],
+        "outline": [
+          220,
+          220,
+          220
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          180,
+          100,
+          255
+        ],
+        "outline": [
+          220,
+          220,
+          220
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          180,
+          100,
+          255
+        ],
+        "outline": [
+          220,
+          220,
+          220
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          255,
+          50,
+          100
+        ],
+        "outline": [
+          255,
+          50,
+          100
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          200,
+          60,
+          60
+        ],
+        "outline": [
+          255,
+          50,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          100,
+          80,
+          60
+        ],
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          180,
+          100,
+          255
+        ],
+        "outline": [
+          180,
+          100,
+          255
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      },
+      {
+        "type": "ellipse",
+        "cx": 10,
+        "cy": 10,
+        "rx": 3,
+        "ry": 2,
+        "color": [
+          255,
+          255,
+          0
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Space Groove",
+    "notes": "Recolor yeti to purple/magenta tones, update Nunu's hat to bright pink, and add yellow visor."
+  },
+  "35": {
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
+          40,
+          60,
+          180
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
+      },
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          40,
+          60,
+          180
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          40,
+          60,
+          180
+        ],
+        "outline": [
+          40,
+          60,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          40,
+          60,
+          180
+        ],
+        "outline": [
+          150,
+          160,
+          190
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          40,
+          60,
+          180
+        ],
+        "outline": [
+          150,
+          160,
+          190
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          40,
+          60,
+          180
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          40,
+          60,
+          180
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          60,
+          40,
+          80
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          60,
+          40,
+          80
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          100,
+          100,
+          120
+        ],
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          40,
+          60,
+          180
+        ],
+        "outline": [
+          40,
+          60,
+          180
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      },
+      {
+        "type": "circle",
+        "cx": 50,
+        "cy": 30,
+        "r": 3,
+        "color": [
           0,
-          191,
+          200,
           255
         ]
       },
-      "features": [
-        "hood",
-        "cape"
-      ],
-      "build": "short",
-      "motif": "void"
-    },
-    "match": 3,
-    "iters": 10,
-    "ok": false,
-    "match_before": 3
+      {
+        "type": "circle",
+        "cx": 70,
+        "cy": 60,
+        "r": 15,
+        "color": [
+          150,
+          200,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Cosmic Paladins",
+    "notes": "Recolor yeti to deep cosmic blue and purple, update Nunu's gear to dark tones, and add glowing energy accents."
   },
   "26": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "dagger",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
           255,
           215,
           0
         ],
-        "secondary": [
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
+      },
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          218,
+          165,
+          32
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          255,
+          230,
+          100
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          255,
+          230,
+          100
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          100,
+          80,
+          60
+        ],
+        "outline": [
           60,
           40,
-          30
+          20
         ],
-        "accent": [
-          0,
-          128,
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      },
+      {
+        "type": "circle",
+        "cx": 40,
+        "cy": 20,
+        "r": 5,
+        "color": [
+          100,
+          150,
           0
         ]
       },
-      "features": [
-        "hood",
-        "animal_ears"
-      ],
-      "build": "short",
-      "motif": "nature"
-    },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
+      {
+        "type": "circle",
+        "cx": 60,
+        "cy": 20,
+        "r": 5,
+        "color": [
+          100,
+          150,
+          0
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Nunu & Beelump",
+    "notes": "Recolor white yeti to yellow bee theme and red hat to light yellow; add green antennae eyes."
   }
 }

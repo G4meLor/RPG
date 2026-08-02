@@ -456,608 +456,9019 @@
     "phase": "fix2"
   },
   "3": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "orb",
-      "palette": {
-        "primary": [
-          180,
-          80,
-          220
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
         ],
-        "secondary": [
-          220,
-          20,
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "outline": [
+          100,
+          100,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          150,
+          120,
           80
         ],
-        "accent": [
-          255,
-          255,
-          255
-        ]
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
       },
-      "features": [
-        "crown"
-      ],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "4": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          180,
-          30,
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          200,
+          200,
+          200
+        ],
+        "outline": [
+          120,
+          90,
           30
         ],
-        "secondary": [
-          230,
-          110,
-          20
-        ],
-        "accent": [
-          255,
-          255,
-          255
-        ]
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
       },
-      "features": [
-        "hood"
-      ],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
-  },
-  "5": {
-    "descriptor": {
-      "archetype": "rogue",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          45,
-          40,
-          35
-        ],
-        "secondary": [
-          220,
-          50,
-          30
-        ],
-        "accent": [
-          180,
-          160,
-          110
-        ]
-      },
-      "features": [
-        "spikes"
-      ],
-      "build": "slender",
-      "motif": "wind"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
-  },
-  "6": {
-    "descriptor": {
-      "archetype": "rogue",
-      "weapon": "gun",
-      "palette": {
-        "primary": [
-          60,
-          20,
-          110
-        ],
-        "secondary": [
-          220,
-          30,
-          50
-        ],
-        "accent": [
-          20,
-          20,
-          40
-        ]
-      },
-      "features": [
-        "hood"
-      ],
-      "build": "slender",
-      "motif": "shadow"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "7": {
-    "descriptor": {
-      "archetype": "brute",
-      "weapon": "gauntlet",
-      "palette": {
-        "primary": [
-          255,
-          255,
-          255
-        ],
-        "secondary": [
-          218,
-          50,
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
           180
         ],
-        "accent": [
-          255,
-          190,
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
           0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "outline": [
+          100,
+          100,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "outline": [
+          100,
+          100,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          200,
+          200,
+          200
+        ],
+        "outline": [
+          50,
+          50,
+          50
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "outline": [
+          100,
+          100,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          200,
+          200,
+          200
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          100,
+          100,
+          100
+        ],
+        "outline": [
+          100,
+          100,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          200,
+          200,
+          200
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          200,
+          200,
+          200
+        ],
+        "outline": [
+          50,
+          50,
+          50
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          200,
+          200,
+          200
+        ],
+        "outline": [
+          50,
+          50,
+          50
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Secret Agent",
+    "notes": "Recolor red coat and hair to black/dark grey, gold trim to silver/white for a secret agent suit look."
+  },
+  "4": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          255,
+          120,
+          50
+        ],
+        "outline": [
+          255,
+          120,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          255,
+          120,
+          50
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          255,
+          120,
+          50
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          255,
+          120,
+          50
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          255,
+          120,
+          50
+        ],
+        "outline": [
+          255,
+          120,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          255,
+          120,
+          50
+        ],
+        "outline": [
+          255,
+          120,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          255,
+          120,
+          50
+        ],
+        "outline": [
+          255,
+          120,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          255,
+          120,
+          50
+        ],
+        "outline": [
+          255,
+          120,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "circle",
+        "cx": 10,
+        "cy": 15,
+        "r": 2,
+        "color": [
+          255,
+          255,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Candy Cane",
+    "notes": "Recolor hat to red/white Santa style, hair to orange, and coat to festive green."
+  },
+  "5": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          60,
+          50,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          150,
+          120,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          180,
+          140,
+          80
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          220,
+          30,
+          30
+        ],
+        "outline": [
+          210,
+          45,
+          45
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          60,
+          50,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          60,
+          50,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          180,
+          140,
+          80
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          60,
+          50,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          140,
+          80
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          60,
+          50,
+          40
+        ],
+        "outline": [
+          60,
+          50,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          140,
+          80
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          180,
+          140,
+          80
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          180,
+          140,
+          80
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "rect",
+        "cx": 45,
+        "cy": 42,
+        "r": 10,
+        "color": [
+          180,
+          150,
+          100
         ]
       },
-      "features": [],
-      "build": "average",
-      "motif": "light"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "rect",
+        "cx": 55,
+        "cy": 42,
+        "r": 10,
+        "color": [
+          180,
+          150,
+          100
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Road Warrior",
+    "notes": "Recolor coat to wasteland brown and add goggles to the hat."
+  },
+  "6": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          120,
+          80,
+          180
+        ],
+        "outline": [
+          150,
+          120,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          120,
+          80,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          220,
+          30,
+          60
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "circle",
+        "cx": 50,
+        "cy": 65,
+        "r": 2,
+        "color": [
+          60,
+          60,
+          150
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Crime City",
+    "notes": "Recolor red hair to a brighter crimson and change the coat/accents to deep purple and violet."
+  },
+  "7": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          255,
+          200,
+          0
+        ],
+        "outline": [
+          150,
+          120,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          255,
+          200,
+          0
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          255,
+          0,
+          255
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "circle",
+        "cx": 42,
+        "cy": 48,
+        "r": 3,
+        "color": [
+          255,
+          255,
+          255
+        ]
+      },
+      {
+        "type": "circle",
+        "cx": 58,
+        "cy": 48,
+        "r": 3,
+        "color": [
+          255,
+          255,
+          255
+        ]
+      },
+      {
+        "type": "circle",
+        "cx": 50,
+        "cy": 52,
+        "r": 4,
+        "color": [
+          255,
+          192,
+          203
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Arcade",
+    "notes": "Recolor hair to neon pink, hat to white/gold, and add headphones and a bubblegum bubble."
   },
   "8": {
-    "descriptor": {
-      "archetype": "archer",
-      "weapon": "gun",
-      "palette": {
-        "primary": [
-          40,
-          50,
-          70
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
         ],
-        "secondary": [
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "outline": [
+          40,
+          40,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          212,
+          175,
+          55
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          212,
+          175,
+          55
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "outline": [
+          40,
+          40,
+          40
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "outline": [
+          40,
+          40,
+          40
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          40,
+          40,
+          40
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          220,
+          30,
+          30
+        ],
+        "outline": [
+          165,
+          42,
+          42
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "outline": [
+          40,
+          40,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "outline": [
+          40,
+          40,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "outline": [
+          40,
+          40,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          40,
+          40,
+          40
+        ],
+        "outline": [
+          40,
+          40,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "rect",
+        "cx": 10,
+        "cy": 10,
+        "r": 2,
+        "color": [
+          212,
+          175,
+          55
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Captain Fortune",
+    "notes": "Recolor red hair to a brighter crimson, navy coat to a muted steel blue, and gold accents to a polished brass."
+  },
+  "15": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          100,
+          150
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          100,
+          150
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          255,
+          100,
+          150
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          255,
+          140,
+          100
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            10,
+            5
+          ],
+          [
+            12,
+            8
+          ],
+          [
+            14,
+            5
+          ],
+          [
+            12,
+            2
+          ]
+        ],
+        "color": [
+          255,
+          50,
+          100
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Star Guardian",
+    "notes": "Recolor red hair to peach-pink, dark coat to white/pink, and add a star accessory to the head."
+  },
+  "1": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          110,
+          80,
+          60
+        ],
+        "outline": [
+          110,
+          80,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          210,
+          160,
+          130
+        ],
+        "outline": [
+          210,
+          160,
+          130
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          210,
+          160,
+          130
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          110,
+          80,
+          60
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          110,
+          80,
+          60
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          230,
+          180,
+          80
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          110,
+          80,
+          60
+        ],
+        "outline": [
+          110,
+          80,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          110,
+          80,
+          60
+        ],
+        "outline": [
+          110,
+          80,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          110,
+          80,
+          60
+        ],
+        "outline": [
+          110,
+          80,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          110,
+          80,
+          60
+        ],
+        "outline": [
+          110,
+          80,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Cowgirl",
+    "notes": "Recolor red hair to blonde, dark pirate hat to brown cowboy hat, and dark coat to light blue/white shirt."
+  },
+  "16": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          110
+        ],
+        "outline": [
+          40,
+          60,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          240,
+          220,
+          190
+        ],
+        "outline": [
+          150,
+          120,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          220,
+          190
+        ],
+        "outline": [
+          240,
+          220,
+          190
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          40,
+          60,
+          110
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          40,
+          60,
+          110
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          220,
+          80,
+          40
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          110
+        ],
+        "outline": [
+          40,
+          60,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          110
+        ],
+        "outline": [
+          40,
+          60,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          110
+        ],
+        "outline": [
+          40,
+          60,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          110
+        ],
+        "outline": [
+          40,
+          60,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "rect",
+        "cx": 10,
+        "cy": 10,
+        "r": 2,
+        "color": [
+          100,
+          150,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Gun Goddess",
+    "notes": "Recolor red hair to bright orange, dark coat to cosmic blue/navy, and gold accents to bright gold; remove hat silhouette feel via color shift."
+  },
+  "2": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          120
+        ],
+        "outline": [
+          40,
+          60,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          220,
+          200,
+          160
+        ],
+        "outline": [
+          220,
+          200,
+          160
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          220,
+          200,
+          160
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          40,
+          60,
+          120
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          40,
+          60,
+          120
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
           160,
           60,
           40
         ],
-        "accent": [
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          120
+        ],
+        "outline": [
+          40,
+          60,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          120
+        ],
+        "outline": [
+          40,
+          60,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          120
+        ],
+        "outline": [
+          40,
+          60,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
           180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          40,
+          60,
+          120
+        ],
+        "outline": [
+          40,
+          60,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "rect",
+        "cx": 45,
+        "cy": 40,
+        "r": 2,
+        "color": [
+          212,
+          175,
+          55
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Waterloo",
+    "notes": "Recolor hat and coat to navy blue, adjust hair to a deeper auburn, and brighten gold accents."
+  },
+  "9": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          230,
+          200,
+          120
+        ],
+        "outline": [
+          230,
+          200,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          240,
+          210,
+          180
+        ],
+        "outline": [
+          240,
+          210,
+          180
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          240,
+          210,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          230,
+          200,
+          120
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          230,
+          200,
+          120
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          210,
+          60,
+          40
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          230,
+          200,
+          120
+        ],
+        "outline": [
+          230,
+          200,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          230,
+          200,
+          120
+        ],
+        "outline": [
+          230,
+          200,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          230,
+          200,
+          120
+        ],
+        "outline": [
+          230,
+          200,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          230,
+          200,
+          120
+        ],
+        "outline": [
+          230,
+          200,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "circle",
+        "cx": 45,
+        "cy": 52,
+        "r": 2,
+        "color": [
+          100,
+          150,
+          255
+        ]
+      },
+      {
+        "type": "circle",
+        "cx": 55,
+        "cy": 52,
+        "r": 2,
+        "color": [
+          100,
+          150,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Pool Party",
+    "notes": "Recolor hat to straw yellow, coat to white/blue swimsuit, and add heart-shaped sunglasses."
+  },
+  "17": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          230,
+          235,
+          245
+        ],
+        "outline": [
+          230,
+          235,
+          245
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          230,
+          235,
+          245
+        ],
+        "outline": [
+          240,
+          240,
+          255
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          230,
+          235,
+          245
+        ],
+        "outline": [
+          240,
+          240,
+          255
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          240,
+          240,
+          255
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          210,
+          110,
+          40
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          230,
+          235,
+          245
+        ],
+        "outline": [
+          230,
+          235,
+          245
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          230,
+          235,
+          245
+        ],
+        "outline": [
+          230,
+          235,
+          245
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          230,
+          235,
+          245
+        ],
+        "outline": [
+          230,
+          235,
+          245
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          230,
+          235,
+          245
+        ],
+        "outline": [
+          230,
+          235,
+          245
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "ellipse",
+        "cx": 10,
+        "cy": 5,
+        "rx": 4,
+        "ry": 2,
+        "color": [
+          255,
+          255,
+          150
+        ]
+      },
+      {
+        "type": "circle",
+        "cx": 10,
+        "cy": 15,
+        "r": 2,
+        "color": [
+          220,
+          20,
+          60
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Pajama Guardian",
+    "notes": "Recolor red hair to orange, dark coat to white/light blue, and add a yellow sleep cap and red star brooch."
+  },
+  "31": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          120,
+          60,
+          180
+        ],
+        "outline": [
+          120,
+          60,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          120,
+          60,
+          180
+        ],
+        "outline": [
+          230,
+          230,
+          240
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          120,
+          60,
+          180
+        ],
+        "outline": [
+          230,
+          230,
+          240
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          230,
+          230,
+          240
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          120,
+          60,
+          180
+        ],
+        "outline": [
+          120,
+          60,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          120,
+          60,
+          180
+        ],
+        "outline": [
+          120,
+          60,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          120,
+          60,
+          180
+        ],
+        "outline": [
+          120,
+          60,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          120,
+          60,
+          180
+        ],
+        "outline": [
+          120,
+          60,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "ellipse",
+        "cx": 40,
+        "cy": 35,
+        "rx": 3,
+        "ry": 8,
+        "color": [
+          210,
           150,
           80
         ]
       },
-      "features": [
-        "hood"
-      ],
-      "build": "slender",
-      "motif": "shadow"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "15": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
-          255,
-          255,
-          255
-        ],
-        "secondary": [
-          230,
-          120,
-          80
-        ],
-        "accent": [
-          200,
-          30,
-          60
-        ]
-      },
-      "features": [
-        "crown"
-      ],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
-  },
-  "1": {
-    "descriptor": {
-      "archetype": "rogue",
-      "weapon": "gun",
-      "palette": {
-        "primary": [
+      {
+        "type": "ellipse",
+        "cx": 60,
+        "cy": 35,
+        "rx": 3,
+        "ry": 8,
+        "color": [
           210,
-          220,
-          235
-        ],
-        "secondary": [
-          218,
-          165,
-          32
-        ],
-        "accent": [
-          60,
-          40,
-          30
-        ]
-      },
-      "features": [
-        "hood"
-      ],
-      "build": "slender",
-      "motif": "wind"
-    },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
-  },
-  "16": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
-          30,
-          30,
-          50
-        ],
-        "secondary": [
-          220,
-          60,
-          20
-        ],
-        "accent": [
-          100,
-          180,
-          255
-        ]
-      },
-      "features": [
-        "crown"
-      ],
-      "build": "average",
-      "motif": "light"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
-  },
-  "2": {
-    "descriptor": {
-      "archetype": "rogue",
-      "weapon": "gun",
-      "palette": {
-        "primary": [
-          45,
-          60,
-          120
-        ],
-        "secondary": [
-          180,
-          60,
-          40
-        ],
-        "accent": [
-          210,
-          180,
-          120
-        ]
-      },
-      "features": [
-        "crown"
-      ],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
-  },
-  "9": {
-    "descriptor": {
-      "archetype": "vastaya",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          255,
-          255,
-          255
-        ],
-        "secondary": [
-          180,
-          40,
-          30
-        ],
-        "accent": [
-          230,
-          190,
+          150,
           80
         ]
-      },
-      "features": [
-        "mask"
-      ],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 3,
-    "iters": 10,
-    "ok": false,
-    "match_before": 3
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Battle Bunny",
+    "notes": "Recolor red hair to strawberry blonde, dark coat to purple/white, and add bunny ears."
   },
-  "17": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "none",
-      "palette": {
-        "primary": [
+  "20": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
           240,
           240,
           240
         ],
-        "secondary": [
+        "outline": [
+          240,
+          240,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
           210,
-          105,
+          180,
+          140
+        ],
+        "outline": [
+          150,
+          120,
+          80
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
           30
         ],
-        "accent": [
-          220,
-          20,
-          60
-        ]
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
       },
-      "features": [],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
-  },
-  "31": {
-    "descriptor": {
-      "archetype": "archer",
-      "weapon": "bow",
-      "palette": {
-        "primary": [
-          75,
-          0,
-          130
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
         ],
-        "secondary": [
-          180,
-          120,
-          70
+        "outline": [
+          255,
+          255,
+          255
         ],
-        "accent": [
-          173,
-          216,
-          230
-        ]
+        "outline_w": 2,
+        "comment": "Face"
       },
-      "features": [],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
-  },
-  "20": {
-    "descriptor": {
-      "archetype": "archer",
-      "weapon": "bow",
-      "palette": {
-        "primary": [
-          220,
-          220,
-          220
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          240,
+          240,
+          240
         ],
-        "secondary": [
-          180,
-          150,
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
           100
         ],
-        "accent": [
-          50,
-          180,
-          80
-        ]
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
       },
-      "features": [
-        "hood"
-      ],
-      "build": "slender",
-      "motif": "nature"
-    },
-    "match": 4,
-    "iters": 10,
-    "ok": false,
-    "match_before": 4
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          240,
+          240,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          240,
+          240,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          240,
+          240,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          240,
+          240,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "circle",
+        "cx": 50,
+        "cy": 40,
+        "r": 2,
+        "color": [
+          0,
+          255,
+          127
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Prestige Bewitching",
+    "notes": "Recolor red hair to blonde, dark coat to white/gold, and add a small green gem to the hat."
   },
   "18": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "orb",
-      "palette": {
-        "primary": [
-          30,
-          30,
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          160,
+          140,
+          180
+        ],
+        "outline": [
+          150,
+          120,
           80
         ],
-        "secondary": [
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          160,
+          140,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
           210,
           80,
-          60
+          70
         ],
-        "accent": [
-          200,
-          150,
-          255
-        ]
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
       },
-      "features": [
-        "hood"
-      ],
-      "build": "slender",
-      "motif": "shadow"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          20,
+          10,
+          40
+        ],
+        "outline": [
+          20,
+          10,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            40,
+            40
+          ],
+          [
+            60,
+            40
+          ],
+          [
+            50,
+            10
+          ]
+        ],
+        "color": [
+          40,
+          20,
+          80
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Bewitching",
+    "notes": "Recolor red hair to orange-pink, navy coat to deep purple, and gold trim to lavender; add pointed witch hat peak."
   },
   "41": {
-    "descriptor": {
-      "archetype": "mage",
-      "weapon": "orb",
-      "palette": {
-        "primary": [
-          30,
-          40,
-          80
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
         ],
-        "secondary": [
+        "color": [
+          20,
+          20,
+          60
+        ],
+        "outline": [
+          20,
+          20,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          255,
+          250,
+          240
+        ],
+        "outline": [
+          255,
+          250,
+          240
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          255,
+          250,
+          240
+        ],
+        "outline": [
+          255,
+          250,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          20,
+          20,
+          60
+        ],
+        "outline": [
+          20,
+          20,
+          60
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          20,
+          20,
+          60
+        ],
+        "outline": [
+          20,
+          20,
+          60
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          20,
+          20,
+          60
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
           210,
           140,
           180
         ],
-        "accent": [
-          230,
-          210,
-          160
-        ]
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
       },
-      "features": [
-        "hood",
-        "crown"
-      ],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          20,
+          20,
+          60
+        ],
+        "outline": [
+          20,
+          20,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          20,
+          20,
+          60
+        ],
+        "outline": [
+          20,
+          20,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          20,
+          20,
+          60
+        ],
+        "outline": [
+          20,
+          20,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          20,
+          20,
+          60
+        ],
+        "outline": [
+          20,
+          20,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "rect",
+        "cx": 45,
+        "cy": 40,
+        "r": 2,
+        "color": [
+          255,
+          215,
+          0
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Prestige Broken Covenant",
+    "notes": "Recolor red hair to pale pink, dark coat to deep navy/midnight blue, and gold accents to bright prestige gold."
   },
   "50": {
-    "descriptor": {
-      "archetype": "vastaya",
-      "weapon": "bow",
-      "palette": {
-        "primary": [
-          255,
-          255,
-          255
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
         ],
-        "secondary": [
-          20,
-          30,
-          80
+        "color": [
+          240,
+          240,
+          240
         ],
-        "accent": [
-          100,
-          180,
-          255
-        ]
+        "outline": [
+          240,
+          240,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
       },
-      "features": [
-        "horns",
-        "animal_ears"
-      ],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          210,
+          180,
+          140
+        ],
+        "outline": [
+          210,
+          180,
+          140
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          210,
+          180,
+          140
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          240,
+          240,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          240,
+          240,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          240,
+          240,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          240,
+          240,
+          240
+        ],
+        "outline": [
+          240,
+          240,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "ellipse",
+        "cx": 10,
+        "cy": 8,
+        "rx": 4,
+        "ry": 2,
+        "color": [
+          212,
+          175,
+          55
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Porcelain",
+    "notes": "Recolor red hair to deep navy, dark coat to porcelain white, and add a golden halo element above the head."
   },
   "21": {
-    "descriptor": {
-      "archetype": "rogue",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          30,
-          35,
-          45
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
         ],
-        "secondary": [
-          210,
+        "color": [
+          10,
+          15,
+          20
+        ],
+        "outline": [
+          10,
+          15,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          60,
+          120,
+          110
+        ],
+        "outline": [
+          60,
+          120,
+          110
+        ],
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
+      },
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          240,
+          200,
+          180
+        ],
+        "outline": [
+          60,
+          120,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          10,
+          15,
+          20
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          10,
+          15,
+          20
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          220,
+          230,
+          240
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          10,
+          15,
+          20
+        ],
+        "outline": [
+          10,
+          15,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          10,
+          15,
+          20
+        ],
+        "outline": [
+          10,
+          15,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          10,
+          15,
+          20
+        ],
+        "outline": [
+          10,
+          15,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          10,
+          15,
+          20
+        ],
+        "outline": [
+          10,
+          15,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          180,
+          150,
+          50
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          150,
+          120,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "circle",
+        "cx": 45,
+        "cy": 48,
+        "r": 1,
+        "color": [
+          0,
+          255,
+          200
+        ]
+      },
+      {
+        "type": "circle",
+        "cx": 55,
+        "cy": 48,
+        "r": 1,
+        "color": [
+          0,
+          255,
+          200
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Ruined",
+    "notes": "Recolor red hair to ghostly white, dark clothes to deep void black, and gold trim to spectral teal; add glowing teal eyes."
+  },
+  "40": {
+    "primitives": [
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            140
+          ],
+          [
+            140,
+            140
+          ],
+          [
+            155,
+            280
+          ],
+          [
+            125,
+            300
+          ],
+          [
+            95,
+            280
+          ]
+        ],
+        "color": [
+          20,
+          20,
+          30
+        ],
+        "outline": [
+          20,
+          20,
+          30
+        ],
+        "outline_w": 2,
+        "comment": "Captain's long coat - dark navy/black"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            115,
+            140
+          ],
+          [
+            135,
+            140
+          ],
+          [
+            138,
+            210
+          ],
+          [
+            112,
+            210
+          ]
+        ],
+        "color": [
+          220,
           220,
           230
         ],
-        "accent": [
-          0,
-          255,
-          180
-        ]
-      },
-      "features": [
-        "hood"
-      ],
-      "build": "slender",
-      "motif": "shadow"
-    },
-    "match": 4,
-    "iters": 10,
-    "ok": false,
-    "match_before": 4
-  },
-  "40": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
-          30,
-          30,
-          45
+        "outline": [
+          100,
+          80,
+          150
         ],
-        "secondary": [
-          180,
-          50,
+        "outline_w": 1,
+        "comment": "Corset/Bodice"
+      },
+      {
+        "type": "rect",
+        "x": 120,
+        "y": 210,
+        "w": 10,
+        "h": 5,
+        "color": [
+          100,
+          80,
+          150
+        ],
+        "outline": [
+          120,
+          90,
           30
         ],
-        "accent": [
-          200,
-          220,
-          255
-        ]
+        "outline_w": 1,
+        "comment": "Gold belt buckle"
       },
-      "features": [
-        "cape",
-        "hood"
-      ],
-      "build": "slender",
-      "motif": "light"
-    },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
+      {
+        "type": "circle",
+        "cx": 125,
+        "cy": 125,
+        "r": 12,
+        "color": [
+          220,
+          220,
+          230
+        ],
+        "outline": [
+          220,
+          220,
+          230
+        ],
+        "outline_w": 2,
+        "comment": "Face"
+      },
+      {
+        "type": "rect",
+        "x": 121,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          20,
+          20,
+          30
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Left Eye"
+      },
+      {
+        "type": "rect",
+        "x": 127,
+        "y": 122,
+        "w": 2,
+        "h": 2,
+        "color": [
+          20,
+          20,
+          30
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Right Eye"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            122,
+            128
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            125,
+            132
+          ]
+        ],
+        "color": [
+          200,
+          100,
+          100
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1,
+        "comment": "Small mouth/lips"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            110,
+            120
+          ],
+          [
+            140,
+            120
+          ],
+          [
+            170,
+            270
+          ],
+          [
+            150,
+            280
+          ],
+          [
+            130,
+            150
+          ],
+          [
+            120,
+            280
+          ],
+          [
+            100,
+            270
+          ]
+        ],
+        "color": [
+          160,
+          40,
+          30
+        ],
+        "outline": [
+          130,
+          10,
+          10
+        ],
+        "outline_w": 2,
+        "comment": "Long flowing red hair"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            90,
+            115
+          ],
+          [
+            160,
+            115
+          ],
+          [
+            125,
+            95
+          ]
+        ],
+        "color": [
+          20,
+          20,
+          30
+        ],
+        "outline": [
+          20,
+          20,
+          30
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat top"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            80,
+            115
+          ],
+          [
+            170,
+            115
+          ],
+          [
+            160,
+            125
+          ],
+          [
+            140,
+            118
+          ],
+          [
+            110,
+            118
+          ],
+          [
+            90,
+            125
+          ]
+        ],
+        "color": [
+          20,
+          20,
+          30
+        ],
+        "outline": [
+          20,
+          20,
+          30
+        ],
+        "outline_w": 2,
+        "comment": "Tricorne hat brim (curved)"
+      },
+      {
+        "type": "rect",
+        "x": 122,
+        "y": 102,
+        "w": 6,
+        "h": 6,
+        "color": [
+          100,
+          80,
+          150
+        ],
+        "outline": [
+          100,
+          80,
+          150
+        ],
+        "outline_w": 1,
+        "comment": "Hat gold emblem"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            60,
+            180
+          ],
+          [
+            90,
+            180
+          ],
+          [
+            90,
+            190
+          ],
+          [
+            60,
+            190
+          ]
+        ],
+        "color": [
+          20,
+          20,
+          30
+        ],
+        "outline": [
+          20,
+          20,
+          30
+        ],
+        "outline_w": 2,
+        "comment": "Left pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 55,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          100,
+          80,
+          150
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Left pistol grip"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            140,
+            180
+          ],
+          [
+            170,
+            180
+          ],
+          [
+            170,
+            190
+          ],
+          [
+            140,
+            190
+          ]
+        ],
+        "color": [
+          20,
+          20,
+          30
+        ],
+        "outline": [
+          20,
+          20,
+          30
+        ],
+        "outline_w": 2,
+        "comment": "Right pistol barrel"
+      },
+      {
+        "type": "rect",
+        "x": 170,
+        "y": 180,
+        "w": 5,
+        "h": 12,
+        "color": [
+          100,
+          80,
+          150
+        ],
+        "outline": [
+          120,
+          90,
+          30
+        ],
+        "outline_w": 1,
+        "comment": "Right pistol grip"
+      },
+      {
+        "type": "rect",
+        "x": 105,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          100,
+          80,
+          150
+        ],
+        "outline": [
+          100,
+          80,
+          150
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim left"
+      },
+      {
+        "type": "rect",
+        "x": 140,
+        "y": 140,
+        "w": 5,
+        "h": 60,
+        "color": [
+          100,
+          80,
+          150
+        ],
+        "outline": [
+          100,
+          80,
+          150
+        ],
+        "outline_w": 1,
+        "comment": "Coat gold trim right"
+      },
+      {
+        "type": "ellipse",
+        "cx": 16,
+        "cy": 12,
+        "rx": 6,
+        "ry": 4,
+        "color": [
+          40,
+          40,
+          60
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Broken Covenant",
+    "notes": "Recolor coat to dark charcoal, skin to pale white, and gold accents to purple; add hood over the hat."
   }
 }

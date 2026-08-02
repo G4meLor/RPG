@@ -372,371 +372,4329 @@
     "phase": "fix3"
   },
   "1": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "spear",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
           45,
           45,
-          55
+          50
         ],
-        "secondary": [
+        "outline": [
+          20,
+          40,
+          50
+        ],
+        "outline_w": 3,
+        "comment": "Spectral horse body"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          45,
+          45,
+          50
+        ],
+        "outline": [
+          10,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          45,
+          45,
+          50
+        ],
+        "outline": [
+          10,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          45,
+          45,
+          50
+        ],
+        "outline": [
+          45,
+          45,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          45,
+          45,
+          50
+        ],
+        "outline": [
+          45,
+          45,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          160,
+          180
+        ],
+        "outline": [
+          45,
+          45,
+          50
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          160,
+          180
+        ],
+        "outline": [
+          45,
+          45,
+          50
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          100,
+          100,
+          110
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          45,
+          45,
+          50
+        ],
+        "outline": [
+          100,
+          140,
+          160
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          45,
+          45,
+          50
+        ],
+        "outline": [
+          20,
+          40,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
           139,
           34,
           34
         ],
-        "accent": [
-          0,
-          191,
-          255
-        ]
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
       },
-      "features": [
-        "horns",
-        "mask",
-        "cape"
-      ],
-      "build": "bulky",
-      "motif": "lightning"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          100,
+          110
+        ],
+        "outline": [
+          100,
+          140,
+          160
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          139,
+          34,
+          34
+        ],
+        "outline": [
+          45,
+          45,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          20,
+          40,
+          50
+        ],
+        "outline": [
+          10,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          20,
+          40,
+          50
+        ],
+        "outline": [
+          10,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          45,
+          45,
+          50
+        ],
+        "outline": [
+          20,
+          40,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "rect",
+        "cx": 60,
+        "cy": 50,
+        "r": 5,
+        "color": [
+          139,
+          34,
+          34
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Blood Knight",
+    "notes": "Recolor spectral teal/grey to deep crimson and dark steel; change glowing eyes to red."
   },
   "2": {
-    "descriptor": {
-      "archetype": "undead",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
-          45,
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
           30,
-          80
+          20,
+          50
         ],
-        "secondary": [
-          120,
-          140,
-          170
+        "outline": [
+          30,
+          20,
+          50
         ],
-        "accent": [
-          100,
-          210,
-          255
-        ]
+        "outline_w": 3,
+        "comment": "Spectral horse body"
       },
-      "features": [
-        "hood",
-        "claws"
-      ],
-      "build": "bulky",
-      "motif": "shadow"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          30,
+          20,
+          50
+        ],
+        "outline": [
+          30,
+          20,
+          50
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          30,
+          20,
+          50
+        ],
+        "outline": [
+          30,
+          20,
+          50
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          30,
+          20,
+          50
+        ],
+        "outline": [
+          30,
+          20,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          70,
+          110,
+          130
+        ],
+        "outline": [
+          30,
+          20,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
+          70,
+          80,
+          120
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          70,
+          80,
+          120
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          100,
+          200,
+          255
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          30,
+          20,
+          50
+        ],
+        "outline": [
+          70,
+          80,
+          120
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          30,
+          20,
+          50
+        ],
+        "outline": [
+          30,
+          20,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
+          100,
+          200,
+          255
+        ],
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          200,
+          255
+        ],
+        "outline": [
+          70,
+          80,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          70,
+          80,
+          120
+        ],
+        "outline": [
+          60,
+          120,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          30,
+          20,
+          50
+        ],
+        "outline": [
+          30,
+          20,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          30,
+          20,
+          50
+        ],
+        "outline": [
+          30,
+          20,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          30,
+          20,
+          50
+        ],
+        "outline": [
+          30,
+          20,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "circle",
+        "cx": 70,
+        "cy": 20,
+        "r": 10,
+        "color": [
+          135,
+          206,
+          250
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Reaper",
+    "notes": "Shift from teal/grey undead palette to deep purple and bright spectral blue."
   },
   "4": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "spear",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
           160,
           160,
           170
         ],
-        "secondary": [
-          255,
-          20,
-          147
+        "outline": [
+          160,
+          160,
+          170
         ],
-        "accent": [
+        "outline_w": 3,
+        "comment": "Spectral horse body"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          160,
+          160,
+          170
+        ],
+        "outline": [
+          160,
+          160,
+          170
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          160,
+          160,
+          170
+        ],
+        "outline": [
+          160,
+          160,
+          170
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          160,
+          160,
+          170
+        ],
+        "outline": [
+          160,
+          160,
+          170
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          200,
+          200,
+          210
+        ],
+        "outline": [
+          160,
+          160,
+          170
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
+          255,
+          0,
+          127
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          255,
+          0,
+          127
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          160,
+          160,
+          170
+        ],
+        "outline": [
+          255,
+          0,
+          127
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          160,
+          160,
+          170
+        ],
+        "outline": [
+          160,
+          160,
+          170
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          255,
+          0,
+          127
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          255,
+          0,
+          127
+        ],
+        "outline": [
+          200,
+          200,
+          210
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          160,
+          160,
+          170
+        ],
+        "outline": [
+          160,
+          160,
+          170
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          160,
+          160,
+          170
+        ],
+        "outline": [
+          160,
+          160,
+          170
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          160,
+          160,
+          170
+        ],
+        "outline": [
+          160,
+          160,
+          170
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "rect",
+        "cx": 10,
+        "cy": 10,
+        "r": 5,
+        "color": [
           255,
           255,
           0
         ]
       },
-      "features": [
-        "horns",
-        "mask"
-      ],
-      "build": "average",
-      "motif": "light"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "circle",
+        "cx": 15,
+        "cy": 15,
+        "r": 3,
+        "color": [
+          0,
+          255,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Arcade",
+    "notes": "Recolor dark spectral tones to metallic silver and ghostly teal to neon pink/magenta for the Arcade theme."
   },
   "5": {
-    "descriptor": {
-      "archetype": "beast",
-      "weapon": "none",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
           60,
           65,
           50
         ],
-        "secondary": [
-          140,
-          180,
-          40
+        "outline": [
+          60,
+          65,
+          50
         ],
-        "accent": [
+        "outline_w": 3,
+        "comment": "Spectral horse body"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          60,
+          65,
+          50
+        ],
+        "outline": [
+          60,
+          65,
+          50
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          60,
+          65,
+          50
+        ],
+        "outline": [
+          60,
+          65,
+          50
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          60,
+          65,
+          50
+        ],
+        "outline": [
+          60,
+          65,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          120,
+          160,
+          60
+        ],
+        "outline": [
+          60,
+          65,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          160,
+          180
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          160,
+          180
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          150,
           255,
+          200
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          60,
+          65,
+          50
+        ],
+        "outline": [
+          120,
+          160,
+          60
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          60,
+          65,
+          50
+        ],
+        "outline": [
+          60,
+          65,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
           140,
-          0
+          150,
+          110
+        ],
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          140,
+          150,
+          110
+        ],
+        "outline": [
+          120,
+          160,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          120,
+          160,
+          60
+        ],
+        "outline": [
+          60,
+          120,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          60,
+          65,
+          50
+        ],
+        "outline": [
+          60,
+          65,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          60,
+          65,
+          50
+        ],
+        "outline": [
+          60,
+          65,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          60,
+          65,
+          50
+        ],
+        "outline": [
+          60,
+          65,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "circle",
+        "cx": 75,
+        "cy": 20,
+        "r": 3,
+        "color": [
+          180,
+          210,
+          50
         ]
       },
-      "features": [
-        "horns",
-        "claws"
-      ],
-      "build": "bulky",
-      "motif": "nature"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "circle",
+        "cx": 85,
+        "cy": 20,
+        "r": 3,
+        "color": [
+          180,
+          210,
+          50
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Elderwood",
+    "notes": "Recolor spectral blues/teals to forest greens and browns, change eye glow to orange, add leaf accents to antlers."
   },
   "6": {
-    "descriptor": {
-      "archetype": "construct",
-      "weapon": "bow",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
           0,
-          80,
-          255
+          50,
+          180
         ],
-        "secondary": [
-          139,
-          115,
-          85
+        "outline": [
+          0,
+          50,
+          180
         ],
-        "accent": [
+        "outline_w": 3,
+        "comment": "Spectral horse body"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          0,
+          50,
+          180
+        ],
+        "outline": [
+          0,
+          50,
+          180
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          0,
+          50,
+          180
+        ],
+        "outline": [
+          0,
+          50,
+          180
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          0,
+          50,
+          180
+        ],
+        "outline": [
+          0,
+          50,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          160,
+          130,
+          60
+        ],
+        "outline": [
+          0,
+          50,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          160,
+          180
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          160,
+          180
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          200,
+          50,
+          100
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          0,
+          50,
+          180
+        ],
+        "outline": [
+          160,
+          130,
+          60
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          0,
+          50,
+          180
+        ],
+        "outline": [
+          0,
+          50,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
+          180,
+          150,
+          80
+        ],
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          180,
+          150,
+          80
+        ],
+        "outline": [
+          160,
+          130,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          160,
+          130,
+          60
+        ],
+        "outline": [
+          160,
+          130,
+          60
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          0,
+          50,
+          180
+        ],
+        "outline": [
+          0,
+          50,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          0,
+          50,
+          180
+        ],
+        "outline": [
+          0,
+          50,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          0,
+          50,
+          180
+        ],
+        "outline": [
+          0,
+          50,
+          180
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "circle",
+        "cx": 73,
+        "cy": 20,
+        "r": 3,
+        "color": [
           0,
           200,
           255
         ]
-      },
-      "features": [
-        "mask",
-        "horns"
-      ],
-      "build": "bulky",
-      "motif": "void"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Worldbreaker",
+    "notes": "Recolor spectral teal to deep blue, armor to gold/bronze, and eyes to red."
   },
   "7": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
+          20,
+          30,
+          50
+        ],
+        "outline": [
+          20,
+          30,
+          50
+        ],
+        "outline_w": 3,
+        "comment": "Spectral horse body"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          20,
+          30,
+          50
+        ],
+        "outline": [
+          20,
+          30,
+          50
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          20,
+          30,
+          50
+        ],
+        "outline": [
+          20,
+          30,
+          50
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          20,
+          30,
+          50
+        ],
+        "outline": [
+          20,
+          30,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          70,
+          110,
+          130
+        ],
+        "outline": [
+          20,
+          30,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
           220,
           220,
           220
         ],
-        "secondary": [
-          30,
+        "outline": [
           50,
-          80
+          100,
+          120
         ],
-        "accent": [
-          190,
-          160,
-          80
-        ]
+        "outline_w": 1,
+        "comment": "Spectral ear L"
       },
-      "features": [
-        "mask",
-        "cape"
-      ],
-      "build": "bulky",
-      "motif": "light"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          220,
+          220,
+          220
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          150,
+          255,
+          200
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          20,
+          30,
+          50
+        ],
+        "outline": [
+          220,
+          220,
+          220
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          20,
+          30,
+          50
+        ],
+        "outline": [
+          20,
+          30,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
+          220,
+          220,
+          220
+        ],
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          220,
+          220,
+          220
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          220,
+          220,
+          220
+        ],
+        "outline": [
+          60,
+          120,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          20,
+          30,
+          50
+        ],
+        "outline": [
+          20,
+          30,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          20,
+          30,
+          50
+        ],
+        "outline": [
+          20,
+          30,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          20,
+          30,
+          50
+        ],
+        "outline": [
+          20,
+          30,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "circle",
+        "cx": 73,
+        "cy": 20,
+        "r": 2,
+        "color": [
+          255,
+          255,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Lancer Zero",
+    "notes": "Recolor ghostly teal/grey to a high-contrast white, navy blue, and gold mecha palette."
   },
   "22": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          139,
-          0,
-          0
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
+          40,
+          30,
+          40
         ],
-        "secondary": [
-          184,
-          134,
-          11
+        "outline": [
+          40,
+          30,
+          40
         ],
-        "accent": [
-          255,
-          215,
-          0
-        ]
+        "outline_w": 3,
+        "comment": "Spectral horse body"
       },
-      "features": [
-        "mask",
-        "crown",
-        "spikes"
-      ],
-      "build": "bulky",
-      "motif": "light"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          40,
+          30,
+          40
+        ],
+        "outline": [
+          40,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          40,
+          30,
+          40
+        ],
+        "outline": [
+          40,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          40,
+          30,
+          40
+        ],
+        "outline": [
+          40,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          160,
+          40,
+          50
+        ],
+        "outline": [
+          40,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
+          160,
+          40,
+          50
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          160,
+          40,
+          50
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          40,
+          30,
+          40
+        ],
+        "outline": [
+          160,
+          40,
+          50
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          40,
+          30,
+          40
+        ],
+        "outline": [
+          40,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          212,
+          175,
+          55
+        ],
+        "outline": [
+          160,
+          40,
+          50
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          160,
+          40,
+          50
+        ],
+        "outline": [
+          60,
+          120,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          40,
+          30,
+          40
+        ],
+        "outline": [
+          40,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          40,
+          30,
+          40
+        ],
+        "outline": [
+          40,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          40,
+          30,
+          40
+        ],
+        "outline": [
+          40,
+          30,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "circle",
+        "cx": 73,
+        "cy": 20,
+        "r": 2,
+        "color": [
+          255,
+          255,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Arcana",
+    "notes": "Recolor ghostly teal/grey to deep crimson and gold; change eye glow to white."
   },
   "14": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          45,
-          85,
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
+          30,
+          40,
+          120
+        ],
+        "outline": [
+          30,
+          40,
+          120
+        ],
+        "outline_w": 3,
+        "comment": "Spectral horse body"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          30,
+          40,
+          120
+        ],
+        "outline": [
+          30,
+          40,
+          120
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          30,
+          40,
+          120
+        ],
+        "outline": [
+          30,
+          40,
+          120
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          30,
+          40,
+          120
+        ],
+        "outline": [
+          30,
+          40,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          140,
+          180,
+          255
+        ],
+        "outline": [
+          30,
+          40,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          160,
           180
         ],
-        "secondary": [
-          180,
-          160,
-          110
+        "outline": [
+          50,
+          100,
+          120
         ],
-        "accent": [
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          100,
+          160,
+          180
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
           150,
+          255,
+          200
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          30,
+          40,
+          120
+        ],
+        "outline": [
+          140,
+          180,
+          255
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          30,
+          40,
+          120
+        ],
+        "outline": [
+          30,
+          40,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
           210,
+          230,
+          255
+        ],
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          210,
+          230,
+          255
+        ],
+        "outline": [
+          140,
+          180,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          210,
+          230,
+          255
+        ],
+        "outline": [
+          140,
+          180,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          30,
+          40,
+          120
+        ],
+        "outline": [
+          30,
+          40,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          30,
+          40,
+          120
+        ],
+        "outline": [
+          30,
+          40,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          30,
+          40,
+          120
+        ],
+        "outline": [
+          30,
+          40,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "circle",
+        "cx": 73,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          180,
+          100,
           255
         ]
       },
-      "features": [
-        "horns",
-        "mask",
-        "cape"
-      ],
-      "build": "bulky",
-      "motif": "void"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
+      {
+        "type": "rect",
+        "cx": 60,
+        "cy": 40,
+        "width": 10,
+        "height": 10,
+        "color": [
+          218,
+          165,
+          32
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Cosmic Charger",
+    "notes": "Recolor dark grey to deep cosmic blue, teal accents to bright blue/white, and eyes to purple; add gold armor accents."
   },
   "31": {
-    "descriptor": {
-      "archetype": "knight",
-      "weapon": "sword",
-      "palette": {
-        "primary": [
-          45,
-          65,
-          110
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
+          70,
+          90,
+          120
         ],
-        "secondary": [
-          180,
-          210,
-          240
+        "outline": [
+          70,
+          90,
+          120
         ],
-        "accent": [
-          160,
-          120,
+        "outline_w": 3,
+        "comment": "Spectral horse body"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          70,
+          90,
+          120
+        ],
+        "outline": [
+          70,
+          90,
+          120
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          70,
+          90,
+          120
+        ],
+        "outline": [
+          70,
+          90,
+          120
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          70,
+          90,
+          120
+        ],
+        "outline": [
+          70,
+          90,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          200,
+          150,
+          255
+        ],
+        "outline": [
+          70,
+          90,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
+          220,
+          230,
+          255
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          220,
+          230,
+          255
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          200,
+          150,
+          255
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          70,
+          90,
+          120
+        ],
+        "outline": [
+          220,
+          230,
+          255
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          70,
+          90,
+          120
+        ],
+        "outline": [
+          70,
+          90,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
+          220,
+          230,
+          255
+        ],
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          200,
+          150,
+          255
+        ],
+        "outline": [
+          220,
+          230,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          220,
+          230,
+          255
+        ],
+        "outline": [
+          200,
+          150,
+          255
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          70,
+          90,
+          120
+        ],
+        "outline": [
+          70,
+          90,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          70,
+          90,
+          120
+        ],
+        "outline": [
+          70,
+          90,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          70,
+          90,
+          120
+        ],
+        "outline": [
+          70,
+          90,
+          120
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "ellipse",
+        "cx": 40,
+        "cy": 55,
+        "rx": 20,
+        "ry": 10,
+        "color": [
+          240,
+          245,
           255
         ]
       },
-      "features": [
-        "cape",
-        "horns",
-        "mask"
-      ],
-      "build": "bulky",
-      "motif": "void"
-    },
-    "match": 7,
-    "iters": 1,
-    "ok": true,
-    "match_before": 7
+      {
+        "type": "ellipse",
+        "cx": 70,
+        "cy": 45,
+        "rx": 15,
+        "ry": 10,
+        "color": [
+          240,
+          245,
+          255
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Winterblessed",
+    "notes": "Recolor dark armor to icy blue/silver, change teal glow to purple, and add white fur tufts."
   },
   "3": {
-    "descriptor": {
-      "archetype": "undead",
-      "weapon": "scythe",
-      "palette": {
-        "primary": [
-          60,
-          40,
-          70
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
+          30,
+          20,
+          40
         ],
-        "secondary": [
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 3,
+        "comment": "Spectral horse body"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          30,
+          20,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          30,
+          20,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          30,
+          20,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          180,
+          110,
+          30
+        ],
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
+          180,
+          110,
+          30
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          180,
+          110,
+          30
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
+          150,
+          255,
+          200
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          30,
+          20,
+          40
+        ],
+        "outline": [
+          180,
+          110,
+          30
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          30,
+          20,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
           255,
           165,
           0
         ],
-        "accent": [
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
           255,
-          215,
+          165,
+          0
+        ],
+        "outline": [
+          180,
+          110,
+          30
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          180,
+          110,
+          30
+        ],
+        "outline": [
+          60,
+          40,
+          80
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          30,
+          20,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          30,
+          20,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          30,
+          20,
+          40
+        ],
+        "outline": [
+          30,
+          20,
+          40
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "circle",
+        "cx": 140,
+        "cy": 60,
+        "r": 15,
+        "color": [
+          255,
+          140,
           0
         ]
       },
-      "features": [
-        "cape",
-        "mask"
-      ],
-      "build": "average",
-      "motif": "flame"
-    },
-    "match": 6,
-    "iters": 1,
-    "ok": true,
-    "match_before": 6
+      {
+        "type": "circle",
+        "cx": 130,
+        "cy": 55,
+        "r": 3,
+        "color": [
+          255,
+          255,
+          100
+        ]
+      },
+      {
+        "type": "circle",
+        "cx": 150,
+        "cy": 55,
+        "r": 3,
+        "color": [
+          255,
+          255,
+          100
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "Headless",
+    "notes": "Recolor ghostly teal to pumpkin orange and dark purple; add glowing pumpkin head details."
   },
   "8": {
-    "descriptor": {
-      "archetype": "undead",
-      "weapon": "scythe",
-      "palette": {
-        "primary": [
-          40,
-          40,
-          45
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 140,
+        "w": 160,
+        "h": 80,
+        "color": [
+          30,
+          20,
+          15
         ],
-        "secondary": [
+        "outline": [
+          30,
+          20,
+          15
+        ],
+        "outline_w": 3,
+        "comment": "Spectral horse body"
+      },
+      {
+        "type": "rect",
+        "x": 80,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          30,
+          20,
+          15
+        ],
+        "outline": [
+          30,
+          20,
+          15
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front left leg"
+      },
+      {
+        "type": "rect",
+        "x": 160,
+        "y": 200,
+        "w": 25,
+        "h": 70,
+        "color": [
+          30,
+          20,
+          15
+        ],
+        "outline": [
+          30,
+          20,
+          15
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Front right leg"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            170,
+            60
+          ],
+          [
+            210,
+            80
+          ],
+          [
+            170,
+            140
+          ]
+        ],
+        "color": [
+          30,
+          20,
+          15
+        ],
+        "outline": [
+          30,
+          20,
+          15
+        ],
+        "outline_w": 2,
+        "comment": "Centaur torso"
+      },
+      {
+        "type": "circle",
+        "cx": 180,
+        "cy": 60,
+        "r": 25,
+        "color": [
+          70,
+          110,
+          130
+        ],
+        "outline": [
+          30,
+          20,
+          15
+        ],
+        "outline_w": 2,
+        "comment": "Head"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            180,
+            40
+          ],
+          [
+            160,
+            10
+          ],
+          [
+            190,
+            10
+          ]
+        ],
+        "color": [
+          180,
+          80,
+          30
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear L"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            200,
+            40
+          ],
+          [
+            210,
+            10
+          ],
+          [
+            230,
+            10
+          ]
+        ],
+        "color": [
+          180,
+          80,
+          30
+        ],
+        "outline": [
+          50,
+          100,
+          120
+        ],
+        "outline_w": 1,
+        "comment": "Spectral ear R"
+      },
+      {
+        "type": "circle",
+        "cx": 190,
+        "cy": 55,
+        "r": 4,
+        "color": [
           255,
-          120,
-          0
+          160,
+          50
         ],
-        "accent": [
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Glowing spectral eye"
+      },
+      {
+        "type": "rect",
+        "x": 130,
+        "y": 100,
+        "w": 50,
+        "h": 60,
+        "color": [
+          30,
+          20,
+          15
+        ],
+        "outline": [
+          180,
+          80,
+          30
+        ],
+        "outline_w": 3,
+        "radius": 5,
+        "comment": "Spectral chest armor"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            130,
+            140
+          ],
+          [
+            80,
+            130
+          ],
+          [
+            80,
+            160
+          ]
+        ],
+        "color": [
+          30,
+          20,
+          15
+        ],
+        "outline": [
+          30,
+          20,
+          15
+        ],
+        "outline_w": 2,
+        "comment": "Shoulder transition"
+      },
+      {
+        "type": "line",
+        "start": [
+          130,
+          120
+        ],
+        "end": [
+          50,
+          20
+        ],
+        "color": [
+          120,
+          60,
+          40
+        ],
+        "width": 8,
+        "comment": "Distinctive polearm shaft"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            50,
+            20
+          ],
+          [
+            70,
+            10
+          ],
+          [
+            60,
+            -10
+          ],
+          [
+            40,
+            10
+          ]
+        ],
+        "color": [
+          120,
+          60,
+          40
+        ],
+        "outline": [
+          180,
+          80,
+          30
+        ],
+        "outline_w": 2,
+        "comment": "Polearm blade"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 130,
+        "w": 80,
+        "h": 40,
+        "color": [
+          180,
+          80,
+          30
+        ],
+        "outline": [
+          60,
+          120,
+          100
+        ],
+        "outline_w": 2,
+        "comment": "Spectral horse barding/armor"
+      },
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          30,
+          20,
+          15
+        ],
+        "outline": [
+          30,
+          20,
+          15
+        ],
+        "outline_w": 2,
+        "comment": "Hoof L"
+      },
+      {
+        "type": "circle",
+        "cx": 170,
+        "cy": 270,
+        "r": 15,
+        "color": [
+          30,
+          20,
+          15
+        ],
+        "outline": [
+          30,
+          20,
+          15
+        ],
+        "outline_w": 2,
+        "comment": "Hoof R"
+      },
+      {
+        "type": "polygon",
+        "points": [
+          [
+            220,
+            140
+          ],
+          [
+            250,
+            160
+          ],
+          [
+            220,
+            180
+          ]
+        ],
+        "color": [
+          30,
+          20,
+          15
+        ],
+        "outline": [
+          30,
+          20,
+          15
+        ],
+        "outline_w": 2,
+        "comment": "Horse rump"
+      },
+      {
+        "type": "circle",
+        "cx": 75,
+        "cy": 20,
+        "r": 3,
+        "color": [
           255,
           200,
-          50
+          0
         ]
       },
-      "features": [
-        "horns",
-        "mask",
-        "spikes"
-      ],
-      "build": "bulky",
-      "motif": "flame"
-    },
-    "match": 5,
-    "iters": 10,
-    "ok": false,
-    "match_before": 5
+      {
+        "type": "circle",
+        "cx": 85,
+        "cy": 20,
+        "r": 3,
+        "color": [
+          255,
+          200,
+          0
+        ]
+      }
+    ],
+    "generator": "skin_mod",
+    "phase": "per-skin",
+    "base": "0",
+    "skin": "High Noon",
+    "notes": "Recolor ghostly teal/grey to volcanic black and lava orange; add glowing fire eyes."
   }
 }

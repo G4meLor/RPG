@@ -80,9 +80,41 @@ def _strip_json(text):
 
 
 def skin0_prims(cid):
-    dp = os.path.join(ASSET_DIR, "characters", cid, "descriptors.json")
-    d = json.load(open(dp)) if os.path.exists(dp) else {}
+    d = _load_descriptors(cid)
     return d.get("0", {}).get("primitives", [])
+
+
+def _load_descriptors(cid):
+    """Load descriptors.json, tolerating corruption (salvage from git HEAD)."""
+    dp = os.path.join(ASSET_DIR, "characters", cid, "descriptors.json")
+    if not os.path.exists(dp):
+        return {}
+    try:
+        return json.load(open(dp))
+    except Exception:
+        return _salvage_descriptors(cid)
+
+
+def _salvage_descriptors(cid):
+    """Recover descriptors.json from git HEAD if the working copy is corrupted."""
+    import subprocess
+    try:
+        r = subprocess.run(["git", "show", f"HEAD:assets/characters/{cid}/descriptors.json"],
+                           capture_output=True, timeout=10)
+        if r.returncode == 0:
+            return json.loads(r.stdout)
+    except Exception:
+        pass
+    return {}
+
+
+def _save_descriptors(cid, cache):
+    """Atomic write of descriptors.json (temp + os.replace)."""
+    dp = os.path.join(ASSET_DIR, "characters", cid, "descriptors.json")
+    tmp = dp + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(cache, f, indent=2, default=str)
+    os.replace(tmp, dp)
 
 
 def skin_name(cid, idx):
@@ -140,21 +172,32 @@ def render(prims, path):
 DELTA_SYS = (
     "You are a pixel-art sprite artist who knows League of Legends skins. You are "
     "given: (1) the splash art of a specific skin (image 1), (2) the champion's "
-    "default-skin pixel sprite (image 2), the champion name, and the skin name. "
-    "Your job: describe the MINIMAL changes to turn the default sprite into this "
-    "skin. Most skins are a RECOLOR of the default — identify the color mapping. "
-    "Some skins add/remove a feature (e.g. Star Guardian adds wings, Arcade adds "
-    "pixel glow). Keep changes MINIMAL — the default silhouette is good; only "
-    "recolor and add/remove what differs.\n\n"
+    "default-skin pixel sprite (image 2), the champion name, the skin name, AND "
+    "the EXACT [r,g,b] colors that actually appear in the default sprite (so you "
+    "can map them precisely). Your job: describe the MINIMAL changes to turn the "
+    "default sprite into this skin. Most skins are a RECOLOR of the default.\n\n"
     "Output JSON ONLY:\n"
     '{"color_map": [[[r,g,b],[r,g,b]], ...], "adds": [{"type":"circle","cx":int,"cy":int,"r":int,"color":[r,g,b]}, ...], "removes": [], "notes": "one line"}\n\n'
-    "color_map: list of [base_color, skin_color] pairs. base_color is a color IN "
-    "the default sprite (match the dominant fills); skin_color is what it becomes "
-    "in this skin (from the splash). Cover the 3-5 dominant colors. "
-    "adds: new primitives (circle/rect/polygon/line/ellipse) for features this "
-    "skin adds that the default lacks (e.g. wings, halo, glasses). Keep to 0-5 "
-    "adds. removes: usually empty. Output JSON ONLY."
+    "color_map: list of [base_color, skin_color] pairs. base_color MUST be one of "
+    "the EXACT default colors listed below (copy it verbatim — the recolor matches "
+    "by exact/near color, so a wrong base_color means no recolor happens). "
+    "skin_color is what it becomes in this skin (from the splash). Map EVERY "
+    "listed default color to its skin equivalent (even if unchanged). "
+    "adds: new primitives for features this skin adds (wings, halo, glasses). "
+    "Keep to 0-5 adds. removes: usually empty. Output JSON ONLY."
 )
+
+
+def _dominant_colors(prims, topn=8):
+    """The exact [r,g,b] fill colors that appear in the primitives, by frequency
+    (count of prims using each color). Returns a list of [r,g,b]."""
+    from collections import Counter
+    c = Counter()
+    for p in prims:
+        col = p.get("color")
+        if col and len(col) >= 3:
+            c[tuple(int(x) for x in col[:3])] += 1
+    return [list(k) for k, _ in c.most_common(topn)]
 
 
 def describe_skin_delta(cid, idx):
@@ -172,6 +215,7 @@ def describe_skin_delta(cid, idx):
     base_png = f"/tmp/skin0_{cid}.png"
     render(prims, base_png)
     sname = skin_name(cid, idx)
+    dom = _dominant_colors(prims, topn=8)
     canon_feats = []
     for r in json.load(open(os.path.join(EXP_DIR, "canon_gate_results.json"))):
         if r["id"] == cid:
@@ -182,9 +226,11 @@ def describe_skin_delta(cid, idx):
         {"role": "user", "content": [
             {"type": "text", "text": f"Champion: {cid}. Skin: {sname} (index {idx}). "
              f"Default signature features: {', '.join(canon_feats)}.\n"
+             f"EXACT default sprite colors (use these VERBATIM as base_color in "
+             f"color_map): {dom}\n\n"
              f"Image 1 = the {sname} skin splash art (reference for colors/theme). "
              f"Image 2 = the default-skin pixel sprite (the base to recolor).\n"
-             f"Describe the minimal color_map + adds to turn image 2 into the {sname} skin. JSON only."},
+             f"Map EACH default color above to its {sname} skin equivalent. JSON only."},
             {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{_b64(splash)}"}},
             {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{_b64(base_png)}"}},
         ]},
@@ -238,17 +284,14 @@ def mod_skin(cid, idx, do_save=True):
         sprites_dir = os.path.join(char_dir, "sprites")
         os.makedirs(sprites_dir, exist_ok=True)
         render(revised, os.path.join(sprites_dir, f"{idx}.png"))
-        # update descriptors.json
+        # update descriptors.json — ATOMIC write (temp + os.replace) and tolerate
+        # a corrupted existing file (concurrent bakes corrupted some descriptors).
         dp = os.path.join(char_dir, "descriptors.json")
-        cache = {}
-        if os.path.exists(dp):
-            try: cache = json.load(open(dp))
-            except Exception: cache = {}
+        cache = _load_descriptors(cid)
         cache[str(idx)] = {"primitives": revised, "generator": "skin_mod",
                            "phase": "per-skin", "base": "0", "skin": sname,
                            "notes": delta.get("notes", "")}
-        with open(dp, "w") as f:
-            json.dump(cache, f, indent=2, default=str)
+        _save_descriptors(cid, cache)
     return {"id": cid, "skin": idx, "name": sname, "saved": do_save,
             "n_prims": len(revised), "n_recolor": len(delta.get("color_map", [])),
             "n_adds": len(delta.get("adds", [])), "notes": delta.get("notes", "")}

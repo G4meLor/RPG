@@ -176,11 +176,14 @@ DELTA_SYS = (
     "the EXACT [r,g,b] colors that actually appear in the default sprite (so you "
     "can map them precisely). Your job: describe the changes to turn the default "
     "sprite into this skin.\n\n"
-    "You may change: COLORS (recolor hair, outfit, skin, weapon, accents to match "
-    "the skin's palette), ATTIRE/WEAPON (add a hat, change weapon shape, add armor "
-    "piece), and FEATURES (hair color/style, horns, wings, glasses). The ONLY "
-    "constraint: keep the BODY SILHOUETTE the same (head/torso/limbs position and "
-    "size unchanged) so the champion stays recognizable.\n\n"
+    "You may change: COLORS (recolor hair, outfit, weapon, accents to match the "
+    "skin's palette), ATTIRE/WEAPON (add a hat, change weapon shape, add armor "
+    "piece), and HAIR/FEATURES (hair color, horns, wings, glasses). The ONLY "
+    "constraints: (1) keep the BODY SILHOUETTE the same (head/torso/limbs position "
+    "and size unchanged); (2) PRESERVE THE FACE — keep the face skin-tone visible "
+    "with both eyes and mouth intact. Do NOT recolor the face skin to a hair/armor "
+    "color, and do NOT add primitives that cover the eyes/face. If the skin has "
+    "glasses/visors, draw them as small accents around the eyes, not over them.\n\n"
     "Output JSON ONLY:\n"
     '{"color_map": [[[r,g,b],[r,g,b]], ...], "adds": [{"type":"circle","cx":int,"cy":int,"r":int,"color":[r,g,b],"outline":[r,g,b],"outline_w":int}, ...], "removes": [], "notes": "one line"}\n\n'
     "color_map: list of [base_color, skin_color] pairs. base_color MUST be one of "
@@ -270,37 +273,66 @@ def _apply_one_map(out, base, target, tol=40):
 def apply_delta(prims, delta):
     """Apply a skin delta to a copy of the skin-0 primitives. Returns revised prims.
 
-    Recolor strategy (FIXED): single pass at tol=40, tracking which prims were
-    already recolored so a later map entry can't re-recolor them. This was the
-    root cause of the 0% pass rate: the widening-tolerance loop let a later
-    "dark hair" map (tol up to 120) re-recolor the already-magenta tails back
-    to dark, collapsing the palette to near-default.
+    Recolor strategy: single pass at tol=40, tracking which prims were already
+    recolored so a later map entry can't re-recolor them.
+
+    FACE PROTECTION: the face skin-tone prim (the head circle) and the eye prims
+    are NEVER recolored by a non-skin-tone map, and adds that would cover the
+    face (cy 55-95, cx 108-148) with r>8 are filtered out. This prevents the
+    "lost face" failure where hair/armor color covers the face or adds cover eyes.
     """
     out = [dict(p) for p in prims]
     cmap = delta.get("color_map", []) or []
-    recolored = set()  # indices of prims already recolored — skip in later maps
+    recolored = set()
+    # Identify face-critical prims: head circle (skin tone, cy~72, r~20) + eyes
+    # (small dark circles, cy~70, r<=5). These keep their identity unless the
+    # map explicitly targets a skin-tone base.
+    face_prims = set()
+    for j, p in enumerate(out):
+        t = p.get("type")
+        if t == "circle":
+            cy = p.get("cy", 999); cx = p.get("cx", 999); r = p.get("r", 0)
+            col = p.get("color", [0, 0, 0])
+            # head circle: large, in face region, skin-tone-ish (R>G>B, R>180)
+            if r >= 15 and 55 < cy < 95 and 108 < cx < 148 and col[0] > 180 and col[0] > col[2]:
+                face_prims.add(j)
+            # eyes: small dark circles in face region
+            if r <= 5 and 60 < cy < 85 and 110 < cx < 146 and col[0] < 80:
+                face_prims.add(j)
     for pair in cmap:
         if not isinstance(pair, list) or len(pair) < 2: continue
         base, skin = pair[0], pair[1]
         if not base or not skin: continue
+        # Is this a skin-tone map (base is skin-tone-ish)? If so, allow recoloring
+        # the face. Otherwise, skip face prims.
+        is_skin_map = base[0] > 180 and base[0] > base[2] + 20
         for j, p in enumerate(out):
             if j in recolored: continue
+            if j in face_prims and not is_skin_map: continue
             if _near(p.get("color"), base, tol=40):
                 p["color"] = list(skin[:3]); recolored.add(j)
             elif p.get("outline") and _near(p.get("outline"), base, tol=40):
                 p["outline"] = list(skin[:3])
-        # second pass with wider tol ONLY for prims not yet recolored (catch a
-        # slightly-off base_color without clobbering already-mapped prims)
         for j, p in enumerate(out):
             if j in recolored: continue
+            if j in face_prims and not is_skin_map: continue
             if _near(p.get("color"), base, tol=80):
                 p["color"] = list(skin[:3]); recolored.add(j)
-    # adds: append new primitives (validate shape)
+    # adds: append new primitives, but FILTER adds that cover the face
     for a in (delta.get("adds", []) or []):
         if not isinstance(a, dict) or "type" not in a: continue
         a2 = dict(a)
         if "color" in a2 and a2["color"]: a2["color"] = list(a2["color"][:3])
         if "outline" in a2 and a2["outline"]: a2["outline"] = list(a2["outline"][:3])
+        # face-protection: skip large adds in the face region (would cover eyes)
+        cy = a2.get("cy", a2.get("y", 999))
+        cx = a2.get("cx", a2.get("x", 999))
+        if isinstance(cx, int) and isinstance(cy, int):
+            if 55 < cy < 95 and 108 < cx < 148:
+                r = a2.get("r", 0)
+                w = a2.get("w", 0); h = a2.get("h", 0)
+                if r > 8 or w > 16 or h > 16:
+                    continue  # skip — would cover face
         out.append(a2)
     return out
 

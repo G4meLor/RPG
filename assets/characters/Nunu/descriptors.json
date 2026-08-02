@@ -1,36 +1,313 @@
 {
   "0": {
-    "descriptor": {
-      "archetype": "yordle",
-      "weapon": "none",
-      "palette": {
-        "primary": [
-          210,
-          105,
-          30
+    "primitives": [
+      {
+        "type": "ellipse",
+        "x": 40,
+        "y": 80,
+        "w": 120,
+        "h": 140,
+        "color": [
+          230,
+          235,
+          255
         ],
-        "secondary": [
-          30,
-          30,
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Willump's main torso, slightly tilted for dynamic pose"
+      },
+      {
+        "type": "ellipse",
+        "x": 60,
+        "y": 60,
+        "w": 80,
+        "h": 70,
+        "color": [
+          240,
+          245,
+          255
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Willump's head, more defined structure"
+      },
+      {
+        "type": "ellipse",
+        "x": 70,
+        "y": 85,
+        "w": 60,
+        "h": 50,
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          210,
+          220,
+          240
+        ],
+        "outline_w": 2,
+        "comment": "Fluffy white chest fur"
+      },
+      {
+        "type": "ellipse",
+        "x": 65,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          220,
+          230,
+          250
+        ],
+        "outline": [
+          150,
+          160,
+          190
+        ],
+        "outline_w": 2,
+        "comment": "Willump's left horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 110,
+        "y": 55,
+        "w": 25,
+        "h": 35,
+        "color": [
+          220,
+          230,
+          250
+        ],
+        "outline": [
+          150,
+          160,
+          190
+        ],
+        "outline_w": 2,
+        "comment": "Willump's right horn/ear, angled"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 75,
+        "w": 30,
+        "h": 20,
+        "color": [
+          60,
+          60,
+          100
+        ],
+        "outline": [
+          40,
+          40,
           80
         ],
-        "accent": [
-          240,
-          240,
-          255
-        ]
+        "outline_w": 2,
+        "comment": "Willump's distinct yeti nose"
       },
-      "features": [
-        "hood",
-        "animal_ears"
-      ],
-      "build": "short",
-      "motif": "nature"
-    },
-    "match": 4,
-    "iters": 10,
-    "ok": false,
-    "match_before": 4
+      {
+        "type": "circle",
+        "cx": 80,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 70,
+        "r": 4,
+        "color": [
+          30,
+          30,
+          50
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 80,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          210,
+          220,
+          250
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Left foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 120,
+        "y": 180,
+        "w": 40,
+        "h": 30,
+        "color": [
+          210,
+          220,
+          250
+        ],
+        "outline": [
+          160,
+          170,
+          200
+        ],
+        "outline_w": 3,
+        "comment": "Right foot"
+      },
+      {
+        "type": "ellipse",
+        "x": 85,
+        "y": 45,
+        "w": 35,
+        "h": 35,
+        "color": [
+          245,
+          210,
+          180
+        ],
+        "outline": [
+          180,
+          140,
+          110
+        ],
+        "outline_w": 2,
+        "comment": "Nunu's face"
+      },
+      {
+        "type": "rect",
+        "x": 85,
+        "y": 30,
+        "w": 35,
+        "h": 20,
+        "color": [
+          180,
+          40,
+          40
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 5,
+        "comment": "Nunu's red winter hat"
+      },
+      {
+        "type": "circle",
+        "cx": 102,
+        "cy": 25,
+        "r": 6,
+        "color": [
+          200,
+          60,
+          60
+        ],
+        "outline": [
+          120,
+          20,
+          20
+        ],
+        "outline_w": 2,
+        "comment": "Hat pom-pom"
+      },
+      {
+        "type": "rect",
+        "x": 88,
+        "y": 75,
+        "w": 30,
+        "h": 25,
+        "color": [
+          100,
+          80,
+          60
+        ],
+        "outline": [
+          60,
+          40,
+          20
+        ],
+        "outline_w": 2,
+        "radius": 3,
+        "comment": "Nunu's brown winter tunic"
+      },
+      {
+        "type": "circle",
+        "cx": 97,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu left eye"
+      },
+      {
+        "type": "circle",
+        "cx": 108,
+        "cy": 55,
+        "r": 2,
+        "color": [
+          40,
+          40,
+          60
+        ],
+        "outline": null,
+        "outline_w": 0,
+        "comment": "Nunu right eye"
+      },
+      {
+        "type": "ellipse",
+        "x": 130,
+        "y": 110,
+        "w": 60,
+        "h": 60,
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          230
+        ],
+        "outline_w": 3,
+        "comment": "The snowball they are pushing"
+      }
+    ],
+    "generator": "vlm_fix3",
+    "phase": "fix3"
   },
   "3": {
     "descriptor": {

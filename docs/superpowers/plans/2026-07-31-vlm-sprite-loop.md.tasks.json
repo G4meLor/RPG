@@ -73,7 +73,7 @@
     {
       "id": 8,
       "subject": "Task 9: canonical gate script + bake CLI update",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** Write `tools/verify_canon_gate.py` (the honest gate: reads `descriptors.json` + sends sprite + canon to the VLM \u2192 canonical_match; pass = mean \u2265 6, recognizable \u2265 70%, stance \u2265 90%). Update `run_sprite_bake`/`build_champions` CLI to pass `champ`/`canon` through the loop.\n\n**Files:**\n- Create: `tools/verify_canon_gate.py`\n- Modify: `src/build/sprite_loop.py` (`run_sprite_bake`/`_process_one` pass `champ` + build canon per champ)\n- Modify: `src/build/build_champions.py` (CLI unchanged flags; passes champ dicts through)\n- Test: `tools/verify_canon_gate.py` (self-test with a FakeVLM gate)\n\n**Acceptance Criteria:**\n- [ ] `tools/verify_canon_gate.py` reads every `descriptors.json` + the champ's canon identity + the sprite \u2192 canonical_match per champ; prints mean, recognizable %, stance %; exits 0 if mean \u2265 6 AND recognizable \u2265 70% AND stance \u2265 90%, else 1.\n- [ ] `run_sprite_bake` builds the canon identity per champ (via a `canon_identity(champ)` call) and passes `champ`/`canon` to `vlm_sprite_loop`.\n- [ ] The CLI `--vlm-loop --skins 0` runs the canon-grounded bake end-to-end (network smoke for one champ).\n\n**Verify:** `SDL_VIDEODRIVER=dummy python3 tools/verify_canon_gate.py` (with a FakeVLM-injected path for the self-test) \u2192 `CANON GATE OK`; plus a real one-champ network smoke.",
       "blockedBy": [
         7
@@ -98,5 +98,5 @@
       ]
     }
   ],
-  "lastUpdated": "2026-07-31"
+  "lastUpdated": "2026-08-01T04:00:00"
 }

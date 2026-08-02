@@ -1,4 +1,12 @@
-"""Headless test for the sprite loop (FAKE VLM, no network)."""
+"""Headless test for the sprite loop (FAKE VLM, no network).
+
+Task 8: canon-grounded sprite loop. The FakeVLM returns the NEW critique shape
+{canonical_match, stance_captured, body_shape_score, features_missing,
+colors_captured, recognizable, suggested_descriptor} (the OLD {match, ok,
+problems} is GONE). The loop stops at canonical_match >= 7 (not `ok`), keeps
+the best-canonical_match round, and writes canonical_match (not `match`) to
+the cache.
+"""
 import os, sys, json, tempfile
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -15,61 +23,86 @@ D1 = {"archetype":"vastaya","weapon":"orb",
       "palette":{"primary":[255,255,255],"secondary":[200,0,0],"accent":[0,150,255]},
       "features":["horns"],"build":"slender","motif":"light"}
 
+# A dummy champ dict + canon dict so the loop's champ/canon threading is
+# exercised (the FakeVLM accepts and ignores them).
+_CHAMP = {"id": "Ahri", "name": "Ahri", "title": "the Nine-Tailed Fox"}
+_CANON = {"stance": "upright", "body_shape": "fox-girl vastaya",
+          "signature_features": ["fox_tails", "fox_ears"],
+          "colors": "red & white", "weapon": "orb"}
+
+def _crit(canonical_match, stance_captured=True, sug=D1):
+    """Helper: build a NEW-shape critique dict."""
+    return {
+        "canonical_match": canonical_match,
+        "stance_captured": stance_captured,
+        "body_shape_score": min(canonical_match, 10),
+        "features_missing": [] if canonical_match >= 7 else ["fox_tails"],
+        "colors_captured": True,
+        "recognizable": canonical_match >= 5,
+        "suggested_descriptor": sug,
+    }
+
 class FakeVLM:
-    """describe -> D0; critique -> ok=False(match=4) round 0, ok=True(match=8) round 1."""
+    """describe -> D0; critique -> canonical_match=4 (round 0) then 8 (round 1).
+    Accepts (and ignores) the champ arg on describe/critique."""
     def __init__(self): self.calls = 0
-    def describe(self, ref, fallback): return D0
-    def critique(self, ref, sprite, last_good_descriptor):
+    def describe(self, ref, fallback, champ=None): return D0
+    def critique(self, ref, sprite, last_good_descriptor, champ=None):
         self.calls += 1
         if self.calls == 1:
-            return {"match": 4, "ok": False, "problems": ["bad"], "suggested_descriptor": D1}
-        return {"match": 8, "ok": True, "problems": [], "suggested_descriptor": D1}
+            return _crit(4)
+        return _crit(8)
 
-def test_loop_stops_on_ok():
+def test_loop_stops_on_canonical_match_7():
     v = FakeVLM()
     # ref/sprite paths are never read by the fake; pass real splash so renderer runs
     ref = "assets/characters/Ahri/skins/0.jpg"
-    best, hist = vlm_sprite_loop("Ahri", 0, ref, vlm=v, max_iters=10, fallback=D0)
+    best, hist = vlm_sprite_loop("Ahri", 0, ref, vlm=v, max_iters=10,
+                                 fallback=D0, champ=_CHAMP, canon=_CANON)
     assert len(hist) == 2, f"expected 2 rounds, got {len(hist)}"
-    assert hist[0]["match"] == 4 and hist[0]["ok"] is False
-    assert hist[1]["match"] == 8 and hist[1]["ok"] is True
-    assert best["archetype"] == "vastaya"  # the ok round's descriptor
+    assert hist[0]["canonical_match"] == 4
+    assert hist[1]["canonical_match"] == 8
+    assert best["archetype"] == "vastaya"  # the round-1 (canonical_match=8) descriptor
 
-def test_loop_keeps_best_when_never_ok():
-    class NeverOK:
-        def describe(self, ref, fallback): return D0
-        def critique(self, ref, sprite, last):
-            return {"match": 3, "ok": False, "problems": [], "suggested_descriptor": D1}
+def test_loop_keeps_best_when_never_7():
+    class Never7:
+        def describe(self, ref, fallback, champ=None): return D0
+        def critique(self, ref, sprite, last, champ=None):
+            return _crit(3)
     best, hist = vlm_sprite_loop("Ahri", 0, "assets/characters/Ahri/skins/0.jpg",
-                                 vlm=NeverOK(), max_iters=3, fallback=D0)
+                                 vlm=Never7(), max_iters=3, fallback=D0,
+                                 champ=_CHAMP, canon=_CANON)
     assert len(hist) == 3            # hit the cap
-    assert best["archetype"] == "knight"  # round 0 (match 3) >= others (match 3) -> first wins via stable max
+    # round 0 (canonical_match=3) is kept: strict `>` tie-break -> first wins
+    assert best["archetype"] == "knight"
 
 def test_loop_respects_max_iters():
     class AlwaysCritique:
-        def describe(self, ref, fallback): return D0
-        def critique(self, ref, sprite, last):
-            return {"match": 1, "ok": False, "problems": [], "suggested_descriptor": D1}
+        def describe(self, ref, fallback, champ=None): return D0
+        def critique(self, ref, sprite, last, champ=None):
+            return _crit(1)
     _, hist = vlm_sprite_loop("Ahri", 0, "assets/characters/Ahri/skins/0.jpg",
-                              vlm=AlwaysCritique(), max_iters=4, fallback=D0)
+                              vlm=AlwaysCritique(), max_iters=4, fallback=D0,
+                              champ=_CHAMP, canon=_CANON)
     assert len(hist) == 4
 
 def test_cache_roundtrip():
     d = tempfile.mkdtemp()
     assert load_cache(d) == {}
-    save_cache(d, {"0": {"descriptor": D0, "match": 7, "iters": 2, "ok": True}})
+    save_cache(d, {"0": {"descriptor": D0, "canonical_match": 7,
+                         "iters": 2, "ok": True}})
     c = load_cache(d)
-    assert "0" in c and c["0"]["match"] == 7 and c["0"]["ok"] is True
+    assert "0" in c and c["0"]["canonical_match"] == 7 and c["0"]["ok"] is True
 
 def test_render_lock_exists():
     import threading
     assert isinstance(RENDER_LOCK, type(threading.Lock()))
 
 class FakeVLMOK:
-    """describe -> D0; critique -> ok=True(match=7) immediately."""
-    def describe(self, ref, fallback): return D0
-    def critique(self, ref, sprite, last):
-        return {"match": 7, "ok": True, "problems": [], "suggested_descriptor": D1}
+    """describe -> D0; critique -> canonical_match=7 immediately (stops round 0)."""
+    def describe(self, ref, fallback, champ=None): return D0
+    def critique(self, ref, sprite, last, champ=None):
+        return _crit(7)
 
 def _three_champs():
     ids = list(CHAMPIONS_DB.keys())[:3] if isinstance(CHAMPIONS_DB, dict) else [c["id"] for c in CHAMPIONS_DB[:3]]

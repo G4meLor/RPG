@@ -338,14 +338,14 @@
         "w": 40,
         "h": 50,
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": [
-          20,
-          60,
-          40
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -357,14 +357,14 @@
         "w": 30,
         "h": 30,
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": [
-          20,
-          60,
-          40
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -376,8 +376,8 @@
         "w": 24,
         "h": 4,
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": null,
@@ -391,8 +391,8 @@
         "w": 24,
         "h": 4,
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": null,
@@ -406,8 +406,8 @@
         "w": 30,
         "h": 6,
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": null,
@@ -421,8 +421,8 @@
         "w": 30,
         "h": 6,
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": null,
@@ -436,8 +436,8 @@
         "w": 30,
         "h": 6,
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": null,
@@ -451,14 +451,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": [
-          20,
-          60,
-          40
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -470,14 +470,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": [
-          20,
-          60,
-          40
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -503,14 +503,14 @@
           ]
         ],
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": [
-          20,
-          60,
-          40
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -535,14 +535,14 @@
           ]
         ],
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "outline": [
-          20,
-          60,
-          40
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -557,8 +557,8 @@
           195
         ],
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "width": 5
@@ -574,8 +574,8 @@
           185
         ],
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "width": 5
@@ -591,8 +591,8 @@
           195
         ],
         "color": [
-          40,
-          80,
+          20,
+          120,
           60
         ],
         "width": 5
@@ -603,7 +603,7 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
+          255,
           255,
           255
         ],
@@ -620,7 +620,7 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
+          255,
           255,
           255
         ],
@@ -649,40 +649,86 @@
         ],
         "color": [
           20,
-          60,
-          40
+          120,
+          60
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "rect",
-        "cx": 45,
-        "cy": 55,
-        "r": 10,
+        "type": "circle",
+        "cx": 128,
+        "cy": 135,
+        "r": 25,
         "color": [
-          212,
-          175,
-          55
-        ]
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          180,
+          140,
+          0
+        ],
+        "outline_w": 3
       },
       {
-        "type": "rect",
-        "cx": 40,
-        "cy": 65,
+        "type": "circle",
+        "cx": 110,
+        "cy": 150,
         "r": 15,
         "color": [
-          212,
-          175,
-          55
-        ]
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          180,
+          140,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 146,
+        "cy": 150,
+        "r": 15,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          180,
+          140,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 180,
+        "r": 12,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          180,
+          140,
+          0
+        ],
+        "outline_w": 2
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Pharaoh",
-    "notes": "Recolor bandages to dark teal/green, eyes to white, and add gold pharaoh headpiece elements."
+    "notes": "Recolored bandages to deep Egyptian green and added a golden Nemes headpiece and jewelry."
   },
   "2": {
     "primitives": [
@@ -693,14 +739,14 @@
         "w": 40,
         "h": 50,
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": [
-          80,
-          120,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -712,14 +758,14 @@
         "w": 30,
         "h": 30,
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": [
-          80,
-          120,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -731,8 +777,8 @@
         "w": 24,
         "h": 4,
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": null,
@@ -746,8 +792,8 @@
         "w": 24,
         "h": 4,
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": null,
@@ -761,8 +807,8 @@
         "w": 30,
         "h": 6,
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": null,
@@ -776,8 +822,8 @@
         "w": 30,
         "h": 6,
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": null,
@@ -791,8 +837,8 @@
         "w": 30,
         "h": 6,
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": null,
@@ -806,14 +852,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": [
-          80,
-          120,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -825,14 +871,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": [
-          80,
-          120,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -858,14 +904,14 @@
           ]
         ],
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": [
-          80,
-          120,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -890,14 +936,14 @@
           ]
         ],
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "outline": [
-          80,
-          120,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -912,8 +958,8 @@
           195
         ],
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "width": 5
@@ -929,8 +975,8 @@
           185
         ],
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "width": 5
@@ -946,8 +992,8 @@
           195
         ],
         "color": [
-          120,
-          160,
+          100,
+          180,
           80
         ],
         "width": 5
@@ -958,8 +1004,8 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
+          100,
           255
         ],
         "outline": [
@@ -975,8 +1021,8 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
+          100,
           255
         ],
         "outline": [
@@ -1003,41 +1049,53 @@
           ]
         ],
         "color": [
-          80,
-          120,
-          60
+          100,
+          180,
+          80
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "rect",
-        "cx": 45,
-        "cy": 75,
-        "r": 5,
+        "type": "circle",
+        "cx": 128,
+        "cy": 180,
+        "r": 15,
         "color": [
           200,
           50,
           50
-        ]
+        ],
+        "outline": [
+          100,
+          20,
+          20
+        ],
+        "outline_w": 2
       },
       {
-        "type": "rect",
-        "cx": 55,
-        "cy": 75,
-        "r": 5,
+        "type": "circle",
+        "cx": 145,
+        "cy": 180,
+        "r": 15,
         "color": [
-          180,
+          200,
           180,
           50
-        ]
+        ],
+        "outline": [
+          100,
+          90,
+          20
+        ],
+        "outline_w": 2
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Vancouver",
-    "notes": "Recolor bandages to green, eyes to glowing purple, and add red/yellow accents to the feet."
+    "notes": "Recolored bandages to vivid green and eyes to glowing magenta, added red and gold accents to the feet."
   },
   "5": {
     "primitives": [
@@ -1048,14 +1106,14 @@
         "w": 40,
         "h": 50,
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": [
-          30,
-          60,
-          45
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -1067,14 +1125,14 @@
         "w": 30,
         "h": 30,
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": [
-          30,
-          60,
-          45
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -1086,9 +1144,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": null,
         "outline_w": 0,
@@ -1101,9 +1159,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": null,
         "outline_w": 0,
@@ -1116,9 +1174,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": null,
         "outline_w": 0,
@@ -1131,9 +1189,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": null,
         "outline_w": 0,
@@ -1146,9 +1204,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": null,
         "outline_w": 0,
@@ -1161,14 +1219,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": [
-          30,
-          60,
-          45
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -1180,14 +1238,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": [
-          30,
-          60,
-          45
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -1213,14 +1271,14 @@
           ]
         ],
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": [
-          30,
-          60,
-          45
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -1245,14 +1303,14 @@
           ]
         ],
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "outline": [
-          30,
-          60,
-          45
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -1267,9 +1325,9 @@
           195
         ],
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "width": 5
       },
@@ -1284,9 +1342,9 @@
           185
         ],
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "width": 5
       },
@@ -1301,9 +1359,9 @@
           195
         ],
         "color": [
-          46,
-          82,
-          61
+          40,
+          120,
+          80
         ],
         "width": 5
       },
@@ -1313,9 +1371,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
-          255
+          255,
+          150
         ],
         "outline": [
           0,
@@ -1330,9 +1388,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
-          255
+          255,
+          150
         ],
         "outline": [
           0,
@@ -1358,41 +1416,87 @@
           ]
         ],
         "color": [
-          30,
-          60,
-          45
+          40,
+          120,
+          80
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "rect",
-        "cx": 48,
-        "cy": 65,
-        "r": 4,
-        "color": [
-          150,
-          0,
-          100
-        ]
-      },
-      {
-        "type": "rect",
-        "cx": 48,
-        "cy": 50,
-        "r": 6,
+        "type": "circle",
+        "cx": 128,
+        "cy": 110,
+        "r": 15,
         "color": [
           80,
           40,
           20
-        ]
+        ],
+        "outline": [
+          40,
+          20,
+          10
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 145,
+        "r": 8,
+        "color": [
+          200,
+          0,
+          100
+        ],
+        "outline": [
+          150,
+          0,
+          80
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 145,
+        "cy": 160,
+        "r": 5,
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          200,
+          200,
+          200
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 160,
+        "cy": 170,
+        "r": 4,
+        "color": [
+          200,
+          0,
+          50
+        ],
+        "outline": [
+          100,
+          0,
+          30
+        ],
+        "outline_w": 1
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Almost-Prom King",
-    "notes": "Recolor bandages to dark green, eyes to yellow, add a brown hair patch and a purple sash."
+    "notes": "Recolored bandages to deep green, added brown hair, a pink prom sash, and a red rose."
   },
   "7": {
     "primitives": [
@@ -1405,12 +1509,12 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": [
-          120,
-          120,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -1424,12 +1528,12 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": [
-          120,
-          120,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -1443,7 +1547,7 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": null,
         "outline_w": 0,
@@ -1458,7 +1562,7 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": null,
         "outline_w": 0,
@@ -1473,7 +1577,7 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": null,
         "outline_w": 0,
@@ -1488,7 +1592,7 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": null,
         "outline_w": 0,
@@ -1503,7 +1607,7 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": null,
         "outline_w": 0,
@@ -1518,12 +1622,12 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": [
-          120,
-          120,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -1537,12 +1641,12 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": [
-          120,
-          120,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -1570,12 +1674,12 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": [
-          120,
-          120,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -1602,12 +1706,12 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "outline": [
-          120,
-          120,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -1624,7 +1728,7 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "width": 5
       },
@@ -1641,7 +1745,7 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "width": 5
       },
@@ -1658,7 +1762,7 @@
         "color": [
           160,
           160,
-          160
+          170
         ],
         "width": 5
       },
@@ -1668,7 +1772,7 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
+          200,
           255,
           255
         ],
@@ -1685,7 +1789,7 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
+          200,
           255,
           255
         ],
@@ -1713,31 +1817,53 @@
           ]
         ],
         "color": [
-          120,
-          120,
-          120
+          160,
+          160,
+          170
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "ellipse",
-        "cx": 50,
-        "cy": 45,
-        "rx": 15,
-        "ry": 10,
+        "type": "circle",
+        "cx": 128,
+        "cy": 110,
+        "r": 25,
         "color": [
-          100,
+          50,
           200,
           150
-        ]
+        ],
+        "outline": [
+          30,
+          100,
+          80
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 115,
+        "r": 20,
+        "color": [
+          100,
+          230,
+          200
+        ],
+        "outline": [
+          30,
+          100,
+          80
+        ],
+        "outline_w": 1
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Sad Robot",
-    "notes": "Recolor bandages to metallic grey, eyes to white, and add a translucent green dome on head."
+    "notes": "Recolored bandages to metallic silver/grey and added a translucent green glass dome on the head."
   },
   "8": {
     "primitives": [
@@ -1748,14 +1874,14 @@
         "w": 40,
         "h": 50,
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": [
-          50,
-          80,
-          50
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -1767,14 +1893,14 @@
         "w": 30,
         "h": 30,
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": [
-          50,
-          80,
-          50
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -1786,9 +1912,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": null,
         "outline_w": 0,
@@ -1801,9 +1927,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": null,
         "outline_w": 0,
@@ -1816,9 +1942,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": null,
         "outline_w": 0,
@@ -1831,9 +1957,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": null,
         "outline_w": 0,
@@ -1846,9 +1972,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": null,
         "outline_w": 0,
@@ -1861,14 +1987,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": [
-          50,
-          80,
-          50
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -1880,14 +2006,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": [
-          50,
-          80,
-          50
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -1913,14 +2039,14 @@
           ]
         ],
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": [
-          50,
-          80,
-          50
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -1945,14 +2071,14 @@
           ]
         ],
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "outline": [
-          50,
-          80,
-          50
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -1967,9 +2093,9 @@
           195
         ],
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "width": 5
       },
@@ -1984,9 +2110,9 @@
           185
         ],
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "width": 5
       },
@@ -2001,9 +2127,9 @@
           195
         ],
         "color": [
-          70,
+          60,
           100,
-          70
+          60
         ],
         "width": 5
       },
@@ -2013,9 +2139,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
+          200,
           255,
-          255
+          150
         ],
         "outline": [
           0,
@@ -2030,9 +2156,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
+          200,
           255,
-          255
+          150
         ],
         "outline": [
           0,
@@ -2058,43 +2184,87 @@
           ]
         ],
         "color": [
-          50,
-          80,
-          50
+          60,
+          100,
+          60
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "ellipse",
-        "cx": 50,
-        "cy": 40,
-        "rx": 15,
-        "ry": 10,
+        "type": "circle",
+        "cx": 128,
+        "cy": 135,
+        "r": 25,
         "color": [
           220,
-          80,
+          60,
           180
-        ]
+        ],
+        "outline": [
+          150,
+          30,
+          110
+        ],
+        "outline_w": 2
       },
       {
-        "type": "rect",
-        "cx": 40,
-        "cy": 60,
-        "width": 20,
-        "height": 15,
+        "type": "circle",
+        "cx": 110,
+        "cy": 145,
+        "r": 15,
         "color": [
+          220,
+          60,
+          180
+        ],
+        "outline": [
+          150,
+          30,
+          110
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 146,
+        "cy": 145,
+        "r": 15,
+        "color": [
+          220,
+          60,
+          180
+        ],
+        "outline": [
+          150,
+          30,
+          110
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 170,
+        "r": 10,
+        "color": [
+          255,
+          220,
+          100
+        ],
+        "outline": [
           200,
-          100,
-          150
-        ]
+          150,
+          50
+        ],
+        "outline_w": 1
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Surprise Party",
-    "notes": "Recolor bandages to green skin, eyes to pale yellow, and add pink frosting on head and a striped shirt."
+    "notes": "Recolored bandages to zombie green and added a pink frosting cake with sprinkles on the head."
   },
   "3": {
     "primitives": [
@@ -2110,9 +2280,9 @@
           170
         ],
         "outline": [
-          120,
-          120,
-          130
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -2129,9 +2299,9 @@
           170
         ],
         "outline": [
-          120,
-          120,
-          130
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -2223,9 +2393,9 @@
           170
         ],
         "outline": [
-          120,
-          120,
-          130
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -2242,9 +2412,9 @@
           170
         ],
         "outline": [
-          120,
-          120,
-          130
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -2275,9 +2445,9 @@
           170
         ],
         "outline": [
-          120,
-          120,
-          130
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -2307,9 +2477,9 @@
           170
         ],
         "outline": [
-          120,
-          120,
-          130
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -2370,8 +2540,8 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
+          100,
           255
         ],
         "outline": [
@@ -2387,8 +2557,8 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
+          100,
           255
         ],
         "outline": [
@@ -2415,41 +2585,53 @@
           ]
         ],
         "color": [
-          120,
-          120,
-          130
+          160,
+          160,
+          170
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "rect",
-        "cx": 48,
-        "cy": 55,
-        "r": 4,
+        "type": "circle",
+        "cx": 128,
+        "cy": 110,
+        "r": 15,
         "color": [
           40,
           40,
           60
-        ]
+        ],
+        "outline": [
+          100,
+          100,
+          255
+        ],
+        "outline_w": 2
       },
       {
-        "type": "line",
-        "cx": 45,
-        "cy": 55,
-        "r": 5,
+        "type": "circle",
+        "cx": 110,
+        "cy": 140,
+        "r": 10,
         "color": [
-          80,
-          60,
-          200
-        ]
+          20,
+          20,
+          30
+        ],
+        "outline": [
+          0,
+          0,
+          0
+        ],
+        "outline_w": 1
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Emumu",
-    "notes": "Recolor bandages to grey/silver, eyes to pink, and add emo hair spikes and a purple streak."
+    "notes": "Recolored bandages to a cool grey/blue palette, changed eyes to glowing pink, and added emo hair spikes and a black t-shirt accent."
   },
   "4": {
     "primitives": [
@@ -2460,14 +2642,14 @@
         "w": 40,
         "h": 50,
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": [
-          140,
-          30,
-          30
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -2479,14 +2661,14 @@
         "w": 30,
         "h": 30,
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": [
-          140,
-          30,
-          30
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -2498,9 +2680,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": null,
         "outline_w": 0,
@@ -2513,9 +2695,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": null,
         "outline_w": 0,
@@ -2528,9 +2710,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": null,
         "outline_w": 0,
@@ -2543,9 +2725,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": null,
         "outline_w": 0,
@@ -2558,9 +2740,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": null,
         "outline_w": 0,
@@ -2573,14 +2755,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": [
-          140,
-          30,
-          30
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -2592,14 +2774,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": [
-          140,
-          30,
-          30
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -2625,14 +2807,14 @@
           ]
         ],
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": [
-          140,
-          30,
-          30
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -2657,14 +2839,14 @@
           ]
         ],
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "outline": [
-          140,
-          30,
-          30
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -2679,9 +2861,9 @@
           195
         ],
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "width": 5
       },
@@ -2696,9 +2878,9 @@
           185
         ],
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "width": 5
       },
@@ -2713,9 +2895,9 @@
           195
         ],
         "color": [
-          180,
-          40,
-          40
+          220,
+          20,
+          60
         ],
         "width": 5
       },
@@ -2725,7 +2907,7 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
+          255,
           255,
           255
         ],
@@ -2742,7 +2924,7 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
+          255,
           255,
           255
         ],
@@ -2770,30 +2952,70 @@
           ]
         ],
         "color": [
-          140,
-          30,
-          30
+          220,
+          20,
+          60
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "rect",
-        "cx": 48,
-        "cy": 52,
-        "r": 8,
+        "type": "circle",
+        "cx": 128,
+        "cy": 110,
+        "r": 15,
         "color": [
           255,
           215,
           0
-        ]
+        ],
+        "outline": [
+          200,
+          160,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 110,
+        "cy": 100,
+        "r": 10,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          200,
+          160,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 146,
+        "cy": 100,
+        "r": 10,
+        "color": [
+          255,
+          215,
+          0
+        ],
+        "outline": [
+          200,
+          160,
+          0
+        ],
+        "outline_w": 2
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Re-Gifted",
-    "notes": "Recolor bandages to red gift wrap and green mummy body; change eyes to white; add yellow ribbon on top."
+    "notes": "Recolored bandages to red gift wrap and green ribbons, added a yellow bow on top of the head."
   },
   "17": {
     "primitives": [
@@ -2804,14 +3026,14 @@
         "w": 40,
         "h": 50,
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": [
-          255,
-          69,
-          0
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -2823,14 +3045,14 @@
         "w": 30,
         "h": 30,
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": [
-          255,
-          69,
-          0
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -2842,9 +3064,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": null,
         "outline_w": 0,
@@ -2857,9 +3079,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": null,
         "outline_w": 0,
@@ -2872,9 +3094,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": null,
         "outline_w": 0,
@@ -2887,9 +3109,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": null,
         "outline_w": 0,
@@ -2902,9 +3124,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": null,
         "outline_w": 0,
@@ -2917,14 +3139,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": [
-          255,
-          69,
-          0
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -2936,14 +3158,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": [
-          255,
-          69,
-          0
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -2969,14 +3191,14 @@
           ]
         ],
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": [
-          255,
-          69,
-          0
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -3001,14 +3223,14 @@
           ]
         ],
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "outline": [
-          255,
-          69,
-          0
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -3023,9 +3245,9 @@
           195
         ],
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "width": 5
       },
@@ -3040,9 +3262,9 @@
           185
         ],
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "width": 5
       },
@@ -3057,9 +3279,9 @@
           195
         ],
         "color": [
-          139,
-          0,
-          0
+          200,
+          60,
+          20
         ],
         "width": 5
       },
@@ -3069,9 +3291,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
-          255
+          255,
+          100
         ],
         "outline": [
           0,
@@ -3086,9 +3308,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
-          255
+          255,
+          100
         ],
         "outline": [
           0,
@@ -3114,42 +3336,70 @@
           ]
         ],
         "color": [
-          255,
-          69,
-          0
+          200,
+          60,
+          20
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "ellipse",
-        "cx": 50,
-        "cy": 40,
-        "rx": 15,
-        "ry": 10,
+        "type": "circle",
+        "cx": 128,
+        "cy": 130,
+        "r": 15,
         "color": [
           255,
           200,
           0
-        ]
+        ],
+        "outline": [
+          255,
+          100,
+          0
+        ],
+        "outline_w": 2
       },
       {
         "type": "circle",
-        "cx": 60,
-        "cy": 30,
-        "r": 5,
+        "cx": 115,
+        "cy": 120,
+        "r": 10,
         "color": [
           255,
-          165,
+          180,
           0
-        ]
+        ],
+        "outline": [
+          255,
+          80,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 140,
+        "cy": 120,
+        "r": 10,
+        "color": [
+          255,
+          180,
+          0
+        ],
+        "outline": [
+          255,
+          80,
+          0
+        ],
+        "outline_w": 1
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Infernal",
-    "notes": "Recolor bandages to deep red/orange and eyes to yellow; add flame effects to the head."
+    "notes": "Recolored bandages to volcanic reds and oranges, changed eyes to glowing yellow, and added fire aura primitives around the head."
   },
   "23": {
     "primitives": [
@@ -3160,14 +3410,14 @@
         "w": 40,
         "h": 50,
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": [
-          100,
-          80,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -3179,14 +3429,14 @@
         "w": 30,
         "h": 30,
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": [
-          100,
-          80,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -3198,9 +3448,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": null,
         "outline_w": 0,
@@ -3213,9 +3463,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": null,
         "outline_w": 0,
@@ -3228,9 +3478,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": null,
         "outline_w": 0,
@@ -3243,9 +3493,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": null,
         "outline_w": 0,
@@ -3258,9 +3508,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": null,
         "outline_w": 0,
@@ -3273,14 +3523,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": [
-          100,
-          80,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -3292,14 +3542,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": [
-          100,
-          80,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -3325,14 +3575,14 @@
           ]
         ],
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": [
-          100,
-          80,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -3357,14 +3607,14 @@
           ]
         ],
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "outline": [
-          100,
-          80,
-          60
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -3379,9 +3629,9 @@
           195
         ],
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "width": 5
       },
@@ -3396,9 +3646,9 @@
           185
         ],
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "width": 5
       },
@@ -3413,9 +3663,9 @@
           195
         ],
         "color": [
-          70,
-          50,
-          30
+          139,
+          69,
+          19
         ],
         "width": 5
       },
@@ -3425,8 +3675,8 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
-          255,
+          0,
+          191,
           255
         ],
         "outline": [
@@ -3442,8 +3692,8 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
-          255,
+          0,
+          191,
           255
         ],
         "outline": [
@@ -3470,41 +3720,70 @@
           ]
         ],
         "color": [
-          100,
-          80,
-          60
+          139,
+          69,
+          19
         ],
         "outline": null,
         "outline_w": 0
       },
       {
         "type": "circle",
-        "cx": 50,
-        "cy": 60,
-        "r": 3,
+        "cx": 128,
+        "cy": 140,
+        "r": 15,
         "color": [
           0,
           191,
           255
-        ]
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 2
       },
       {
         "type": "circle",
-        "cx": 55,
-        "cy": 60,
-        "r": 3,
+        "cx": 110,
+        "cy": 140,
+        "r": 15,
         "color": [
           0,
           191,
           255
-        ]
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 120,
+        "r": 8,
+        "color": [
+          0,
+          191,
+          255
+        ],
+        "outline": [
+          255,
+          215,
+          0
+        ],
+        "outline_w": 1
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Hextech",
-    "notes": "Recolor bandages to metallic bronze/brown and enhance the blue glow of the eyes to match Hextech crystals."
+    "notes": "Recolored bandages to bronze/copper metallic tones and enhanced the eyes with glowing neon blue hextech energy."
   },
   "34": {
     "primitives": [
@@ -3516,13 +3795,13 @@
         "h": 50,
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": [
-          100,
-          120,
-          200
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -3535,13 +3814,13 @@
         "h": 30,
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": [
-          100,
-          120,
-          200
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -3554,7 +3833,7 @@
         "h": 4,
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": null,
@@ -3569,7 +3848,7 @@
         "h": 4,
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": null,
@@ -3584,7 +3863,7 @@
         "h": 6,
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": null,
@@ -3599,7 +3878,7 @@
         "h": 6,
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": null,
@@ -3614,7 +3893,7 @@
         "h": 6,
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": null,
@@ -3629,13 +3908,13 @@
         "h": 15,
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": [
-          100,
-          120,
-          200
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -3648,13 +3927,13 @@
         "h": 15,
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": [
-          100,
-          120,
-          200
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -3681,13 +3960,13 @@
         ],
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": [
-          100,
-          120,
-          200
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -3713,13 +3992,13 @@
         ],
         "color": [
           240,
-          240,
+          245,
           255
         ],
         "outline": [
-          100,
-          120,
-          200
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -3734,9 +4013,9 @@
           195
         ],
         "color": [
-          230,
-          210,
-          180
+          240,
+          245,
+          255
         ],
         "width": 5
       },
@@ -3751,9 +4030,9 @@
           185
         ],
         "color": [
-          230,
-          210,
-          180
+          240,
+          245,
+          255
         ],
         "width": 5
       },
@@ -3768,9 +4047,9 @@
           195
         ],
         "color": [
-          230,
-          210,
-          180
+          240,
+          245,
+          255
         ],
         "width": 5
       },
@@ -3780,8 +4059,8 @@
         "cy": 152,
         "r": 3,
         "color": [
+          0,
           100,
-          255,
           255
         ],
         "outline": [
@@ -3797,8 +4076,8 @@
         "cy": 152,
         "r": 3,
         "color": [
+          0,
           100,
-          255,
           255
         ],
         "outline": [
@@ -3825,31 +4104,53 @@
           ]
         ],
         "color": [
-          100,
-          120,
-          200
+          240,
+          245,
+          255
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "ellipse",
-        "cx": 50,
-        "cy": 40,
-        "rx": 15,
-        "ry": 10,
+        "type": "circle",
+        "cx": 128,
+        "cy": 130,
+        "r": 15,
         "color": [
-          180,
-          160,
-          120
-        ]
+          40,
+          60,
+          150
+        ],
+        "outline": [
+          255,
+          255,
+          255
+        ],
+        "outline_w": 2
+      },
+      {
+        "type": "circle",
+        "cx": 128,
+        "cy": 110,
+        "r": 20,
+        "color": [
+          255,
+          255,
+          255
+        ],
+        "outline": [
+          40,
+          60,
+          150
+        ],
+        "outline_w": 3
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Porcelain",
-    "notes": "Recolor bandages to white and blue porcelain patterns; add a golden teapot lid/handle accent."
+    "notes": "Recolored bandages to white and deep blue porcelain patterns; added teapot lid and rim accents."
   },
   "44": {
     "primitives": [
@@ -3860,14 +4161,14 @@
         "w": 40,
         "h": 50,
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": [
-          80,
-          20,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -3879,14 +4180,14 @@
         "w": 30,
         "h": 30,
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": [
-          80,
-          20,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -3898,9 +4199,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": null,
         "outline_w": 0,
@@ -3913,9 +4214,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": null,
         "outline_w": 0,
@@ -3928,9 +4229,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": null,
         "outline_w": 0,
@@ -3943,9 +4244,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": null,
         "outline_w": 0,
@@ -3958,9 +4259,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": null,
         "outline_w": 0,
@@ -3973,14 +4274,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": [
-          80,
-          20,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -3992,14 +4293,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": [
-          80,
-          20,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -4025,14 +4326,14 @@
           ]
         ],
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": [
-          80,
-          20,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -4057,14 +4358,14 @@
           ]
         ],
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "outline": [
-          80,
-          20,
-          120
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -4079,9 +4380,9 @@
           195
         ],
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "width": 5
       },
@@ -4096,9 +4397,9 @@
           185
         ],
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "width": 5
       },
@@ -4113,9 +4414,9 @@
           195
         ],
         "color": [
-          138,
-          43,
-          226
+          140,
+          80,
+          180
         ],
         "width": 5
       },
@@ -4125,9 +4426,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
-          255
+          0,
+          80
         ],
         "outline": [
           0,
@@ -4142,9 +4443,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
-          255
+          0,
+          80
         ],
         "outline": [
           0,
@@ -4170,63 +4471,70 @@
           ]
         ],
         "color": [
+          140,
           80,
-          20,
-          120
+          180
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "polygon",
-        "points": [
-          [
-            10,
-            10
-          ],
-          [
-            15,
-            0
-          ],
-          [
-            20,
-            10
-          ]
-        ],
+        "type": "circle",
+        "cx": 120,
+        "cy": 135,
+        "r": 8,
         "color": [
           220,
-          20,
-          60
-        ]
+          40,
+          40
+        ],
+        "outline": [
+          50,
+          0,
+          0
+        ],
+        "outline_w": 1
       },
       {
-        "type": "polygon",
-        "points": [
-          [
-            30,
-            10
-          ],
-          [
-            35,
-            0
-          ],
-          [
-            40,
-            10
-          ]
-        ],
+        "type": "circle",
+        "cx": 140,
+        "cy": 135,
+        "r": 8,
         "color": [
           220,
-          20,
-          60
-        ]
+          40,
+          40
+        ],
+        "outline": [
+          50,
+          0,
+          0
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 130,
+        "cy": 145,
+        "r": 4,
+        "color": [
+          180,
+          180,
+          180
+        ],
+        "outline": [
+          100,
+          100,
+          100
+        ],
+        "outline_w": 1
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Heartache",
-    "notes": "Recolor bandages to deep purple and eyes to glowing red, adding small red horns."
+    "notes": "Recolored bandages to deep purple and eyes to glowing red, added demonic horns and a small silver spike."
   },
   "6": {
     "primitives": [
@@ -4237,14 +4545,14 @@
         "w": 40,
         "h": 50,
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": [
-          60,
-          60,
-          70
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -4256,14 +4564,14 @@
         "w": 30,
         "h": 30,
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": [
-          60,
-          60,
-          70
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -4275,9 +4583,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": null,
         "outline_w": 0,
@@ -4290,9 +4598,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": null,
         "outline_w": 0,
@@ -4305,9 +4613,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": null,
         "outline_w": 0,
@@ -4320,9 +4628,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": null,
         "outline_w": 0,
@@ -4335,9 +4643,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": null,
         "outline_w": 0,
@@ -4350,14 +4658,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": [
-          60,
-          60,
-          70
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -4369,14 +4677,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": [
-          60,
-          60,
-          70
+          160,
+          130,
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -4402,14 +4710,14 @@
           ]
         ],
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": [
-          60,
-          60,
-          70
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -4434,14 +4742,14 @@
           ]
         ],
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "outline": [
-          60,
-          60,
-          70
+          160,
+          130,
+          90
         ],
         "outline_w": 2
       },
@@ -4456,9 +4764,9 @@
           195
         ],
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "width": 5
       },
@@ -4473,9 +4781,9 @@
           185
         ],
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "width": 5
       },
@@ -4490,9 +4798,9 @@
           195
         ],
         "color": [
-          100,
-          100,
-          110
+          120,
+          120,
+          130
         ],
         "width": 5
       },
@@ -4502,9 +4810,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
-          255
+          255,
+          150
         ],
         "outline": [
           0,
@@ -4519,9 +4827,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
           255,
-          255
+          255,
+          150
         ],
         "outline": [
           0,
@@ -4547,53 +4855,36 @@
           ]
         ],
         "color": [
-          60,
-          60,
-          70
+          120,
+          120,
+          130
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "polygon",
-        "points": [
-          [
-            20,
-            10
-          ],
-          [
-            25,
-            0
-          ],
-          [
-            30,
-            10
-          ]
+        "type": "circle",
+        "cx": 128,
+        "cy": 110,
+        "r": 25,
+        "color": [
+          160,
+          160,
+          170
         ],
-        "color": [
+        "outline": [
+          255,
           200,
-          50,
-          20
-        ]
-      },
-      {
-        "type": "rect",
-        "cx": 25,
-        "cy": 15,
-        "w": 2,
-        "h": 10,
-        "color": [
-          212,
-          175,
-          55
-        ]
+          40
+        ],
+        "outline_w": 3
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Little Knight",
-    "notes": "Recolor bandages to steel grey, eyes to pale yellow, and add a red plume and gold trim to the helmet."
+    "notes": "Recolored bandages to steel armor plates and added a knight's helmet with a red plume."
   },
   "24": {
     "primitives": [
@@ -4604,14 +4895,14 @@
         "w": 40,
         "h": 50,
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": [
+          160,
           130,
-          60,
-          20
+          90
         ],
         "outline_w": 2,
         "radius": 12
@@ -4623,14 +4914,14 @@
         "w": 30,
         "h": 30,
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": [
+          160,
           130,
-          60,
-          20
+          90
         ],
         "outline_w": 2,
         "radius": 8
@@ -4642,9 +4933,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": null,
         "outline_w": 0,
@@ -4657,9 +4948,9 @@
         "w": 24,
         "h": 4,
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": null,
         "outline_w": 0,
@@ -4672,9 +4963,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": null,
         "outline_w": 0,
@@ -4687,9 +4978,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": null,
         "outline_w": 0,
@@ -4702,9 +4993,9 @@
         "w": 30,
         "h": 6,
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": null,
         "outline_w": 0,
@@ -4717,14 +5008,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": [
+          160,
           130,
-          60,
-          20
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -4736,14 +5027,14 @@
         "w": 10,
         "h": 15,
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": [
+          160,
           130,
-          60,
-          20
+          90
         ],
         "outline_w": 2,
         "radius": 4
@@ -4769,14 +5060,14 @@
           ]
         ],
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": [
+          160,
           130,
-          60,
-          20
+          90
         ],
         "outline_w": 2
       },
@@ -4801,14 +5092,14 @@
           ]
         ],
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "outline": [
+          160,
           130,
-          60,
-          20
+          90
         ],
         "outline_w": 2
       },
@@ -4823,9 +5114,9 @@
           195
         ],
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "width": 5
       },
@@ -4840,9 +5131,9 @@
           185
         ],
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "width": 5
       },
@@ -4857,9 +5148,9 @@
           195
         ],
         "color": [
-          180,
+          200,
           100,
-          40
+          20
         ],
         "width": 5
       },
@@ -4869,9 +5160,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
+          180,
           255,
-          255
+          50
         ],
         "outline": [
           0,
@@ -4886,9 +5177,9 @@
         "cy": 152,
         "r": 3,
         "color": [
-          100,
+          180,
           255,
-          255
+          50
         ],
         "outline": [
           0,
@@ -4914,51 +5205,69 @@
           ]
         ],
         "color": [
-          130,
-          60,
+          200,
+          100,
           20
         ],
         "outline": null,
         "outline_w": 0
       },
       {
-        "type": "polygon",
-        "points": [
-          [
-            48,
-            55
-          ],
-          [
-            52,
-            55
-          ],
-          [
-            50,
-            50
-          ]
-        ],
+        "type": "circle",
+        "cx": 128,
+        "cy": 110,
+        "r": 8,
         "color": [
           40,
-          30,
-          10
-        ]
+          40,
+          60
+        ],
+        "outline": [
+          20,
+          20,
+          40
+        ],
+        "outline_w": 1
       },
       {
         "type": "circle",
-        "cx": 45,
-        "cy": 58,
-        "r": 2,
+        "cx": 115,
+        "cy": 120,
+        "r": 10,
         "color": [
-          120,
+          140,
           60,
           180
-        ]
+        ],
+        "outline": [
+          100,
+          40,
+          150
+        ],
+        "outline_w": 1
+      },
+      {
+        "type": "circle",
+        "cx": 140,
+        "cy": 160,
+        "r": 12,
+        "color": [
+          80,
+          40,
+          120
+        ],
+        "outline": [
+          60,
+          30,
+          100
+        ],
+        "outline_w": 2
       }
     ],
     "generator": "skin_mod",
     "phase": "per-skin",
     "base": "0",
     "skin": "Pumpkin Prince",
-    "notes": "Recolor bandages to pumpkin orange and eyes to neon green; add a small stem and purple accent."
+    "notes": "Recolor bandages to pumpkin orange and eyes to neon green, adding a stem and purple royal accents."
   }
 }

@@ -14,8 +14,9 @@ EXP = os.path.dirname(os.path.abspath(__file__))
 # LoL-knowledge hint per champ: the signature feature + a SECOND approach idea
 # (the first approach already got this champ to its current score; the agent
 # should try a DIFFERENT composition to break the ceiling).
-HINTS = json.load(open(os.path.join(EXP, "_below8_worklist.json")))
-HINTS = {x["id"]: x for x in HINTS}
+_WL = os.path.join(EXP, "_below8_worklist.json")
+HINTS = {x["id"]: x for x in json.load(open(_WL))} if os.path.exists(_WL) else {}
+del _WL
 
 # Secondary approach idea per champ — what to try if "make the icon bigger"
 # already failed. Often a different stance angle, a different feature as the
